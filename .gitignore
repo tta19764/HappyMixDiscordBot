@@ -39,6 +39,9 @@ ScaffoldingReadMe.txt
 # dotenv environment variables file
 .env
 
+# Local development configuration (may contain secrets)
+appsettings.Development.json
+
 # JetBrains Rider
 .idea/
 

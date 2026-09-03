@@ -3,6 +3,7 @@
 A Discord bot for the HappyMix server, built with Discord.Net, .NET 10, and Clean Architecture.
 
 Quartz.NET runs scheduled background jobs. The initial health-check job executes on startup and every 15 minutes.
+MediatR dispatches requests from the Discord and Quartz adapters to Application handlers.
 
 ## Project structure
 
