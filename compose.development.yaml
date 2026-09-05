@@ -1,0 +1,14 @@
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DOTNET_ENVIRONMENT: Development
+    volumes:
+      - type: bind
+        source: ./src/HappyMix.Bot/appsettings.Development.json
+        target: /app/appsettings.Development.json
+        read_only: true
+        bind:
+          create_host_path: false

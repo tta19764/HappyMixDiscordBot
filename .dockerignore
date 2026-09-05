@@ -1,0 +1,13 @@
+.git
+.gitignore
+.idea
+.vs
+**/bin
+**/obj
+**/TestResults
+**/*.user
+**/*.suo
+**/appsettings.Development.json
+.env
+Dockerfile*
+README.md
