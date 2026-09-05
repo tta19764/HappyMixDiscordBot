@@ -24,6 +24,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\HappyMix.Application\HappyMix.Application.csproj" />
     <ProjectReference Include="..\..\src\HappyMix.Domain\HappyMix.Domain.csproj" />
+    <ProjectReference Include="..\..\src\HappyMix.Infrastructure\HappyMix.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\HappyMix.Bot\HappyMix.Bot.csproj" />
   </ItemGroup>
 
 </Project>

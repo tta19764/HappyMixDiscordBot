@@ -7,7 +7,7 @@ HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
 builder.Services
     .AddApplication()
-    .AddInfrastructure()
+    .AddInfrastructure(builder.Configuration)
     .AddBot(builder.Configuration);
 
 await builder.Build().RunAsync();

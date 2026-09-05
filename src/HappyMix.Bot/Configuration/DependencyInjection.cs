@@ -1,6 +1,7 @@
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using HappyMix.Application.Abstractions.Notifications;
 using HappyMix.Bot.Jobs;
 using HappyMix.Bot.Services;
 using Microsoft.Extensions.Configuration;
@@ -53,6 +54,7 @@ public static class DependencyInjection
         services.AddSingleton<DiscordSocketClient>();
         services.AddSingleton(static provider =>
             new InteractionService(provider.GetRequiredService<DiscordSocketClient>().Rest));
+        services.AddSingleton<IMatchAnnouncementPublisher, DiscordMatchAnnouncementPublisher>();
 
         // The hosted service owns only the persistent Discord connection lifecycle.
         services.AddHostedService<DiscordBotWorker>();
@@ -64,15 +66,15 @@ public static class DependencyInjection
         {
             // A stable identity prevents accidental duplicate registrations when
             // persistent Quartz storage is introduced in the future.
-            JobKey jobKey = new("bot-health-check");
+            JobKey jobKey = new("synchronize-cs-matches");
 
-            scheduler.AddJob<BotHealthCheckJob>(job => job.WithIdentity(jobKey));
+            scheduler.AddJob<SynchronizeMatchesJob>(job => job.WithIdentity(jobKey));
             scheduler.AddTrigger(trigger => trigger
                 .ForJob(jobKey)
-                .WithIdentity("bot-health-check-trigger")
+                .WithIdentity("synchronize-cs-matches-trigger")
                 .StartNow()
                 .WithSimpleSchedule(schedule => schedule
-                    .WithInterval(TimeSpan.FromMinutes(15))
+                    .WithInterval(TimeSpan.FromMinutes(1))
                     .RepeatForever()));
         });
 
