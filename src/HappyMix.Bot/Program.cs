@@ -10,4 +10,7 @@ builder.Services
     .AddInfrastructure(builder.Configuration)
     .AddBot(builder.Configuration);
 
-await builder.Build().RunAsync();
+using IHost host = builder.Build();
+// Fail before Discord connects or Quartz starts if the durable store cannot be migrated.
+await host.Services.InitializeDatabaseAsync();
+await host.RunAsync();

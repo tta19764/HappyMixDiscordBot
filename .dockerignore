@@ -11,3 +11,10 @@
 .env
 Dockerfile*
 README.md
+work
+docs
+data
+**/*.db
+**/*.db-wal
+**/*.db-shm
+**/*.db-journal

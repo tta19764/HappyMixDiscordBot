@@ -32,6 +32,7 @@ public sealed class SynchronizeMatchesCommandHandler(
     {
         DateTimeOffset now = clock.UtcNow;
         var matchDay = await pandaScore.GetMatchesForDayAsync(now, cancellationToken);
+        state.Initialize(matchDay.Matches);
 
         if (!state.WasSchedulePublished(matchDay.Date))
         {

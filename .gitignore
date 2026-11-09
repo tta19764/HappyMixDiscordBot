@@ -64,3 +64,10 @@ nunit-*.xml
 
 # Local validation scratch files
 work/
+
+# Local SQLite databases and transaction sidecars
+data/
+*.db
+*.db-wal
+*.db-shm
+*.db-journal

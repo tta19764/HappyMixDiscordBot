@@ -5,6 +5,9 @@ namespace HappyMix.Application.Abstractions.Notifications;
 /// <summary>Tracks published announcements; provider IDs are always qualified by discipline.</summary>
 public interface IMatchAnnouncementState
 {
+    /// <summary>Applies the configured first-run history policy once, after a successful provider fetch.</summary>
+    /// <param name="matches">Current snapshots used to seed existing results without replaying them.</param>
+    void Initialize(IReadOnlyCollection<EsportsMatch> matches);
     /// <summary>Checks whether the combined local-date schedule was published.</summary>
     bool WasSchedulePublished(DateOnly matchDate);
     /// <summary>Checks whether an upcoming series reminder was published.</summary>

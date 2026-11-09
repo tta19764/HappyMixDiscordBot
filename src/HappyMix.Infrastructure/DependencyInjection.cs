@@ -1,11 +1,14 @@
 using HappyMix.Application.Abstractions;
 using HappyMix.Application.Abstractions.Esports;
 using HappyMix.Application.Abstractions.Notifications;
-using HappyMix.Infrastructure.Notifications;
+using HappyMix.Infrastructure.Persistence;
 using HappyMix.Infrastructure.PandaScore;
 using HappyMix.Infrastructure.Time;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace HappyMix.Infrastructure;
 
@@ -26,7 +29,25 @@ public static class DependencyInjection
     {
         // A single stateless clock is sufficient for the lifetime of the process.
         services.AddSingleton<IClock, SystemClock>();
-        services.AddSingleton<IMatchAnnouncementState, InMemoryMatchAnnouncementState>();
+        services.AddOptions<StorageOptions>()
+            .Bind(configuration.GetSection(StorageOptions.SectionName));
+        services.AddDbContextFactory<HappyMixDbContext>((provider, options) =>
+        {
+            var storage = provider.GetRequiredService<IOptions<StorageOptions>>().Value;
+            string path = Path.GetFullPath(storage.DatabasePath);
+            var connection = new SqliteConnectionStringBuilder
+            {
+                DataSource = path,
+                Mode = SqliteOpenMode.ReadWriteCreate,
+                Pooling = false,
+                DefaultTimeout = 30
+            };
+            options.UseSqlite(connection.ToString());
+        });
+        services.AddSingleton<IMatchAnnouncementState>(provider => new SqliteMatchAnnouncementState(
+            provider.GetRequiredService<IDbContextFactory<HappyMixDbContext>>(),
+            provider.GetRequiredService<IOptions<StorageOptions>>(),
+            configuration.GetValue<string>("Discord:AnnouncementChannelId") ?? "default"));
 
         services
             .AddOptions<PandaScoreOptions>()
@@ -40,5 +61,20 @@ public static class DependencyInjection
         });
 
         return services;
+    }
+
+    /// <summary>Creates the data directory and applies versioned migrations before workers start.</summary>
+    /// <param name="services">The application's service provider.</param>
+    /// <param name="cancellationToken">Cancels migration work.</param>
+    /// <returns>A task completing when storage is ready; failures stop startup.</returns>
+    public static async Task InitializeDatabaseAsync(
+        this IServiceProvider services, CancellationToken cancellationToken = default)
+    {
+        var storage = services.GetRequiredService<IOptions<StorageOptions>>().Value;
+        ArgumentException.ThrowIfNullOrWhiteSpace(storage.DatabasePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(storage.DatabasePath))!);
+        var factory = services.GetRequiredService<IDbContextFactory<HappyMixDbContext>>();
+        await using var context = await factory.CreateDbContextAsync(cancellationToken);
+        await context.Database.MigrateAsync(cancellationToken);
     }
 }

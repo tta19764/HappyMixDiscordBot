@@ -19,6 +19,11 @@ RUN dotnet publish src/HappyMix.Bot/HappyMix.Bot.csproj \
 FROM mcr.microsoft.com/dotnet/runtime:10.0.2 AS final
 WORKDIR /app
 
+# Named volumes inherit this writable directory on first creation.
+USER root
+RUN mkdir -p /app/data && chown app:app /app/data
+ENV Storage__DatabasePath=/app/data/happymix.db
+
 # The official .NET runtime image provides the non-root "app" user.
 USER app
 COPY --from=build --chown=app:app /app/publish ./

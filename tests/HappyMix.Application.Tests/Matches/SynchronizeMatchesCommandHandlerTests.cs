@@ -3,8 +3,6 @@ using HappyMix.Application.Abstractions.Esports;
 using HappyMix.Application.Abstractions.Notifications;
 using HappyMix.Application.Matches.SynchronizeMatches;
 using HappyMix.Domain.Esports;
-using HappyMix.Infrastructure;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HappyMix.Application.Tests.Matches;
@@ -89,10 +87,8 @@ public sealed class SynchronizeMatchesCommandHandlerTests
     public async Task RealAnnouncementStateSeparatesDisciplines()
     {
         var now = new DateTimeOffset(2026, 9, 3, 12, 0, 0, TimeSpan.Zero);
-        var services = new ServiceCollection();
-        services.AddInfrastructure(new ConfigurationBuilder().Build());
-        using var provider = services.BuildServiceProvider();
-        var state = provider.GetRequiredService<IMatchAnnouncementState>();
+        using var database = await Persistence.SqliteTestDatabase.CreateAsync(replay: true);
+        var state = database.Services.GetRequiredService<IMatchAnnouncementState>();
         var cs = CreateMatch(1, "finished", now, [new EsportsGame(2, 1, "finished", true, 101)], 101);
         var publisher = new RecordingPublisher();
         var handler = new SynchronizeMatchesCommandHandler(new StubClock(now),
@@ -202,6 +198,7 @@ public sealed class SynchronizeMatchesCommandHandlerTests
 
     private sealed class FakeAnnouncementState : IMatchAnnouncementState
     {
+        public void Initialize(IReadOnlyCollection<EsportsMatch> matches) { }
         private readonly HashSet<DateOnly> _schedules = [];
         private readonly HashSet<(Esport Game, long Id)> _startingSoon = [];
         private readonly HashSet<(Esport Game, long Id)> _mapResults = [];

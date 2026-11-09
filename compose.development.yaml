@@ -5,10 +5,15 @@ services:
       dockerfile: Dockerfile
     environment:
       DOTNET_ENVIRONMENT: Development
+      Storage__DatabasePath: /app/data/happymix.db
     volumes:
+      - happymix-data:/app/data
       - type: bind
         source: ./src/HappyMix.Bot/appsettings.Development.json
         target: /app/appsettings.Development.json
         read_only: true
         bind:
           create_host_path: false
+
+volumes:
+  happymix-data:

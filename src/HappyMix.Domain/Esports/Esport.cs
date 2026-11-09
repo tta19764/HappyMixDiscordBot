@@ -4,9 +4,9 @@ namespace HappyMix.Domain.Esports;
 public enum Esport
 {
     /// <summary>Counter-Strike 2, exposed under PandaScore's csgo API.</summary>
-    CounterStrike2,
+    CounterStrike2 = 0,
     /// <summary>Dota 2.</summary>
-    Dota2
+    Dota2 = 1
 }
 
 /// <summary>Provides user-facing discipline labels.</summary>
