@@ -61,3 +61,6 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Local validation scratch files
+work/
