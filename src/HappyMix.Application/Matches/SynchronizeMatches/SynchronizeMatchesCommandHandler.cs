@@ -3,7 +3,7 @@ using HappyMix.Application.Abstractions.Esports;
 using HappyMix.Application.Abstractions.Messaging;
 using HappyMix.Application.Abstractions.Notifications;
 using HappyMix.Domain.Abstractions;
-using HappyMix.Domain.CounterStrike;
+using HappyMix.Domain.Esports;
 
 namespace HappyMix.Application.Matches.SynchronizeMatches;
 
@@ -11,7 +11,7 @@ namespace HappyMix.Application.Matches.SynchronizeMatches;
 /// Compares PandaScore's current match state with published announcements and emits new events.
 /// </summary>
 /// <param name="clock">Supplies a testable current time.</param>
-/// <param name="pandaScore">Provides Counter-Strike fixture and result data.</param>
+/// <param name="pandaScore">Provides followed main-team fixtures for CS2 and Dota 2.</param>
 /// <param name="publisher">Publishes provider-neutral match announcements.</param>
 /// <param name="state">Tracks which announcements have already been published.</param>
 public sealed class SynchronizeMatchesCommandHandler(
@@ -50,13 +50,13 @@ public sealed class SynchronizeMatchesCommandHandler(
     }
 
     private async Task PublishStartingSoonIfRequiredAsync(
-        CounterStrikeMatch match,
+        EsportsMatch match,
         DateTimeOffset now,
         CancellationToken cancellationToken)
     {
         if (match.BeginAt is not { } beginAt ||
-            match.IsFinished ||
-            state.WasStartingSoonPublished(match.Id))
+            !match.IsScheduled ||
+            state.WasStartingSoonPublished(match.Game, match.Id))
         {
             return;
         }
@@ -68,40 +68,40 @@ public sealed class SynchronizeMatchesCommandHandler(
         }
 
         await publisher.PublishStartingSoonAsync(match, cancellationToken);
-        state.MarkStartingSoonPublished(match.Id);
+        state.MarkStartingSoonPublished(match.Game, match.Id);
     }
 
     private async Task PublishMapResultsIfRequiredAsync(
-        CounterStrikeMatch match,
+        EsportsMatch match,
         CancellationToken cancellationToken)
     {
-        if (!match.IsRunning)
+        if (!match.IsRunning && !match.IsFinished)
         {
             return;
         }
 
         foreach (var game in match.Games.Where(game => game.Complete))
         {
-            if (state.WasMapResultPublished(game.Id))
+            if (state.WasMapResultPublished(match.Game, game.Id))
             {
                 continue;
             }
 
             await publisher.PublishMapResultAsync(match, game, cancellationToken);
-            state.MarkMapResultPublished(game.Id);
+            state.MarkMapResultPublished(match.Game, game.Id);
         }
     }
 
     private async Task PublishMatchResultIfRequiredAsync(
-        CounterStrikeMatch match,
+        EsportsMatch match,
         CancellationToken cancellationToken)
     {
-        if (!match.IsFinished || state.WasMatchResultPublished(match.Id))
+        if (!match.IsFinished || state.WasMatchResultPublished(match.Game, match.Id))
         {
             return;
         }
 
         await publisher.PublishMatchResultAsync(match, cancellationToken);
-        state.MarkMatchResultPublished(match.Id);
+        state.MarkMatchResultPublished(match.Game, match.Id);
     }
 }

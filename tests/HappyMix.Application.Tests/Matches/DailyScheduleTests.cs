@@ -1,5 +1,5 @@
 using HappyMix.Bot.Services;
-using HappyMix.Domain.CounterStrike;
+using HappyMix.Domain.Esports;
 
 namespace HappyMix.Application.Tests.Matches;
 
@@ -37,7 +37,7 @@ public sealed class DailyScheduleTests
     public void EmptyScheduleProducesOneMessage()
     {
         var embeds = DiscordMatchAnnouncementPublisher.BuildDailyScheduleEmbeds(new DateOnly(2026, 9, 5), []);
-        Assert.Equal("No tier 1 Counter-Strike 2 matches are scheduled today.", Assert.Single(embeds).Description);
+        Assert.Equal("No followed main-team CS2 or Dota 2 matches are scheduled today.", Assert.Single(embeds).Description);
     }
 
     [Fact]
@@ -54,9 +54,36 @@ public sealed class DailyScheduleTests
         Assert.Contains("Third", embeds[0].Description, StringComparison.Ordinal);
         Assert.DoesNotContain("Second", embeds[0].Description, StringComparison.Ordinal);
         Assert.Contains("Second", embeds[1].Description, StringComparison.Ordinal);
-        Assert.All(embeds, embed => Assert.Equal("League • Tournament", embed.Title));
+        Assert.All(embeds, embed => Assert.Equal("Counter-Strike 2 • League • Tournament", embed.Title));
     }
 
-    private static CounterStrikeMatch CreateMatch(string name) =>
+    [Fact]
+    public void SameTournamentIdInDifferentDisciplinesHasSeparateLabelledPages()
+    {
+        var cs = CreateMatch("CS main team") with { TournamentId = 7 };
+        var dota = CreateMatch("Dota main team") with { TournamentId = 7, Game = Esport.Dota2 };
+        var embeds = DiscordMatchAnnouncementPublisher.BuildDailyScheduleEmbeds(new DateOnly(2026, 9, 5), [cs, dota]);
+        Assert.Equal(2, embeds.Count);
+        Assert.StartsWith("Counter-Strike 2", embeds[0].Title, StringComparison.Ordinal);
+        Assert.StartsWith("Dota 2", embeds[1].Title, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(Esport.CounterStrike2, "Counter-Strike 2", "Map", "map")]
+    [InlineData(Esport.Dota2, "Dota 2", "Game", "game")]
+    public void IndividualResultUsesDisciplineSpecificTerminology(Esport discipline, string label, string title, string noun)
+    {
+        var match = CreateMatch("Main team") with
+        {
+            Game = discipline, Opponents = [new EsportsOpponent(3216, "NAVI")],
+            Results = [new EsportsTeamResult(3216, 1)]
+        };
+        var embed = DiscordMatchAnnouncementPublisher.BuildGameResultEmbed(match,
+            new EsportsGame(10, 1, "finished", true, 3216));
+        Assert.Equal($"{label} • {title} 1 finished", embed.Title);
+        Assert.Contains($"**NAVI** won the {noun}.", embed.Description, StringComparison.Ordinal);
+    }
+
+    private static EsportsMatch CreateMatch(string name) =>
         new(1, name, null, "not_started", "League", "Tournament", [], [], [], null);
 }

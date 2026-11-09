@@ -66,12 +66,12 @@ public static class DependencyInjection
         {
             // A stable identity prevents accidental duplicate registrations when
             // persistent Quartz storage is introduced in the future.
-            JobKey jobKey = new("synchronize-cs-matches");
+            JobKey jobKey = new("synchronize-esports-matches");
 
             scheduler.AddJob<SynchronizeMatchesJob>(job => job.WithIdentity(jobKey));
             scheduler.AddTrigger(trigger => trigger
                 .ForJob(jobKey)
-                .WithIdentity("synchronize-cs-matches-trigger")
+                .WithIdentity("synchronize-esports-matches-trigger")
                 .StartNow()
                 .WithSimpleSchedule(schedule => schedule
                     .WithInterval(TimeSpan.FromMinutes(1))

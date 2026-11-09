@@ -2,7 +2,10 @@ using HappyMix.Application.Abstractions;
 using HappyMix.Application.Abstractions.Esports;
 using HappyMix.Application.Abstractions.Notifications;
 using HappyMix.Application.Matches.SynchronizeMatches;
-using HappyMix.Domain.CounterStrike;
+using HappyMix.Domain.Esports;
+using HappyMix.Infrastructure;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HappyMix.Application.Tests.Matches;
 
@@ -16,7 +19,7 @@ public sealed class SynchronizeMatchesCommandHandlerTests
             id: 1,
             status: "running",
             beginAt: now.AddMinutes(20),
-            games: [new CounterStrikeGame(11, 1, "finished", true, 101)]);
+            games: [new EsportsGame(11, 1, "finished", true, 101)]);
         var finishedMatch = CreateMatch(
             id: 2,
             status: "finished",
@@ -27,9 +30,9 @@ public sealed class SynchronizeMatchesCommandHandlerTests
         var state = new FakeAnnouncementState();
         var handler = new SynchronizeMatchesCommandHandler(
             new StubClock(now),
-            new StubPandaScoreClient(new CounterStrikeMatchDay(
+            new StubPandaScoreClient(new EsportsMatchDay(
                 new DateOnly(2026, 9, 3),
-                [runningMatch, finishedMatch])),
+                [runningMatch, finishedMatch, CreateMatch(3, "not_started", now.AddMinutes(30), [])])),
             publisher,
             state);
 
@@ -42,11 +45,86 @@ public sealed class SynchronizeMatchesCommandHandlerTests
         Assert.Equal(1, publisher.MatchResultCount);
     }
 
-    private static CounterStrikeMatch CreateMatch(
+    [Fact]
+    public async Task IdenticalProviderIdsInDifferentGamesDoNotSuppressNotifications()
+    {
+        var now = new DateTimeOffset(2026, 9, 3, 12, 0, 0, TimeSpan.Zero);
+        var cs = CreateMatch(1, "finished", now.AddHours(-2),
+            [new EsportsGame(11, 1, "finished", true, 101)], 101);
+        var dota = cs with { Game = Esport.Dota2 };
+        var publisher = new RecordingPublisher();
+        var handler = new SynchronizeMatchesCommandHandler(new StubClock(now),
+            new StubPandaScoreClient(new EsportsMatchDay(new DateOnly(2026, 9, 3), [cs, dota])),
+            publisher, new FakeAnnouncementState());
+        await handler.Handle(new SynchronizeMatchesCommand(), CancellationToken.None);
+        await handler.Handle(new SynchronizeMatchesCommand(), CancellationToken.None);
+        Assert.Equal(1, publisher.ScheduleCount);
+        Assert.Equal(2, publisher.MapResultCount);
+        Assert.Equal(2, publisher.MatchResultCount);
+    }
+
+    [Theory]
+    [InlineData("not_started", 30, 1)]
+    [InlineData("not_started", 31, 0)]
+    [InlineData("not_started", 0, 0)]
+    [InlineData("not_started", -1, 0)]
+    [InlineData("running", 20, 0)]
+    [InlineData("canceled", 20, 0)]
+    [InlineData("postponed", 20, 0)]
+    [InlineData("finished", 20, 0)]
+    public async Task OnlyUpcomingMatchesWithinReminderWindowAreAnnounced(string status, int minutes, int expected)
+    {
+        var now = new DateTimeOffset(2026, 9, 3, 12, 0, 0, TimeSpan.Zero);
+        var cs = CreateMatch(1, status, now.AddMinutes(minutes), []);
+        var publisher = new RecordingPublisher();
+        var handler = new SynchronizeMatchesCommandHandler(new StubClock(now),
+            new StubPandaScoreClient(new EsportsMatchDay(new DateOnly(2026, 9, 3), [cs, cs with { Game = Esport.Dota2 }])),
+            publisher, new FakeAnnouncementState());
+        await handler.Handle(new SynchronizeMatchesCommand(), CancellationToken.None);
+        await handler.Handle(new SynchronizeMatchesCommand(), CancellationToken.None);
+        Assert.Equal(expected * 2, publisher.StartingSoonCount);
+    }
+
+    [Fact]
+    public async Task RealAnnouncementStateSeparatesDisciplines()
+    {
+        var now = new DateTimeOffset(2026, 9, 3, 12, 0, 0, TimeSpan.Zero);
+        var services = new ServiceCollection();
+        services.AddInfrastructure(new ConfigurationBuilder().Build());
+        using var provider = services.BuildServiceProvider();
+        var state = provider.GetRequiredService<IMatchAnnouncementState>();
+        var cs = CreateMatch(1, "finished", now, [new EsportsGame(2, 1, "finished", true, 101)], 101);
+        var publisher = new RecordingPublisher();
+        var handler = new SynchronizeMatchesCommandHandler(new StubClock(now),
+            new StubPandaScoreClient(new EsportsMatchDay(new DateOnly(2026, 9, 3), [cs, cs with { Game = Esport.Dota2 }])),
+            publisher, state);
+        await handler.Handle(new SynchronizeMatchesCommand(), CancellationToken.None);
+        await handler.Handle(new SynchronizeMatchesCommand(), CancellationToken.None);
+        Assert.Equal(2, publisher.MatchResultCount);
+        Assert.Equal(2, publisher.MapResultCount);
+    }
+
+    [Fact]
+    public async Task FailedPublicationCanBeRetriedWithoutRepeatingSuccessfulMapResults()
+    {
+        var now = new DateTimeOffset(2026, 9, 3, 12, 0, 0, TimeSpan.Zero);
+        var match = CreateMatch(1, "finished", now, [new EsportsGame(2, 1, "finished", true, 101)], 101);
+        var publisher = new RecordingPublisher { FailNextMatchResult = true };
+        var handler = new SynchronizeMatchesCommandHandler(new StubClock(now),
+            new StubPandaScoreClient(new EsportsMatchDay(new DateOnly(2026, 9, 3), [match])),
+            publisher, new FakeAnnouncementState());
+        await Assert.ThrowsAsync<HttpRequestException>(() => handler.Handle(new SynchronizeMatchesCommand(), CancellationToken.None));
+        await handler.Handle(new SynchronizeMatchesCommand(), CancellationToken.None);
+        Assert.Equal(1, publisher.ScheduleCount);
+        Assert.Equal(1, publisher.MapResultCount);
+        Assert.Equal(1, publisher.MatchResultCount);
+    }
+
+    private static EsportsMatch CreateMatch(
         long id,
         string status,
         DateTimeOffset beginAt,
-        IReadOnlyCollection<CounterStrikeGame> games,
+        IReadOnlyCollection<EsportsGame> games,
         long? winnerId = null) => new(
             id,
             $"Team One vs Team Two ({id})",
@@ -54,8 +132,8 @@ public sealed class SynchronizeMatchesCommandHandlerTests
             status,
             "Test League",
             "Test Tournament",
-            [new CounterStrikeOpponent(101, "Team One"), new CounterStrikeOpponent(102, "Team Two")],
-            [new CounterStrikeTeamResult(101, 1), new CounterStrikeTeamResult(102, 0)],
+            [new EsportsOpponent(101, "Team One"), new EsportsOpponent(102, "Team Two")],
+            [new EsportsTeamResult(101, 1), new EsportsTeamResult(102, 0)],
             games,
             winnerId);
 
@@ -64,15 +142,16 @@ public sealed class SynchronizeMatchesCommandHandlerTests
         public DateTimeOffset UtcNow { get; } = utcNow;
     }
 
-    private sealed class StubPandaScoreClient(CounterStrikeMatchDay matchDay) : IPandaScoreClient
+    private sealed class StubPandaScoreClient(EsportsMatchDay matchDay) : IPandaScoreClient
     {
-        public Task<CounterStrikeMatchDay> GetMatchesForDayAsync(
+        public Task<EsportsMatchDay> GetMatchesForDayAsync(
             DateTimeOffset referenceTime,
             CancellationToken cancellationToken) => Task.FromResult(matchDay);
     }
 
     private sealed class RecordingPublisher : IMatchAnnouncementPublisher
     {
+        public bool FailNextMatchResult { get; set; }
         public int ScheduleCount { get; private set; }
 
         public int StartingSoonCount { get; private set; }
@@ -83,7 +162,7 @@ public sealed class SynchronizeMatchesCommandHandlerTests
 
         public Task PublishDailyScheduleAsync(
             DateOnly matchDate,
-            IReadOnlyCollection<CounterStrikeMatch> matches,
+            IReadOnlyCollection<EsportsMatch> matches,
             CancellationToken cancellationToken)
         {
             ScheduleCount++;
@@ -91,7 +170,7 @@ public sealed class SynchronizeMatchesCommandHandlerTests
         }
 
         public Task PublishStartingSoonAsync(
-            CounterStrikeMatch match,
+            EsportsMatch match,
             CancellationToken cancellationToken)
         {
             StartingSoonCount++;
@@ -99,8 +178,8 @@ public sealed class SynchronizeMatchesCommandHandlerTests
         }
 
         public Task PublishMapResultAsync(
-            CounterStrikeMatch match,
-            CounterStrikeGame game,
+            EsportsMatch match,
+            EsportsGame game,
             CancellationToken cancellationToken)
         {
             MapResultCount++;
@@ -108,9 +187,14 @@ public sealed class SynchronizeMatchesCommandHandlerTests
         }
 
         public Task PublishMatchResultAsync(
-            CounterStrikeMatch match,
+            EsportsMatch match,
             CancellationToken cancellationToken)
         {
+            if (FailNextMatchResult)
+            {
+                FailNextMatchResult = false;
+                throw new HttpRequestException("Simulated Discord delivery failure");
+            }
             MatchResultCount++;
             return Task.CompletedTask;
         }
@@ -119,24 +203,24 @@ public sealed class SynchronizeMatchesCommandHandlerTests
     private sealed class FakeAnnouncementState : IMatchAnnouncementState
     {
         private readonly HashSet<DateOnly> _schedules = [];
-        private readonly HashSet<long> _startingSoon = [];
-        private readonly HashSet<long> _mapResults = [];
-        private readonly HashSet<long> _matchResults = [];
+        private readonly HashSet<(Esport Game, long Id)> _startingSoon = [];
+        private readonly HashSet<(Esport Game, long Id)> _mapResults = [];
+        private readonly HashSet<(Esport Game, long Id)> _matchResults = [];
 
         public bool WasSchedulePublished(DateOnly matchDate) => _schedules.Contains(matchDate);
 
-        public bool WasStartingSoonPublished(long matchId) => _startingSoon.Contains(matchId);
+        public bool WasStartingSoonPublished(Esport game, long matchId) => _startingSoon.Contains((game, matchId));
 
-        public bool WasMapResultPublished(long gameId) => _mapResults.Contains(gameId);
+        public bool WasMapResultPublished(Esport game, long gameId) => _mapResults.Contains((game, gameId));
 
-        public bool WasMatchResultPublished(long matchId) => _matchResults.Contains(matchId);
+        public bool WasMatchResultPublished(Esport game, long matchId) => _matchResults.Contains((game, matchId));
 
         public void MarkSchedulePublished(DateOnly matchDate) => _schedules.Add(matchDate);
 
-        public void MarkStartingSoonPublished(long matchId) => _startingSoon.Add(matchId);
+        public void MarkStartingSoonPublished(Esport game, long matchId) => _startingSoon.Add((game, matchId));
 
-        public void MarkMapResultPublished(long gameId) => _mapResults.Add(gameId);
+        public void MarkMapResultPublished(Esport game, long gameId) => _mapResults.Add((game, gameId));
 
-        public void MarkMatchResultPublished(long matchId) => _matchResults.Add(matchId);
+        public void MarkMatchResultPublished(Esport game, long matchId) => _matchResults.Add((game, matchId));
     }
 }

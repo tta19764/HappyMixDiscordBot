@@ -2,20 +2,24 @@ using Discord;
 using Discord.WebSocket;
 using HappyMix.Application.Abstractions.Notifications;
 using HappyMix.Bot.Configuration;
-using HappyMix.Domain.CounterStrike;
+using HappyMix.Domain.Esports;
 using Microsoft.Extensions.Options;
 
 namespace HappyMix.Bot.Services;
 
+/// <summary>Formats CS2 and Dota 2 announcements for the configured Discord channel.</summary>
+/// <param name="client">Connected Discord client.</param>
+/// <param name="options">Announcement destination settings.</param>
 internal sealed class DiscordMatchAnnouncementPublisher(
     DiscordSocketClient client,
     IOptions<DiscordOptions> options) : IMatchAnnouncementPublisher
 {
     private readonly DiscordOptions _options = options.Value;
 
+    /// <inheritdoc />
     public async Task PublishDailyScheduleAsync(
         DateOnly matchDate,
-        IReadOnlyCollection<CounterStrikeMatch> matches,
+        IReadOnlyCollection<EsportsMatch> matches,
         CancellationToken cancellationToken)
     {
         foreach (Embed embed in BuildDailyScheduleEmbeds(matchDate, matches))
@@ -24,31 +28,32 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         }
     }
 
+    /// <summary>Builds bounded pages without merging tournaments across disciplines.</summary>
     internal static IReadOnlyList<Embed> BuildDailyScheduleEmbeds(
         DateOnly matchDate,
-        IReadOnlyCollection<CounterStrikeMatch> matches)
+        IReadOnlyCollection<EsportsMatch> matches)
     {
         if (matches.Count == 0)
         {
-            return BuildTournamentScheduleEmbeds(matchDate, [], "Tier 1 Counter-Strike 2 matches");
+            return BuildTournamentScheduleEmbeds(matchDate, [], "Followed main teams - CS2 / Dota 2");
         }
 
         return matches.OrderBy(match => match.BeginAt)
-            .GroupBy(match => (match.TournamentId,
+            .GroupBy(match => (match.Game, match.TournamentId,
                 Fallback: match.TournamentId is null ? $"{match.LeagueName} • {match.TournamentName}" : string.Empty))
             .SelectMany(group => BuildTournamentScheduleEmbeds(matchDate, group.ToArray(),
-                $"{group.First().LeagueName} • {group.First().TournamentName}"))
+                $"{group.First().Game.DisplayName()} • {group.First().LeagueName} • {group.First().TournamentName}"))
             .ToArray();
     }
 
     private static Embed[] BuildTournamentScheduleEmbeds(
         DateOnly matchDate,
-        CounterStrikeMatch[] matches,
+        EsportsMatch[] matches,
         string tournamentTitle)
     {
         const int descriptionLimit = 4096;
         IEnumerable<string> lines = matches.Length == 0
-            ? ["No tier 1 Counter-Strike 2 matches are scheduled today."]
+            ? ["No followed main-team CS2 or Dota 2 matches are scheduled today."]
             : matches.Select(FormatScheduledMatch);
         var descriptions = new List<string>();
         string current = string.Empty;
@@ -82,18 +87,19 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         return descriptions.Select((description, index) => new EmbedBuilder()
             .WithTitle(tournamentTitle.Length <= 256 ? tournamentTitle : tournamentTitle[..253] + "...")
             .WithDescription(description)
-            .WithFooter($"{matchDate:yyyy-MM-dd} • Tier 1 • Page {index + 1}/{descriptions.Count}")
+            .WithFooter($"{matchDate:yyyy-MM-dd} • Main teams • Page {index + 1}/{descriptions.Count}")
             .WithColor(Color.Blue)
             .WithCurrentTimestamp()
             .Build()).ToArray();
     }
 
+    /// <inheritdoc />
     public Task PublishStartingSoonAsync(
-        CounterStrikeMatch match,
+        EsportsMatch match,
         CancellationToken cancellationToken)
     {
         var embed = new EmbedBuilder()
-            .WithTitle("Match starts in 30 minutes")
+            .WithTitle($"{match.Game.DisplayName()} • Match starts within 30 minutes")
             .WithDescription(FormatMatchDetails(match))
             .WithColor(Color.Orange)
             .WithCurrentTimestamp()
@@ -102,30 +108,39 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         return SendAsync(embed, cancellationToken);
     }
 
+    /// <inheritdoc />
     public Task PublishMapResultAsync(
-        CounterStrikeMatch match,
-        CounterStrikeGame game,
+        EsportsMatch match,
+        EsportsGame game,
         CancellationToken cancellationToken)
+        => SendAsync(BuildGameResultEmbed(match, game), cancellationToken);
+
+    /// <summary>Formats an individual result using map terminology for CS2 and game terminology for Dota 2.</summary>
+    /// <param name="match">The parent series and discipline.</param>
+    /// <param name="game">The completed map/game.</param>
+    /// <returns>The result embed without sending it to Discord.</returns>
+    internal static Embed BuildGameResultEmbed(EsportsMatch match, EsportsGame game)
     {
         string winner = GetTeamName(match, game.WinnerId) ?? "Unknown winner";
         var embed = new EmbedBuilder()
-            .WithTitle($"Map {game.Position} finished")
-            .WithDescription($"**{winner}** won the map.\n{FormatScore(match)}")
+            .WithTitle($"{match.Game.DisplayName()} • {(match.Game == Esport.CounterStrike2 ? "Map" : "Game")} {game.Position} finished")
+            .WithDescription($"**{winner}** won the {(match.Game == Esport.CounterStrike2 ? "map" : "game")}.\n{FormatScore(match)}")
             .WithFooter($"{match.LeagueName} • {match.TournamentName}")
             .WithColor(Color.Gold)
             .WithCurrentTimestamp()
             .Build();
 
-        return SendAsync(embed, cancellationToken);
+        return embed;
     }
 
+    /// <inheritdoc />
     public Task PublishMatchResultAsync(
-        CounterStrikeMatch match,
+        EsportsMatch match,
         CancellationToken cancellationToken)
     {
         string winner = GetTeamName(match, match.WinnerId) ?? "Winner unavailable";
         var embed = new EmbedBuilder()
-            .WithTitle("Match finished")
+            .WithTitle($"{match.Game.DisplayName()} • Match finished")
             .WithDescription($"**{winner}** won the match.\n{FormatScore(match)}")
             .WithFooter($"{match.LeagueName} • {match.TournamentName}")
             .WithColor(Color.Green)
@@ -175,7 +190,7 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         await channel.SendMessageAsync(embed: embed, options: requestOptions);
     }
 
-    private static string FormatScheduledMatch(CounterStrikeMatch match)
+    private static string FormatScheduledMatch(EsportsMatch match)
     {
         string start = match.BeginAt is { } beginAt
             ? $"<t:{beginAt.ToUnixTimeSeconds()}:t>"
@@ -183,7 +198,7 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         return $"{start} — **{GetMatchup(match)}** · {match.LeagueName}";
     }
 
-    private static string FormatMatchDetails(CounterStrikeMatch match)
+    private static string FormatMatchDetails(EsportsMatch match)
     {
         string start = match.BeginAt is { } beginAt
             ? $"<t:{beginAt.ToUnixTimeSeconds()}:F>"
@@ -191,11 +206,11 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         return $"**{GetMatchup(match)}**\n{match.LeagueName} · {match.TournamentName}\n{start}";
     }
 
-    private static string GetMatchup(CounterStrikeMatch match) => match.Opponents.Count >= 2
+    private static string GetMatchup(EsportsMatch match) => match.Opponents.Count >= 2
         ? $"{match.Opponents.ElementAt(0).Name} vs {match.Opponents.ElementAt(1).Name}"
         : match.Name;
 
-    private static string FormatScore(CounterStrikeMatch match)
+    private static string FormatScore(EsportsMatch match)
     {
         if (match.Opponents.Count < 2)
         {
@@ -208,6 +223,6 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         return $"**{teams[0].Name}** {firstScore}–{secondScore} **{teams[1].Name}**";
     }
 
-    private static string? GetTeamName(CounterStrikeMatch match, long? teamId) =>
+    private static string? GetTeamName(EsportsMatch match, long? teamId) =>
         match.Opponents.FirstOrDefault(opponent => opponent.Id == teamId)?.Name;
 }

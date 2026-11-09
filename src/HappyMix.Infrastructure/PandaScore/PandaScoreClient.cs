@@ -3,17 +3,23 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using HappyMix.Application.Abstractions.Esports;
-using HappyMix.Domain.CounterStrike;
+using HappyMix.Domain.Esports;
 using Microsoft.Extensions.Options;
 
 namespace HappyMix.Infrastructure.PandaScore;
 
+/// <summary>Loads both disciplines and follows exact game-specific main-team IDs.</summary>
 internal sealed class PandaScoreClient : IPandaScoreClient
 {
+    private const int PageSize = 100;
+    private const int MaxPages = 100;
     private readonly HttpClient _httpClient;
     private readonly PandaScoreOptions _options;
     private readonly TimeZoneInfo _timeZone;
 
+    /// <summary>Creates a client using the configured timezone and roster allowlists.</summary>
+    /// <param name="httpClient">HTTP transport with the provider base address.</param>
+    /// <param name="options">Provider token, local timezone and exact team allowlists.</param>
     public PandaScoreClient(HttpClient httpClient, IOptions<PandaScoreOptions> options)
     {
         _httpClient = httpClient;
@@ -21,60 +27,89 @@ internal sealed class PandaScoreClient : IPandaScoreClient
         _timeZone = TimeZoneInfo.FindSystemTimeZoneById(_options.TimeZoneId);
     }
 
-    public async Task<CounterStrikeMatchDay> GetMatchesForDayAsync(
-        DateTimeOffset referenceTime,
-        CancellationToken cancellationToken)
+    /// <inheritdoc />
+    public async Task<EsportsMatchDay> GetMatchesForDayAsync(
+        DateTimeOffset referenceTime, CancellationToken cancellationToken)
     {
-        EnsureConfigured();
+        if (string.IsNullOrWhiteSpace(_options.Token))
+        {
+            throw new InvalidOperationException(
+                "A PandaScore API token is required. Set PandaScore__Token.");
+        }
 
         DateOnly date = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(referenceTime, _timeZone).DateTime);
         DateTimeOffset start = GetUtcBoundary(date);
         DateTimeOffset end = GetUtcBoundary(date.AddDays(1));
+        var disciplines = new[]
+        {
+            (Game: Esport.CounterStrike2, Path: "csgo", Teams: _options.CounterStrikeTeamIds ?? [3216, 136955, 131441]),
+            (Game: Esport.Dota2, Path: "dota2", Teams: _options.Dota2TeamIds ?? [1699, 132557])
+        };
+        var matches = new List<EsportsMatch>();
+        // Keep requests sequential to avoid bursts against the provider's minute limit.
+        foreach (var discipline in disciplines)
+        {
+            if (discipline.Teams.Length == 0)
+            {
+                continue;
+            }
 
-        Task<IReadOnlyCollection<PandaScoreMatch>> upcoming = GetMatchesAsync(
-            "upcoming", start, end, cancellationToken);
-        Task<IReadOnlyCollection<PandaScoreMatch>> running = GetMatchesAsync(
-            "running", start, end, cancellationToken);
-        Task<IReadOnlyCollection<PandaScoreMatch>> past = GetMatchesAsync(
-            "past", start, end, cancellationToken);
+            var teamIds = discipline.Teams.ToHashSet();
+            var snapshots = new List<PandaScoreMatch>();
+            foreach (string status in new[] { "upcoming", "running", "past" })
+            {
+                snapshots.AddRange(await GetMatchesAsync(
+                    discipline.Path, status, start, end, cancellationToken));
+            }
 
-        await Task.WhenAll(upcoming, running, past);
+            matches.AddRange(snapshots.GroupBy(match => match.Id)
+                .Select(group => group.Last())
+                .Where(match => match.Opponents?.Any(slot =>
+                    slot.Opponent is { } opponent && teamIds.Contains(opponent.Id)) == true)
+                .Where(match => _options.IncludedTournamentTiers.Length == 0 ||
+                    match.Tournament?.Tier is { } tier &&
+                    _options.IncludedTournamentTiers.Contains(tier, StringComparer.OrdinalIgnoreCase))
+                .Select(match => match.ToDomain(discipline.Game)));
+        }
 
-        var matches = upcoming.Result
-            .Concat(running.Result)
-            .Concat(past.Result)
-            .GroupBy(match => match.Id)
-            .Select(group => group.Last())
-            .Where(match => match.Tournament?.Tier is { } tier &&
-                _options.IncludedTournamentTiers.Contains(tier, StringComparer.OrdinalIgnoreCase))
-            .Select(match => match.ToDomain())
-            .OrderBy(match => match.BeginAt)
-            .ToArray();
-
-        return new CounterStrikeMatchDay(date, matches);
+        return new EsportsMatchDay(date, matches.OrderBy(match => match.BeginAt)
+            .ThenBy(match => match.Game).ThenBy(match => match.Id).ToArray());
     }
 
+    /// <summary>
+    /// Paginates upcoming starts and completed series by local date. Running series
+    /// have no date restriction so matches that cross midnight are not lost.
+    /// </summary>
     private async Task<IReadOnlyCollection<PandaScoreMatch>> GetMatchesAsync(
-        string status,
-        DateTimeOffset start,
-        DateTimeOffset end,
+        string game, string status, DateTimeOffset start, DateTimeOffset end,
         CancellationToken cancellationToken)
     {
-        string range = string.Create(
-            CultureInfo.InvariantCulture,
-            $"{start:O},{end:O}");
-        string path = string.Create(
-            CultureInfo.InvariantCulture,
-            $"csgo/matches/{status}?filter[videogame_title]=cs-2&range[begin_at]={Uri.EscapeDataString(range)}&sort=begin_at&per_page=100");
+        string titleFilter = game == "csgo" ? "&filter[videogame_title]=cs-2" : string.Empty;
+        string dateFilter = status == "running" ? string.Empty :
+            string.Create(CultureInfo.InvariantCulture,
+                $"&range[{(status == "past" ? "end_at" : "begin_at")}]={Uri.EscapeDataString($"{start:O},{end:O}")}");
+        var matches = new List<PandaScoreMatch>();
+        for (int page = 1; page <= MaxPages; page++)
+        {
+            string path = string.Create(CultureInfo.InvariantCulture,
+                $"{game}/matches/{status}?sort=id&per_page={PageSize}&page={page}{titleFilter}{dateFilter}");
+            using var request = new HttpRequestMessage(HttpMethod.Get, path);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _options.Token);
+            using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            var batch = await response.Content.ReadFromJsonAsync<PandaScoreMatch[]>(cancellationToken)
+                ?? throw new InvalidOperationException("PandaScore returned null instead of a match list.");
+            // The API range can include its upper boundary; enforce half-open local days.
+            matches.AddRange(batch.Where(match => status == "running" ||
+                (status == "past" ? match.EndAt : match.BeginAt) is { } time &&
+                time >= start && time < end));
+            if (batch.Length < PageSize)
+            {
+                return matches;
+            }
+        }
 
-        using var request = new HttpRequestMessage(HttpMethod.Get, path);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _options.Token);
-
-        using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-        response.EnsureSuccessStatusCode();
-
-        return await response.Content.ReadFromJsonAsync<PandaScoreMatch[]>(cancellationToken)
-            ?? [];
+        throw new InvalidOperationException("PandaScore pagination exceeded its safety limit; refusing a truncated schedule.");
     }
 
     private DateTimeOffset GetUtcBoundary(DateOnly date)
@@ -82,21 +117,13 @@ internal sealed class PandaScoreClient : IPandaScoreClient
         DateTime local = date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified);
         return new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(local, _timeZone));
     }
-
-    private void EnsureConfigured()
-    {
-        if (string.IsNullOrWhiteSpace(_options.Token))
-        {
-            throw new InvalidOperationException(
-                "A PandaScore API token is required. Set the PandaScore__Token environment variable.");
-        }
-    }
 }
 
 internal sealed record PandaScoreMatch(
     [property: JsonPropertyName("id")] long Id,
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("begin_at")] DateTimeOffset? BeginAt,
+    [property: JsonPropertyName("end_at")] DateTimeOffset? EndAt,
     [property: JsonPropertyName("status")] string Status,
     [property: JsonPropertyName("league")] PandaScoreNamedResource? League,
     [property: JsonPropertyName("tournament")] PandaScoreTournament? Tournament,
@@ -105,27 +132,15 @@ internal sealed record PandaScoreMatch(
     [property: JsonPropertyName("games")] IReadOnlyCollection<PandaScoreGame>? Games,
     [property: JsonPropertyName("winner_id")] long? WinnerId)
 {
-    public CounterStrikeMatch ToDomain() => new(
-        Id,
-        Name,
-        BeginAt,
-        Status,
-        League?.Name ?? "Unknown league",
-        Tournament?.Name ?? "Unknown tournament",
-        Opponents?.Select(slot => new CounterStrikeOpponent(
-            slot.Opponent.Id,
-            slot.Opponent.Name)).ToArray() ?? [],
-        Results?.Select(result => new CounterStrikeTeamResult(
-            result.TeamId,
-            result.Score)).ToArray() ?? [],
-        Games?.Select(game => new CounterStrikeGame(
-            game.Id,
-            game.Position,
-            game.Status,
-            game.Complete,
-            game.Winner?.Id)).ToArray() ?? [],
-        WinnerId,
-        Tournament?.Id);
+    public EsportsMatch ToDomain(Esport game) => new(
+        Id, Name, BeginAt, Status,
+        League?.Name ?? "Unknown league", Tournament?.Name ?? "Unknown tournament",
+        Opponents?.Where(slot => slot.Opponent is not null)
+            .Select(slot => new EsportsOpponent(slot.Opponent!.Id, slot.Opponent.Name)).ToArray() ?? [],
+        Results?.Select(result => new EsportsTeamResult(result.TeamId, result.Score)).ToArray() ?? [],
+        Games?.Select(item => new EsportsGame(
+            item.Id, item.Position, item.Status, item.Complete, item.Winner?.Id)).ToArray() ?? [],
+        WinnerId, Tournament?.Id, game);
 }
 
 internal sealed record PandaScoreTournament(
@@ -138,7 +153,7 @@ internal sealed record PandaScoreNamedResource(
     [property: JsonPropertyName("name")] string Name);
 
 internal sealed record PandaScoreOpponentSlot(
-    [property: JsonPropertyName("opponent")] PandaScoreNamedResource Opponent);
+    [property: JsonPropertyName("opponent")] PandaScoreNamedResource? Opponent);
 
 internal sealed record PandaScoreResult(
     [property: JsonPropertyName("team_id")] long TeamId,

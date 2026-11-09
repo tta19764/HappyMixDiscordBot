@@ -67,7 +67,7 @@ public sealed partial class DiscordBotWorker(
         // Global registration is appropriate for production. Discord can take time
         // to propagate global command changes to every guild.
         await interactions.RegisterCommandsGloballyAsync();
-        LogConnected(logger, client.CurrentUser.ToString());
+        LogConnected(logger, client.CurrentUser);
     }
 
     private async Task OnInteractionCreatedAsync(SocketInteraction interaction)
@@ -103,7 +103,7 @@ public sealed partial class DiscordBotWorker(
     }
 
     [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Connected to Discord as {CurrentUser}")]
-    private static partial void LogConnected(ILogger logger, string currentUser);
+    private static partial void LogConnected(ILogger logger, SocketSelfUser currentUser);
 
     [LoggerMessage(EventId = 2, Level = LogLevel.Warning, Message = "Interaction {InteractionId} failed: {ErrorReason}")]
     private static partial void LogInteractionFailed(ILogger logger, ulong interactionId, string? errorReason);
