@@ -43,4 +43,4 @@ Excluded examples: FUT Academy (137462), ex-FUT Academy (138023), FUT Turkuaz (1
 - Read-only live checks of upcoming/running/past for both disciplines succeeded, including CS2 title filtering and past end_at ranges. These checks used the configured token without logging it.
 - No Discord messages were sent during validation and no production deployment is claimed.
 - Regression coverage includes exact-ID exclusion of academies and lookalikes, optional tier filtering, JSON configuration replacement/disable semantics, pagination and its safety limit, malformed/null responses, cancellation, Kyiv DST days and exclusive boundaries, cross-midnight matches, duplicate events across disciplines, reminder lifecycle/window checks, delivery retries and discipline-specific message formatting.
-- SQLite remains unimplemented and is still the next reliability task. Per-guild subscriptions remain partial in the broader roadmap.
+- Follow-up: Day 1 SQLite persistence is now implemented; see SQLITE_DAY1.md. The earlier esports-only increment used process-local history. Per-guild subscriptions remain partial in the broader roadmap.

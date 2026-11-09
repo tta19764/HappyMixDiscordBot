@@ -2,7 +2,7 @@
 
 Reviewed: 2026-11-09. This is a source-code audit, not confirmation of a live deployment.
 
-Rechecked against the working tree: the current implementation now supports exact main-team CS2 and Dota 2 filtering, but still uses in-memory announcement state. SQLite remains the selected next persistence task. Day 24 is implemented early; Day 23 is partial because per-guild subscription controls are not yet implemented. See ESPORTS_IMPLEMENTATION.md for this increment's plan and verification.
+Rechecked against the working tree: Day 1 SQLite persistence and Day 24 shared CS2/Dota 2 support are implemented. Day 23 is partial because per-guild subscription controls are not yet implemented. The next ready slot is Day 2 hosting. See SQLITE_DAY1.md and ESPORTS_IMPLEMENTATION.md for evidence. The running bot has not been restarted/deployed with these source changes.
 
 ## How to maintain this plan
 
@@ -22,17 +22,17 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 | B02 | Foundation | done | Discord connection and /ping command | src/HappyMix.Bot/Services/DiscordBotWorker.cs; src/HappyMix.Bot/Interactions/GeneralModule.cs |
 | B03 | Esports | done | Paginated CS2 and Dota 2 fixtures for exact main-team IDs | PandaScoreClient.cs; NAVI/FUT/Monte CS2, NAVI/Monte Dota; no FUT Dota identity found; local-day and overnight handling tested |
 | B04 | Esports | done | Main-team filtering at all tiers, optional tier restriction and game/tournament pages | PandaScoreOptions.cs; DiscordMatchAnnouncementPublisher.cs; no junior subscriptions; old general S/A feed replaced |
-| B05 | Esports | done | Starting-soon, map/game and series-result announcements | SynchronizeMatchesCommandHandler.cs; completed games handled while running or finished; game-scoped in-memory deduplication |
+| B05 | Esports | done | Starting-soon, map/game and series-result announcements | SynchronizeMatchesCommandHandler.cs; completed games handled while running or finished; channel/game-scoped SQLite history |
 | B06 | Foundation | done | Minute-based Quartz job without overlapping executions | src/HappyMix.Bot/Jobs/SynchronizeMatchesJob.cs; Configuration/DependencyInjection.cs |
-| B07 | Operations | partial | Docker image and local development compose | Dockerfile; compose.development.yaml; no production deployment evidence |
-| B08 | Reliability | partial | Announcement deduplication | src/HappyMix.Infrastructure/Notifications/InMemoryMatchAnnouncementState.cs; lost after restart |
-| B09 | Quality | done | Application, provider, scheduling and embed tests | 57 tests passed using installed .NET SDK 10.0.402 from an isolated validation working directory; repository SDK pin unchanged |
+| B07 | Operations | partial | Docker image and local development compose with persistent volume | Dockerfile; compose.development.yaml; compose configuration validated; Docker daemon unavailable for image test; no production deployment |
+| B08 | Reliability | done | Persistent announcement deduplication | Infrastructure/Persistence; EF migration, per-channel/game/event keys and first-run seeding; real-file restart tests pass; send-before-save crash window documented |
+| B09 | Quality | done | Application, provider, scheduling, embed and SQLite integration tests | 66 tests passed using installed .NET SDK 10.0.402 and isolated artifacts; repository SDK pin unchanged |
 
 ## Next 30 work slots
 
 | Day | Area | Status | Deliverable | Acceptance criterion | Depends on |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Reliability | planned | SQLite foundation and persistent announcement history | Add EF Core SQLite and initial migration; replace B08 in-memory state; configure persistent database path; restart after successful publication produces no repeated announcements; migration and restart test pass; document the send-before-save crash window | B02 |
+| 1 | Reliability | done | SQLite foundation and persistent announcement history | EF Core SQLite, versioned startup migration, configured path/volume, historical seeding and real-file restart tests pass; crash window documented in SQLITE_DAY1.md | B02 |
 | 2 | Operations | planned | Production hosting and deployment | Check current checkout total is at most $5/month including tax; deploy one instance with persistent disk, secrets and auto-restart; confirm uptime remotely | 1 |
 | 3 | Foundation | planned | Guild settings and access policy | Store channel/timezone settings per guild; only configured administrators can change them | 1 |
 | 4 | Groups | planned | Saved groups and organizers | Create/invite/join/leave a group; only organizer or moderator edits membership; isolate guilds | 3 |
@@ -86,18 +86,18 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 ## SQLite implementation decision
 
 - Use SQLite through EF Core in Infrastructure, keeping Application abstractions independent of the storage provider. Add a context and versioned migrations; do not replace migrations with EnsureCreated for an evolving database.
-- First persist announcement records with unique event keys. Later migrations add guild settings, groups, availability, Steam libraries/preferences, votes, sessions, reminders and bot-created resource IDs.
+- Announcement records with unique event keys are implemented. Later migrations add guild settings, groups, availability, Steam libraries/preferences, votes, sessions, reminders and bot-created resource IDs.
 - Keep one bot instance and one local database file on persistent storage. In Docker, mount a writable data directory owned by the runtime user; do not store the database only in the container's disposable layer.
 - Use short database operations and scoped contexts; do not share a context across concurrent Discord interactions and Quartz jobs. Add uniqueness constraints for duplicate votes, attendance and announcement keys.
 - Keep Quartz scheduling initially; persist application reminder state in SQLite so restarts can recover overdue work. A persistent Quartz job store is a separate decision, not an implicit part of adding SQLite.
 - SQLite cannot make a Discord message send and a database commit atomic. Restart deduplication covers successfully recorded publications; explicitly test and document delivery recovery for a crash between send and save. Do not promise exactly-once external delivery.
 - Back up using a SQLite-aware consistent snapshot and test restoration. Do not assume copying a live database file alone is sufficient, particularly when WAL is enabled.
-- No existing on-disk database needs conversion: current announcement history is process memory only. Plan the first rollout to avoid replaying all of today's notifications, with an explicit initial-history policy.
+- The first rollout from the old bot has no on-disk history to import. Completed results are seeded once by default; schedule/upcoming alerts can still post once. All later starts reuse SQLite history. See SQLITE_DAY1.md.
 
 ## Audit cautions
 
 - Exact NAVI/FUT/Monte main-team allowlists now replace the general CS2 tier feed. Per-guild subscription editing is still outstanding; no FUT Dota main identity was returned by PandaScore.
-- Current daily schedule publishes once per process/local date, not at a configured morning time, and does not edit schedule changes.
-- Current announcement state is global/in-memory and has no persistent guild-specific notification preferences.
+- The daily schedule publishes once per persisted destination/local date, not at a configured morning time, and does not edit schedule changes.
+- Announcement state is now persisted per destination channel and discipline. Guild-specific notification preferences are not yet implemented.
 - Existing local changes were present during this review; this roadmap does not certify them as released.
 - The repository still pins SDK 10.0.102 with latestPatch. Tests were successfully executed with installed SDK 10.0.402 from work/sdk-validation using a local SDK selection file; the root pin is unchanged. Normal root-directory dotnet commands still require the pinned SDK or an explicitly reviewed SDK-policy update.

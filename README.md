@@ -53,10 +53,49 @@ date boundaries, and completed matches are selected by completion date.
 
 Requests are paginated rather than silently capped at 100 records. Provider
 failures abort the synchronization instead of publishing an incomplete empty feed.
-Announcement deduplication is scoped to discipline but **remains in memory**;
-restarts may resend today's schedule and results. SQLite remains the next
-reliability task. This change does not implement reschedule-message edits or
-per-guild subscriptions.
+Announcement history is stored in SQLite, scoped to destination channel,
+discipline, event kind and provider ID. Recorded publications survive restarts.
+Reschedule-message edits and per-guild subscriptions remain future work.
+
+## SQLite persistence
+
+Startup creates the data directory and applies versioned EF Core migrations before
+connecting Discord or starting Quartz. An invalid path or failed migration stops
+startup; the bot does not silently fall back to memory.
+
+```json
+"Storage": {
+  "DatabasePath": "data/happymix.db",
+  "ReplayExistingResultsOnFirstRun": false
+}
+```
+
+The local path is relative to the process working directory. Override it with
+`Storage__DatabasePath` for an absolute deployment path. Keep the same file and
+announcement-channel ID across restarts. Each database operation uses a new EF
+context; run only one publishing bot instance against this file.
+
+On the **first successful synchronization for a new database/channel**, the default
+policy records already completed series and maps/games as historical, without
+posting their results. Today's schedule and upcoming reminders can still post.
+This avoids replaying all available results when moving from the old in-memory
+implementation. Set `ReplayExistingResultsOnFirstRun=true` before the first sync
+to intentionally replay them. Changing the flag later does not reset history.
+The old process's memory cannot be imported, so the daily schedule or a still-upcoming
+reminder may be posted once on the first SQLite rollout.
+
+Delivery is not exactly once: if Discord accepts a message and the process crashes
+before the marker commits, that message may be sent again. Failed sends are not
+marked as delivered. Multi-page schedules can replay earlier pages if a later page
+fails. Unique database keys prevent duplicate marker rows, not duplicate sends
+from multiple running bot instances.
+
+For an offline backup, stop the bot cleanly before copying the data directory.
+For online backups use SQLite's backup API, not a raw copy of an active database.
+Restore while the bot is stopped and retain the channel configuration. Automated
+backup/restore operations remain Day 29 work.
+
+See [Day 1 implementation and verification](docs/SQLITE_DAY1.md).
 
 See [the implementation plan and verified identities](docs/ESPORTS_IMPLEMENTATION.md).
 API references: [Dota 2 upcoming matches](https://developers.pandascore.co/reference/get_dota2_matches_upcoming),
@@ -103,6 +142,11 @@ This sets `DOTNET_ENVIRONMENT=Development` and mounts
 The file must exist before starting. Development settings are excluded from published output
 and the Docker build context.
 
+Compose mounts the `happymix-data` named volume at `/app/data`. The image creates
+that directory with ownership for its non-root `app` user. Normal container
+recreation preserves the database; `docker compose down -v` deletes the volume and
+its history. For a bind mount, grant the runtime user write access to the directory.
+
 Build the production image from the repository root:
 
 ```powershell
@@ -113,6 +157,7 @@ Provide the Discord token, announcement channel, and PandaScore token when the c
 
 ```powershell
 docker run --rm --name happymix-bot `
+  --mount source=happymix-data,target=/app/data `
   --env Discord__Token="your-bot-token" `
   --env Discord__AnnouncementChannelId="your-channel-id" `
   --env PandaScore__Token="your-pandascore-token" `
