@@ -1,0 +1,128 @@
+name: HappyMix CI and deployment
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+      - run: dotnet restore HappyMixBotRootSolution.sln
+      - run: dotnet build HappyMixBotRootSolution.sln -c Release --no-restore
+      - run: dotnet test HappyMixBotRootSolution.sln -c Release --no-build --no-restore --logger trx --results-directory TestResults
+      - name: Validate deployment scripts
+        run: |
+          bash -n deploy/deploy.sh deploy/backup.sh
+          bash tests/deploy/deploy-tests.sh
+          python3 tools/build_progress.py --check
+          HAPPYMIX_IMAGE=ghcr.io/tta19764/happymixdiscordbot@sha256:$(printf 'a%.0s' {1..64}) docker compose -f compose.production.yaml config --no-env-resolution --quiet
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: test-results
+          path: TestResults/*.trx
+          retention-days: 7
+
+  image:
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.reference.outputs.image }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and publish ARM64 image
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          platforms: linux/arm64
+          push: true
+          tags: ghcr.io/tta19764/happymixdiscordbot:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Record immutable image reference
+        id: reference
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: echo "image=ghcr.io/tta19764/happymixdiscordbot@$DIGEST" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: image
+    if: vars.ENABLE_PRODUCTION_DEPLOYMENT == 'true' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: happymix-production
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: read
+    env:
+      SSH_HOST: ${{ secrets.ORACLE_SSH_HOST }}
+      SSH_USER: ${{ secrets.ORACLE_SSH_USER }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: tailscale/github-action@6cae46e2d796f265265cfcf628b72a32b4d7cade # v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:happymix-ci
+          ping: ${{ secrets.ORACLE_SSH_HOST }}
+      - name: Configure verified SSH access
+        env:
+          PRIVATE_KEY: ${{ secrets.ORACLE_SSH_PRIVATE_KEY }}
+          KNOWN_HOSTS: ${{ secrets.ORACLE_SSH_KNOWN_HOSTS }}
+        run: |
+          test -n "$SSH_HOST" && test -n "$SSH_USER"
+          [[ "$SSH_HOST" =~ ^[a-zA-Z0-9.:-]+$ ]] && [[ "$SSH_USER" =~ ^[a-zA-Z0-9_-]+$ ]]
+          test -n "$PRIVATE_KEY" && test -n "$KNOWN_HOSTS"
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$PRIVATE_KEY" | tr -d '\r' > ~/.ssh/happymix
+          printf '%s\n' "$KNOWN_HOSTS" | tr -d '\r' > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/happymix ~/.ssh/known_hosts
+          printf 'Host happymix-production\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/happymix\n  IdentitiesOnly yes\n  BatchMode yes\n  StrictHostKeyChecking yes\n  ConnectTimeout 20\n' "$SSH_HOST" "$SSH_USER" > ~/.ssh/config
+      - name: Stage release and deploy with temporary GHCR access
+        env:
+          IMAGE: ${{ needs.image.outputs.image }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+        run: |
+          release="/opt/happymix/releases/${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          registry="$release/registry"
+          cleanup() {
+            ssh happymix-production "rm -f '$registry/config.json'; rmdir '$registry'" || true
+          }
+          trap cleanup EXIT
+          ssh happymix-production "umask 077; mkdir -p '$registry'"
+          scp compose.production.yaml deploy/deploy.sh deploy/backup.sh "happymix-production:$release/"
+          printf '%s' "$GHCR_TOKEN" | ssh happymix-production "docker --config '$registry' login ghcr.io --username '$GHCR_USER' --password-stdin"
+          ssh happymix-production "DOCKER_CONFIG='$registry' bash '$release/deploy.sh' '$IMAGE' '$GITHUB_SHA' '$GITHUB_RUN_NUMBER'"
+      - name: Remove local SSH material
+        if: always()
+        run: rm -f ~/.ssh/happymix ~/.ssh/known_hosts ~/.ssh/config

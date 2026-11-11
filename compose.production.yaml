@@ -1,0 +1,24 @@
+services:
+  bot:
+    image: ${HAPPYMIX_IMAGE:?Set HAPPYMIX_IMAGE to an immutable GHCR digest}
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 45s
+    env_file:
+      - path: /opt/happymix/bot.env
+        format: raw
+    environment:
+      DOTNET_ENVIRONMENT: Production
+      Storage__DatabasePath: /app/data/happymix.db
+      Logging__LogLevel__HappyMix.Bot.Jobs.SynchronizeMatchesJob: Debug
+    volumes:
+      - happymix-data:/app/data
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  happymix-data:
+    name: happymix-data

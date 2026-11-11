@@ -1,6 +1,6 @@
 # HappyMix implementation roadmap
 
-Reviewed: 2026-11-09. This is a source-code audit, not confirmation of a live deployment.
+Reviewed: 2026-11-10. This is a source-code audit, not confirmation of a live deployment.
 
 Rechecked against the working tree: Day 1 SQLite persistence and Day 24 shared CS2/Dota 2 support are implemented. Day 23 is partial because per-guild subscription controls are not yet implemented. The next ready slot is Day 2 hosting. See SQLITE_DAY1.md and ESPORTS_IMPLEMENTATION.md for evidence. The running bot has not been restarted/deployed with these source changes.
 
@@ -33,7 +33,7 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 | Day | Area | Status | Deliverable | Acceptance criterion | Depends on |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Reliability | done | SQLite foundation and persistent announcement history | EF Core SQLite, versioned startup migration, configured path/volume, historical seeding and real-file restart tests pass; crash window documented in SQLITE_DAY1.md | B02 |
-| 2 | Operations | planned | Production hosting and deployment | Check current checkout total is at most $5/month including tax; deploy one instance with persistent disk, secrets and auto-restart; confirm uptime remotely | 1 |
+| 2 | Operations | partial | Production hosting and deployment | Oracle VM, Docker and private deployment access configured; production Compose/scripts/workflow implemented; lifecycle tests pass. Remaining: first GitHub image/deployment run, Always Free cost confirmation, live restart/reboot and off-VM backup checks; see DEPLOYMENT_RUNBOOK.md | 1 |
 | 3 | Foundation | planned | Guild settings and access policy | Store channel/timezone settings per guild; only configured administrators can change them | 1 |
 | 4 | Groups | planned | Saved groups and organizers | Create/invite/join/leave a group; only organizer or moderator edits membership; isolate guilds | 3 |
 | 5 | Availability | planned | One-off availability windows | Add/edit/remove available windows; reject invalid or overlapping input; support windows across midnight | 3 |

@@ -71,3 +71,6 @@ data/
 *.db-wal
 *.db-shm
 *.db-journal
+
+# Production runtime credentials are maintained only on the server
+bot.env

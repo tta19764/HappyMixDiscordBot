@@ -131,6 +131,14 @@ Never commit the bot token. For local development, environment variables or .NET
 
 ## Run with Docker
 
+For Oracle Always Free hosting and GitHub Actions deployment, follow the
+[step-by-step setup plan](docs/ORACLE_CICD_PLAN.md). This is preparation for Day 2,
+not a claim that production is deployed.
+
+The production Compose file, deployment scripts and GitHub workflow are now available.
+Follow [the first-run deployment runbook](docs/DEPLOYMENT_RUNBOOK.md). Deployments remain
+disabled until the repository variable `ENABLE_PRODUCTION_DEPLOYMENT` is set to `true`.
+
 For development, use the `HappyMix.Bot Docker (Development)` Rider configuration or run:
 
 ```powershell
