@@ -41,9 +41,10 @@ Set `PandaScore:IncludedTournamentTiers` to `["s", "a"]` to additionally restric
 followed matches to those tiers; leave it empty for all tiers. Overrides in local
 development settings or environment variables can retain an older tier restriction.
 
-`PandaScore:CounterStrikeTeamIds` and `PandaScore:Dota2TeamIds` are separate
-allowlists. An empty list disables that discipline. Verify replacement IDs with
-the provider before changing them; a team's name is not an identity check.
+The bot follows the IDs in the configured team alias maps by default.
+`PandaScore:CounterStrikeTeamIds` and `PandaScore:Dota2TeamIds` can optionally
+override those defaults. An explicit empty list disables that discipline.
+Verify replacement IDs with PandaScore before changing them.
 
 Schedules are paginated by discipline and tournament. Notifications include
 starting-within-30-minutes alerts, CS2 map/Dota game results, and series results.
@@ -131,7 +132,24 @@ Never commit the bot token. For local development, environment variables or .NET
 
 ## Server settings
 
-Discord server administrators can use `/settings set` to save a text channel and an IANA time zone such as `Europe/Kyiv`. `/settings show` displays the saved values privately. Settings are stored in SQLite per server. The esports publisher still uses its deployment configuration for announcements and scheduling.
+Discord server administrators can manage these SQLite-backed settings with `/settings`.
+
+| Command | Behavior |
+| --- | --- |
+| `/settings channel` | Choose the esports text channel. The bot needs permission to view it, send messages, and embed links. |
+| `/settings timezone` | Choose the time zone that defines the daily esports schedule, for example `Europe/Kyiv`. |
+| `/settings teams` | Choose a game and enter comma-separated catalog names or PandaScore team IDs. Use `default` to follow the catalog or an explicit deployment override, or `none` to disable that game. |
+| `/settings add-team` | Add or update a name and its PandaScore team ID in this server's catalog. |
+| `/settings team-catalog` | Browse the server's team catalog by game. |
+| `/settings notifications` | Enable or disable schedules, reminders, map/game results, and series results individually. |
+| `/settings reminder` | Set the reminder lead time from 1 to 1,440 minutes. The default is 30 minutes. |
+| `/settings organizer-role` | Add, remove, or clear roles saved for future group commands. |
+| `/settings ping-role` | Choose a role for one game's reminders. Omit the role to clear it. The role must be mentionable or the bot must have permission to mention it. |
+| `/settings show` | View the settings privately. |
+
+`/settings set` continues to save the channel and time zone together. If a server has no saved announcement channel, the deployment channel remains the fallback for its own server. Reminder mentions are limited to the configured role for that game.
+
+The alias maps in `appsettings.json` seed each catalog on its first settings save. Each server then keeps its own copy in SQLite. Adding a team makes it available for selection. Servers using the catalog as their followed list also begin following the added team. A server with an explicit followed list can select the new team with `/settings teams`.
 
 ## Run with Docker
 

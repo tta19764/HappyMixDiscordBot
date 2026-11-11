@@ -1,5 +1,6 @@
 using Discord;
 using Discord.WebSocket;
+using HappyMix.Application.Abstractions.Guilds;
 using HappyMix.Application.Abstractions.Notifications;
 using HappyMix.Bot.Configuration;
 using HappyMix.Domain.Esports;
@@ -12,9 +13,14 @@ namespace HappyMix.Bot.Services;
 /// <param name="options">Announcement destination settings.</param>
 internal sealed class DiscordMatchAnnouncementPublisher(
     DiscordSocketClient client,
-    IOptions<DiscordOptions> options) : IMatchAnnouncementPublisher
+    IOptions<DiscordOptions> options,
+    GuildSettings? settings = null) : IMatchAnnouncementPublisher
 {
     private readonly DiscordOptions _options = options.Value;
+    private ulong ChannelId => settings?.ChannelId ?? _options.AnnouncementChannelId;
+
+    internal DiscordMatchAnnouncementPublisher ForGuild(GuildSettings destination) =>
+        new(client, options, destination);
 
     /// <inheritdoc />
     public async Task PublishDailyScheduleAsync(
@@ -99,13 +105,15 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         CancellationToken cancellationToken)
     {
         var embed = new EmbedBuilder()
-            .WithTitle($"{match.Game.DisplayName()} • Match starts within 30 minutes")
+            .WithTitle($"{match.Game.DisplayName()} • Match starts within {settings?.Preferences?.ReminderMinutes ?? 30} minutes")
             .WithDescription(FormatMatchDetails(match))
             .WithColor(Color.Orange)
             .WithCurrentTimestamp()
             .Build();
 
-        return SendAsync(embed, cancellationToken);
+        ulong? role = match.Game == Esport.CounterStrike2
+            ? settings?.Preferences?.CounterStrikePingRoleId : settings?.Preferences?.Dota2PingRoleId;
+        return SendAsync(embed, cancellationToken, role);
     }
 
     /// <inheritdoc />
@@ -150,44 +158,57 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         return SendAsync(embed, cancellationToken);
     }
 
-    private async Task SendAsync(Embed embed, CancellationToken cancellationToken)
+    internal async Task<ulong?> GetLegacyGuildIdAsync(CancellationToken cancellationToken) =>
+        (await ResolveChannelAsync(_options.AnnouncementChannelId, cancellationToken) as IGuildChannel)?.GuildId;
+
+    private async Task SendAsync(Embed embed, CancellationToken cancellationToken, ulong? roleId = null)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (_options.AnnouncementChannelId == 0)
+        if (ChannelId == 0)
         {
             throw new InvalidOperationException(
                 "A Discord announcement channel is required. Set Discord__AnnouncementChannelId.");
         }
 
         var requestOptions = new RequestOptions { CancelToken = cancellationToken };
-        IChannel? resolvedChannel = client.GetChannel(_options.AnnouncementChannelId);
+        var resolvedChannel = await ResolveChannelAsync(ChannelId, cancellationToken);
+        if (resolvedChannel is not IMessageChannel channel ||
+            settings is not null && (resolvedChannel as IGuildChannel)?.GuildId != settings.GuildId)
+        {
+            throw new InvalidOperationException($"Discord channel {ChannelId} is not an accessible destination for this server.");
+        }
+
+        var mentions = roleId is { } id
+            ? new AllowedMentions { RoleIds = [id] }
+            : AllowedMentions.None;
+        await channel.SendMessageAsync(text: roleId is { } role ? $"<@&{role}>" : null,
+            embed: embed, allowedMentions: mentions, options: requestOptions);
+    }
+
+    private async Task<IChannel?> ResolveChannelAsync(ulong channelId, CancellationToken cancellationToken)
+    {
+        var requestOptions = new RequestOptions { CancelToken = cancellationToken };
+        IChannel? resolvedChannel = client.GetChannel(channelId);
         if (resolvedChannel is null)
         {
             // Quartz can run before the gateway has populated its channel cache.
             try
             {
                 resolvedChannel = await ((IDiscordClient)client.Rest).GetChannelAsync(
-                    _options.AnnouncementChannelId, options: requestOptions);
+                    channelId, options: requestOptions);
             }
             catch (Discord.Net.HttpException exception) when (
                 exception.HttpCode is System.Net.HttpStatusCode.Forbidden or System.Net.HttpStatusCode.NotFound)
             {
                 throw new InvalidOperationException(
-                    $"Discord channel {_options.AnnouncementChannelId} could not be accessed. " +
-                    "Verify Discord__AnnouncementChannelId is a channel ID, the bot belongs to its server, " +
+                    $"Discord channel {channelId} could not be accessed. " +
+                    "Verify the announcement channel ID, that the bot belongs to its server, " +
                     "and the bot has View Channel permission.", exception);
             }
         }
 
-        if (resolvedChannel is not IMessageChannel channel)
-        {
-            throw new InvalidOperationException(
-                $"Discord channel {_options.AnnouncementChannelId} is not an accessible message channel. " +
-                "Set Discord__AnnouncementChannelId to a text or announcement channel ID.");
-        }
-
-        await channel.SendMessageAsync(embed: embed, options: requestOptions);
+        return resolvedChannel;
     }
 
     private static string FormatScheduledMatch(EsportsMatch match)

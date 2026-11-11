@@ -31,6 +31,7 @@ public static class DependencyInjection
         // A single stateless clock is sufficient for the lifetime of the process.
         services.AddSingleton<IClock, SystemClock>();
         services.AddSingleton<IGuildSettingsStore, SqliteGuildSettingsStore>();
+        services.AddSingleton<IMatchAnnouncementStateFactory, SqliteMatchAnnouncementStateFactory>();
         services.AddOptions<StorageOptions>()
             .Bind(configuration.GetSection(StorageOptions.SectionName));
         services.AddDbContextFactory<HappyMixDbContext>((provider, options) =>
@@ -54,13 +55,15 @@ public static class DependencyInjection
         services
             .AddOptions<PandaScoreOptions>()
             .Bind(configuration.GetSection(PandaScoreOptions.SectionName));
-        services.AddHttpClient<IPandaScoreClient, PandaScoreClient>((provider, client) =>
+        services.AddHttpClient<PandaScoreClient>((provider, client) =>
         {
             var options = provider
                 .GetRequiredService<Microsoft.Extensions.Options.IOptions<PandaScoreOptions>>()
                 .Value;
             client.BaseAddress = new Uri(options.BaseUrl);
         });
+        services.AddTransient<IPandaScoreClient>(provider => provider.GetRequiredService<PandaScoreClient>());
+        services.AddTransient<IGuildMatchFeed>(provider => provider.GetRequiredService<PandaScoreClient>());
 
         return services;
     }

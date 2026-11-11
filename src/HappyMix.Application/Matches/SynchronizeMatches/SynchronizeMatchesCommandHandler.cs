@@ -1,5 +1,6 @@
 using HappyMix.Application.Abstractions;
 using HappyMix.Application.Abstractions.Esports;
+using HappyMix.Application.Abstractions.Guilds;
 using HappyMix.Application.Abstractions.Messaging;
 using HappyMix.Application.Abstractions.Notifications;
 using HappyMix.Domain.Abstractions;
@@ -32,27 +33,39 @@ public sealed class SynchronizeMatchesCommandHandler(
     {
         DateTimeOffset now = clock.UtcNow;
         var matchDay = await pandaScore.GetMatchesForDayAsync(now, cancellationToken);
+        await PublishAsync(matchDay, now, GuildEsportsPreferences.Default, null, cancellationToken);
+        return Result.Success();
+    }
+
+    public async Task PublishAsync(EsportsMatchDay matchDay, DateTimeOffset now,
+        GuildEsportsPreferences preferences, TimeZoneInfo? timeZone, CancellationToken cancellationToken)
+    {
         state.Initialize(matchDay.Matches);
 
-        if (!state.WasSchedulePublished(matchDay.Date))
+        if (preferences.Notifications.HasFlag(EsportsNotifications.Schedule) && !state.WasSchedulePublished(matchDay.Date))
         {
-            await publisher.PublishDailyScheduleAsync(matchDay.Date, matchDay.Matches, cancellationToken);
+            var schedule = timeZone is null ? matchDay.Matches : matchDay.Matches.Where(match =>
+                !match.IsScheduled || match.BeginAt is not { } start ||
+                DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(start, timeZone).DateTime) == matchDay.Date).ToArray();
+            await publisher.PublishDailyScheduleAsync(matchDay.Date, schedule, cancellationToken);
             state.MarkSchedulePublished(matchDay.Date);
         }
 
         foreach (var match in matchDay.Matches)
         {
-            await PublishStartingSoonIfRequiredAsync(match, now, cancellationToken);
-            await PublishMapResultsIfRequiredAsync(match, cancellationToken);
-            await PublishMatchResultIfRequiredAsync(match, cancellationToken);
+            if (preferences.Notifications.HasFlag(EsportsNotifications.Reminders))
+                await PublishStartingSoonIfRequiredAsync(match, now, preferences.ReminderMinutes, cancellationToken);
+            if (preferences.Notifications.HasFlag(EsportsNotifications.Maps))
+                await PublishMapResultsIfRequiredAsync(match, cancellationToken);
+            if (preferences.Notifications.HasFlag(EsportsNotifications.Results))
+                await PublishMatchResultIfRequiredAsync(match, cancellationToken);
         }
-
-        return Result.Success();
     }
 
     private async Task PublishStartingSoonIfRequiredAsync(
         EsportsMatch match,
         DateTimeOffset now,
+        int reminderMinutes,
         CancellationToken cancellationToken)
     {
         if (match.BeginAt is not { } beginAt ||
@@ -63,7 +76,7 @@ public sealed class SynchronizeMatchesCommandHandler(
         }
 
         TimeSpan untilStart = beginAt - now;
-        if (untilStart <= TimeSpan.Zero || untilStart > TimeSpan.FromMinutes(30))
+        if (untilStart <= TimeSpan.Zero || untilStart > TimeSpan.FromMinutes(reminderMinutes))
         {
             return;
         }

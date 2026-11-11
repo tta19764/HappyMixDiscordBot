@@ -54,7 +54,9 @@ public static class DependencyInjection
         services.AddSingleton<DiscordSocketClient>();
         services.AddSingleton(static provider =>
             new InteractionService(provider.GetRequiredService<DiscordSocketClient>().Rest));
-        services.AddSingleton<IMatchAnnouncementPublisher, DiscordMatchAnnouncementPublisher>();
+        services.AddSingleton<DiscordMatchAnnouncementPublisher>();
+        services.AddSingleton<IMatchAnnouncementPublisher>(provider =>
+            provider.GetRequiredService<DiscordMatchAnnouncementPublisher>());
 
         // The hosted service owns only the persistent Discord connection lifecycle.
         services.AddHostedService<DiscordBotWorker>();

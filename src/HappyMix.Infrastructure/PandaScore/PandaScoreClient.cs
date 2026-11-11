@@ -3,13 +3,14 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using HappyMix.Application.Abstractions.Esports;
+using HappyMix.Application.Abstractions.Guilds;
 using HappyMix.Domain.Esports;
 using Microsoft.Extensions.Options;
 
 namespace HappyMix.Infrastructure.PandaScore;
 
 /// <summary>Loads both disciplines and follows exact game-specific main-team IDs.</summary>
-internal sealed class PandaScoreClient : IPandaScoreClient
+internal sealed class PandaScoreClient : IPandaScoreClient, IGuildMatchFeed
 {
     private const int PageSize = 100;
     private const int MaxPages = 100;
@@ -28,8 +29,16 @@ internal sealed class PandaScoreClient : IPandaScoreClient
     }
 
     /// <inheritdoc />
-    public async Task<EsportsMatchDay> GetMatchesForDayAsync(
-        DateTimeOffset referenceTime, CancellationToken cancellationToken)
+    public Task<EsportsMatchDay> GetMatchesForDayAsync(
+        DateTimeOffset referenceTime, CancellationToken cancellationToken) =>
+        GetMatchesAsync(referenceTime, _timeZone, GuildEsportsPreferences.Default, false, cancellationToken);
+
+    public Task<EsportsMatchDay> GetMatchesAsync(DateTimeOffset now, string timeZoneId,
+        GuildEsportsPreferences preferences, CancellationToken cancellationToken) =>
+        GetMatchesAsync(now, TimeZoneInfo.FindSystemTimeZoneById(timeZoneId), preferences, true, cancellationToken);
+
+    private async Task<EsportsMatchDay> GetMatchesAsync(DateTimeOffset referenceTime, TimeZoneInfo timeZone,
+        GuildEsportsPreferences preferences, bool includeReminderLookahead, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(_options.Token))
         {
@@ -37,13 +46,19 @@ internal sealed class PandaScoreClient : IPandaScoreClient
                 "A PandaScore API token is required. Set PandaScore__Token.");
         }
 
-        DateOnly date = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(referenceTime, _timeZone).DateTime);
-        DateTimeOffset start = GetUtcBoundary(date);
-        DateTimeOffset end = GetUtcBoundary(date.AddDays(1));
+        DateOnly date = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(referenceTime, timeZone).DateTime);
+        DateTimeOffset start = GetUtcBoundary(date, timeZone);
+        DateTimeOffset end = GetUtcBoundary(date.AddDays(1), timeZone);
+        var reminderEnd = referenceTime.AddMinutes(preferences.ReminderMinutes).AddTicks(1);
+        var upcomingEnd = includeReminderLookahead && preferences.Notifications.HasFlag(EsportsNotifications.Reminders)
+            && reminderEnd > end ? reminderEnd : end;
         var disciplines = new[]
         {
-            (Game: Esport.CounterStrike2, Path: "csgo", Teams: _options.CounterStrikeTeamIds ?? [3216, 136955, 131441, 129381, 136497, 3210]),
-            (Game: Esport.Dota2, Path: "dota2", Teams: _options.Dota2TeamIds ?? [1699, 132557])
+            (Game: Esport.CounterStrike2, Path: "csgo", Teams: preferences.CounterStrikeTeamIds ?? _options.CounterStrikeTeamIds ??
+                GetAliasIds(preferences.CounterStrikeTeamAliases ?? _options.CounterStrikeTeamAliases,
+                    [3216, 136955, 131441, 129381, 136497, 3210])),
+            (Game: Esport.Dota2, Path: "dota2", Teams: preferences.Dota2TeamIds ?? _options.Dota2TeamIds ??
+                GetAliasIds(preferences.Dota2TeamAliases ?? _options.Dota2TeamAliases, [1699, 132557]))
         };
         var matches = new List<EsportsMatch>();
         // Keep requests sequential to avoid bursts against the provider's minute limit.
@@ -59,7 +74,7 @@ internal sealed class PandaScoreClient : IPandaScoreClient
             foreach (string status in new[] { "upcoming", "running", "past" })
             {
                 snapshots.AddRange(await GetMatchesAsync(
-                    discipline.Path, status, start, end, cancellationToken));
+                    discipline.Path, status, start, status == "upcoming" ? upcomingEnd : end, cancellationToken));
             }
 
             matches.AddRange(snapshots.GroupBy(match => match.Id)
@@ -112,10 +127,17 @@ internal sealed class PandaScoreClient : IPandaScoreClient
         throw new InvalidOperationException("PandaScore pagination exceeded its safety limit; refusing a truncated schedule.");
     }
 
-    private DateTimeOffset GetUtcBoundary(DateOnly date)
+    private static long[] GetAliasIds(Dictionary<string, long> aliases, long[] fallback) =>
+        aliases.Count > 0 ? aliases.Values.ToArray() : fallback;
+
+    private static DateTimeOffset GetUtcBoundary(DateOnly date, TimeZoneInfo timeZone)
     {
         DateTime local = date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified);
-        return new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(local, _timeZone));
+        while (timeZone.IsInvalidTime(local))
+            local = local.AddMinutes(1);
+        if (timeZone.IsAmbiguousTime(local))
+            return new DateTimeOffset(local, timeZone.GetAmbiguousTimeOffsets(local).Max()).ToUniversalTime();
+        return new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(local, timeZone));
     }
 }
 

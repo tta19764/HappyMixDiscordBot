@@ -13,9 +13,13 @@ public sealed class PandaScoreOptions
     public string TimeZoneId { get; init; } = "Europe/Kyiv";
     /// <summary>Optional tier restriction. Empty includes all tiers for followed teams.</summary>
     public string[] IncludedTournamentTiers { get; init; } = [];
-    /// <summary>Exact CS2 IDs. Null uses the default main-team list; empty disables CS2.</summary>
+    /// <summary>Optional CS2 default override. Null uses configured aliases or built-in defaults. Empty disables CS2.</summary>
     /// <remarks>No initialized array: configuration binding must replace rather than append defaults.</remarks>
     public long[]? CounterStrikeTeamIds { get; init; }
-    /// <summary>Exact Dota IDs. Null uses NAVI/Monte defaults; empty disables Dota. No FUT identity found on 2026-11-09.</summary>
+    /// <summary>Optional Dota 2 default override. Null uses configured aliases or built-in defaults. Empty disables Dota 2.</summary>
     public long[]? Dota2TeamIds { get; init; }
+    /// <summary>Names accepted by the CS2 team settings command.</summary>
+    public Dictionary<string, long> CounterStrikeTeamAliases { get; init; } = [];
+    /// <summary>Names accepted by the Dota 2 team settings command.</summary>
+    public Dictionary<string, long> Dota2TeamAliases { get; init; } = [];
 }

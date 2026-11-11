@@ -28,14 +28,15 @@ internal sealed class SqliteTestDatabase : IDisposable
         }
     }
 
-    public async Task<ServiceProvider> OpenAsync(bool replay = false, string channel = "123")
+    public async Task<ServiceProvider> OpenAsync(bool replay = false, string channel = "123",
+        IEnumerable<KeyValuePair<string, string?>>? overrides = null)
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["Storage:DatabasePath"] = DatabasePath,
             ["Storage:ReplayExistingResultsOnFirstRun"] = replay.ToString(),
             ["Discord:AnnouncementChannelId"] = channel
-        }).Build();
+        }).AddInMemoryCollection(overrides).Build();
         var services = new ServiceCollection();
         services.AddInfrastructure(configuration);
         var provider = services.BuildServiceProvider();

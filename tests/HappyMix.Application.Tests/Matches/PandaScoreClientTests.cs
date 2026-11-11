@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using HappyMix.Application.Abstractions.Esports;
+using HappyMix.Application.Abstractions.Guilds;
 using HappyMix.Domain.Esports;
 using HappyMix.Infrastructure;
 using HappyMix.Infrastructure.PandaScore;
@@ -255,6 +256,41 @@ public sealed class PandaScoreClientTests
 
     private static bool Is(Uri uri, string game, string status) =>
         uri.AbsolutePath == "/" + game + "/matches/" + status;
+
+    [Theory]
+    [InlineData(false, 2)]
+    [InlineData(true, 1)]
+    public async Task AliasIdsAreDefaultsUnlessAnExplicitTeamListOverridesThem(bool useOverride, long expectedMatchId)
+    {
+        using var provider = Build(new StubHandler(uri => Is(uri, "csgo", "running")
+            ? Json(Match(1, 3216), Match(2, 3210)) : "[]"), new PandaScoreOptions
+        {
+            Token = "test",
+            TimeZoneId = "UTC",
+            CounterStrikeTeamAliases = new() { ["G2"] = 3210 },
+            CounterStrikeTeamIds = useOverride ? [3216] : null,
+            Dota2TeamIds = []
+        });
+
+        Assert.Equal(expectedMatchId, Assert.Single((await Load(provider)).Matches).Id);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GuildFeedUsesSelectedTeamsAndIncludesRemindersAfterMidnight(bool useSavedCatalog)
+    {
+        using var provider = Build(new StubHandler(uri => Is(uri, "csgo", "upcoming")
+            ? Json(Match(1, 3216, begin: "2026-09-06T00:15:00Z"), Match(2, 3210, begin: "2026-09-06T00:15:00Z"))
+            : "[]"));
+        var feed = provider.GetRequiredService<IGuildMatchFeed>();
+        var day = await feed.GetMatchesAsync(new DateTimeOffset(2026, 9, 5, 23, 45, 0, TimeSpan.Zero),
+            "UTC", new GuildEsportsPreferences(useSavedCatalog ? null : [3210], [], ReminderMinutes: 45,
+                CounterStrikeTeamAliases: useSavedCatalog ? new() { ["G2"] = 3210 } : null), CancellationToken.None);
+
+        Assert.Equal(new DateOnly(2026, 9, 5), day.Date);
+        Assert.Equal(2, Assert.Single(day.Matches).Id);
+    }
 
     private static object Match(long id, long team, long opponent = 999, string? tier = "s",
         string name = "Main team", string begin = "2026-09-05T12:00:00Z", string end = "2026-09-05T15:00:00Z") => new

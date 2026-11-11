@@ -18,6 +18,7 @@ internal sealed class HappyMixDbContext(DbContextOptions<HappyMixDbContext> opti
         settings.Property(item => item.GuildId).HasColumnType("TEXT");
         settings.Property(item => item.ChannelId).HasColumnType("TEXT");
         settings.Property(item => item.TimeZoneId).HasColumnType("TEXT");
+        settings.Property(item => item.Preferences).HasColumnType("TEXT");
 
         var record = modelBuilder.Entity<AnnouncementRecord>();
         record.ToTable("AnnouncementRecords");

@@ -1,5 +1,6 @@
 using HappyMix.Application.Abstractions;
 using HappyMix.Application.Abstractions.Esports;
+using HappyMix.Application.Abstractions.Guilds;
 using HappyMix.Application.Abstractions.Notifications;
 using HappyMix.Application.Matches.SynchronizeMatches;
 using HappyMix.Domain.Esports;
@@ -9,6 +10,28 @@ namespace HappyMix.Application.Tests.Matches;
 
 public sealed class SynchronizeMatchesCommandHandlerTests
 {
+    [Fact]
+    public async Task GuildReminderUsesCustomLeadTimeAndSuppressesDisabledNotifications()
+    {
+        var now = new DateTimeOffset(2026, 9, 3, 23, 30, 0, TimeSpan.Zero);
+        var day = new EsportsMatchDay(new DateOnly(2026, 9, 3),
+            [CreateMatch(1, "not_started", now.AddMinutes(45), []),
+             CreateMatch(2, "not_started", now.AddMinutes(46), []),
+             CreateMatch(3, "finished", now.AddHours(-2), [new EsportsGame(11, 1, "finished", true, 101)], 101)]);
+        var publisher = new RecordingPublisher();
+        var handler = new SynchronizeMatchesCommandHandler(new StubClock(now), new StubPandaScoreClient(day),
+            publisher, new FakeAnnouncementState());
+        var preferences = new GuildEsportsPreferences(Notifications: EsportsNotifications.Reminders, ReminderMinutes: 45);
+
+        await handler.PublishAsync(day, now, preferences, TimeZoneInfo.Utc, CancellationToken.None);
+        await handler.PublishAsync(day, now, preferences, TimeZoneInfo.Utc, CancellationToken.None);
+
+        Assert.Equal(1, publisher.StartingSoonCount);
+        Assert.Equal(0, publisher.ScheduleCount);
+        Assert.Equal(0, publisher.MapResultCount);
+        Assert.Equal(0, publisher.MatchResultCount);
+    }
+
     [Fact]
     public async Task HandlePublishesEachAnnouncementOnlyOnce()
     {
