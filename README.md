@@ -27,7 +27,7 @@ MediatR dispatches requests from the Discord and Quartz adapters to Application 
 
 | Discipline | Main rosters | PandaScore team IDs |
 | --- | --- | --- |
-| CS2 | NAVI, FUT Esports, Monte | 3216, 136955, 131441 |
+| CS2 | NAVI, FUT Esports, Monte, B8, Inner Circle Esports, G2 | 3216, 136955, 131441, 129381, 136497, 3210 |
 | Dota 2 | NAVI, Monte | 1699, 132557 |
 
 Team IDs were verified against PandaScore on 2026-11-09. No FUT Dota 2 main

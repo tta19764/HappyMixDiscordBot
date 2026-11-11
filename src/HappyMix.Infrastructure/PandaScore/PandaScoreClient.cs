@@ -42,7 +42,7 @@ internal sealed class PandaScoreClient : IPandaScoreClient
         DateTimeOffset end = GetUtcBoundary(date.AddDays(1));
         var disciplines = new[]
         {
-            (Game: Esport.CounterStrike2, Path: "csgo", Teams: _options.CounterStrikeTeamIds ?? [3216, 136955, 131441]),
+            (Game: Esport.CounterStrike2, Path: "csgo", Teams: _options.CounterStrikeTeamIds ?? [3216, 136955, 131441, 129381, 136497, 3210]),
             (Game: Esport.Dota2, Path: "dota2", Teams: _options.Dota2TeamIds ?? [1699, 132557])
         };
         var matches = new List<EsportsMatch>();

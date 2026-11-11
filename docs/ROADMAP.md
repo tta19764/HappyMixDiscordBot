@@ -20,7 +20,7 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 | --- | --- | --- | --- | --- |
 | B01 | Foundation | done | .NET 10 layered application with Discord.Net and MediatR | src/HappyMix.Bot/Program.cs; src/HappyMix.Application/DependencyInjection.cs |
 | B02 | Foundation | done | Discord connection and /ping command | src/HappyMix.Bot/Services/DiscordBotWorker.cs; src/HappyMix.Bot/Interactions/GeneralModule.cs |
-| B03 | Esports | done | Paginated CS2 and Dota 2 fixtures for exact main-team IDs | PandaScoreClient.cs; NAVI/FUT/Monte CS2, NAVI/Monte Dota; no FUT Dota identity found; local-day and overnight handling tested |
+| B03 | Esports | done | Paginated CS2 and Dota 2 fixtures for exact main-team IDs | PandaScoreClient.cs; NAVI/FUT/Monte/B8/Inner Circle/G2 CS2, NAVI/Monte Dota; no FUT Dota identity found; local-day and overnight handling tested |
 | B04 | Esports | done | Main-team filtering at all tiers, optional tier restriction and game/tournament pages | PandaScoreOptions.cs; DiscordMatchAnnouncementPublisher.cs; no junior subscriptions; old general S/A feed replaced |
 | B05 | Esports | done | Starting-soon, map/game and series-result announcements | SynchronizeMatchesCommandHandler.cs; completed games handled while running or finished; channel/game-scoped SQLite history |
 | B06 | Foundation | done | Minute-based Quartz job without overlapping executions | src/HappyMix.Bot/Jobs/SynchronizeMatchesJob.cs; Configuration/DependencyInjection.cs |
@@ -96,7 +96,7 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 
 ## Audit cautions
 
-- Exact NAVI/FUT/Monte main-team allowlists now replace the general CS2 tier feed. Per-guild subscription editing is still outstanding; no FUT Dota main identity was returned by PandaScore.
+- Exact main-team allowlists now replace the general CS2 tier feed. Per-guild subscription editing is still outstanding; no FUT Dota main identity was returned by PandaScore.
 - The daily schedule publishes once per persisted destination/local date, not at a configured morning time, and does not edit schedule changes.
 - Announcement state is now persisted per destination channel and discipline. Guild-specific notification preferences are not yet implemented.
 - Existing local changes were present during this review; this roadmap does not certify them as released.

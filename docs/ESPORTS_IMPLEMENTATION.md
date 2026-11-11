@@ -11,6 +11,9 @@ Queried the authenticated PandaScore `/csgo/teams` and `/dota2/teams` endpoints 
 | CS2 | NAVI | 3216 | natus-vincere-cs-go | Main team found |
 | CS2 | FUT | 136955 | fut-esports-cs-go | Main team found |
 | CS2 | Monte | 131441 | monte | Main team found |
+| CS2 | B8 | 129381 | b8-cs-go | Main team found |
+| CS2 | Inner Circle Esports | 136497 | inner-circle-esports | Main team found |
+| CS2 | G2 | 3210 | g2 | Main team found |
 | Dota 2 | NAVI | 1699 | natus-vincere | Main team found |
 | Dota 2 | Monte | 132557 | monte-dota-2 | Provider identity found; not proof of active roster or upcoming fixtures |
 | Dota 2 | FUT | — | — | No matching main roster returned; do not substitute Future Gaming or Future.club |

@@ -19,6 +19,9 @@ public sealed class PandaScoreClientTests
     [InlineData(3216, "csgo", Esport.CounterStrike2)]
     [InlineData(136955, "csgo", Esport.CounterStrike2)]
     [InlineData(131441, "csgo", Esport.CounterStrike2)]
+    [InlineData(129381, "csgo", Esport.CounterStrike2)]
+    [InlineData(136497, "csgo", Esport.CounterStrike2)]
+    [InlineData(3210, "csgo", Esport.CounterStrike2)]
     [InlineData(1699, "dota2", Esport.Dota2)]
     [InlineData(132557, "dota2", Esport.Dota2)]
     public async Task DefaultConfigurationIncludesVerifiedMainTeams(long team, string path, Esport game)
