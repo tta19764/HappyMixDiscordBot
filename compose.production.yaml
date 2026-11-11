@@ -5,7 +5,7 @@ services:
     init: true
     stop_grace_period: 45s
     env_file:
-      - path: /opt/happymix/bot.env
+      - path: ${HAPPYMIX_ENV_FILE:-/opt/happymix/bot.env}
         format: raw
     environment:
       DOTNET_ENVIRONMENT: Production

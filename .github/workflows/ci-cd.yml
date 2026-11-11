@@ -26,7 +26,9 @@ jobs:
           bash -n deploy/deploy.sh deploy/backup.sh
           bash tests/deploy/deploy-tests.sh
           python3 tools/build_progress.py --check
-          HAPPYMIX_IMAGE=ghcr.io/tta19764/happymixdiscordbot@sha256:$(printf 'a%.0s' {1..64}) docker compose -f compose.production.yaml config --no-env-resolution --quiet
+          HAPPYMIX_ENV_FILE=./deploy/bot.env.example \
+            HAPPYMIX_IMAGE=ghcr.io/tta19764/happymixdiscordbot@sha256:$(printf 'a%.0s' {1..64}) \
+            docker compose -f compose.production.yaml config --quiet
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:

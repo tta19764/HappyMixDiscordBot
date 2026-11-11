@@ -45,7 +45,7 @@ docker compose -p happymix --env-file image.env -f compose.production.yaml logs 
 cat deployed-commit.txt
 ```
 
-Use `config --quiet` when validating Compose: resolved configuration includes credentials and must not be printed. The service uses raw env-file values so `$` in a token is not interpreted by Compose. Compose needs support for raw env files and `--no-env-resolution`; this was validated with the server's Compose 5.7.0.
+Use `config --quiet` when validating Compose because the resolved configuration includes credentials. The service uses raw env-file values to preserve `$` characters in tokens. CI sets `HAPPYMIX_ENV_FILE=./deploy/bot.env.example` for validation. On the VM, the default is `/opt/happymix/bot.env`.
 
 ## Restart and reboot checks
 
