@@ -1,8 +1,8 @@
 # HappyMix implementation roadmap
 
-Reviewed: 2026-11-10. This is a source-code audit, not confirmation of a live deployment.
+Reviewed: 2026-11-11.
 
-Rechecked against the working tree: Day 1 SQLite persistence and Day 24 shared CS2/Dota 2 support are implemented. Day 23 is partial because per-guild subscription controls are not yet implemented. The next ready slot is Day 2 hosting. See SQLITE_DAY1.md and ESPORTS_IMPLEMENTATION.md for evidence. The running bot has not been restarted/deployed with these source changes.
+Day 3 adds saved guild settings and administrator-only Discord commands. The Oracle bot runs commit b4e61af. Day 2 still requires restart, reboot, backup and billing verification. Day 4 group management can now start.
 
 ## How to maintain this plan
 
@@ -24,7 +24,7 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 | B04 | Esports | done | Main-team filtering at all tiers, optional tier restriction and game/tournament pages | PandaScoreOptions.cs; DiscordMatchAnnouncementPublisher.cs; no junior subscriptions; old general S/A feed replaced |
 | B05 | Esports | done | Starting-soon, map/game and series-result announcements | SynchronizeMatchesCommandHandler.cs; completed games handled while running or finished; channel/game-scoped SQLite history |
 | B06 | Foundation | done | Minute-based Quartz job without overlapping executions | src/HappyMix.Bot/Jobs/SynchronizeMatchesJob.cs; Configuration/DependencyInjection.cs |
-| B07 | Operations | partial | Docker image and local development compose with persistent volume | Dockerfile; compose.development.yaml; compose configuration validated; Docker daemon unavailable for image test; no production deployment |
+| B07 | Operations | done | Docker image and persistent production volume | Oracle container running commit b4e61af with happymix-data mounted at /app/data |
 | B08 | Reliability | done | Persistent announcement deduplication | Infrastructure/Persistence; EF migration, per-channel/game/event keys and first-run seeding; real-file restart tests pass; send-before-save crash window documented |
 | B09 | Quality | done | Application, provider, scheduling, embed and SQLite integration tests | 66 tests passed using installed .NET SDK 10.0.402 and isolated artifacts; repository SDK pin unchanged |
 
@@ -33,8 +33,8 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 | Day | Area | Status | Deliverable | Acceptance criterion | Depends on |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Reliability | done | SQLite foundation and persistent announcement history | EF Core SQLite, versioned startup migration, configured path/volume, historical seeding and real-file restart tests pass; crash window documented in SQLITE_DAY1.md | B02 |
-| 2 | Operations | partial | Production hosting and deployment | Oracle VM, Docker and private deployment access configured; production Compose/scripts/workflow implemented; lifecycle tests pass. Remaining: first GitHub image/deployment run, Always Free cost confirmation, live restart/reboot and off-VM backup checks; see DEPLOYMENT_RUNBOOK.md | 1 |
-| 3 | Foundation | planned | Guild settings and access policy | Store channel/timezone settings per guild; only configured administrators can change them | 1 |
+| 2 | Operations | partial | Production hosting and deployment | Oracle deployment b4e61af verified running with zero container restarts, a persistent SQLite mount, Discord connection and successful PandaScore synchronization. Remaining: Always Free cost confirmation, live restart/reboot and off-VM backup checks | 1 |
+| 3 | Foundation | done | Guild settings and access policy | SQLite stores channel and IANA time zone per guild. Discord discovers /settings show and /settings set with guild and administrator checks. Persistence and guild isolation verified locally | 1 |
 | 4 | Groups | planned | Saved groups and organizers | Create/invite/join/leave a group; only organizer or moderator edits membership; isolate guilds | 3 |
 | 5 | Availability | planned | One-off availability windows | Add/edit/remove available windows; reject invalid or overlapping input; support windows across midnight | 3 |
 | 6 | Availability | planned | Daily board and confirmations | One message per local date in #availability; buttons confirm/change/unavailable; only explicit confirmation means confirmed | 5 |

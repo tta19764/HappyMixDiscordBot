@@ -1,6 +1,6 @@
 # HappyMix production deployment runbook
 
-Prepared 2026-11-10. Deployment tooling is implemented; production has not been launched or verified.
+Updated 2026-11-11. Oracle is running commit `b4e61af`. The container has the persistent SQLite volume mounted, and its logs confirm Discord connection and successful PandaScore synchronization.
 
 ## Current setup
 
@@ -9,7 +9,7 @@ Prepared 2026-11-10. Deployment tooling is implemented; production has not been 
 - `/opt/happymix/bot.env` exists, belongs to the deployment user and has mode 600.
 - User reports the Tailscale OAuth and Oracle SSH repository secrets have been saved. Their values were not read or printed during implementation.
 - The workflow uses the existing secret names from ORACLE_CICD_PLAN.md. It does not need Discord/PandaScore tokens in GitHub.
-- Runtime credentials remain server-side. A production image is not yet published by this workflow.
+- Runtime credentials remain server-side. The first ARM64 image has been published and deployed.
 
 ## What runs
 

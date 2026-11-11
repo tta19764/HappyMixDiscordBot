@@ -1,5 +1,6 @@
 using HappyMix.Application.Abstractions;
 using HappyMix.Application.Abstractions.Esports;
+using HappyMix.Application.Abstractions.Guilds;
 using HappyMix.Application.Abstractions.Notifications;
 using HappyMix.Infrastructure.Persistence;
 using HappyMix.Infrastructure.PandaScore;
@@ -29,6 +30,7 @@ public static class DependencyInjection
     {
         // A single stateless clock is sufficient for the lifetime of the process.
         services.AddSingleton<IClock, SystemClock>();
+        services.AddSingleton<IGuildSettingsStore, SqliteGuildSettingsStore>();
         services.AddOptions<StorageOptions>()
             .Bind(configuration.GetSection(StorageOptions.SectionName));
         services.AddDbContextFactory<HappyMixDbContext>((provider, options) =>

@@ -12,6 +12,13 @@ internal sealed class HappyMixDbContext(DbContextOptions<HappyMixDbContext> opti
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        var settings = modelBuilder.Entity<GuildSettingsRecord>();
+        settings.ToTable("GuildSettings");
+        settings.HasKey(item => item.GuildId);
+        settings.Property(item => item.GuildId).HasColumnType("TEXT");
+        settings.Property(item => item.ChannelId).HasColumnType("TEXT");
+        settings.Property(item => item.TimeZoneId).HasColumnType("TEXT");
+
         var record = modelBuilder.Entity<AnnouncementRecord>();
         record.ToTable("AnnouncementRecords");
         record.HasKey(item => new { item.Scope, item.Key });

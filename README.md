@@ -129,6 +129,10 @@ The bot registers a global `/ping` slash command after connecting. Global comman
 
 Never commit the bot token. For local development, environment variables or .NET user secrets are recommended.
 
+## Server settings
+
+Discord server administrators can use `/settings set` to save a text channel and an IANA time zone such as `Europe/Kyiv`. `/settings show` displays the saved values privately. Settings are stored in SQLite per server. The esports publisher still uses its deployment configuration for announcements and scheduling.
+
 ## Run with Docker
 
 For Oracle Always Free hosting and GitHub Actions deployment, follow the
