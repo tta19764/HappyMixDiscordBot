@@ -94,7 +94,7 @@ public sealed class SynchronizeMatchesCommandHandler(
             return;
         }
 
-        foreach (var game in match.Games.Where(game => game.Complete))
+        foreach (var game in match.Games.Where(game => game.HasResult))
         {
             if (state.WasMapResultPublished(match.Game, game.Id))
             {

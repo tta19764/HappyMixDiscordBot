@@ -11,6 +11,24 @@ namespace HappyMix.Application.Tests.Matches;
 public sealed class SynchronizeMatchesCommandHandlerTests
 {
     [Fact]
+    public async Task FinishedMapWithWinnerIsReportedBeforeProviderSetsComplete()
+    {
+        var now = new DateTimeOffset(2026, 11, 12, 9, 40, 0, TimeSpan.Zero);
+        var match = CreateMatch(1762461, "running", now.AddHours(-2),
+            [new EsportsGame(236680, 2, "finished", false, 3240),
+             new EsportsGame(236681, 3, "finished", false, null)]);
+        var day = new EsportsMatchDay(new DateOnly(2026, 11, 12), [match]);
+        var publisher = new RecordingPublisher();
+        var handler = new SynchronizeMatchesCommandHandler(new StubClock(now), new StubPandaScoreClient(day),
+            publisher, new FakeAnnouncementState());
+
+        await handler.Handle(new SynchronizeMatchesCommand(), CancellationToken.None);
+        await handler.Handle(new SynchronizeMatchesCommand(), CancellationToken.None);
+
+        Assert.Equal(1, publisher.MapResultCount);
+    }
+
+    [Fact]
     public async Task GuildReminderUsesCustomLeadTimeAndSuppressesDisabledNotifications()
     {
         var now = new DateTimeOffset(2026, 9, 3, 23, 30, 0, TimeSpan.Zero);

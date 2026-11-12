@@ -11,4 +11,9 @@ public sealed record EsportsGame(
     int Position,
     string Status,
     bool Complete,
-    long? WinnerId);
+    long? WinnerId)
+{
+    /// <summary>PandaScore can report a finished game and winner before setting its completion flag.</summary>
+    public bool HasResult => Complete ||
+        (WinnerId is > 0 && string.Equals(Status, "finished", StringComparison.OrdinalIgnoreCase));
+}

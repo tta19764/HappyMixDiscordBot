@@ -32,7 +32,7 @@ internal sealed class SqliteMatchAnnouncementState(
         {
             foreach (var match in matches.Where(match => match.IsRunning || match.IsFinished))
             {
-                foreach (var game in match.Games.Where(game => game.Complete))
+                foreach (var game in match.Games.Where(game => game.HasResult))
                 {
                     Insert(context, EventKey("map", match.Game, game.Id));
                 }
