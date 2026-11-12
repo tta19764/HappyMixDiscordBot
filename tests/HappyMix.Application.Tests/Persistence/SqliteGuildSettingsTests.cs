@@ -43,7 +43,8 @@ public sealed class SqliteGuildSettingsTests
         using var database = await SqliteTestDatabase.CreateAsync();
         var store = database.Services.GetRequiredService<IGuildSettingsStore>();
         var preferences = new GuildEsportsPreferences([3210], [], EsportsNotifications.Reminders,
-            45, [100], 101, 102);
+            45, [100], 101, 102, CounterStrikeTwitchChannels: ["cs2_maincast2"], Dota2TwitchChannels: [],
+            CounterStrikeChannelId: 50, Dota2ChannelId: 60);
         await store.SaveAsync(new GuildSettings(1, 20, "Europe/Kyiv", preferences));
         await store.UpdateAsync(1, "UTC", settings => settings with { ChannelId = 30 });
 
@@ -60,6 +61,10 @@ public sealed class SqliteGuildSettingsTests
         Assert.Equal([100UL], saved.Preferences.OrganizerRoleIds!);
         Assert.Equal(101UL, saved.Preferences.CounterStrikePingRoleId);
         Assert.Equal(102UL, saved.Preferences.Dota2PingRoleId);
+        Assert.Equal("cs2_maincast2", Assert.Single(saved.Preferences.CounterStrikeTwitchChannels!));
+        Assert.Empty(saved.Preferences.Dota2TwitchChannels!);
+        Assert.Equal(50UL, saved.Preferences.CounterStrikeChannelId);
+        Assert.Equal(60UL, saved.Preferences.Dota2ChannelId);
     }
 
     [Fact]

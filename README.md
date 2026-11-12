@@ -136,7 +136,7 @@ Discord server administrators can manage these SQLite-backed settings with `/set
 
 | Command | Behavior |
 | --- | --- |
-| `/settings channel` | Choose the esports text channel. The bot needs permission to view it, send messages, and embed links. |
+| `/settings channel` | Choose the default esports channel or set an override for CS2 or Dota 2 with the optional `game` argument. Select a game and leave the channel blank to clear its override. The bot needs View Channel, Send Messages, and Embed Links permissions. |
 | `/settings timezone` | Choose the time zone that defines the daily esports schedule, for example `Europe/Kyiv`. |
 | `/settings teams` | Choose a game and enter comma-separated catalog names or PandaScore team IDs. Use `default` to follow the catalog or an explicit deployment override, or `none` to disable that game. |
 | `/settings add-team` | Add or update a name and its PandaScore team ID in this server's catalog. |
@@ -145,11 +145,14 @@ Discord server administrators can manage these SQLite-backed settings with `/set
 | `/settings reminder` | Set the reminder lead time from 1 to 1,440 minutes. The default is 30 minutes. |
 | `/settings organizer-role` | Add, remove, or clear roles saved for future group commands. |
 | `/settings ping-role` | Choose a role for one game's reminders. Omit the role to clear it. The role must be mentionable or the bot must have permission to mention it. |
+| `/settings twitch` | Set up to five comma-separated Twitch handles or HTTPS channel links for one game. Use `default` to reset or `none` to hide links. |
 | `/settings show` | View the settings privately. |
 
 `/settings set` continues to save the channel and time zone together. If a server has no saved announcement channel, the deployment channel remains the fallback for its own server. Reminder mentions are limited to the configured role for that game.
 
 The alias maps in `appsettings.json` seed each catalog on its first settings save. Each server then keeps its own copy in SQLite. Adding a team makes it available for selection. Servers using the catalog as their followed list also begin following the added team. A server with an explicit followed list can select the new team with `/settings teams`.
+
+Schedules and reminders show **Watch** when PandaScore lists a preferred Twitch channel for the match. Otherwise they show the preferred links as **Twitch channels**. Defaults are `cs2_maincast` and `cs2_maincast2` for CS2, and `ghostik` and `dota2_maincast` for Dota 2.
 
 ## Run with Docker
 

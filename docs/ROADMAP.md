@@ -26,7 +26,7 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 | B06 | Foundation | done | Minute-based Quartz job without overlapping executions | src/HappyMix.Bot/Jobs/SynchronizeMatchesJob.cs; Configuration/DependencyInjection.cs |
 | B07 | Operations | done | Docker image and persistent production volume | Oracle container running commit b4e61af with happymix-data mounted at /app/data |
 | B08 | Reliability | done | Persistent announcement deduplication | Infrastructure/Persistence; EF migration, per-channel/game/event keys and first-run seeding; real-file restart tests pass; send-before-save crash window documented |
-| B09 | Quality | done | Application, provider, scheduling, embed and SQLite integration tests | 78 tests passed using installed .NET SDK 10.0.402 and isolated artifacts |
+| B09 | Quality | done | Application, provider, scheduling, embed and SQLite integration tests | 85 tests passed using installed .NET SDK 10.0.402 and isolated artifacts |
 
 ## Next 30 work slots
 
@@ -54,7 +54,7 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 | 20 | Groups | planned | Temporary roles and text spaces | Optional bot-owned role/channel grants only intended access; creation limits and organizer controls work; recover partial creation failures | 4, 19 |
 | 21 | Groups | planned | Temporary voice spaces | Create room; organizer can rename/lock/set capacity through bot; permissions remain scoped to their room | 20 |
 | 22 | Reliability | planned | Resource lifecycle and cleanup | Persist IDs/expiry; extend/close controls; lock text before later deletion; never remove occupied voice room or unrelated resource; reconcile after restart | 21 |
-| 23 | Esports | done | Team subscriptions and provider validation | Per-server team catalogs are seeded from configuration and saved in SQLite. Admins can add aliases and choose followed teams in Discord. Guild channel, notification types, reminder lead time, and reminder ping roles are configurable | 3 |
+| 23 | Esports | done | Team subscriptions and provider validation | Per-server team catalogs are saved in SQLite. Admins can configure teams, notifications, reminder roles, Twitch channels and separate Discord channels for CS2 and Dota 2 | 3 |
 | 24 | Esports | done | Dota 2 adapter and shared match model | Shared CS2/Dota models, paginated feeds, labelled schedules/results, game-scoped deduplication; fixture tests pass; six live request shapes validated | 23 |
 | 25 | Esports | planned | Schedule changes and spoiler controls | Persist message references; update reschedules/cancellations; track cross-midnight matches; suppress or hide result spoilers per channel setting | 1, 24 |
 | 26 | Esports | planned | Watch parties | Match notification creates group/session with attendance; participant reminders; optional temporary room | 16, 22, 25 |

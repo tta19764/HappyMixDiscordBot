@@ -6,6 +6,33 @@ namespace HappyMix.Application.Tests.Matches;
 public sealed class DailyScheduleTests
 {
     [Fact]
+    public void ScheduleLinksToThePreferredBroadcastListedForTheMatch()
+    {
+        var match = CreateMatch("FUT vs MOUZ") with
+        {
+            StreamUrls = ["https://www.twitch.tv/cs2_maincast2?ref=fixture", "https://www.twitch.tv/eslcs"]
+        };
+        var embeds = DiscordMatchAnnouncementPublisher.BuildDailyScheduleEmbeds(
+            new DateOnly(2026, 11, 12), [match],
+            fixture => TwitchChannels.Format(fixture, ["cs2_maincast", "cs2_maincast2"]));
+
+        string description = Assert.Single(embeds).Description;
+        Assert.Contains("Watch: [cs2_maincast2](https://www.twitch.tv/cs2_maincast2)", description, StringComparison.Ordinal);
+        Assert.DoesNotContain("eslcs", description, StringComparison.Ordinal);
+        Assert.DoesNotContain("[cs2_maincast]", description, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ScheduleLabelsFallbackChannelsAndOmitsLinksWhenDisabled()
+    {
+        var match = CreateMatch("NAVI vs Monte") with { Game = Esport.Dota2 };
+        Assert.Equal("\nTwitch channels: [ghostik](https://www.twitch.tv/ghostik)",
+            TwitchChannels.Format(match, ["https://twitch.tv/Ghostik", "ghostik", "https://example.com/ghostik"]));
+        Assert.Empty(TwitchChannels.Format(match, []));
+        Assert.Empty(TwitchChannels.Format(match with { Status = "finished" }, ["ghostik"]));
+    }
+
+    [Fact]
     public void LongSchedulePreservesAllMatchesInOrder()
     {
         var matches = Enumerable.Range(1, 300).Select(index => CreateMatch($"Match {index}")).ToArray();

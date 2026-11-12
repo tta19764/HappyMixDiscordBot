@@ -20,6 +20,7 @@ public sealed record EsportsMatchDay(
 /// <param name="WinnerId">Winning team, if known.</param>
 /// <param name="TournamentId">Provider tournament ID, if known.</param>
 /// <param name="Game">Discipline, which namespaces provider identifiers.</param>
+/// <param name="StreamUrls">Broadcast links supplied for this match.</param>
 public sealed record EsportsMatch(
     long Id,
     string Name,
@@ -32,7 +33,8 @@ public sealed record EsportsMatch(
     IReadOnlyCollection<EsportsGame> Games,
     long? WinnerId,
     long? TournamentId = null,
-    Esport Game = Esport.CounterStrike2)
+    Esport Game = Esport.CounterStrike2,
+    IReadOnlyList<string>? StreamUrls = null)
 {
     /// <summary>Whether this series is in progress.</summary>
     public bool IsRunning => string.Equals(Status, "running", StringComparison.OrdinalIgnoreCase);

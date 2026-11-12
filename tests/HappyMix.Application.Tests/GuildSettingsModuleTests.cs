@@ -10,7 +10,7 @@ public sealed class GuildSettingsModuleTests
 {
     private static readonly string[] SettingsCommands =
         ["add-team", "channel", "notifications", "organizer-role", "ping-role", "reminder", "set", "show",
-            "team-catalog", "teams", "timezone"];
+            "team-catalog", "teams", "timezone", "twitch"];
 
     [Fact]
     public async Task DiscordDiscoversSettingsCommandsWithAdministratorAndGuildPreconditions()

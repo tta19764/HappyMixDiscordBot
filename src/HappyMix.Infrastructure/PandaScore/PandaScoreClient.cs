@@ -152,7 +152,8 @@ internal sealed record PandaScoreMatch(
     [property: JsonPropertyName("opponents")] IReadOnlyCollection<PandaScoreOpponentSlot>? Opponents,
     [property: JsonPropertyName("results")] IReadOnlyCollection<PandaScoreResult>? Results,
     [property: JsonPropertyName("games")] IReadOnlyCollection<PandaScoreGame>? Games,
-    [property: JsonPropertyName("winner_id")] long? WinnerId)
+    [property: JsonPropertyName("winner_id")] long? WinnerId,
+    [property: JsonPropertyName("streams_list")] IReadOnlyList<PandaScoreStream>? Streams)
 {
     public EsportsMatch ToDomain(Esport game) => new(
         Id, Name, BeginAt, Status,
@@ -162,8 +163,10 @@ internal sealed record PandaScoreMatch(
         Results?.Select(result => new EsportsTeamResult(result.TeamId, result.Score)).ToArray() ?? [],
         Games?.Select(item => new EsportsGame(
             item.Id, item.Position, item.Status, item.Complete, item.Winner?.Id)).ToArray() ?? [],
-        WinnerId, Tournament?.Id, game);
+        WinnerId, Tournament?.Id, game, Streams?.Select(stream => stream.RawUrl).OfType<string>().ToArray());
 }
+
+internal sealed record PandaScoreStream([property: JsonPropertyName("raw_url")] string? RawUrl);
 
 internal sealed record PandaScoreTournament(
     [property: JsonPropertyName("id")] long Id,

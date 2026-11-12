@@ -20,7 +20,11 @@ public sealed record GuildEsportsPreferences(
     ulong? CounterStrikePingRoleId = null,
     ulong? Dota2PingRoleId = null,
     Dictionary<string, long>? CounterStrikeTeamAliases = null,
-    Dictionary<string, long>? Dota2TeamAliases = null)
+    Dictionary<string, long>? Dota2TeamAliases = null,
+    string[]? CounterStrikeTwitchChannels = null,
+    string[]? Dota2TwitchChannels = null,
+    ulong? CounterStrikeChannelId = null,
+    ulong? Dota2ChannelId = null)
 {
     public static GuildEsportsPreferences Default { get; } = new();
 }

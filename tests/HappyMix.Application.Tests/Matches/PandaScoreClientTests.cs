@@ -254,6 +254,19 @@ public sealed class PandaScoreClientTests
         Assert.Equal(3, handler.Requests.Count);
     }
 
+    [Fact]
+    public async Task MatchFeedCarriesProviderBroadcastUrls()
+    {
+        const string fixture = """
+            [{"id":1,"name":"FUT vs MOUZ","status":"running",
+              "opponents":[{"opponent":{"id":136955,"name":"FUT"}}],
+              "streams_list":[{"raw_url":"https://www.twitch.tv/cs2_maincast2"},{"raw_url":null}]}]
+            """;
+        using var provider = Build(new StubHandler(uri => Is(uri, "csgo", "running") ? fixture : "[]"));
+        var match = Assert.Single((await Load(provider)).Matches);
+        Assert.Equal("https://www.twitch.tv/cs2_maincast2", Assert.Single(match.StreamUrls!));
+    }
+
     private static bool Is(Uri uri, string game, string status) =>
         uri.AbsolutePath == "/" + game + "/matches/" + status;
 

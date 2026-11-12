@@ -5,6 +5,7 @@ using HappyMix.Application.Abstractions.Notifications;
 using HappyMix.Application.Matches.SynchronizeMatches;
 using HappyMix.Bot.Configuration;
 using HappyMix.Bot.Services;
+using HappyMix.Domain.Esports;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -32,7 +33,7 @@ internal sealed partial class SynchronizeMatchesJob(
     {
         var cancellationToken = context.CancellationToken;
         var saved = await settingsStore.ListAsync(cancellationToken);
-        var destinations = saved.Where(item => item.ChannelId != 0).ToList();
+        var destinations = saved.Where(item => GetRoutes(item).Count > 0).ToList();
         var errors = new List<Exception>();
         ulong legacyChannel = discord.Value.AnnouncementChannelId;
         if (legacyChannel != 0 && destinations.All(item => item.ChannelId != legacyChannel))
@@ -49,6 +50,7 @@ internal sealed partial class SynchronizeMatchesJob(
                 }
                 else if (settings.ChannelId == 0)
                 {
+                    destinations.RemoveAll(destination => destination.GuildId == settings.GuildId);
                     destinations.Add(settings with { ChannelId = legacyChannel });
                 }
             }
@@ -69,9 +71,24 @@ internal sealed partial class SynchronizeMatchesJob(
             {
                 var zone = TimeZoneInfo.FindSystemTimeZoneById(settings.TimeZoneId);
                 var matches = await guildFeed.GetMatchesAsync(now, settings.TimeZoneId, preferences, cancellationToken);
-                var handler = new SynchronizeMatchesCommandHandler(clock, pandaScore, publisher.ForGuild(settings),
-                    stateFactory.ForChannel(settings.ChannelId));
-                await handler.PublishAsync(matches, now, preferences, zone, cancellationToken);
+                foreach (var route in GetRoutes(settings))
+                {
+                    var target = settings with { ChannelId = route.Key };
+                    var channelMatches = matches with
+                    {
+                        Matches = matches.Matches.Where(match => route.Contains(match.Game)).ToArray()
+                    };
+                    try
+                    {
+                        var handler = new SynchronizeMatchesCommandHandler(clock, pandaScore, publisher.ForGuild(target),
+                            stateFactory.ForChannel(route.Key));
+                        await handler.PublishAsync(channelMatches, now, preferences, zone, cancellationToken);
+                    }
+                    catch (Exception exception) when (exception is not OperationCanceledException)
+                    {
+                        errors.Add(new InvalidOperationException($"Match publication failed for channel {route.Key}.", exception));
+                    }
+                }
             }
             catch (Exception exception) when (exception is not OperationCanceledException)
             {
@@ -83,6 +100,16 @@ internal sealed partial class SynchronizeMatchesJob(
             throw new JobExecutionException(new AggregateException(errors));
 
         LogSynchronizationCompleted(logger);
+    }
+
+    internal static IReadOnlyList<IGrouping<ulong, Esport>> GetRoutes(GuildSettings settings)
+    {
+        var routes = new[]
+        {
+            (Game: Esport.CounterStrike2, Channel: settings.Preferences?.CounterStrikeChannelId ?? settings.ChannelId),
+            (Game: Esport.Dota2, Channel: settings.Preferences?.Dota2ChannelId ?? settings.ChannelId)
+        };
+        return routes.Where(route => route.Channel != 0).GroupBy(route => route.Channel, route => route.Game).ToArray();
     }
 
     [LoggerMessage(

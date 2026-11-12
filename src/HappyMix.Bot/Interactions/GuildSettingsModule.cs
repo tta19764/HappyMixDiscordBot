@@ -1,6 +1,8 @@
 using Discord;
 using Discord.Interactions;
 using HappyMix.Application.Abstractions.Guilds;
+using HappyMix.Bot.Configuration;
+using HappyMix.Bot.Services;
 using HappyMix.Domain.Esports;
 using HappyMix.Infrastructure.PandaScore;
 using Microsoft.Extensions.Options;
@@ -11,7 +13,8 @@ namespace HappyMix.Bot.Interactions;
 [RequireContext(ContextType.Guild)]
 [RequireUserPermission(GuildPermission.Administrator)]
 [DefaultMemberPermissions(GuildPermission.Administrator)]
-public sealed class GuildSettingsModule(IGuildSettingsStore store, IOptions<PandaScoreOptions> pandaScore)
+public sealed class GuildSettingsModule(IGuildSettingsStore store, IOptions<PandaScoreOptions> pandaScore,
+    IOptions<DiscordOptions> discord)
     : InteractionModuleBase<SocketInteractionContext>
 {
     [SlashCommand("show", "Show saved server settings.")]
@@ -24,7 +27,9 @@ public sealed class GuildSettingsModule(IGuildSettingsStore store, IOptions<Pand
             ? string.Join(", ", roles.Take(20).Select(role => $"<@&{role}>")) +
                 (roles.Length > 20 ? $" (+{roles.Length - 20} more)" : "") : "None";
         await RespondAsync($"""
-            Channel: {channel}
+            Default esports channel: {channel}
+            CS2 channel: {FormatChannel(preferences.CounterStrikeChannelId)}
+            Dota 2 channel: {FormatChannel(preferences.Dota2ChannelId)}
             Time zone: {settings?.TimeZoneId ?? pandaScore.Value.TimeZoneId}
             CS2 teams: {FormatTeams(preferences.CounterStrikeTeamIds, GetCatalog(preferences, Esport.CounterStrike2))}
             Dota 2 teams: {FormatTeams(preferences.Dota2TeamIds, GetCatalog(preferences, Esport.Dota2))}
@@ -33,6 +38,8 @@ public sealed class GuildSettingsModule(IGuildSettingsStore store, IOptions<Pand
             Organizer roles: {organizers}
             CS2 reminder ping: {FormatRole(preferences.CounterStrikePingRoleId)}
             Dota 2 reminder ping: {FormatRole(preferences.Dota2PingRoleId)}
+            CS2 Twitch: {FormatTwitchChannels(preferences.CounterStrikeTwitchChannels ?? discord.Value.CounterStrikeTwitchChannels)}
+            Dota 2 Twitch: {FormatTwitchChannels(preferences.Dota2TwitchChannels ?? discord.Value.Dota2TwitchChannels)}
             """, ephemeral: true, allowedMentions: AllowedMentions.None);
     }
 
@@ -42,8 +49,19 @@ public sealed class GuildSettingsModule(IGuildSettingsStore store, IOptions<Pand
         [Summary(description: "IANA time zone, for example Europe/Kyiv or UTC")] string timezone) =>
         SaveLocationAsync(channel, timezone);
 
-    [SlashCommand("channel", "Set the text channel for esports announcements.")]
-    public Task ChannelAsync(ITextChannel channel) => SaveLocationAsync(channel, null);
+    [SlashCommand("channel", "Set the default channel or a channel for one game.")]
+    public async Task ChannelAsync(
+        [Summary(description: "Text channel. Omit it with a game to restore the default.")] ITextChannel? channel = null,
+        [Summary(description: "Game to configure. Omit it to change the default channel.")] Esport? game = null)
+    {
+        if (channel is null && game is null)
+        {
+            await RespondAsync("Choose a channel to set the default, or choose a game to clear its override.", ephemeral: true);
+            return;
+        }
+
+        await SaveLocationAsync(channel, null, game);
+    }
 
     [SlashCommand("timezone", "Set the time zone used for the daily schedule.")]
     public Task TimeZoneAsync(
@@ -190,7 +208,37 @@ public sealed class GuildSettingsModule(IGuildSettingsStore store, IOptions<Pand
             $"Saved {game.DisplayName()} reminder ping: {FormatRole(role?.Id)}.");
     }
 
-    private async Task SaveLocationAsync(ITextChannel? channel, string? timezone)
+    [SlashCommand("twitch", "Set preferred Twitch channels for one game.")]
+    public async Task TwitchAsync(Esport game,
+        [Summary(description: "Up to five comma-separated Twitch handles or links, default, or none")] string channels)
+    {
+        channels = channels.Trim();
+        string[]? saved = null;
+        if (string.Equals(channels, "none", StringComparison.OrdinalIgnoreCase))
+        {
+            saved = [];
+        }
+        else if (!string.Equals(channels, "default", StringComparison.OrdinalIgnoreCase))
+        {
+            var handles = channels.Split(',').Select(TwitchChannels.GetHandle).ToArray();
+            if (handles.Length > 5 || handles.Any(handle => handle is null))
+            {
+                await RespondAsync("Enter up to five Twitch channel names or HTTPS links separated by commas. Use default to reset or none to hide links.",
+                    ephemeral: true);
+                return;
+            }
+            saved = handles.OfType<string>().Distinct(StringComparer.Ordinal).ToArray();
+        }
+
+        await SavePreferencesAsync(preferences => game == Esport.CounterStrike2
+            ? preferences with { CounterStrikeTwitchChannels = saved } : preferences with { Dota2TwitchChannels = saved },
+            $"Saved {game.DisplayName()} Twitch channels: {(saved is null ? "Defaults" : FormatTwitchChannels(saved))}.");
+    }
+
+    private static string FormatTwitchChannels(string[] channels) =>
+        channels.Length == 0 ? "None" : string.Join(", ", channels.Take(5));
+
+    private async Task SaveLocationAsync(ITextChannel? channel, string? timezone, Esport? game = null)
     {
         if (channel is not null && channel.GuildId != Context.Guild.Id)
         {
@@ -218,6 +266,15 @@ public sealed class GuildSettingsModule(IGuildSettingsStore store, IOptions<Pand
             return;
         }
 
+        if (game is { } discipline)
+        {
+            await SavePreferencesAsync(preferences => discipline == Esport.CounterStrike2
+                ? preferences with { CounterStrikeChannelId = channel?.Id }
+                : preferences with { Dota2ChannelId = channel?.Id },
+                $"Saved {discipline.DisplayName()} channel: {FormatChannel(channel?.Id)}.");
+            return;
+        }
+
         await SaveAsync(settings => settings with
         {
             ChannelId = channel?.Id ?? settings.ChannelId,
@@ -241,6 +298,7 @@ public sealed class GuildSettingsModule(IGuildSettingsStore store, IOptions<Pand
     }
 
     private static string FormatRole(ulong? roleId) => roleId is { } id ? $"<@&{id}>" : "None";
+    private static string FormatChannel(ulong? channelId) => channelId is { } id ? $"<#{id}>" : "Uses default";
 
     private Dictionary<string, long> GetCatalog(GuildEsportsPreferences preferences, Esport game)
     {

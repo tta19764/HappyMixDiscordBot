@@ -28,7 +28,7 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         IReadOnlyCollection<EsportsMatch> matches,
         CancellationToken cancellationToken)
     {
-        foreach (Embed embed in BuildDailyScheduleEmbeds(matchDate, matches))
+        foreach (Embed embed in BuildDailyScheduleEmbeds(matchDate, matches, FormatTwitchLinks))
         {
             await SendAsync(embed, cancellationToken);
         }
@@ -37,7 +37,8 @@ internal sealed class DiscordMatchAnnouncementPublisher(
     /// <summary>Builds bounded pages without merging tournaments across disciplines.</summary>
     internal static IReadOnlyList<Embed> BuildDailyScheduleEmbeds(
         DateOnly matchDate,
-        IReadOnlyCollection<EsportsMatch> matches)
+        IReadOnlyCollection<EsportsMatch> matches,
+        Func<EsportsMatch, string>? formatTwitchLinks = null)
     {
         if (matches.Count == 0)
         {
@@ -48,19 +49,21 @@ internal sealed class DiscordMatchAnnouncementPublisher(
             .GroupBy(match => (match.Game, match.TournamentId,
                 Fallback: match.TournamentId is null ? $"{match.LeagueName} • {match.TournamentName}" : string.Empty))
             .SelectMany(group => BuildTournamentScheduleEmbeds(matchDate, group.ToArray(),
-                $"{group.First().Game.DisplayName()} • {group.First().LeagueName} • {group.First().TournamentName}"))
+                $"{group.First().Game.DisplayName()} • {group.First().LeagueName} • {group.First().TournamentName}",
+                formatTwitchLinks))
             .ToArray();
     }
 
     private static Embed[] BuildTournamentScheduleEmbeds(
         DateOnly matchDate,
         EsportsMatch[] matches,
-        string tournamentTitle)
+        string tournamentTitle,
+        Func<EsportsMatch, string>? formatTwitchLinks = null)
     {
         const int descriptionLimit = 4096;
         IEnumerable<string> lines = matches.Length == 0
             ? ["No followed main-team CS2 or Dota 2 matches are scheduled today."]
-            : matches.Select(FormatScheduledMatch);
+            : matches.Select(match => FormatScheduledMatch(match) + formatTwitchLinks?.Invoke(match));
         var descriptions = new List<string>();
         string current = string.Empty;
         foreach (string line in lines)
@@ -106,7 +109,7 @@ internal sealed class DiscordMatchAnnouncementPublisher(
     {
         var embed = new EmbedBuilder()
             .WithTitle($"{match.Game.DisplayName()} • Match starts within {settings?.Preferences?.ReminderMinutes ?? 30} minutes")
-            .WithDescription(FormatMatchDetails(match))
+            .WithDescription(FormatMatchDetails(match) + FormatTwitchLinks(match))
             .WithColor(Color.Orange)
             .WithCurrentTimestamp()
             .Build();
@@ -209,6 +212,14 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         }
 
         return resolvedChannel;
+    }
+
+    private string FormatTwitchLinks(EsportsMatch match)
+    {
+        var channels = match.Game == Esport.CounterStrike2
+            ? settings?.Preferences?.CounterStrikeTwitchChannels ?? _options.CounterStrikeTwitchChannels
+            : settings?.Preferences?.Dota2TwitchChannels ?? _options.Dota2TwitchChannels;
+        return TwitchChannels.Format(match, channels);
     }
 
     private static string FormatScheduledMatch(EsportsMatch match)
