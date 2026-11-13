@@ -154,6 +154,17 @@ The alias maps in `appsettings.json` seed each catalog on its first settings sav
 
 Schedules and reminders show **Watch** when PandaScore lists a preferred Twitch channel for the match. Otherwise they show the preferred links as **Twitch channels**. Defaults are `cs2_maincast` and `cs2_maincast2` for CS2, and `ghostik` and `dota2_maincast` for Dota 2.
 
+## Saved gaming groups
+
+Use `/group create name:Friday` to create an invite-only group. The creator can use
+`/group invite` to save an invitation. Invited members can find it with `/group list`
+and accept it with `/group join`. Members can leave with `/group leave`.
+
+The organizer and members with Manage Server or Administrator can invite and remove
+members, revoke invitations, or delete the group. The organizer can close the group
+with `/group delete`. When organizer roles are configured, group creation requires
+one of those roles or Manage Server or Administrator permission.
+
 ## Run with Docker
 
 For Oracle Always Free hosting and GitHub Actions deployment, follow the
@@ -196,3 +207,20 @@ docker run --rm --name happymix-bot `
   --env PandaScore__Token="your-pandascore-token" `
   happymix-bot
 ```
+
+
+### One-off availability
+
+Use `/availability add` with a date, time and UTC offset for both endpoints, for example
+`2026-11-13 22:00 +02:00` through `2026-11-14 01:00 +02:00`. Discord displays those times
+in each viewer's local timezone. Use `/availability list` to get the ID for `edit` or `remove`.
+
+### Live match-start alerts
+
+The bot posts a start alert the first time PandaScore reports a followed series as running.
+Use the `match-starts` option of `/settings notifications` to control these alerts.
+Set `Twitch__ClientId` and `Twitch__ClientSecret` in the deployment environment
+(`/opt/happymix/bot.env` on the VM) using credentials from a Twitch developer application.
+Start alerts link only preferred channels that Twitch reports live in the matching game category
+when the bot sends the message. A live channel can be showing a different match.
+The alert still posts if Twitch credentials are missing or the lookup fails.

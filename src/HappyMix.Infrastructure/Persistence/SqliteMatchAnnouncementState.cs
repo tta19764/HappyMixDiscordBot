@@ -53,6 +53,10 @@ internal sealed class SqliteMatchAnnouncementState(
     /// <inheritdoc />
     public bool WasStartingSoonPublished(Esport game, long matchId) => Contains(EventKey("start", game, matchId));
     /// <inheritdoc />
+    public bool WasMatchStartedPublished(Esport game, long matchId) => Contains(EventKey("live", game, matchId));
+    /// <inheritdoc />
+    public void MarkMatchStartedPublished(Esport game, long matchId) => Mark(EventKey("live", game, matchId));
+    /// <inheritdoc />
     public bool WasMapResultPublished(Esport game, long gameId) => Contains(EventKey("map", game, gameId));
     /// <inheritdoc />
     public bool WasMatchResultPublished(Esport game, long matchId) => Contains(EventKey("result", game, matchId));

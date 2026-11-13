@@ -24,7 +24,8 @@ public sealed record GuildEsportsPreferences(
     string[]? CounterStrikeTwitchChannels = null,
     string[]? Dota2TwitchChannels = null,
     ulong? CounterStrikeChannelId = null,
-    ulong? Dota2ChannelId = null)
+    ulong? Dota2ChannelId = null,
+    bool MatchStarts = true)
 {
     public static GuildEsportsPreferences Default { get; } = new();
 }

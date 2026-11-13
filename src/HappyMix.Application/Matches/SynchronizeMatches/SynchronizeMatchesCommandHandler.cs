@@ -55,6 +55,12 @@ public sealed class SynchronizeMatchesCommandHandler(
         {
             if (preferences.Notifications.HasFlag(EsportsNotifications.Reminders))
                 await PublishStartingSoonIfRequiredAsync(match, now, preferences.ReminderMinutes, cancellationToken);
+            if (preferences.MatchStarts && match.IsRunning && !state.WasMatchStartedPublished(match.Game, match.Id))
+            {
+                await publisher.PublishMatchStartedAsync(match, cancellationToken);
+                state.MarkMatchStartedPublished(match.Game, match.Id);
+            }
+
             if (preferences.Notifications.HasFlag(EsportsNotifications.Maps))
                 await PublishMapResultsIfRequiredAsync(match, cancellationToken);
             if (preferences.Notifications.HasFlag(EsportsNotifications.Results))

@@ -14,13 +14,14 @@ namespace HappyMix.Bot.Services;
 internal sealed class DiscordMatchAnnouncementPublisher(
     DiscordSocketClient client,
     IOptions<DiscordOptions> options,
+    TwitchLiveStreams twitch,
     GuildSettings? settings = null) : IMatchAnnouncementPublisher
 {
     private readonly DiscordOptions _options = options.Value;
     private ulong ChannelId => settings?.ChannelId ?? _options.AnnouncementChannelId;
 
     internal DiscordMatchAnnouncementPublisher ForGuild(GuildSettings destination) =>
-        new(client, options, destination);
+        new(client, options, twitch, destination);
 
     /// <inheritdoc />
     public async Task PublishDailyScheduleAsync(
@@ -120,6 +121,23 @@ internal sealed class DiscordMatchAnnouncementPublisher(
     }
 
     /// <inheritdoc />
+    public async Task PublishMatchStartedAsync(EsportsMatch match, CancellationToken cancellationToken)
+    {
+        var preferred = GetTwitchChannels(match).Select(TwitchChannels.GetHandle).OfType<string>()
+            .Distinct(StringComparer.Ordinal).Take(5).ToArray();
+        var live = await twitch.GetLiveAsync(preferred, match.Game, cancellationToken);
+        var links = live.Select(handle => $"[{handle}](https://www.twitch.tv/{handle})");
+        string streams = live.Count == 0 ? string.Empty : $"\nLive on Twitch: {string.Join(" · ", links)}";
+        var embed = new EmbedBuilder()
+            .WithTitle($"{match.Game.DisplayName()} • Match started")
+            .WithDescription(FormatMatchDetails(match) + streams)
+            .WithColor(Color.Green)
+            .WithCurrentTimestamp()
+            .Build();
+        await SendAsync(embed, cancellationToken);
+    }
+
+    /// <inheritdoc />
     public Task PublishMapResultAsync(
         EsportsMatch match,
         EsportsGame game,
@@ -214,13 +232,11 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         return resolvedChannel;
     }
 
-    private string FormatTwitchLinks(EsportsMatch match)
-    {
-        var channels = match.Game == Esport.CounterStrike2
+    private string FormatTwitchLinks(EsportsMatch match) => TwitchChannels.Format(match, GetTwitchChannels(match));
+
+    private string[] GetTwitchChannels(EsportsMatch match) => match.Game == Esport.CounterStrike2
             ? settings?.Preferences?.CounterStrikeTwitchChannels ?? _options.CounterStrikeTwitchChannels
             : settings?.Preferences?.Dota2TwitchChannels ?? _options.Dota2TwitchChannels;
-        return TwitchChannels.Format(match, channels);
-    }
 
     private static string FormatScheduledMatch(EsportsMatch match)
     {

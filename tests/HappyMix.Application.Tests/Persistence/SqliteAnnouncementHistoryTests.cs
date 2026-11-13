@@ -26,7 +26,7 @@ public sealed class SqliteAnnouncementHistoryTests
         await database.Services.InitializeDatabaseAsync();
         await using var context = await database.Services.GetRequiredService<IDbContextFactory<HappyMixDbContext>>().CreateDbContextAsync();
         Assert.Equal(["20261109000100_InitialAnnouncementHistory", "20261111000100_AddGuildSettings",
-                "20261111000200_AddGuildPreferences"],
+                "20261111000200_AddGuildPreferences", "20261112000100_AddGuildGroups", "20261113000100_AddAvailabilityWindows"],
             await context.Database.GetAppliedMigrationsAsync());
         Assert.False(context.Database.HasPendingModelChanges());
         Assert.True(state.WasSchedulePublished(Day));
@@ -39,6 +39,8 @@ public sealed class SqliteAnnouncementHistoryTests
         var state = State(database.Services);
         state.MarkSchedulePublished(Day);
         state.MarkStartingSoonPublished(Esport.CounterStrike2, 1);
+        Assert.False(state.WasMatchStartedPublished(Esport.CounterStrike2, 1));
+        state.MarkMatchStartedPublished(Esport.CounterStrike2, 1);
         state.MarkMapResultPublished(Esport.CounterStrike2, 1);
         state.MarkMatchResultPublished(Esport.CounterStrike2, 1);
         database.Services.Dispose();
@@ -47,6 +49,8 @@ public sealed class SqliteAnnouncementHistoryTests
         var restored = State(restarted);
         Assert.True(restored.WasSchedulePublished(Day));
         Assert.True(restored.WasStartingSoonPublished(Esport.CounterStrike2, 1));
+        Assert.True(restored.WasMatchStartedPublished(Esport.CounterStrike2, 1));
+        Assert.False(restored.WasMatchStartedPublished(Esport.Dota2, 1));
         Assert.True(restored.WasMapResultPublished(Esport.CounterStrike2, 1));
         Assert.True(restored.WasMatchResultPublished(Esport.CounterStrike2, 1));
         Assert.False(restored.WasSchedulePublished(Day.AddDays(1)));
@@ -181,6 +185,8 @@ public sealed class SqliteAnnouncementHistoryTests
         public (int Schedules, int Starts, int Maps, int Results) Counts => (_schedules, _starts, _maps, _results);
         public Task PublishDailyScheduleAsync(DateOnly matchDate, IReadOnlyCollection<EsportsMatch> matches, CancellationToken cancellationToken)
         { _schedules++; return Task.CompletedTask; }
+        public Task PublishMatchStartedAsync(EsportsMatch match, CancellationToken cancellationToken) => Task.CompletedTask;
+
         public Task PublishStartingSoonAsync(EsportsMatch match, CancellationToken cancellationToken)
         { _starts++; return Task.CompletedTask; }
         public Task PublishMapResultAsync(EsportsMatch match, EsportsGame game, CancellationToken cancellationToken)

@@ -34,6 +34,7 @@ public sealed class GuildSettingsModule(IGuildSettingsStore store, IOptions<Pand
             CS2 teams: {FormatTeams(preferences.CounterStrikeTeamIds, GetCatalog(preferences, Esport.CounterStrike2))}
             Dota 2 teams: {FormatTeams(preferences.Dota2TeamIds, GetCatalog(preferences, Esport.Dota2))}
             Notifications: {preferences.Notifications}
+            Match starts: {preferences.MatchStarts}
             Reminder: {preferences.ReminderMinutes} minutes before start
             Organizer roles: {organizers}
             CS2 reminder ping: {FormatRole(preferences.CounterStrikePingRoleId)}
@@ -156,15 +157,15 @@ public sealed class GuildSettingsModule(IGuildSettingsStore store, IOptions<Pand
     }
 
     [SlashCommand("notifications", "Choose which esports messages the bot posts.")]
-    public Task NotificationsAsync(bool schedule, bool reminders, bool maps, bool results)
+    public Task NotificationsAsync(bool schedule, bool reminders, bool maps, bool results, bool matchStarts = true)
     {
         var enabled = EsportsNotifications.None;
         if (schedule) enabled |= EsportsNotifications.Schedule;
         if (reminders) enabled |= EsportsNotifications.Reminders;
         if (maps) enabled |= EsportsNotifications.Maps;
         if (results) enabled |= EsportsNotifications.Results;
-        return SavePreferencesAsync(preferences => preferences with { Notifications = enabled },
-            $"Enabled esports notifications: {enabled}.");
+        return SavePreferencesAsync(preferences => preferences with { Notifications = enabled, MatchStarts = matchStarts },
+            $"Enabled esports notifications: {enabled}. Match starts: {matchStarts}.");
     }
 
     [SlashCommand("reminder", "Set how many minutes before a match to send a reminder.")]

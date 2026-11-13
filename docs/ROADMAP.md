@@ -1,8 +1,8 @@
 # HappyMix implementation roadmap
 
-Reviewed: 2026-11-11.
+Reviewed: 2026-11-12.
 
-Day 3 adds saved guild settings and administrator-only Discord commands. The Oracle bot runs commit b4e61af. Day 2 still requires restart, reboot, backup and billing verification. Day 4 group management can now start.
+Day 5 adds one-off availability windows and live match-start alerts. Day 6 adds the daily availability board. Day 2 still requires restart, reboot, backup and billing verification.
 
 ## How to maintain this plan
 
@@ -26,7 +26,7 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 | B06 | Foundation | done | Minute-based Quartz job without overlapping executions | src/HappyMix.Bot/Jobs/SynchronizeMatchesJob.cs; Configuration/DependencyInjection.cs |
 | B07 | Operations | done | Docker image and persistent production volume | Oracle container running commit b4e61af with happymix-data mounted at /app/data |
 | B08 | Reliability | done | Persistent announcement deduplication | Infrastructure/Persistence; EF migration, per-channel/game/event keys and first-run seeding; real-file restart tests pass; send-before-save crash window documented |
-| B09 | Quality | done | Application, provider, scheduling, embed and SQLite integration tests | 85 tests passed using installed .NET SDK 10.0.402 and isolated artifacts |
+| B09 | Quality | done | Application, provider, scheduling, embed and SQLite integration tests | 87 tests passed using installed .NET SDK 10.0.402 and isolated artifacts |
 
 ## Next 30 work slots
 
@@ -35,8 +35,8 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 | 1 | Reliability | done | SQLite foundation and persistent announcement history | EF Core SQLite, versioned startup migration, configured path/volume, historical seeding and real-file restart tests pass; crash window documented in SQLITE_DAY1.md | B02 |
 | 2 | Operations | partial | Production hosting and deployment | Oracle deployment b4e61af verified running with zero container restarts, a persistent SQLite mount, Discord connection and successful PandaScore synchronization. Remaining: Always Free cost confirmation, live restart/reboot and off-VM backup checks | 1 |
 | 3 | Foundation | done | Guild settings and access policy | Admin-only settings store the announcement channel, time zone, team subscriptions, notifications, reminder lead time, organizer roles, and ping roles per guild. Organizer roles are saved for Day 4 group commands | 1 |
-| 4 | Groups | planned | Saved groups and organizers | Create/invite/join/leave a group; only organizer or moderator edits membership; isolate guilds | 3 |
-| 5 | Availability | planned | One-off availability windows | Add/edit/remove available windows; reject invalid or overlapping input; support windows across midnight | 3 |
+| 4 | Groups | done | Saved groups and organizers | Discord group commands support creation, invitations, joining, leaving, removing members, listing and deletion. Organizer roles restrict creation when configured. SQLite restart and guild isolation tests passed | 3 |
+| 5 | Availability | done | One-off availability windows | Add/edit/remove available windows; reject invalid or overlapping input; support windows across midnight | 3 |
 | 6 | Availability | planned | Daily board and confirmations | One message per local date in #availability; buttons confirm/change/unavailable; only explicit confirmation means confirmed | 5 |
 | 7 | Availability | planned | Weekly recurring availability | Generate expected windows from weekly patterns in member timezone; handle daylight-saving boundaries | 5 |
 | 8 | Availability | planned | Exceptions and opt-in prompts | Date exception overrides recurrence; snooze and quiet hours prevent unwanted prompts; keep commitment reasons private | 6, 7 |

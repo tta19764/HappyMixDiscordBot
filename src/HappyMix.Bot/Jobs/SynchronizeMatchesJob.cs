@@ -64,7 +64,7 @@ internal sealed partial class SynchronizeMatchesJob(
         foreach (var settings in destinations)
         {
             var preferences = settings.Preferences ?? GuildEsportsPreferences.Default;
-            if (preferences.Notifications == EsportsNotifications.None)
+            if (preferences.Notifications == EsportsNotifications.None && !preferences.MatchStarts)
                 continue;
 
             try

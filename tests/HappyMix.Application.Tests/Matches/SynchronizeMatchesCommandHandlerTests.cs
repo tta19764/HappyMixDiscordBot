@@ -206,6 +206,8 @@ public sealed class SynchronizeMatchesCommandHandlerTests
             return Task.CompletedTask;
         }
 
+        public Task PublishMatchStartedAsync(EsportsMatch match, CancellationToken cancellationToken) => Task.CompletedTask;
+
         public Task PublishStartingSoonAsync(
             EsportsMatch match,
             CancellationToken cancellationToken)
@@ -246,6 +248,10 @@ public sealed class SynchronizeMatchesCommandHandlerTests
         private readonly HashSet<(Esport Game, long Id)> _matchResults = [];
 
         public bool WasSchedulePublished(DateOnly matchDate) => _schedules.Contains(matchDate);
+
+        private readonly HashSet<(Esport, long)> _started = [];
+        public bool WasMatchStartedPublished(Esport game, long matchId) => _started.Contains((game, matchId));
+        public void MarkMatchStartedPublished(Esport game, long matchId) => _started.Add((game, matchId));
 
         public bool WasStartingSoonPublished(Esport game, long matchId) => _startingSoon.Contains((game, matchId));
 

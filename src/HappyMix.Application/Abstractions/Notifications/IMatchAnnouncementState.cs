@@ -13,6 +13,10 @@ public interface IMatchAnnouncementState
     /// <summary>Checks whether an upcoming series reminder was published.</summary>
     bool WasStartingSoonPublished(Esport game, long matchId);
     /// <summary>Checks whether an individual map/game result was published.</summary>
+    bool WasMatchStartedPublished(Esport game, long matchId);
+
+    void MarkMatchStartedPublished(Esport game, long matchId);
+
     bool WasMapResultPublished(Esport game, long gameId);
     /// <summary>Checks whether a series result was published.</summary>
     bool WasMatchResultPublished(Esport game, long matchId);

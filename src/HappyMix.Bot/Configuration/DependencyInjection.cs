@@ -54,6 +54,8 @@ public static class DependencyInjection
         services.AddSingleton<DiscordSocketClient>();
         services.AddSingleton(static provider =>
             new InteractionService(provider.GetRequiredService<DiscordSocketClient>().Rest));
+        services.AddHttpClient("Twitch", client => client.Timeout = TimeSpan.FromSeconds(5));
+        services.AddSingleton<TwitchLiveStreams>();
         services.AddSingleton<DiscordMatchAnnouncementPublisher>();
         services.AddSingleton<IMatchAnnouncementPublisher>(provider =>
             provider.GetRequiredService<DiscordMatchAnnouncementPublisher>());

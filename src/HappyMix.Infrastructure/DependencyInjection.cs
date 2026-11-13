@@ -31,6 +31,8 @@ public static class DependencyInjection
         // A single stateless clock is sufficient for the lifetime of the process.
         services.AddSingleton<IClock, SystemClock>();
         services.AddSingleton<IGuildSettingsStore, SqliteGuildSettingsStore>();
+        services.AddSingleton<IGuildGroupStore, SqliteGuildGroupStore>();
+        services.AddSingleton<IAvailabilityStore, SqliteAvailabilityStore>();
         services.AddSingleton<IMatchAnnouncementStateFactory, SqliteMatchAnnouncementStateFactory>();
         services.AddOptions<StorageOptions>()
             .Bind(configuration.GetSection(StorageOptions.SectionName));

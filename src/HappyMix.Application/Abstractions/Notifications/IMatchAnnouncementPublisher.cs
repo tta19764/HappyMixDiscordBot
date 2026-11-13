@@ -14,6 +14,9 @@ public interface IMatchAnnouncementPublisher
     /// <summary>Publishes an imminent-series reminder.</summary>
     Task PublishStartingSoonAsync(EsportsMatch match, CancellationToken cancellationToken);
 
+    /// <summary>Publishes a running-series announcement.</summary>
+    Task PublishMatchStartedAsync(EsportsMatch match, CancellationToken cancellationToken);
+
     /// <summary>Publishes a completed CS2 map or Dota 2 game result.</summary>
     Task PublishMapResultAsync(
         EsportsMatch match,
