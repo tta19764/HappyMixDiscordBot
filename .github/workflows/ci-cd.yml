@@ -95,7 +95,7 @@ jobs:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:happymix-ci
-          ping: ${{ secrets.ORACLE_SSH_HOST }}
+          targets: ${{ secrets.ORACLE_SSH_HOST }}
       - name: Configure verified SSH access
         env:
           PRIVATE_KEY: ${{ secrets.ORACLE_SSH_PRIVATE_KEY }}
