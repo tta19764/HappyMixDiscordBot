@@ -31,29 +31,60 @@ public sealed class GuildGroupModule(IGuildGroupStore groups, IGuildSettingsStor
     }
 
     [SlashCommand("invite", "Invite a server member to a group.")]
-    public Task InviteAsync(string name, IUser member) =>
-        ManageAsync(name, group =>
+    public async Task InviteAsync(string name, IUser member)
+    {
+        if (member.IsBot || member is not IGuildUser guildMember || guildMember.GuildId != Context.Guild.Id)
         {
-            if (member.IsBot)
-                throw new GroupCommandException("Choose a human member of this server.");
+            await RespondAsync("Choose a human member of this server.", ephemeral: true);
+            return;
+        }
+
+        Guid token = Guid.NewGuid();
+        await UpdateAsync(name, existing =>
+        {
+            var group = RequireManagedGroup(existing);
             if (group.Members.Contains(member.Id))
                 throw new GroupCommandException("That member already belongs to the group.");
-            return group with { Invites = group.Invites.Append(member.Id).Distinct().ToArray() };
-        }, "Invitation saved. The member can accept with /group join.");
+
+            Dictionary<ulong, Guid> tokens = group.InviteTokens is { } saved ? new(saved) : [];
+            tokens[member.Id] = token;
+            return group with { Invites = group.Invites.Append(member.Id).Distinct().ToArray(), InviteTokens = tokens };
+        }, async () =>
+        {
+            var buttons = new ComponentBuilder()
+                .WithButton("Accept", $"group-invite:accept:{Context.Guild.Id}:{token:N}", ButtonStyle.Success)
+                .WithButton("Decline", $"group-invite:decline:{Context.Guild.Id}:{token:N}", ButtonStyle.Secondary)
+                .Build();
+            try
+            {
+                var dm = await member.CreateDMChannelAsync();
+                await dm.SendMessageAsync(
+                    $"You’re invited to **{name.Trim()}** in **{Format.Sanitize(Context.Guild.Name)}**.",
+                    components: buttons, allowedMentions: AllowedMentions.None,
+                    options: new RequestOptions { Timeout = 10000 });
+                return "Invitation saved and sent by DM.";
+            }
+            catch (Discord.Net.HttpException)
+            {
+                return "Invitation saved. DM delivery failed. The member can use /group list, then /group join or /group decline.";
+            }
+            catch (TimeoutException)
+            {
+                return "Invitation saved. DM delivery timed out. The member can use /group list, then /group join or /group decline.";
+            }
+        });
+    }
 
     [SlashCommand("join", "Accept a group invitation.")]
-    public Task JoinAsync(string name) => UpdateAsync(name, existing =>
-    {
-        var group = RequireGroup(existing);
-        ulong userId = Context.User.Id;
-        if (!group.Invites.Contains(userId))
-            throw new GroupCommandException("You need an invitation to join this group.");
-        return group with
-        {
-            Members = group.Members.Append(userId).Distinct().ToArray(),
-            Invites = group.Invites.Where(id => id != userId).ToArray()
-        };
-    }, "You joined the group.");
+    public Task JoinAsync(string name) => ResolveInviteAsync(name, accept: true);
+
+    [SlashCommand("decline", "Decline a group invitation.")]
+    public Task DeclineAsync(string name) => ResolveInviteAsync(name, accept: false);
+
+    private Task ResolveInviteAsync(string name, bool accept) => UpdateAsync(name,
+        existing => GroupInvitation.Resolve(RequireGroup(existing), Context.User.Id, accept)
+            ?? throw new GroupCommandException("You have no pending invitation to this group."),
+        accept ? "You joined the group." : "Invitation declined.");
 
     [SlashCommand("leave", "Leave a group.")]
     public Task LeaveAsync(string name) => UpdateAsync(name, existing =>
@@ -76,7 +107,8 @@ public sealed class GuildGroupModule(IGuildGroupStore groups, IGuildSettingsStor
             return group with
             {
                 Members = group.Members.Where(id => id != member.Id).ToArray(),
-                Invites = group.Invites.Where(id => id != member.Id).ToArray()
+                Invites = group.Invites.Where(id => id != member.Id).ToArray(),
+                InviteTokens = GroupInvitation.RemoveToken(group, member.Id)
             };
         }, "Membership or invitation removed.");
 
@@ -95,21 +127,26 @@ public sealed class GuildGroupModule(IGuildGroupStore groups, IGuildSettingsStor
         string message = page < 1 || page > pages ? $"Choose a page from 1 to {pages}."
             : visible.Length == 0 ? "You have no groups or invitations in this server."
             : string.Join("\n", visible.Skip((page - 1) * pageSize).Take(pageSize).Select(group =>
-                $"**{group.Name}** · {group.Members.Length} members" +
-                (group.Invites.Contains(Context.User.Id) ? " · invited" : "")));
+                $"**{group.Name}** В· {group.Members.Length} members" +
+                (group.Invites.Contains(Context.User.Id) ? " В· invited" : "")));
         await ReplyAsync(message);
     }
 
     private Task ManageAsync(string name, Func<GuildGroup, GuildGroup?> update, string message) =>
-        UpdateAsync(name, existing =>
-        {
-            var group = RequireGroup(existing);
-            if (group.OrganizerId != Context.User.Id && !CanModerate)
-                throw new GroupCommandException("Only the group's organizer or a server moderator can manage it.");
-            return update(group);
-        }, message);
+        UpdateAsync(name, existing => update(RequireManagedGroup(existing)), message);
 
-    private async Task UpdateAsync(string name, Func<GuildGroup?, GuildGroup?> update, string message)
+    private GuildGroup RequireManagedGroup(GuildGroup? existing)
+    {
+        var group = RequireGroup(existing);
+        if (group.OrganizerId != Context.User.Id && !CanModerate)
+            throw new GroupCommandException("Only the group's organizer or a server moderator can manage it.");
+        return group;
+    }
+
+    private Task UpdateAsync(string name, Func<GuildGroup?, GuildGroup?> update, string message) =>
+        UpdateAsync(name, update, () => Task.FromResult(message));
+
+    private async Task UpdateAsync(string name, Func<GuildGroup?, GuildGroup?> update, Func<Task<string>> onSaved)
     {
         name = name.Trim();
         if (name.Length is 0 or > 40 || name.Any(character =>
@@ -121,9 +158,11 @@ public sealed class GuildGroupModule(IGuildGroupStore groups, IGuildSettingsStor
         }
 
         await DeferAsync(ephemeral: true);
+        string message;
         try
         {
             await groups.UpdateAsync(Context.Guild.Id, name, update);
+            message = await onSaved();
         }
         catch (GroupCommandException exception)
         {

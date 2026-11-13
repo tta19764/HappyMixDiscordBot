@@ -29,6 +29,33 @@ public sealed class SqliteGuildGroupTests
         Assert.Single(await store.ListAsync(2));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ResolvingAnInvitationConsumesOnlyTheRecipientsPendingToken(bool accept)
+    {
+        using var database = await SqliteTestDatabase.CreateAsync();
+        var store = database.Services.GetRequiredService<IGuildGroupStore>();
+        Guid token = Guid.NewGuid();
+        Guid otherToken = Guid.NewGuid();
+        await store.UpdateAsync(1, "Friday", _ =>
+            new GuildGroup("Friday", 10, [10], [20, 30], new() { [20] = token, [30] = otherToken }));
+
+        var reopened = await database.OpenAsync();
+        store = reopened.GetRequiredService<IGuildGroupStore>();
+        var pending = Assert.Single(await store.ListAsync(1));
+        Assert.Equal(token, pending.InviteTokens![20]);
+        Assert.Null(GroupInvitation.Resolve(pending, 99, accept));
+        await store.UpdateAsync(1, "Friday", group => GroupInvitation.Resolve(group!, 20, accept));
+
+        var resolved = Assert.Single(await store.ListAsync(1));
+        Assert.Equal(accept, resolved.Members.Contains(20UL));
+        Assert.Equal([30UL], resolved.Invites);
+        Assert.Equal(otherToken, resolved.InviteTokens![30]);
+        Assert.False(resolved.InviteTokens.ContainsKey(20));
+        Assert.Null(GroupInvitation.Resolve(resolved, 20, accept));
+    }
+
     [Fact]
     public async Task DiscordDiscoversTheGuildGroupCommands()
     {
@@ -37,9 +64,12 @@ public sealed class SqliteGuildGroupTests
         using var database = await SqliteTestDatabase.CreateAsync();
         var module = await interactions.AddModuleAsync<GuildGroupModule>(database.Services);
 
-        Assert.Equal(7, module.SlashCommands.Count);
+        Assert.Equal(8, module.SlashCommands.Count);
         Assert.Contains(module.SlashCommands, command => command.Name == "invite");
         Assert.Contains(module.SlashCommands, command => command.Name == "join");
+        Assert.Contains(module.SlashCommands, command => command.Name == "decline");
+        var buttons = await interactions.AddModuleAsync<GroupInvitationModule>(database.Services);
+        Assert.Single(buttons.ComponentCommands);
         Assert.Contains(module.Preconditions, condition => condition is RequireContextAttribute);
     }
 }

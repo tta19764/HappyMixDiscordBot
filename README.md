@@ -157,8 +157,9 @@ Schedules and reminders show **Watch** when PandaScore lists a preferred Twitch 
 ## Saved gaming groups
 
 Use `/group create name:Friday` to create an invite-only group. The creator can use
-`/group invite` to save an invitation. Invited members can find it with `/group list`
-and accept it with `/group join`. Members can leave with `/group leave`.
+`/group invite` to save an invitation and send a DM with **Accept** and **Decline** buttons.
+If the DM is blocked, members can find the invitation with `/group list` and respond with
+`/group join` or `/group decline`. Members can leave with `/group leave`. Use `/help` for an overview of bot commands.
 
 The organizer and members with Manage Server or Administrator can invite and remove
 members, revoke invitations, or delete the group. The organizer can close the group

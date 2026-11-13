@@ -1,6 +1,6 @@
 namespace HappyMix.Application.Abstractions.Guilds;
 
-public sealed record GuildGroup(string Name, ulong OrganizerId, ulong[] Members, ulong[] Invites);
+public sealed record GuildGroup(string Name, ulong OrganizerId, ulong[] Members, ulong[] Invites, Dictionary<ulong, Guid>? InviteTokens = null);
 
 public interface IGuildGroupStore
 {
