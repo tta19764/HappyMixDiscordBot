@@ -8,6 +8,7 @@ using HappyMix.Bot.Interactions;
 using HappyMix.Infrastructure.PandaScore;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace HappyMix.Application.Tests.Persistence;
@@ -64,6 +65,7 @@ public sealed class AvailabilityScheduleTests
 
     private static ServiceProvider CreateServices(IServiceProvider storage) => new ServiceCollection()
         .AddLogging().AddApplication()
+        .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
         .AddSingleton(storage.GetRequiredService<IAvailabilityStore>())
         .AddSingleton(storage.GetRequiredService<IGuildSettingsStore>())
         .AddSingleton<IClock, FixedClock>()

@@ -1,0 +1,108 @@
+@model HappyMix.Bot.Web.DashboardPage
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Availability · HappyMix</title>
+    <style>
+        body { font: 1rem system-ui; color: #172334; background: #f4f6fa; max-width: 45rem; margin: 2rem auto; padding: 0 1rem; }
+        section { background: white; padding: 1.2rem; margin-block: 1rem; border-radius: 1rem; }
+        h2 { margin-top: 0; } label { display: grid; gap: .3rem; }
+        .fields { display: flex; flex-wrap: wrap; gap: .8rem; align-items: end; }
+        input, select, button { font: inherit; padding: .5rem; border: 1px solid #797f8b; border-radius: .4rem; }
+        button { background: #243b77; color: white; cursor: pointer; }
+        .saved { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .5rem; padding-block: .5rem; border-bottom: 1px solid #e0e5ee; }
+    </style>
+</head>
+<body>
+    <nav><a href="/">Servers</a></nav>
+    <h1>Availability</h1>
+    <p>@Model.GuildName · Server time zone: @Model.TimeZone</p>
+    @if (Model.Message is { } message)
+    {
+        <p role="status">@message</p>
+    }
+    <section>
+        <h2>Today</h2>
+        <form method="post" class="schedule">
+            @Html.AntiForgeryToken()
+            <div class="fields">
+                <label>Start<input type="time" name="start" required></label>
+                <label>End<input type="time" name="end" required></label>
+                <label>Time zone (optional)<input name="offset" list="time-zones" placeholder="Server default" maxlength="100"></label>
+                <button name="action" value="today">Save today</button>
+            </div>
+            <p class="preview" aria-live="polite">An earlier end time means tomorrow.</p>
+        </form>
+    </section>
+    <section>
+        <h2>Weekly timetable</h2>
+        <form method="post" class="schedule">
+            @Html.AntiForgeryToken()
+            <div class="fields">
+                <label>Day<select name="day">
+                    @foreach (var day in Enum.GetValues<DayOfWeek>().OrderBy(day => ((int)day + 6) % 7))
+                    {
+                        <option value="@day">@day</option>
+                    }
+                </select></label>
+                <label>Start<input type="time" name="start" required></label>
+                <label>End<input type="time" name="end" required></label>
+                <label>Time zone (optional)<input name="offset" list="time-zones" placeholder="Server default" maxlength="100"></label>
+                <button name="action" value="weekly">Save day</button>
+            </div>
+            <p class="preview" aria-live="polite">Saving a day replaces its previous window.</p>
+        </form>
+        @foreach (var window in Model.Weekly)
+        {
+            <div class="saved">
+                <span><strong>@window.Day</strong> @window.Start.ToString("HH:mm")–@window.End.ToString("HH:mm") @(window.End < window.Start ? "(next day)" : "") · @window.TimeZone</span>
+                <form method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="day" value="@window.Day">
+                    <button name="action" value="clear" aria-label="Clear @window.Day">Clear</button>
+                </form>
+            </div>
+        }
+    </section>
+    <section>
+        <h2>Upcoming one-off windows</h2>
+        @if (Model.Upcoming.Count == 0)
+        {
+            <p>No upcoming windows.</p>
+        }
+        @foreach (var window in Model.Upcoming)
+        {
+            <div class="saved">
+                <span><time datetime="@window.Start.ToString("O")">@window.Start.ToString("u")</time> to <time datetime="@window.End.ToString("O")">@window.End.ToString("u")</time></span>
+                <form method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="windowId" value="@window.Id">
+                    <button name="action" value="remove">Remove</button>
+                </form>
+            </div>
+        }
+    </section>
+    <datalist id="time-zones">
+        @foreach (var zone in HappyMix.Bot.Interactions.AvailabilityTimeZoneAutocomplete.Names)
+        {
+            <option value="@zone"></option>
+        }
+    </datalist>
+    <script>
+        for (const form of document.querySelectorAll(".schedule")) {
+            const start = form.elements.namedItem("start");
+            const end = form.elements.namedItem("end");
+            const preview = form.querySelector(".preview");
+            const hint = preview.textContent;
+            form.addEventListener("input", () => {
+                preview.textContent = start.value && end.value
+                    ? start.value + " → " + end.value + (end.value < start.value ? " (next day)" : "") : hint;
+            });
+        }
+        for (const time of document.querySelectorAll("time")) {
+            time.textContent = new Date(time.dateTime).toLocaleString();
+        }
+    </script>
+</body>
+</html>

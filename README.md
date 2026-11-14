@@ -225,3 +225,36 @@ Set `Twitch__ClientId` and `Twitch__ClientSecret` in the deployment environment
 Start alerts link only preferred channels that Twitch reports live in the matching game category
 when the bot sends the message. A live channel can be showing a different match.
 The alert still posts if Twitch credentials are missing or the lookup fails.
+
+## Availability dashboard
+
+The ASP.NET Core MVC dashboard runs in the bot container with the same SQLite volume.
+Both Compose configurations publish port 8080 on host loopback. The dashboard
+is disabled until configured.
+
+Set these values in the production bot environment file (or the local development
+configuration, with the secret kept out of source control):
+
+```dotenv
+Dashboard__Enabled=true
+Dashboard__ClientId=your-discord-application-id
+Dashboard__ClientSecret=your-discord-oauth-client-secret
+Dashboard__PublicUrl=https://happymix.example.com
+Dashboard__TrustedProxy=172.18.0.1
+```
+
+Use the actual IP of the reverse proxy as seen by Kestrel. The IP above is an
+example. Terminate HTTPS at the proxy, forward requests to host loopback port
+8080, preserve the public Host header, and set X-Forwarded-Proto to https.
+Register the exact redirect URI https://happymix.example.com/signin-discord in
+the Discord application's OAuth2 settings. The bot token is separate from the
+OAuth client secret.
+
+Recreate the Compose service after updating its environment. Open the HTTPS URL
+or use /availability dashboard in Discord. For local OAuth testing, register
+http://localhost:8080/signin-discord and open http://localhost:8080 directly.
+
+After signing in, choose **Server settings** next to your server. The same
+Discord Administrator permission required by /settings is checked for both
+viewing and saving. Changes affect that server's saved settings immediately.
+Bot credentials and deployment defaults remain in the host configuration.

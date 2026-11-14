@@ -1,0 +1,22 @@
+@model HappyMix.Bot.Web.DashboardServer[]
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>HappyMix</title></head>
+<body style="font: 1rem system-ui; max-width: 42rem; margin: 3rem auto; padding: 0 1rem">
+    <h1>HappyMix</h1>
+    <p>Choose your Discord server.</p>
+    @foreach (var guild in Model)
+    {
+        <p><strong>@guild.Name</strong> <a href="/availability/@guild.Id">Availability</a>
+        @if (guild.CanConfigure)
+        {
+            <a href="/settings/@guild.Id">Server settings</a>
+        }</p>
+    }
+    @if (Model.Length == 0)
+    {
+        <p>No shared servers are available. Check that you and HappyMix are in the same Discord server.</p>
+    }
+    <form action="/logout" method="post">@Html.AntiForgeryToken()<button>Sign out</button></form>
+</body>
+</html>

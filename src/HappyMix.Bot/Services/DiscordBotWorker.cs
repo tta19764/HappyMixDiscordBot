@@ -75,7 +75,7 @@ public sealed partial class DiscordBotWorker(
         // The context connects the raw gateway interaction with Discord.Net's
         // command executor and the application's dependency-injection container.
         var context = new SocketInteractionContext(client, interaction);
-        IResult result = await interactions.ExecuteCommandAsync(context, services);
+        var result = await interactions.ExecuteCommandAsync(context, services);
 
         if (!result.IsSuccess)
         {

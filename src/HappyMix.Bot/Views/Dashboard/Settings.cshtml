@@ -1,0 +1,81 @@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model HappyMix.Bot.Web.ServerSettingsForm
+@{
+    var guild = (Discord.WebSocket.SocketGuild)ViewData["Guild"]!;
+    var channels = guild.TextChannels.OrderBy(channel => channel.Name)
+        .Select(channel => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem(channel.Name, channel.Id.ToString())).ToArray();
+    var roles = guild.Roles.Where(role => role.Id != guild.Id).OrderByDescending(role => role.Position)
+        .Select(role => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem(role.Name, role.Id.ToString())).ToArray();
+}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Server settings · HappyMix</title>
+    <style>
+        body { font: 1rem system-ui; color: #172334; background: #f4f6fa; max-width: 52rem; margin: 2rem auto; padding: 0 1rem; }
+        fieldset { background: white; margin: 1rem 0; padding: 1rem; border: 1px solid #ccd3df; border-radius: .7rem; }
+        legend { font-weight: 700; } .fields { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
+        .fields label { display: grid; gap: .3rem; align-content: start; }
+        input, textarea, select, button { font: inherit; padding: .5rem; border: 1px solid #797f8b; border-radius: .4rem; }
+        button { background: #243b77; color: white; cursor: pointer; } .validation-summary-errors { color: #9a172a; }
+        .checks { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+<nav><a href="/">Servers</a> · <a href="/availability/@guild.Id">Availability</a></nav>
+<h1>Server settings</h1>
+<p>@guild.Name</p>
+@if (TempData["SettingsMessage"] is string message)
+{
+    <p role="status">@message</p>
+}
+<form method="post" action="/settings/@guild.Id" asp-antiforgery="false">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="All" role="alert"></div>
+    <fieldset>
+        <legend>Server defaults</legend>
+        <div class="fields">
+            <label>Default announcement channel
+                <select asp-for="ChannelId" asp-items="channels"><option value="0">Deployment default</option></select>
+            </label>
+            <label>Time zone <input asp-for="TimeZone" placeholder="Europe/Kyiv" required></label>
+            <label>Organizer roles
+                <select asp-for="OrganizerRoles" asp-items="roles" multiple size="5"></select>
+                <small>With no roles selected, any server member can organize a group.</small>
+            </label>
+            <label>Reminder lead time (minutes) <input asp-for="ReminderMinutes" min="1" max="1440" required></label>
+        </div>
+        <div class="checks">
+            <label><input asp-for="Schedule"> Daily schedule</label>
+            <label><input asp-for="Reminders"> Reminders</label>
+            <label><input asp-for="MatchStarts"> Match starts</label>
+            <label><input asp-for="Maps"> Map results</label>
+            <label><input asp-for="Results"> Match results</label>
+        </div>
+    </fieldset>
+    <p>For followed teams and Twitch channels, enter a comma-separated list, <code>default</code> to inherit, or <code>none</code> to disable.</p>
+    <fieldset>
+        <legend>Counter-Strike 2</legend>
+        <div class="fields">
+            <label>Announcement channel <select asp-for="Cs.Channel" asp-items="channels"><option value="">Server default</option></select></label>
+            <label>Reminder ping role <select asp-for="Cs.PingRole" asp-items="roles"><option value="">None</option></select></label>
+            <label>Followed teams (names or IDs) <input asp-for="Cs.Teams"></label>
+            <label>Twitch channels <input asp-for="Cs.Twitch"></label>
+            <label>Team catalog <textarea asp-for="Cs.Catalog" rows="4" placeholder="Team name=123"></textarea><small>One entry per line, or default.</small></label>
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>Dota 2</legend>
+        <div class="fields">
+            <label>Announcement channel <select asp-for="Dota.Channel" asp-items="channels"><option value="">Server default</option></select></label>
+            <label>Reminder ping role <select asp-for="Dota.PingRole" asp-items="roles"><option value="">None</option></select></label>
+            <label>Followed teams (names or IDs) <input asp-for="Dota.Teams"></label>
+            <label>Twitch channels <input asp-for="Dota.Twitch"></label>
+            <label>Team catalog <textarea asp-for="Dota.Catalog" rows="4" placeholder="Team name=123"></textarea><small>One entry per line, or default.</small></label>
+        </div>
+    </fieldset>
+    <button>Save settings</button>
+</form>
+</body>
+</html>

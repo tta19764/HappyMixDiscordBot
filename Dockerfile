@@ -16,7 +16,7 @@ RUN dotnet publish src/HappyMix.Bot/HappyMix.Bot.csproj \
     --no-restore \
     /p:UseAppHost=false
 
-FROM mcr.microsoft.com/dotnet/runtime:10.0.2 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0.2 AS final
 WORKDIR /app
 
 # Named volumes inherit this writable directory on first creation.

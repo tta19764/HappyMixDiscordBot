@@ -7,7 +7,10 @@ services:
     env_file:
       - path: ${HAPPYMIX_ENV_FILE:-/opt/happymix/bot.env}
         format: raw
+    ports:
+      - '127.0.0.1:8080:8080'
     environment:
+      ASPNETCORE_URLS: http://+:8080
       DOTNET_ENVIRONMENT: Production
       Storage__DatabasePath: /app/data/happymix.db
       Logging__LogLevel__HappyMix.Bot.Jobs.SynchronizeMatchesJob: Debug

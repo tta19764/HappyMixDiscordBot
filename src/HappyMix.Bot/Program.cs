@@ -1,16 +1,70 @@
+using System.Net.Http.Headers;
+using System.Security.Claims;
+using System.Text.Json;
 using HappyMix.Application;
 using HappyMix.Bot.Configuration;
 using HappyMix.Infrastructure;
-using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.HttpOverrides;
 
-HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddApplication().AddInfrastructure(builder.Configuration).AddBot(builder.Configuration);
+var web = builder.Configuration.GetSection("Dashboard");
+bool enabled = web.GetValue<bool>("Enabled");
+if (enabled)
+{
+    builder.Services.AddControllersWithViews();
+    builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+        .AddCookie(options =>
+        {
+            options.LoginPath = "/login";
+            options.ExpireTimeSpan = TimeSpan.FromHours(8);
+            options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+                ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+        })
+        .AddOAuth("Discord", options =>
+        {
+            options.ClientId = web["ClientId"] ?? "";
+            options.ClientSecret = web["ClientSecret"] ?? "";
+            options.CallbackPath = "/signin-discord";
+            options.AuthorizationEndpoint = "https://discord.com/oauth2/authorize";
+            options.TokenEndpoint = "https://discord.com/api/v10/oauth2/token";
+            options.UserInformationEndpoint = "https://discord.com/api/v10/users/@me";
+            options.Scope.Add("identify");
+            options.UsePkce = true;
+            options.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
+            options.ClaimActions.MapJsonKey(ClaimTypes.Name, "username");
+            options.Events.OnCreatingTicket = async context =>
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
+                using var response = await context.Backchannel.SendAsync(request, context.HttpContext.RequestAborted);
+                response.EnsureSuccessStatusCode();
+                using var profile = JsonDocument.Parse(await response.Content.ReadAsStringAsync(context.HttpContext.RequestAborted));
+                context.RunClaimActions(profile.RootElement);
+            };
+        });
+    if (string.IsNullOrWhiteSpace(web["ClientId"]) || string.IsNullOrWhiteSpace(web["ClientSecret"]))
+        throw new InvalidOperationException("Dashboard Discord OAuth credentials are required when enabled.");
 
-builder.Services
-    .AddApplication()
-    .AddInfrastructure(builder.Configuration)
-    .AddBot(builder.Configuration);
+    if (System.Net.IPAddress.TryParse(web["TrustedProxy"], out var proxy))
+        builder.Services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
+            options.KnownProxies.Add(proxy);
+        });
+}
 
-using IHost host = builder.Build();
-// Fail before Discord connects or Quartz starts if the durable store cannot be migrated.
-await host.Services.InitializeDatabaseAsync();
-await host.RunAsync();
+await using var app = builder.Build();
+if (enabled)
+{
+    app.UseForwardedHeaders();
+    app.UseRouting();
+    app.UseAuthentication();
+    app.UseAuthorization();
+    app.MapControllers();
+}
+
+await app.Services.InitializeDatabaseAsync();
+await app.RunAsync();

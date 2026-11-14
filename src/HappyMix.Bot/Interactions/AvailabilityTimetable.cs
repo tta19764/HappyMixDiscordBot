@@ -15,7 +15,7 @@ public sealed partial class AvailabilityModule
     {
         [SlashCommand("today", "Set today's availability. An earlier end time means tomorrow.")]
         public async Task TodayAsync(string start, string end,
-            [Summary(description: "Optional UTC offset, e.g. +02:00. Defaults to the server time zone.")] string? offset = null)
+            [Autocomplete<AvailabilityTimeZoneAutocomplete>, Summary(description: "Time zone or UTC offset. Defaults to the server time zone.")] string? offset = null)
         {
             await DeferAsync(ephemeral: true);
             var result = await sender.Send(new SetTodayAvailabilityCommand(Context.Guild.Id, Context.User.Id,
@@ -27,7 +27,7 @@ public sealed partial class AvailabilityModule
 
         [SlashCommand("timetable", "Set or replace a recurring weekly window for one day.")]
         public async Task TimetableAsync(DayOfWeek day, string start, string end,
-            [Summary(description: "Optional UTC offset, e.g. +02:00. Defaults to the server time zone.")] string? offset = null)
+            [Autocomplete<AvailabilityTimeZoneAutocomplete>, Summary(description: "Time zone or UTC offset. Defaults to the server time zone.")] string? offset = null)
         {
             await DeferAsync(ephemeral: true);
             var result = await sender.Send(new SetWeeklyAvailabilityCommand(Context.Guild.Id, Context.User.Id,

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using HappyMix.Application.Abstractions.Guilds;
@@ -11,8 +12,26 @@ namespace HappyMix.Bot.Interactions;
 /// <summary>Manages the calling member's one-off availability in this server.</summary>
 [Group("availability", "Manage your gaming availability.")]
 [RequireContext(ContextType.Guild)]
-public sealed partial class AvailabilityModule(ISender sender) : InteractionModuleBase<SocketInteractionContext>
+public sealed partial class AvailabilityModule(ISender sender, IConfiguration configuration) : InteractionModuleBase<SocketInteractionContext>
 {
+    [SlashCommand("dashboard", "Open the web availability editor.")]
+    public async Task DashboardAsync()
+    {
+        string? url = configuration["Dashboard:PublicUrl"];
+        if (!configuration.GetValue<bool>("Dashboard:Enabled") ||
+            !Uri.TryCreate(url, UriKind.Absolute, out var origin) || origin.Scheme != Uri.UriSchemeHttps)
+        {
+            await RespondAsync("The web dashboard is unavailable. You can use /availability set today or /availability set timetable here.",
+                ephemeral: true);
+            return;
+        }
+
+        var link = new Uri(origin, $"/availability/{Context.Guild.Id}");
+        await RespondAsync("Manage your availability in HappyMix.",
+            components: new ComponentBuilder().WithButton("Edit availability", style: ButtonStyle.Link,
+                url: link.AbsoluteUri).Build(), ephemeral: true);
+    }
+
     [SlashCommand("add", "Add a window using date, time and UTC offset.")]
     public Task AddAsync(string start, string end) => SaveAsync(null, start, end);
 

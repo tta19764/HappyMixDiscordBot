@@ -72,9 +72,12 @@ internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGu
         if (offset is not null)
         {
             offset = offset.Trim();
+            if (TimeZoneInfo.TryFindSystemTimeZoneById(offset, out var namedZone))
+                return namedZone;
+
             if (!DateTimeOffset.TryParseExact("2000-01-01 " + offset, "yyyy-MM-dd zzz",
                 CultureInfo.InvariantCulture, DateTimeStyles.None, out var fixedTime))
-                throw new AvailabilityException("Use an offset like +02:00, -05:00, or +00:00.");
+                throw new AvailabilityException("Choose a time zone like Europe/Kyiv or enter a UTC offset like +02:00.");
 
             return TimeZoneInfo.CreateCustomTimeZone("UTC" + offset, fixedTime.Offset, "UTC" + offset, "UTC" + offset);
         }
