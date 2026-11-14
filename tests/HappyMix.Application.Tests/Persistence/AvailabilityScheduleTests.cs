@@ -68,6 +68,7 @@ public sealed class AvailabilityScheduleTests
         .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
         .AddSingleton(storage.GetRequiredService<IAvailabilityStore>())
         .AddSingleton(storage.GetRequiredService<IGuildSettingsStore>())
+        .AddSingleton(storage.GetRequiredService<IAccountLinkStore>())
         .AddSingleton<IClock, FixedClock>()
         .AddSingleton(Options.Create(new PandaScoreOptions()))
         .BuildServiceProvider();

@@ -47,11 +47,12 @@ internal sealed partial class GroupCommands
 
     private async Task<GuildGroup> RequireManagedByIdAsync(GroupActor actor, Guid groupId)
     {
+        var links = await accountLinks.LoadAsync(actor.GuildId);
         var group = (await groups.ListAsync(actor.GuildId)).FirstOrDefault(item => item.Id == groupId);
         // Hide groups the actor cannot see so a guessed ID reveals nothing.
-        if (group is null || !GroupWorkspaceQueries.CanSee(group, actor))
+        if (group is null || !GroupWorkspaceQueries.CanSee(group, actor, links))
             throw new GroupRuleException(GroupWorkspaceQueries.NotFound);
-        return RequireManaged(group, actor);
+        return RequireManaged(group, actor, links);
     }
 
     private static (string Name, string? SteamAppId) NormalizeGame(string name, string? steam)

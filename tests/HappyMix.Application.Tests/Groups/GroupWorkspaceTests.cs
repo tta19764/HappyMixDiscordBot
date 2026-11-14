@@ -362,6 +362,7 @@ public sealed class GroupWorkspaceTests
             var fixture = new Fixture { database = await SqliteTestDatabase.CreateAsync() };
             fixture.application = new ServiceCollection().AddLogging()
                 .AddSingleton(fixture.Store).AddSingleton(fixture.Settings)
+                .AddSingleton(fixture.database.Services.GetRequiredService<IAccountLinkStore>())
                 .AddSingleton<IGroupRoleGateway>(fixture.Gateway)
                 .AddApplication().BuildServiceProvider();
             return fixture;

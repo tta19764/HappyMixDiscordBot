@@ -13,7 +13,7 @@ public interface IGroupRoleGateway
 public sealed record GroupRoleDelta(IReadOnlyList<ulong> Add, IReadOnlyList<ulong> Remove);
 public sealed class GroupRoleException(string message, Exception inner) : Exception(message, inner);
 
-internal sealed class GroupRoles(IGuildGroupStore groups, IGroupRoleGateway gateway) : IDisposable
+internal sealed class GroupRoles(IGuildGroupStore groups, IGroupRoleGateway gateway, IAccountLinkStore accountLinks) : IDisposable
 {
     private readonly SemaphoreSlim gate = new(1);
 
@@ -41,6 +41,8 @@ internal sealed class GroupRoles(IGuildGroupStore groups, IGroupRoleGateway gate
         if (saved.Count == 0)
             return;
 
+        // The recorded group account receives the role.
+        var links = await accountLinks.LoadAsync(guildId);
         var existing = await gateway.GetRoleIdsAsync(guildId);
         var roles = new List<(ulong Id, HashSet<ulong> Members)>();
         string? groupKey = groupName is null ? null : GuildGroup.GetNameKey(groupName);
@@ -64,7 +66,7 @@ internal sealed class GroupRoles(IGuildGroupStore groups, IGroupRoleGateway gate
                 }
                 id = created;
             }
-            roles.Add((id.Value, group.Members.ToHashSet()));
+            roles.Add((id.Value, links.Representatives(group.Members).ToHashSet()));
         }
 
         await gateway.ApplyAsync(guildId, userId, (member, assigned) =>

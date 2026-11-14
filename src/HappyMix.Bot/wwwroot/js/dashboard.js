@@ -114,3 +114,14 @@ for (const details of document.querySelectorAll("details.hm-confirm")) {
         }
     });
 }
+
+// Linked accounts: copy the one-time link.
+for (const button of document.querySelectorAll("[data-copy]")) {
+    const field = document.getElementById(button.dataset.copy);
+    if (!field || !navigator.clipboard) continue;
+    button.hidden = false;
+    button.addEventListener("click", async () => {
+        await navigator.clipboard.writeText(field.value);
+        button.textContent = button.dataset.copied || "✓";
+    });
+}

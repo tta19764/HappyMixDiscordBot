@@ -2,7 +2,7 @@
 
 Reviewed: 2026-11-14.
 
-Days 1–6 record delivered development milestones. Days 7–30 are the remaining checklist. The group availability board is implemented and all 127 tests passed locally. Live verification of the latest deployment remains Day 7 work.
+Days 1–7 record delivered development milestones. Days 8–31 are the remaining checklist. Linked alternate accounts (Day 7) are implemented and all 142 tests passed locally, including the architecture tests. Live verification of the deployed dashboard, board and linked-account flows is now Day 8; inserting Day 7 moved every later slot back by one.
 
 ## How to maintain this plan
 
@@ -11,7 +11,7 @@ Open `docs/progress.html` directly in a browser. No server, npm install, or paid
 Commit the Markdown and generated HTML together. The dashboard is read-only; it never silently saves changes in browser storage.
 
 Statuses: `done`, `partial`, `planned`, `blocked`. Done means the acceptance criterion is implemented and verified; partial means some implementation exists. Record evidence when changing status.
-Days are adjustable work slots, not dates or promises. The first six slots summarize work already delivered.
+Days are adjustable work slots, not dates or promises. The first seven slots summarize work already delivered.
 Progress is counted by completed items, not estimated hours. Baseline capabilities and development days are counted separately.
 
 ## Current baseline
@@ -33,35 +33,36 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 | Day | Area | Status | Deliverable | Acceptance criterion | Depends on |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Reliability | done | SQLite and MediatR foundation | Startup migrations, persistent announcement history, application command and query handlers, and architecture tests. | B02 |
-| 2 | Operations | done | Oracle deployment and HTTPS | ARM64 images deploy through GitHub Actions and GHCR over Tailscale. Caddy served the dashboard through Duck DNS with a valid certificate. Recovery and spending checks remain on Day 29. | 1 |
+| 2 | Operations | done | Oracle deployment and HTTPS | ARM64 images deploy through GitHub Actions and GHCR over Tailscale. Caddy served the dashboard through Duck DNS with a valid certificate. Recovery and spending checks remain on Day 30. | 1 |
 | 3 | Settings | done | Server settings and esports delivery | Discord and web settings share persisted preferences. CS2 and Dota 2 have separate routing, team catalogs, reminders, and Twitch preferences. Web announcement selectors accept standard text channels. | 1 |
 | 4 | Groups | done | Groups, membership, and game attachments | Invite-only groups, descriptions, rosters, role repair, and the web workspace. Games can be attached with an optional Steam App ID. | 3 |
 | 5 | Availability | done | Personal and recurring availability | Today and weekly timetable entry, named time zones, fixed offsets, overnight windows, and full-day shortcuts. MVC dashboard and English, Ukrainian, and Russian resources. | 2, 3 |
 | 6 | Availability | done | Group member availability board | Seven day tabs, member rows with No data, and distinct one-off and recurring hours with overnight carryover. Authorization and schedule behavior covered by tests. | 4, 5 |
-| 7 | Quality | planned | Live dashboard and board verification | Verify Discord sign-in, localization, text-channel selectors, group access, and overnight and full-day rendering on the deployed build. | 6 |
-| 8 | Availability | planned | Exceptions and opt-in prompts | Date exception overrides recurrence; snooze and quiet hours prevent unwanted prompts; keep commitment reasons private | 6, 7 |
-| 9 | Availability | planned | Weekly overview and overlap finder | Show confirmed versus expected hours separately; find shared windows of a requested duration | 8 |
-| 10 | Steam | planned | Profile linking and library import | Import a real public library by Steam ID/profile URL; resolve vanity names; show privacy errors; label link self-declared | 3 |
-| 11 | Steam | planned | Willingness preferences | Search/paginate imported games; save want/open/not-interested per member | 10 |
-| 12 | Steam | planned | Refresh and disconnect | Daily/manual sync preserves preferences; failed sync never clears library; disconnect removes imported association/data | 11 |
-| 13 | Steam | planned | Common game recommendations | Rank shared owned games using willingness; permit catalog additions for missing free games; show why each is suggested | 4, 9, 12 |
-| 14 | Sessions | planned | Session creation and attendance | Create/edit/cancel session for server, role or group; enforce eligibility and capacity on every interaction | 4, 13 |
-| 15 | Sessions | planned | Waitlist and readiness | Concurrent joins cannot exceed capacity; timed slot offer promotes next eligible member; readiness buttons work | 14 |
-| 16 | Sessions | planned | Durable session reminders | Reminders respect timezones/preferences and survive restart; cancellation suppresses future sends | 15 |
-| 17 | Voting | planned | Game-buying poll creation | Choose candidates, deadline, minimum buyers and eligible server/role/group/user audience; snapshot electorate at creation | 4, 10 |
-| 18 | Voting | planned | Votes and result calculation | Separate would-buy/already-own/pass; allow changes before deadline; enforce eligible one vote per candidate per user; explain ties | 17 |
-| 19 | Voting | planned | Vote-to-group workflow | Close poll durably, retain summary, create group and propose first session; store links rather than assuming universal prices | 14, 18 |
-| 20 | Groups | planned | Temporary roles and text spaces | Optional bot-owned role/channel grants only intended access; creation limits and organizer controls work; recover partial creation failures | 4, 19 |
-| 21 | Groups | planned | Temporary voice spaces | Create room; organizer can rename/lock/set capacity through bot; permissions remain scoped to their room | 20 |
-| 22 | Reliability | planned | Resource lifecycle and cleanup | Persist IDs/expiry; extend/close controls; lock text before later deletion; never remove occupied voice room or unrelated resource; reconcile after restart | 21 |
-| 23 | Esports | planned | Live provider and routing regression pass | Verify saved per-game channels and team filters against live CS2 and Dota 2 notifications. | 3, 7 |
-| 24 | Esports | planned | Announcement recovery verification | Verify deduplication across restart and recovery from provider errors in the live workflow. | 23 |
-| 25 | Esports | planned | Schedule changes and spoiler controls | Persist message references; update reschedules/cancellations; track cross-midnight matches; suppress or hide result spoilers per channel setting | 1, 24 |
-| 26 | Esports | planned | Watch parties | Match notification creates group/session with attendance; participant reminders; optional temporary room | 16, 22, 25 |
-| 27 | Notifications | planned | Digest and targeted invitations | Weekly digest combines sessions/esports/availability; game-interest opt-in invitations; snooze, quiet hours and mention limits | 9, 16, 26 |
-| 28 | Quality | planned | End-to-end pilot and recovery checks | Friends exercise availability -> suggestion -> vote -> group -> session; verify unauthorized interactions and retries after failures | 27 |
-| 29 | Operations | planned | Backup, restore and resource budget | Restore SQLite to a fresh instance; measure idle/peak memory on chosen host; inspect API allowance and monthly spend; document rollback | 28 |
-| 30 | Release | planned | Fixes, walkthrough and next backlog | Resolve pilot blockers; document commands and permissions; review acceptance criteria; explicitly carry incomplete scope forward | 29 |
+| 7 | Identity | done | Linked alternate accounts (twinks) | Linking needs the primary's short-lived single-use request and the alternate's own Discord sign-in and approval; both must be server members. Each family is one member for groups, organizer rights, availability and board counts, in the dashboard and slash commands. Discord admin and moderator rights stay per account. Invitations and group roles apply only to the addressed account. The roster and board show that account first. Link and unlink previews, explicit conflict resolution and restore on unlink. AccountLinkTests: 14 tests; 142 total pass. Live Discord verification pending on Day 8. | 4, 6 |
+| 8 | Quality | planned | Live dashboard, board and linked-account verification | Verify Discord sign-in, localization, text-channel selectors, group access, and overnight and full-day rendering on the deployed build. Link two real Discord accounts through two sign-ins, confirm shared groups and schedule, role reconciliation and unlinking on the live server. | 7 |
+| 9 | Availability | planned | Exceptions and opt-in prompts | Date exception overrides recurrence; snooze and quiet hours prevent unwanted prompts; keep commitment reasons private | 6, 8 |
+| 10 | Availability | planned | Weekly overview and overlap finder | Show confirmed versus expected hours separately; find shared windows of a requested duration | 9 |
+| 11 | Steam | planned | Profile linking and library import | Import a real public library by Steam ID/profile URL; resolve vanity names; show privacy errors; label link self-declared | 3 |
+| 12 | Steam | planned | Willingness preferences | Search/paginate imported games; save want/open/not-interested per member | 11 |
+| 13 | Steam | planned | Refresh and disconnect | Daily/manual sync preserves preferences; failed sync never clears library; disconnect removes imported association/data | 12 |
+| 14 | Steam | planned | Common game recommendations | Rank shared owned games using willingness; permit catalog additions for missing free games; show why each is suggested | 4, 10, 13 |
+| 15 | Sessions | planned | Session creation and attendance | Create/edit/cancel session for server, role or group; enforce eligibility and capacity on every interaction | 4, 14 |
+| 16 | Sessions | planned | Waitlist and readiness | Concurrent joins cannot exceed capacity; timed slot offer promotes next eligible member; readiness buttons work | 15 |
+| 17 | Sessions | planned | Durable session reminders | Reminders respect timezones/preferences and survive restart; cancellation suppresses future sends | 16 |
+| 18 | Voting | planned | Game-buying poll creation | Choose candidates, deadline, minimum buyers and eligible server/role/group/user audience; snapshot electorate at creation | 4, 11 |
+| 19 | Voting | planned | Votes and result calculation | Separate would-buy/already-own/pass; allow changes before deadline; enforce eligible one vote per candidate per user; explain ties | 18 |
+| 20 | Voting | planned | Vote-to-group workflow | Close poll durably, retain summary, create group and propose first session; store links rather than assuming universal prices | 15, 19 |
+| 21 | Groups | planned | Temporary roles and text spaces | Optional bot-owned role/channel grants only intended access; creation limits and organizer controls work; recover partial creation failures | 4, 20 |
+| 22 | Groups | planned | Temporary voice spaces | Create room; organizer can rename/lock/set capacity through bot; permissions remain scoped to their room | 21 |
+| 23 | Reliability | planned | Resource lifecycle and cleanup | Persist IDs/expiry; extend/close controls; lock text before later deletion; never remove occupied voice room or unrelated resource; reconcile after restart | 22 |
+| 24 | Esports | planned | Live provider and routing regression pass | Verify saved per-game channels and team filters against live CS2 and Dota 2 notifications. | 3, 8 |
+| 25 | Esports | planned | Announcement recovery verification | Verify deduplication across restart and recovery from provider errors in the live workflow. | 24 |
+| 26 | Esports | planned | Schedule changes and spoiler controls | Persist message references; update reschedules/cancellations; track cross-midnight matches; suppress or hide result spoilers per channel setting | 1, 25 |
+| 27 | Esports | planned | Watch parties | Match notification creates group/session with attendance; participant reminders; optional temporary room | 17, 23, 26 |
+| 28 | Notifications | planned | Digest and targeted invitations | Weekly digest combines sessions/esports/availability; game-interest opt-in invitations; snooze, quiet hours and mention limits | 10, 17, 27 |
+| 29 | Quality | planned | End-to-end pilot and recovery checks | Friends exercise availability -> suggestion -> vote -> group -> session; verify unauthorized interactions and retries after failures | 28 |
+| 30 | Operations | planned | Backup, restore and resource budget | Restore SQLite to a fresh instance; measure idle/peak memory on chosen host; inspect API allowance and monthly spend; document rollback | 29 |
+| 31 | Release | planned | Fixes, walkthrough and next backlog | Resolve pilot blockers; document commands and permissions; review acceptance criteria; explicitly carry incomplete scope forward | 30 |
 
 ## Scope and operating decisions
 

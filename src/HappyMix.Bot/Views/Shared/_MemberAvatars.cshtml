@@ -1,0 +1,31 @@
+@model MemberStackModel
+@{
+    var shown = Model.Linked.Take(MemberStackModel.Visible).ToArray();
+    int more = Model.Linked.Count - shown.Length;
+    string list = string.Join(", ", Model.Linked.Select(item => item.Name));
+}
+<span class="hm-avstack @(Model.Small ? "hm-avstack--sm" : "")">
+    <partial name="_Avatar" model="new AvatarModel(Model.Primary, Model.Name, Model.Small)" />
+    @if (Model.Linked.Count > 0)
+    {
+        <span class="hm-avstack__linked" tabindex="0" role="note" data-tip="@T["Linked: {0}", list]" aria-label="@T["Linked accounts: {0}", list]">
+            @foreach (var (profile, name) in shown)
+            {
+                <span class="hm-avatar hm-avatar--mini @(profile.InServer ? "" : "hm-avatar--gone")" aria-hidden="true">
+                    @if (profile.AvatarUrl is { } url)
+                    {
+                        <img src="@url" alt="" width="16" height="16" loading="lazy" referrerpolicy="no-referrer">
+                    }
+                    else
+                    {
+                        @DashboardIcons.Initials(name)[..1]
+                    }
+                </span>
+            }
+            @if (more > 0)
+            {
+                <span class="hm-avstack__more" aria-hidden="true">+@more</span>
+            }
+        </span>
+    }
+</span>

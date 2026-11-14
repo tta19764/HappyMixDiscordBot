@@ -35,8 +35,8 @@ def read_rows(source, heading, size):
 source = SOURCE.read_text(encoding='utf-8')
 baseline = read_rows(source, 'Current baseline', 5)
 plan = read_rows(source, 'Development checklist', 6)
-if [row[0] for row in plan] != [str(i) for i in range(1, 31)]:
-    raise ValueError('Plan must contain unique ordered slots 1 through 30')
+if [row[0] for row in plan] != [str(i) for i in range(1, len(plan) + 1)]:
+    raise ValueError('Plan must contain unique ordered slots starting at 1')
 ids = {row[0] for row in baseline} | {row[0] for row in plan}
 for row in plan:
     if any(dep.strip() not in ids for dep in row[5].split(',')):
@@ -50,7 +50,7 @@ template = r'''<!doctype html>
 :root{color-scheme:dark;font:16px/1.55 system-ui,sans-serif;background:#101420;color:#e8edf7}*{box-sizing:border-box}body{max-width:1250px;margin:auto;padding:36px 24px}h1{font-size:clamp(2rem,5vw,3.5rem);line-height:1.1;margin:12px 0}h2{margin-top:32px}a{color:#a7c5ff}.muted,small{color:#a9b5ca}.eyebrow{color:#92e5cb;text-transform:uppercase;letter-spacing:.15em;font-size:.8rem}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:28px 0}.stat,.note{background:#1a2233;border:1px solid #303d55;border-radius:14px;padding:20px}.stat strong{display:block;font-size:2rem}progress{width:100%;accent-color:#7dddc0;height:12px}.controls{display:flex;gap:12px;flex-wrap:wrap;position:sticky;top:0;background:#101420;padding:14px 0;z-index:1}input,select,button{font:inherit;color:inherit;background:#1a2233;border:1px solid #566582;border-radius:8px;padding:10px}input{flex:1;min-width:180px}button{cursor:pointer}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{text-align:left;vertical-align:top;padding:14px 10px;border-bottom:1px solid #303d55}th{color:#a9b5ca}td:nth-child(4){min-width:190px}td:nth-child(5){min-width:280px}.badge{display:inline-block;border-radius:20px;padding:3px 10px;white-space:nowrap;font-size:.78rem;background:#29364c}.done{background:#164d40;color:#a2f1d7}.partial{background:#544119;color:#ffdc91}.blocked{background:#5a2837;color:#ffb8c7}.planned{color:#c0cbe0}details{margin:24px 0}summary{cursor:pointer;font-weight:600}#empty{padding:24px}.next{border-left:4px solid #92e5cb}footer{margin:32px 0} @media print{.controls,button{display:none}body{background:white;color:black}td,th{color:black}.table-wrap{overflow:visible}.stat,.note{background:white;color:black}details{display:block}}
 </style>
 <header><div class="eyebrow">HappyMix / Build journal</div><h1>A gaming hub, one useful step at a time.</h1>
-<p class="muted">Source reviewed __DATE__ · 30 adjustable work slots · 5–20 minutes of daily human review</p>
+<p class="muted">Source reviewed __DATE__ · __SLOTS__ adjustable work slots · 5–20 minutes of daily human review</p>
 <p>Availability → shared games → buying votes → groups → sessions → esports watch parties.</p></header>
 <noscript>This dashboard requires JavaScript. Read <a href="ROADMAP.md">the Markdown roadmap</a> instead.</noscript>
 <section class="stats" id="stats" aria-label="Progress totals"></section>
@@ -81,11 +81,11 @@ for(const id of ['search','status','area'])$(id).addEventListener('input',render
 $('reset').addEventListener('click',()=>{for(const id of ['search','status','area'])$(id).value='';render()});render();
 </script></html>
 '''
-output = template.replace('__DATE__', html.escape(reviewed)).replace('__DATA__', payload)
+output = template.replace('__DATE__', html.escape(reviewed)).replace('__SLOTS__', str(len(plan))).replace('__DATA__', payload)
 if '--check' in sys.argv:
     if not OUTPUT.exists() or OUTPUT.read_text(encoding='utf-8') != output:
         raise SystemExit('Dashboard is stale. Run python tools/build_progress.py')
-    print('Dashboard matches roadmap; 30 slots and dependencies validated.')
+    print(f'Dashboard matches roadmap; {len(plan)} slots and dependencies validated.')
 else:
     OUTPUT.write_text(output, encoding='utf-8')
     print('Generated docs/progress.html')

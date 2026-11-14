@@ -7,6 +7,7 @@
     ViewData["Title"] = group.Name;
     ViewData["NavGuildName"] = Model.GuildName;
     string Localize(string key) => T[key];
+    var organizerStack = MemberStacks.For(Model, Model.Group.OrganizerId, Localize, small: true);
     BannerModel ErrorBanner(string message) => new("error", message, null, false);
     var organizer = Model.Names.Get(group.OrganizerId);
     string organizerName = Model.Names.Name(group.OrganizerId, Localize);
@@ -31,7 +32,7 @@
             <partial name="_GroupBadge" model="(group.Relation, Model.Viewer.CanModerate)" />
         </div>
         <div class="hm-meta" style="margin-top: var(--hm-space-2)">
-            <span><partial name="_Avatar" model="new AvatarModel(organizer, organizerName, true)" />@T["Organizer"]: @organizerName</span>
+            <span><partial name="_MemberAvatars" model="organizerStack" />@T["Organizer"]: @organizerName</span>
             <span>@DashboardIcons.Render("users")@T["{0} members", group.MemberCount]</span>
             @if (detail.CanViewRoster)
             {
@@ -164,7 +165,7 @@
                     var profile = Model.Names.Get(id);
                     string name = Model.Names.Name(id, Localize);
                     bool isOrganizer = id == group.OrganizerId;
-                    var avatar = new AvatarModel(profile, name);
+                    var avatar = MemberStacks.For(Model, id, Localize);
                     var remove = new ConfirmModel(T["Remove"], T["Remove {0} from {1}? Their group role is removed too.", name, group.Name],
                         $"{Model.Url}/members/{id}/remove", T["Remove {0}", name], TriggerLabel: T["Remove {0}", name]);
                     var repair = new ConfirmModel(T["Repair roles"],
@@ -172,7 +173,7 @@
                         $"{Model.Url}/members/{id}/repair", T["Repair {0}'s roles", name], Icon: "refresh", Danger: false,
                         TriggerLabel: T["Repair roles for {0}", name]);
                     <li class="hm-roster__item">
-                        <partial name="_Avatar" model="avatar" />
+                        <partial name="_MemberAvatars" model="avatar" />
                         <div class="hm-roster__who">
                             <span class="hm-roster__name">
                                 @name
@@ -189,6 +190,10 @@
                                 @if (profile.InServer && profile.Username is { } username)
                                 {
                                     @("@" + username)
+                                }
+                                @if (Model.Detail.LinkedAccounts.TryGetValue(id, out var linkedIds))
+                                {
+                                    <span class="hm-roster__linked">· @T["{0} linked", linkedIds.Length]</span>
                                 }
                                 else if (!profile.InServer && Model.Names.Available)
                                 {
@@ -248,11 +253,11 @@
                             {
                                 var profile = Model.Names.Get(id);
                                 string name = Model.Names.Name(id, Localize);
-                                var avatar = new AvatarModel(profile, name);
+                                var avatar = MemberStacks.For(Model, id, Localize);
                                 var revoke = new ConfirmModel(T["Revoke"], T["Revoke {0}'s invitation to {1}? Their Accept button will stop working.", name, group.Name],
                                     $"{Model.Url}/members/{id}/remove?kind=invite", T["Revoke invitation"], Icon: "trash", TriggerLabel: T["Revoke {0}'s invitation", name]);
                                 <li class="hm-roster__item">
-                                    <partial name="_Avatar" model="avatar" />
+                                    <partial name="_MemberAvatars" model="avatar" />
                                     <div class="hm-roster__who">
                                         <span class="hm-roster__name">@name <span class="hm-badge hm-badge--warn">@T["Invited"]</span></span>
                                         <span class="hm-roster__sub">@(profile.Username is { } u ? "@" + u : "")</span>

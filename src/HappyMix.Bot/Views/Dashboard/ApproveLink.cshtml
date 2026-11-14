@@ -1,0 +1,127 @@
+@using HappyMix.Application.Guilds
+@model ApproveLinkPage
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = T["Approve linked account"];
+    ViewData["NavGuildName"] = Model.GuildName;
+    string Localize(string key) => T[key];
+    BannerModel ErrorBanner(string message) => new("error", message, null, true);
+    var preview = Model.Preview;
+    string Day(DayOfWeek day) => System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(day);
+}
+
+<nav class="hm-crumbs" aria-label="@T["Breadcrumb"]">
+    <a href="/">@T["Servers"]</a><span aria-hidden="true">/</span>
+    <a href="/links/@Model.GuildId">@T["Linked accounts"]</a><span aria-hidden="true">/</span>
+    <span>@T["Approve"]</span>
+</nav>
+
+@if (preview is null)
+{
+    <section class="hm-card hm-forbidden" style="margin-top: var(--hm-space-6)">
+        <div class="hm-empty" style="border: 0">
+            <span class="hm-empty__icon">@DashboardIcons.Render("shield", "width: 1.5rem; height: 1.5rem")</span>
+            @if (Model.SameAccount)
+            {
+                <h1 style="font-size: var(--hm-fs-xl)">@T["Switch to your alternate account"]</h1>
+                <p>@Model.Error</p>
+                <p>@T["Copy this page's address, sign out, sign in to Discord as your alternate account (twink), and open the address again. A private window makes this easier."]</p>
+                <form action="/logout" method="post" asp-antiforgery="false">
+                    @Html.AntiForgeryToken()
+                    <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("logout")@T["Sign out"]</button>
+                </form>
+            }
+            else
+            {
+                <h1 style="font-size: var(--hm-fs-xl)">@T["Can't use this link"]</h1>
+                <p>@Model.Error</p>
+                <a class="hm-btn" href="/links/@Model.GuildId">@T["Back to linked accounts"]</a>
+            }
+        </div>
+    </section>
+}
+else
+{
+    var primary = Model.Names.Get(preview.PrimaryId);
+    string primaryName = Model.Names.Name(preview.PrimaryId, Localize);
+    var alternate = Model.Names.Get(preview.AlternateId);
+    string alternateName = Model.Names.Name(preview.AlternateId, Localize);
+    bool hasConflicts = preview.WeeklyConflicts.Length + preview.WindowConflicts.Length > 0;
+
+    <div class="hm-page-head">
+        <div>
+            <h1>@T["Link {0} to {1}?", alternateName, primaryName]</h1>
+            <p>@T["You're signed in as {0}. Approving makes this account an alternate (twink) of {1} in {2}.", alternateName, primaryName, Model.GuildName]</p>
+        </div>
+    </div>
+
+    <form class="hm-stack" style="gap: var(--hm-space-5); max-width: 52rem" method="post" action="/links/@Model.GuildId/approve/@Model.RequestId" asp-antiforgery="false">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="token" value="@Model.Token">
+
+        @if (Model.Error is { } error)
+        {
+            <partial name="_Banner" model="ErrorBanner(error)" />
+        }
+
+        <section class="hm-card hm-stack" aria-labelledby="who-title">
+            <h2 id="who-title" style="font-size: var(--hm-fs-lg)">@T["Accounts"]</h2>
+            <div class="hm-link-pair">
+                <span class="hm-link-pair__who"><partial name="_Avatar" model="new AvatarModel(primary, primaryName)" /><span><b>@primaryName</b><small>@T["Primary"]</small></span></span>
+                <span aria-hidden="true">@DashboardIcons.Render("arrow")</span>
+                <span class="hm-link-pair__who"><partial name="_Avatar" model="new AvatarModel(alternate, alternateName)" /><span><b>@alternateName</b><small>@T["Alternate (twink)"] · @T["You"]</small></span></span>
+            </div>
+            <p class="hm-help"><strong>@T["Discord permissions are never shared."]</strong> @T["Admin and moderator access still depends on the account you sign in with."]</p>
+        </section>
+
+        <section class="hm-card hm-stack" aria-labelledby="groups-title">
+            <h2 id="groups-title" style="font-size: var(--hm-fs-lg)">@T["Groups"]</h2>
+            <dl class="hm-impact">
+                <dt>@T["Shared from now on"]</dt>
+                <dd>@(string.Join(", ", preview.GroupsFromPrimary.Concat(preview.GroupsFromAlternate).Concat(preview.SharedGroups)) is { Length: > 0 } all ? all : T["None"].Value)</dd>
+                <dt>@T["Already in with both accounts (counted once)"]</dt>
+                <dd>@(preview.SharedGroups.Length > 0 ? string.Join(", ", preview.SharedGroups) : T["None"].Value)</dd>
+                <dt>@T["Duplicate invitations merged"]</dt>
+                <dd>@(preview.MergedInvitations.Length > 0 ? string.Join(", ", preview.MergedInvitations) : T["None"].Value)</dd>
+            </dl>
+            @if (preview.OrganizedByAlternate.Length > 0)
+            {
+                <label class="hm-check" style="align-items: flex-start; padding: var(--hm-space-3); border: 1px solid var(--hm-border-strong)">
+                    <input type="checkbox" name="acknowledge" value="true" required>
+                    <span>@T["I understand {0} will share organizer rights for: {1}.", primaryName, string.Join(", ", preview.OrganizedByAlternate)]<small>@T["The groups stay saved under this account and remain yours if you unlink."]</small></span>
+                </label>
+            }
+        </section>
+
+        <section class="hm-card hm-stack" aria-labelledby="schedule-title">
+            <h2 id="schedule-title" style="font-size: var(--hm-fs-lg)">@T["Schedule"]</h2>
+            <p class="hm-help">@T["Both accounts will use one schedule. Moving {0} one-off windows and {1} weekly days from this account; {2} identical entries merged.", preview.WindowsMoved, preview.WeeklyDaysMoved, preview.DuplicatesMerged]</p>
+            @if (hasConflicts)
+            {
+                <p class="hm-help"><strong>@T["These entries overlap. Choose which to keep for each one:"]</strong></p>
+                @foreach (var conflict in preview.WeeklyConflicts)
+                {
+                    <fieldset class="hm-choice">
+                        <legend>@T["Every {0}", Day(conflict.Day)]</legend>
+                        <label><input type="radio" name="weekly-@conflict.Day" value="primary" required> @T["Keep {0}'s", primaryName] <b>@MemberStacks.Weekly(conflict.Primary)</b></label>
+                        <label><input type="radio" name="weekly-@conflict.Day" value="alternate"> @T["Use this account's"] <b>@MemberStacks.Weekly(conflict.Alternate)</b></label>
+                    </fieldset>
+                }
+                @foreach (var conflict in preview.WindowConflicts)
+                {
+                    <fieldset class="hm-choice">
+                        <legend>@MemberStacks.Window(conflict.Alternate, Model.TimeZone)</legend>
+                        <label><input type="radio" name="window-@conflict.Alternate.Id" value="primary" required> @T["Keep {0}'s", primaryName] <b>@string.Join(", ", conflict.Primary.Select(window => MemberStacks.Window(window, Model.TimeZone)))</b></label>
+                        <label><input type="radio" name="window-@conflict.Alternate.Id" value="alternate"> @T["Use this account's"] <b>@MemberStacks.Window(conflict.Alternate, Model.TimeZone)</b></label>
+                    </fieldset>
+                }
+            }
+            <p class="hm-help">@T["Nothing is thrown away: this account's current schedule is saved and comes back if you unlink."]</p>
+        </section>
+
+        <div class="hm-row hm-sticky-action" style="justify-content: flex-end">
+            <a class="hm-btn hm-btn--ghost" href="/links/@Model.GuildId">@T["Cancel"]</a>
+            <button class="hm-btn hm-btn--primary hm-btn--lg">@DashboardIcons.Render("check")@T["Approve link"]</button>
+        </div>
+    </form>
+}

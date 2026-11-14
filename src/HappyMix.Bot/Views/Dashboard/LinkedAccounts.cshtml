@@ -1,0 +1,154 @@
+@using System.Globalization
+@model LinksPage
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = T["Linked accounts"];
+    ViewData["NavGuildName"] = Model.GuildName;
+    var view = Model.View;
+    string Localize(string key) => T[key];
+    var nav = new ServerNavModel(Model.GuildId, Model.GuildName, "links", Model.Viewer.CanConfigure, "Linked accounts",
+        T["Connect an alternate account (twink) so HappyMix treats both as one member in this server."]);
+    var zone = TimeZoneInfo.TryFindSystemTimeZoneById(Model.TimeZone, out var found) ? found : TimeZoneInfo.Utc;
+    string Time(DateTimeOffset value) => TimeZoneInfo.ConvertTime(value, zone).ToString("d MMM HH:mm", CultureInfo.CurrentCulture);
+    var primary = Model.Names.Get(view.PrimaryId);
+    string primaryName = Model.Names.Name(view.PrimaryId, Localize);
+}
+
+<partial name="_ServerNav" model="nav" />
+
+@if (Model.Banner is { } banner)
+{
+    <div style="margin-bottom: var(--hm-space-4)"><partial name="_Banner" model="banner" /></div>
+}
+
+<div class="hm-split">
+    <div class="hm-stack" style="gap: var(--hm-space-5)">
+        <section class="hm-card hm-stack" aria-labelledby="family-title">
+            <div class="hm-card__head" style="margin: 0">
+                <div>
+                    <h2 id="family-title">@T["Your accounts"]</h2>
+                    <p>@T["All accounts below act as one member: the same groups, invitations and schedule."]</p>
+                </div>
+            </div>
+            <ul class="hm-roster">
+                <li class="hm-roster__item">
+                    <partial name="_Avatar" model="new AvatarModel(primary, primaryName)" />
+                    <div class="hm-roster__who">
+                        <span class="hm-roster__name">@primaryName <span class="hm-badge hm-badge--custom">@T["Primary"]</span>
+                            @if (view.Viewer == view.PrimaryId)
+                            {
+                                <span class="hm-badge">@T["You"]</span>
+                            }
+                        </span>
+                        <span class="hm-roster__sub">@(primary.Username is { } u ? "@" + u : "")</span>
+                    </div>
+                </li>
+                @foreach (var link in view.Alternates)
+                {
+                    var profile = Model.Names.Get(link.AlternateId);
+                    string name = Model.Names.Name(link.AlternateId, Localize);
+                    <li class="hm-roster__item">
+                        <partial name="_Avatar" model="new AvatarModel(profile, name)" />
+                        <div class="hm-roster__who">
+                            <span class="hm-roster__name">@name <span class="hm-badge hm-badge--inherit">@T["Alternate (twink)"]</span>
+                                @if (view.Viewer == link.AlternateId)
+                                {
+                                    <span class="hm-badge">@T["You"]</span>
+                                }
+                            </span>
+                            <span class="hm-roster__sub">@T["Linked {0}", Time(link.LinkedAt)]</span>
+                        </div>
+                        @if (view.ViewerIsPrimary || view.Viewer == link.AlternateId)
+                        {
+                            <div class="hm-roster__actions">
+                                <a class="hm-btn hm-btn--danger" href="/links/@Model.GuildId/unlink/@link.AlternateId" aria-label="@T["Unlink {0}", name]">
+                                    @DashboardIcons.Render("trash")<span class="hm-btn__label">@T["Unlink"]</span>
+                                </a>
+                            </div>
+                        }
+                    </li>
+                }
+            </ul>
+            @if (view.Alternates.Length == 0)
+            {
+                <p class="hm-help">@T["No alternate accounts are linked yet."]</p>
+            }
+        </section>
+
+        @if (view.ViewerIsPrimary)
+        {
+            <section class="hm-card hm-stack" id="new-link" aria-labelledby="new-link-title">
+                <h2 id="new-link-title">@T["Link an alternate account"]</h2>
+                @if (Model.NewLinkUrl is { } url)
+                {
+                    <div class="hm-banner hm-banner--success" role="status" tabindex="-1" data-focus-on-load>
+                        <span class="hm-banner__icon">@DashboardIcons.Render("check")</span>
+                        <div class="hm-banner__body">
+                            <p class="hm-banner__title">@T["Link created"]</p>
+                            <p class="hm-banner__text">@T["Open it while signed in to Discord as your alternate account (twink), for example in a private window. It works once and expires at {0}.", Model.NewLinkExpires is { } expires ? Time(expires) : ""]</p>
+                        </div>
+                    </div>
+                    <div class="hm-search" style="max-width: none">
+                        <label class="hm-sr-only" for="link-url">@T["Link for your alternate account"]</label>
+                        <input class="hm-input" id="link-url" value="@url" readonly spellcheck="false" data-copy-source>
+                        <button class="hm-btn" type="button" data-copy="link-url" hidden>@T["Copy"]</button>
+                    </div>
+                    <p class="hm-help">@T["This page shows the link only once. Don't share it with anyone else: whoever approves it with their own Discord account becomes your alternate."]</p>
+                }
+                <ol class="hm-steps">
+                    <li>@T["Create a link here, signed in as your main account."]</li>
+                    <li>@T["Open the link signed in to Discord as your alternate account (twink). A private window or another browser works best."]</li>
+                    <li>@T["Review what will be shared and approve it from the alternate account."]</li>
+                </ol>
+                @if (view.CanCreateRequest)
+                {
+                    <form method="post" action="/links/@Model.GuildId/requests" asp-antiforgery="false">
+                        @Html.AntiForgeryToken()
+                        <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("plus")@T["Create link"]</button>
+                    </form>
+                }
+                else
+                {
+                    <p class="hm-help">@T[view.CannotCreateReason!]</p>
+                }
+
+                @if (view.Requests.Length > 0)
+                {
+                    <h3>@T["Open link requests"]</h3>
+                    <ul class="hm-roster">
+                        @foreach (var request in view.Requests)
+                        {
+                            <li class="hm-roster__item">
+                                <div class="hm-roster__who">
+                                    <span class="hm-roster__name">@T["Created {0}", Time(request.CreatedAt)]</span>
+                                    <span class="hm-roster__sub">@T["Expires {0} · works once", Time(request.ExpiresAt)]</span>
+                                </div>
+                                <form method="post" action="/links/@Model.GuildId/requests/@request.Id/revoke" asp-antiforgery="false">
+                                    @Html.AntiForgeryToken()
+                                    <button class="hm-btn hm-btn--ghost">@T["Revoke"]</button>
+                                </form>
+                            </li>
+                        }
+                    </ul>
+                }
+            </section>
+        }
+        else
+        {
+            <section class="hm-card">
+                <p class="hm-help">@T["This account is the alternate (twink) of {0}. New links are created from the primary account.", primaryName]</p>
+            </section>
+        }
+    </div>
+
+    <aside class="hm-card hm-stack hm-stack--sm" aria-labelledby="rules-title">
+        <h2 id="rules-title" style="font-size: var(--hm-fs-lg)">@T["What linking does"]</h2>
+        <ul class="hm-help hm-ticks">
+            <li>@T["Groups, invitations and organizer rights are shared and counted once."]</li>
+            <li>@T["Today, weekly and all-day availability is one schedule. Editing from either account changes it."]</li>
+            <li>@T["Group roles in Discord are given to every linked account."]</li>
+            <li><strong>@T["Discord permissions are never shared."]</strong> @T["Admin and moderator access still depends on the account you sign in with."]</li>
+            <li>@T["Links only apply in this server."]</li>
+        </ul>
+    </aside>
+</div>

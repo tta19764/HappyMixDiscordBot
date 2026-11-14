@@ -50,16 +50,16 @@ public sealed record GetGroupAvailabilityBoardQuery(GroupActor Actor, Guid Group
     : IQuery<GroupAvailabilityBoard>;
 
 internal sealed class GroupAvailabilityBoardQueries(IGuildGroupStore groups, IAvailabilityStore availability,
-    IGuildSettingsStore settings, IClock clock) : IQueryHandler<GetGroupAvailabilityBoardQuery, GroupAvailabilityBoard>
+    IGuildSettingsStore settings, IClock clock, IAccountLinkStore accountLinks) : IQueryHandler<GetGroupAvailabilityBoardQuery, GroupAvailabilityBoard>
 {
     internal const int Days = 7;
 
     public async Task<Result<GroupAvailabilityBoard>> Handle(GetGroupAvailabilityBoardQuery query, CancellationToken cancellationToken)
     {
         var actor = query.Actor;
+        var links = await accountLinks.LoadAsync(actor.GuildId);
         var group = (await groups.ListAsync(actor.GuildId)).FirstOrDefault(item => item.Id == query.GroupId);
-        bool canViewRoster = group is not null && GroupWorkspaceQueries.CanSee(group, actor) &&
-            (actor.CanModerate || group.OrganizerId == actor.UserId || group.Members.Contains(actor.UserId));
+        bool canViewRoster = group is not null && GroupWorkspaceQueries.CanViewRoster(group, actor, links);
         if (!canViewRoster)
             return Result.Failure<GroupAvailabilityBoard>(new("Group.NotFound", GroupWorkspaceQueries.NotFound));
 
@@ -71,14 +71,15 @@ internal sealed class GroupAvailabilityBoardQueries(IGuildGroupStore groups, IAv
 
         var dayStart = LocalTimes.StartOfDay(date, zone);
         var dayEnd = LocalTimes.StartOfDay(date.AddDays(1), zone);
-        var members = group!.Members.Distinct().ToArray();
-        var snapshot = await availability.ListForMembersAsync(actor.GuildId, members, dayStart, dayEnd);
+        // One row per member: linked accounts share one identity and one schedule (kept on the primary account).
+        var members = links.Representatives(group!.Members);
+        var snapshot = await availability.ListForMembersAsync(actor.GuildId, links.Members(members), dayStart, dayEnd);
 
         var windows = snapshot.Windows.ToLookup(item => item.UserId, item => item.Window);
         var weekly = snapshot.Weekly.ToLookup(item => item.UserId, item => item.Weekly);
         var rows = members.Select(userId => new BoardRow(userId,
-                windows[userId].Select(window => (AvailabilitySource.OneOff, window.Start, window.End))
-                    .Concat(weekly[userId].SelectMany(item => Occurrences(item, date))
+                windows[links.Member(userId)].Select(window => (AvailabilitySource.OneOff, window.Start, window.End))
+                    .Concat(weekly[links.Member(userId)].SelectMany(item => Occurrences(item, date))
                         .Select(occurrence => (AvailabilitySource.Weekly, occurrence.Start, occurrence.End)))
                     .Where(item => item.Item2 < dayEnd && dayStart < item.Item3)
                     .OrderBy(item => item.Item2).ThenBy(item => item.Item1)

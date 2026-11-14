@@ -4,7 +4,12 @@ using HappyMix.Domain.Abstractions;
 
 namespace HappyMix.Application.Guilds;
 
-internal sealed partial class GroupCommands(IGuildGroupStore groups, IGuildSettingsStore settings, GroupRoles roles) :
+/// <summary>
+/// Group use cases. Every rule compares members, not accounts: linked alternates act as their family's member.
+/// Moderation (<see cref="GroupActor.CanModerate"/>) is always the requesting account's own Discord permission.
+/// </summary>
+internal sealed partial class GroupCommands(IGuildGroupStore groups, IGuildSettingsStore settings, GroupRoles roles,
+    IAccountLinkStore accountLinks) :
     ICommandHandler<CreateGroupCommand, GroupChange>, ICommandHandler<InviteGroupMemberCommand, GroupChange>,
     ICommandHandler<ResolveGroupInviteCommand, GroupChange>, ICommandHandler<LeaveGroupCommand, GroupChange>,
     ICommandHandler<RemoveGroupMemberCommand, GroupChange>, ICommandHandler<DeleteGroupCommand, GroupChange>,
@@ -16,6 +21,7 @@ internal sealed partial class GroupCommands(IGuildGroupStore groups, IGuildSetti
         RunAsync(async () =>
         {
             var actor = command.Actor;
+            var links = await accountLinks.LoadAsync(actor.GuildId);
             var saved = await settings.GetAsync(actor.GuildId, cancellationToken);
             if (!actor.CanModerate && saved?.Preferences?.OrganizerRoleIds is { Length: > 0 } allowed &&
                 !command.RoleIds.Any(allowed.Contains))
@@ -29,9 +35,10 @@ internal sealed partial class GroupCommands(IGuildGroupStore groups, IGuildSetti
             if (games.Where(game => game.SteamAppId is not null).GroupBy(game => game.SteamAppId).Any(group => group.Count() > 1))
                 throw new GroupRuleException(DuplicateGame);
 
+            ulong member = actor.UserId;
             var change = await UpdateAsync(actor, name, group => group is null
-                ? new GuildGroup(name, actor.UserId, [actor.UserId], [], Description: description)
-                : throw new GroupRuleException("A group with that name already exists."), actor.UserId);
+                ? new GuildGroup(name, member, [member], [], Description: description)
+                : throw new GroupRuleException("A group with that name already exists."), links.Accounts(member));
             string key = GuildGroup.GetNameKey(name);
             Guid id = (await groups.ListAsync(actor.GuildId)).First(group => GuildGroup.GetNameKey(group.Name) == key).Id;
             foreach (var (gameName, steam) in games.Select(game => (game.Name, game.SteamAppId)))
@@ -40,86 +47,126 @@ internal sealed partial class GroupCommands(IGuildGroupStore groups, IGuildSetti
         }, cancellationToken);
 
     public Task<Result<GroupChange>> Handle(InviteGroupMemberCommand command, CancellationToken cancellationToken) =>
-        RunAsync(() => UpdateAsync(command.Actor, command.Name, existing =>
+        RunAsync(async () =>
         {
-            var group = RequireManaged(existing, command.Actor);
-            if (group.Members.Contains(command.MemberId))
-                throw new GroupRuleException("That member already belongs to the group.");
+            var links = await accountLinks.LoadAsync(command.Actor.GuildId);
+            ulong invitee = command.MemberId;
+            return await UpdateAsync(command.Actor, command.Name, existing =>
+            {
+                var group = RequireManaged(existing, command.Actor, links);
+                if (links.Includes(group.Members, invitee))
+                    throw new GroupRuleException("That member already belongs to the group.");
 
-            Dictionary<ulong, Guid> tokens = group.InviteTokens is { } saved ? new(saved) : [];
-            tokens[command.MemberId] = command.Token;
-            return group with { Invites = group.Invites.Append(command.MemberId).Distinct().ToArray(), InviteTokens = tokens };
-        }), cancellationToken);
+                // One pending invitation per family, addressed to the selected account.
+                var family = links.Accounts(invitee);
+                var tokens = GroupInvitation.RemoveTokens(group, family) ?? [];
+                tokens[invitee] = command.Token;
+                return group with
+                {
+                    Invites = group.Invites.Where(id => !family.Contains(id)).Append(invitee).ToArray(),
+                    InviteTokens = tokens
+                };
+            });
+        }, cancellationToken);
 
     public Task<Result<GroupChange>> Handle(ResolveGroupInviteCommand command, CancellationToken cancellationToken) =>
         RunAsync(async () =>
         {
             var actor = command.Actor;
+            var links = await accountLinks.LoadAsync(actor.GuildId);
+            var family = links.Accounts(actor.UserId);
             const string expired = "This invitation is no longer pending.";
-            string name = command.Name ?? (await groups.ListAsync(actor.GuildId))
-                .FirstOrDefault(group => command.Token is { } token && group.InviteTokens?.GetValueOrDefault(actor.UserId) == token)?.Name
+            bool TokenMatches(GuildGroup? group) => command.Token is { } token &&
+                group?.InviteTokens is { } tokens && tokens.GetValueOrDefault(actor.UserId) == token;
+
+            string name = command.Name ?? (await groups.ListAsync(actor.GuildId)).FirstOrDefault(TokenMatches)?.Name
                 ?? throw new GroupRuleException(expired);
 
             return await UpdateAsync(actor, name, existing =>
             {
-                if (command.Token is { } token && existing?.InviteTokens?.GetValueOrDefault(actor.UserId) != token)
+                if (command.Token is not null && !TokenMatches(existing))
                     throw new GroupRuleException(expired);
 
-                return GroupInvitation.Resolve(RequireGroup(existing), actor.UserId, command.Accept)
+                return GroupInvitation.Resolve(RequireGroup(existing), family, actor.UserId, command.Accept)
                     ?? throw new GroupRuleException("You have no pending invitation to this group.");
-            }, command.Accept ? actor.UserId : null);
+            }, command.Accept ? family : null);
         }, cancellationToken);
 
     public Task<Result<GroupChange>> Handle(LeaveGroupCommand command, CancellationToken cancellationToken) =>
-        RunAsync(() => UpdateAsync(command.Actor, command.Name, existing =>
+        RunAsync(async () =>
         {
-            var group = RequireGroup(existing);
-            ulong userId = command.Actor.UserId;
-            if (group.OrganizerId == userId)
-                throw new GroupRuleException("You organize this group. Use /group delete to close it.");
-            if (!group.Members.Contains(userId))
-                throw new GroupRuleException("You are not a member of this group.");
-            return group with { Members = group.Members.Where(id => id != userId).ToArray() };
-        }, command.Actor.UserId), cancellationToken);
+            var links = await accountLinks.LoadAsync(command.Actor.GuildId);
+            var family = links.Accounts(command.Actor.UserId);
+            return await UpdateAsync(command.Actor, command.Name, existing =>
+            {
+                var group = RequireGroup(existing);
+                if (links.Same(group.OrganizerId, command.Actor.UserId))
+                    throw new GroupRuleException("You organize this group. Use /group delete to close it.");
+                if (!links.Includes(group.Members, command.Actor.UserId))
+                    throw new GroupRuleException("You are not a member of this group.");
+                // The whole family leaves once, whichever linked account asked.
+                return group with { Members = group.Members.Where(id => !family.Contains(id)).ToArray() };
+            }, family);
+        }, cancellationToken);
 
     public Task<Result<GroupChange>> Handle(RemoveGroupMemberCommand command, CancellationToken cancellationToken) =>
-        RunAsync(() => UpdateAsync(command.Actor, command.Name, existing =>
+        RunAsync(async () =>
         {
-            var group = RequireManaged(existing, command.Actor);
-            if (group.OrganizerId == command.MemberId)
-                throw new GroupRuleException("The organizer owns this group. Use /group delete to close it.");
-            return group with
+            var links = await accountLinks.LoadAsync(command.Actor.GuildId);
+            var family = links.Accounts(command.MemberId);
+            return await UpdateAsync(command.Actor, command.Name, existing =>
             {
-                Members = group.Members.Where(id => id != command.MemberId).ToArray(),
-                Invites = group.Invites.Where(id => id != command.MemberId).ToArray(),
-                InviteTokens = GroupInvitation.RemoveToken(group, command.MemberId)
-            };
-        }, command.MemberId), cancellationToken);
+                var group = RequireManaged(existing, command.Actor, links);
+                if (links.Same(group.OrganizerId, command.MemberId))
+                    throw new GroupRuleException("The organizer owns this group. Use /group delete to close it.");
+                return group with
+                {
+                    Members = group.Members.Where(id => !family.Contains(id)).ToArray(),
+                    Invites = group.Invites.Where(id => !family.Contains(id)).ToArray(),
+                    InviteTokens = GroupInvitation.RemoveTokens(group, family) is { Count: > 0 } left ? left : null
+                };
+            }, family);
+        }, cancellationToken);
 
     public Task<Result<GroupChange>> Handle(DeleteGroupCommand command, CancellationToken cancellationToken) =>
         RunAsync(async () =>
         {
+            var links = await accountLinks.LoadAsync(command.Actor.GuildId);
             string name = ValidateName(command.Name);
             string key = GuildGroup.GetNameKey(name);
             var group = RequireManaged((await groups.ListAsync(command.Actor.GuildId))
-                .FirstOrDefault(item => GuildGroup.GetNameKey(item.Name) == key), command.Actor);
+                .FirstOrDefault(item => GuildGroup.GetNameKey(item.Name) == key), command.Actor, links);
             await roles.DeleteAsync(command.Actor.GuildId, group);
             return await UpdateAsync(command.Actor, name, _ => null);
         }, cancellationToken);
 
     public Task<Result<GroupChange>> Handle(EditGroupDescriptionCommand command, CancellationToken cancellationToken) =>
-        RunAsync(() => UpdateAsync(command.Actor, command.Name, existing =>
-            RequireManaged(existing, command.Actor) with { Description = NormalizeDescription(command.Description) }), cancellationToken);
+        RunAsync(async () =>
+        {
+            var links = await accountLinks.LoadAsync(command.Actor.GuildId);
+            return await UpdateAsync(command.Actor, command.Name, existing =>
+                RequireManaged(existing, command.Actor, links) with { Description = NormalizeDescription(command.Description) });
+        }, cancellationToken);
 
     public Task<Result<GroupChange>> Handle(RepairGroupRolesCommand command, CancellationToken cancellationToken) =>
         RunAsync(async () =>
         {
+            // The requesting account's own Discord permission; a linked moderator account never lends it.
             if (!command.Actor.CanModerate)
                 throw new GroupRuleException("Only server moderators can repair group roles.");
 
             try
             {
-                await roles.SyncAsync(command.Actor.GuildId, command.MemberId);
+                if (command.MemberId is { } member)
+                {
+                    var links = await accountLinks.LoadAsync(command.Actor.GuildId);
+                    foreach (ulong account in links.Accounts(member))
+                        await roles.SyncAsync(command.Actor.GuildId, account);
+                }
+                else
+                {
+                    await roles.SyncAsync(command.Actor.GuildId);
+                }
             }
             catch (GroupRoleException exception) when (command.MemberId is null)
             {
@@ -144,16 +191,18 @@ internal sealed partial class GroupCommands(IGuildGroupStore groups, IGuildSetti
         }
     }
 
+    /// <summary>Saves the group, then reconciles the Discord role for each listed account.</summary>
     private async Task<GroupChange> UpdateAsync(GroupActor actor, string input, Func<GuildGroup?, GuildGroup?> update,
-        ulong? syncUser = null)
+        IReadOnlyCollection<ulong>? syncAccounts = null)
     {
         string name = ValidateName(input);
         await groups.UpdateAsync(actor.GuildId, name, update);
-        if (syncUser is not null)
+        if (syncAccounts is { Count: > 0 })
         {
             try
             {
-                await roles.SyncAsync(actor.GuildId, syncUser, name);
+                foreach (ulong account in syncAccounts)
+                    await roles.SyncAsync(actor.GuildId, account, name);
             }
             catch (GroupRoleException)
             {
@@ -167,10 +216,10 @@ internal sealed partial class GroupCommands(IGuildGroupStore groups, IGuildSetti
     private static GuildGroup RequireGroup(GuildGroup? group) =>
         group ?? throw new GroupRuleException("That group does not exist in this server.");
 
-    private static GuildGroup RequireManaged(GuildGroup? existing, GroupActor actor)
+    private static GuildGroup RequireManaged(GuildGroup? existing, GroupActor actor, MemberLinks links)
     {
         var group = RequireGroup(existing);
-        if (group.OrganizerId != actor.UserId && !actor.CanModerate)
+        if (!links.Same(group.OrganizerId, actor.UserId) && !actor.CanModerate)
             throw new GroupRuleException("Only the group's organizer or a server moderator can manage it.");
         return group;
     }

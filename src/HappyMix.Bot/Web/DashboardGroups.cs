@@ -242,6 +242,8 @@ public sealed partial class DashboardController
         var (members, available) = await memberDirectory.GetMembersAsync(guildId, cancellationToken);
         var group = detail.Value;
         var taken = group.Members.Concat(group.Invites).ToHashSet();
+        foreach (var accounts in group.LinkedAccounts.Values)
+            taken.UnionWith(accounts);
         var candidates = group.Summary.CanManage
             ? members.Values.Where(profile => profile.InServer && !profile.IsBot && !taken.Contains(profile.Id))
                 .OrderBy(profile => profile.DisplayName, StringComparer.CurrentCultureIgnoreCase).Take(500).ToArray()

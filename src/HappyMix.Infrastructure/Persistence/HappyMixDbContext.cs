@@ -43,6 +43,31 @@ internal sealed class HappyMixDbContext(DbContextOptions<HappyMixDbContext> opti
         games.HasIndex(item => new { item.GuildId, item.GroupId });
         games.HasIndex(item => new { item.GroupId, item.Provider, item.ExternalId }).IsUnique();
 
+        var links = modelBuilder.Entity<AccountLinkRecord>();
+        links.ToTable("AccountLinks");
+        links.HasKey(item => new { item.GuildId, item.AlternateId });
+        links.Property(item => item.GuildId).HasColumnType("TEXT");
+        links.Property(item => item.AlternateId).HasColumnType("TEXT");
+        links.Property(item => item.PrimaryId).HasColumnType("TEXT");
+        links.Property(item => item.RequestId).HasColumnType("TEXT");
+        links.Property(item => item.LinkedUtc).HasColumnType("INTEGER");
+        links.Property(item => item.Snapshot).HasColumnType("TEXT");
+        links.HasIndex(item => new { item.GuildId, item.PrimaryId });
+
+        var requests = modelBuilder.Entity<AccountLinkRequestRecord>();
+        requests.ToTable("AccountLinkRequests");
+        requests.HasKey(item => item.Id);
+        requests.Property(item => item.Id).HasColumnType("TEXT");
+        requests.Property(item => item.GuildId).HasColumnType("TEXT");
+        requests.Property(item => item.PrimaryId).HasColumnType("TEXT");
+        requests.Property(item => item.TokenHash).HasColumnType("BLOB");
+        requests.Property(item => item.CreatedUtc).HasColumnType("INTEGER");
+        requests.Property(item => item.ExpiresUtc).HasColumnType("INTEGER");
+        requests.Property(item => item.ConsumedUtc).HasColumnType("INTEGER");
+        requests.Property(item => item.ConsumedBy).HasColumnType("TEXT");
+        requests.Property(item => item.Revoked).HasColumnType("INTEGER");
+        requests.HasIndex(item => new { item.GuildId, item.PrimaryId });
+
         var settings = modelBuilder.Entity<GuildSettingsRecord>();
         settings.ToTable("GuildSettings");
         settings.HasKey(item => item.GuildId);

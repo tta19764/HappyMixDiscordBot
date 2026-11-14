@@ -33,6 +33,7 @@ public static class DependencyInjection
         services.AddSingleton<IGuildSettingsStore, SqliteGuildSettingsStore>();
         services.AddSingleton<IGuildGroupStore, SqliteGuildGroupStore>();
         services.AddSingleton<IAvailabilityStore, SqliteAvailabilityStore>();
+        services.AddSingleton<IAccountLinkStore, SqliteAccountLinkStore>();
         services.AddSingleton<IMatchAnnouncementStateFactory, SqliteMatchAnnouncementStateFactory>();
         services.AddOptions<StorageOptions>()
             .Bind(configuration.GetSection(StorageOptions.SectionName));

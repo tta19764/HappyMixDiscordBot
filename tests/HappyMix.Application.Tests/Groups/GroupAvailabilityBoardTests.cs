@@ -227,6 +227,7 @@ public sealed class GroupAvailabilityBoardTests
             await settings.UpdateAsync(Guild, Kyiv, saved => saved);
             fixture.application = new ServiceCollection().AddLogging()
                 .AddSingleton(fixture.Groups).AddSingleton(settings).AddSingleton(fixture.Availability)
+                .AddSingleton(fixture.database.Services.GetRequiredService<IAccountLinkStore>())
                 .AddSingleton<IClock>(new FixedClock(Now))
                 .AddSingleton<IGroupRoleGateway, NoRoles>()
                 .AddApplication().BuildServiceProvider();

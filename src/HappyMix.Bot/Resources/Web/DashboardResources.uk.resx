@@ -752,4 +752,277 @@
   <data name="Busy · has times that day, not this hour" xml:space="preserve">
     <value>Зайнятий · має час цього дня, але не цієї години</value>
   </data>
+  <data name="{0} linked" xml:space="preserve">
+    <value>пов’язано: {0}</value>
+  </data>
+  <data name="Linked accounts" xml:space="preserve">
+    <value>Пов’язані акаунти</value>
+  </data>
+  <data name="Connect an alternate account (twink) so HappyMix treats both as one member in this server." xml:space="preserve">
+    <value>Під’єднайте альтернативний акаунт (твінк), щоб HappyMix вважав обидва одним учасником на цьому сервері.</value>
+  </data>
+  <data name="Your accounts" xml:space="preserve">
+    <value>Ваші акаунти</value>
+  </data>
+  <data name="All accounts below act as one member: the same groups, invitations and schedule." xml:space="preserve">
+    <value>Усі акаунти нижче діють як один учасник: ті самі групи, запрошення й розклад.</value>
+  </data>
+  <data name="Primary" xml:space="preserve">
+    <value>Основний</value>
+  </data>
+  <data name="Alternate (twink)" xml:space="preserve">
+    <value>Альтернативний (твінк)</value>
+  </data>
+  <data name="Linked {0}" xml:space="preserve">
+    <value>Пов’язано {0}</value>
+  </data>
+  <data name="Unlink {0}" xml:space="preserve">
+    <value>Від’єднати {0}</value>
+  </data>
+  <data name="Unlink" xml:space="preserve">
+    <value>Від’єднати</value>
+  </data>
+  <data name="No alternate accounts are linked yet." xml:space="preserve">
+    <value>Альтернативних акаунтів ще не пов’язано.</value>
+  </data>
+  <data name="Link an alternate account" xml:space="preserve">
+    <value>Пов’язати альтернативний акаунт</value>
+  </data>
+  <data name="Link created" xml:space="preserve">
+    <value>Посилання створено</value>
+  </data>
+  <data name="Open it while signed in to Discord as your alternate account (twink), for example in a private window. It works once and expires at {0}." xml:space="preserve">
+    <value>Відкрийте його, увійшовши в Discord як альтернативний акаунт (твінк), наприклад у приватному вікні. Воно спрацює один раз і діє до {0}.</value>
+  </data>
+  <data name="Link for your alternate account" xml:space="preserve">
+    <value>Посилання для альтернативного акаунта</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Копіювати</value>
+  </data>
+  <data name="This page shows the link only once. Don't share it with anyone else: whoever approves it with their own Discord account becomes your alternate." xml:space="preserve">
+    <value>Посилання показується лише раз. Не передавайте його іншим: той, хто підтвердить його своїм акаунтом Discord, стане вашим альтернативним акаунтом.</value>
+  </data>
+  <data name="Create a link here, signed in as your main account." xml:space="preserve">
+    <value>Створіть посилання тут, увійшовши як основний акаунт.</value>
+  </data>
+  <data name="Open the link signed in to Discord as your alternate account (twink). A private window or another browser works best." xml:space="preserve">
+    <value>Відкрийте посилання, увійшовши в Discord як альтернативний акаунт (твінк). Найкраще — у приватному вікні або іншому браузері.</value>
+  </data>
+  <data name="Review what will be shared and approve it from the alternate account." xml:space="preserve">
+    <value>Перегляньте, що стане спільним, і підтвердьте з альтернативного акаунта.</value>
+  </data>
+  <data name="Create link" xml:space="preserve">
+    <value>Створити посилання</value>
+  </data>
+  <data name="Open link requests" xml:space="preserve">
+    <value>Відкриті запити на зв’язок</value>
+  </data>
+  <data name="Created {0}" xml:space="preserve">
+    <value>Створено {0}</value>
+  </data>
+  <data name="Expires {0} · works once" xml:space="preserve">
+    <value>Діє до {0} · одноразово</value>
+  </data>
+  <data name="This account is the alternate (twink) of {0}. New links are created from the primary account." xml:space="preserve">
+    <value>Цей акаунт — альтернативний (твінк) для {0}. Нові зв’язки створюються з основного акаунта.</value>
+  </data>
+  <data name="What linking does" xml:space="preserve">
+    <value>Що дає зв’язок</value>
+  </data>
+  <data name="Groups, invitations and organizer rights are shared and counted once." xml:space="preserve">
+    <value>Групи, запрошення й права організатора спільні та рахуються один раз.</value>
+  </data>
+  <data name="Today, weekly and all-day availability is one schedule. Editing from either account changes it." xml:space="preserve">
+    <value>Сьогоднішня, щотижнева й цілоденна доступність — один розклад. Зміни з будь-якого акаунта змінюють його.</value>
+  </data>
+  <data name="Group roles in Discord are given to every linked account." xml:space="preserve">
+    <value>Ролі груп у Discord отримують усі пов’язані акаунти.</value>
+  </data>
+  <data name="Discord permissions are never shared." xml:space="preserve">
+    <value>Дозволи Discord ніколи не стають спільними.</value>
+  </data>
+  <data name="Admin and moderator access still depends on the account you sign in with." xml:space="preserve">
+    <value>Доступ адміністратора й модератора залежить від акаунта, яким ви входите.</value>
+  </data>
+  <data name="Links only apply in this server." xml:space="preserve">
+    <value>Зв’язки діють лише на цьому сервері.</value>
+  </data>
+  <data name="Approve linked account" xml:space="preserve">
+    <value>Підтвердження пов’язаного акаунта</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
+    <value>Підтвердити</value>
+  </data>
+  <data name="Switch to your alternate account" xml:space="preserve">
+    <value>Перейдіть на альтернативний акаунт</value>
+  </data>
+  <data name="Copy this page's address, sign out, sign in to Discord as your alternate account (twink), and open the address again. A private window makes this easier." xml:space="preserve">
+    <value>Скопіюйте адресу сторінки, вийдіть, увійдіть у Discord як альтернативний акаунт (твінк) і відкрийте адресу знову. У приватному вікні це простіше.</value>
+  </data>
+  <data name="Can't use this link" xml:space="preserve">
+    <value>Це посилання не можна використати</value>
+  </data>
+  <data name="Back to linked accounts" xml:space="preserve">
+    <value>До пов’язаних акаунтів</value>
+  </data>
+  <data name="Link {0} to {1}?" xml:space="preserve">
+    <value>Пов’язати {0} з {1}?</value>
+  </data>
+  <data name="You're signed in as {0}. Approving makes this account an alternate (twink) of {1} in {2}." xml:space="preserve">
+    <value>Ви увійшли як {0}. Після підтвердження цей акаунт стане альтернативним (твінком) для {1} на {2}.</value>
+  </data>
+  <data name="Accounts" xml:space="preserve">
+    <value>Акаунти</value>
+  </data>
+  <data name="Shared from now on" xml:space="preserve">
+    <value>Відтепер спільні</value>
+  </data>
+  <data name="None" xml:space="preserve">
+    <value>Немає</value>
+  </data>
+  <data name="Already in with both accounts (counted once)" xml:space="preserve">
+    <value>Обидва акаунти вже там (рахується один раз)</value>
+  </data>
+  <data name="Duplicate invitations merged" xml:space="preserve">
+    <value>Об’єднані повторні запрошення</value>
+  </data>
+  <data name="I understand {0} will share organizer rights for: {1}." xml:space="preserve">
+    <value>Я розумію, що {0} отримає спільні права організатора для: {1}.</value>
+  </data>
+  <data name="The groups stay saved under this account and remain yours if you unlink." xml:space="preserve">
+    <value>Групи залишаються збереженими за цим акаунтом і лишаться вашими після від’єднання.</value>
+  </data>
+  <data name="Schedule" xml:space="preserve">
+    <value>Розклад</value>
+  </data>
+  <data name="Both accounts will use one schedule. Moving {0} one-off windows and {1} weekly days from this account; {2} identical entries merged." xml:space="preserve">
+    <value>Обидва акаунти матимуть один розклад. Буде перенесено разових вікон: {0}, тижневих днів: {1}; однакових записів об’єднано: {2}.</value>
+  </data>
+  <data name="These entries overlap. Choose which to keep for each one:" xml:space="preserve">
+    <value>Ці записи перетинаються. Виберіть, що залишити для кожного:</value>
+  </data>
+  <data name="Every {0}" xml:space="preserve">
+    <value>Щотижня: {0}</value>
+  </data>
+  <data name="Keep {0}'s" xml:space="preserve">
+    <value>Залишити час {0}</value>
+  </data>
+  <data name="Use this account's" xml:space="preserve">
+    <value>Взяти час цього акаунта</value>
+  </data>
+  <data name="Nothing is thrown away: this account's current schedule is saved and comes back if you unlink." xml:space="preserve">
+    <value>Нічого не втрачається: поточний розклад цього акаунта збережено, і він повернеться після від’єднання.</value>
+  </data>
+  <data name="Approve link" xml:space="preserve">
+    <value>Підтвердити зв’язок</value>
+  </data>
+  <data name="Unlink account" xml:space="preserve">
+    <value>Від’єднання акаунта</value>
+  </data>
+  <data name="Unlink {0} from {1}?" xml:space="preserve">
+    <value>Від’єднати {0} від {1}?</value>
+  </data>
+  <data name="Here's what changes. Nothing happens until you confirm." xml:space="preserve">
+    <value>Ось що зміниться. Нічого не станеться, доки ви не підтвердите.</value>
+  </data>
+  <data name="{0} keeps these groups (its own memberships)" xml:space="preserve">
+    <value>{0} залишається в цих групах (власне членство)</value>
+  </data>
+  <data name="{0} loses access to these groups and their Discord roles" xml:space="preserve">
+    <value>{0} втрачає доступ до цих груп і їхніх ролей Discord</value>
+  </data>
+  <data name="{0} still organizes" xml:space="preserve">
+    <value>{0} і надалі організовує</value>
+  </data>
+  <data name="{0} keeps the shared schedule. {1} gets back its pre-link schedule: {2} upcoming windows and {3} weekly days." xml:space="preserve">
+    <value>{0} зберігає спільний розклад. {1} повертає свій розклад до зв’язку: найближчих вікон {2}, тижневих днів {3}.</value>
+  </data>
+  <data name="Memberships and invitations accepted while linked stay with {0}. Unrelated Discord roles are not touched." xml:space="preserve">
+    <value>Членство й запрошення, прийняті під час зв’язку, лишаються за {0}. Інші ролі Discord не змінюються.</value>
+  </data>
+  <data name="Linked: {0}" xml:space="preserve">
+    <value>Пов’язані: {0}</value>
+  </data>
+  <data name="Linked accounts: {0}" xml:space="preserve">
+    <value>Пов’язані акаунти: {0}</value>
+  </data>
+  <data name="Link request not created" xml:space="preserve">
+    <value>Запит на зв’язок не створено</value>
+  </data>
+  <data name="Link request revoked" xml:space="preserve">
+    <value>Запит на зв’язок відкликано</value>
+  </data>
+  <data name="These accounts were already linked" xml:space="preserve">
+    <value>Ці акаунти вже були пов’язані</value>
+  </data>
+  <data name="Accounts linked" xml:space="preserve">
+    <value>Акаунти пов’язано</value>
+  </data>
+  <data name="HappyMix now treats both accounts as one member in this server." xml:space="preserve">
+    <value>Тепер HappyMix вважає обидва акаунти одним учасником на цьому сервері.</value>
+  </data>
+  <data name="The link is saved, but Discord group roles didn't update. A server moderator can fix them from Groups → Repair roles, or with /group repair-roles." xml:space="preserve">
+    <value>Зв’язок збережено, але ролі груп у Discord не оновилися. Модератор сервера може виправити їх у «Групи» → «Відновлення ролей» або командою /group repair-roles.</value>
+  </data>
+  <data name="Accounts unlinked" xml:space="preserve">
+    <value>Акаунти від’єднано</value>
+  </data>
+  <data name="The alternate keeps its own memberships and gets its saved schedule back." xml:space="preserve">
+    <value>Альтернативний акаунт зберігає власне членство й повертає збережений розклад.</value>
+  </data>
+  <data name="The accounts are unlinked, but Discord group roles didn't update. A server moderator can fix them from Groups → Repair roles." xml:space="preserve">
+    <value>Акаунти від’єднано, але ролі груп у Discord не оновилися. Модератор сервера може виправити їх у «Групи» → «Відновлення ролей».</value>
+  </data>
+  <data name="An account can have up to 5 linked alternates." xml:space="preserve">
+    <value>В акаунта може бути до 5 пов’язаних альтернативних акаунтів.</value>
+  </data>
+  <data name="Both accounts must be members of this server." xml:space="preserve">
+    <value>Обидва акаунти мають бути учасниками цього сервера.</value>
+  </data>
+  <data name="Choose which schedule to keep for each conflict." xml:space="preserve">
+    <value>Виберіть, який розклад залишити для кожного конфлікту.</value>
+  </data>
+  <data name="Confirm that organizer rights will be shared." xml:space="preserve">
+    <value>Підтвердьте, що права організатора стануть спільними.</value>
+  </data>
+  <data name="One of these accounts was linked elsewhere meanwhile. Unlink it first." xml:space="preserve">
+    <value>Тим часом один із цих акаунтів пов’язали з іншим. Спершу від’єднайте його.</value>
+  </data>
+  <data name="Only the primary account or that alternate can unlink it." xml:space="preserve">
+    <value>Від’єднати може лише основний акаунт або сам альтернативний.</value>
+  </data>
+  <data name="That account isn't linked." xml:space="preserve">
+    <value>Цей акаунт не пов’язаний.</value>
+  </data>
+  <data name="That request is no longer open." xml:space="preserve">
+    <value>Цей запит уже неактивний.</value>
+  </data>
+  <data name="The account that created this request is now linked as an alternate itself." xml:space="preserve">
+    <value>Акаунт, що створив запит, тепер сам пов’язаний як альтернативний.</value>
+  </data>
+  <data name="These accounts are already linked." xml:space="preserve">
+    <value>Ці акаунти вже пов’язані.</value>
+  </data>
+  <data name="This account is already part of another linked family. Unlink it first." xml:space="preserve">
+    <value>Цей акаунт уже пов’язаний з іншим. Спершу від’єднайте його.</value>
+  </data>
+  <data name="This account is linked as an alternate. Create requests from your primary account." xml:space="preserve">
+    <value>Цей акаунт пов’язаний як альтернативний. Створюйте запити з основного акаунта.</value>
+  </data>
+  <data name="This link request has expired, was revoked or was already used. Ask for a new one." xml:space="preserve">
+    <value>Цей запит прострочений, відкликаний або вже використаний. Попросіть новий.</value>
+  </data>
+  <data name="You already have 3 open requests. Revoke one or wait for it to expire." xml:space="preserve">
+    <value>У вас уже 3 відкриті запити. Відкличте один або зачекайте, доки він спливе.</value>
+  </data>
+  <data name="You can link up to 5 alternate accounts." xml:space="preserve">
+    <value>Можна пов’язати до 5 альтернативних акаунтів.</value>
+  </data>
+  <data name="You need to be a member of this server." xml:space="preserve">
+    <value>Ви маєте бути учасником цього сервера.</value>
+  </data>
+  <data name="You're signed in with the account that created this request. Sign in with your alternate account (twink) to approve it." xml:space="preserve">
+    <value>Ви увійшли акаунтом, що створив цей запит. Увійдіть альтернативним акаунтом (твінком), щоб підтвердити його.</value>
+  </data>
 </root>

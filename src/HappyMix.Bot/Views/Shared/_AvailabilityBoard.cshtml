@@ -100,10 +100,10 @@
         {
             var profile = Model.Names.Get(row.UserId);
             string name = Model.Names.Name(row.UserId, Localize);
-            var avatar = new AvatarModel(profile, name, true);
+            var avatar = MemberStacks.For(Model, row.UserId, Localize, small: true);
             <div class="hm-tgrid__row @(row.HasData ? "" : "hm-tgrid__row--empty")" role="row">
                 <span class="hm-tgrid__name" role="rowheader">
-                    <partial name="_Avatar" model="avatar" /><span class="hm-tgrid__who">@name</span>
+                    <partial name="_MemberAvatars" model="avatar" /><span class="hm-tgrid__who">@name</span>
                     @if (row.UserId == Model.Group.OrganizerId)
                     {
                         <span class="hm-badge hm-badge--custom hm-tgrid__org">@T["Organizer"]</span>

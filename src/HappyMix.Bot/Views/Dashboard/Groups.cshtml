@@ -105,7 +105,7 @@ else
                     <p class="hm-group-card__desc hm-group-card__desc--empty">@T["No description"]</p>
                 }
                 <div class="hm-meta">
-                    <span><partial name="_Avatar" model="new AvatarModel(organizer, organizerName, true)" />@T["Organizer"]: @organizerName</span>
+                    <span><partial name="_MemberAvatars" model="MemberStacks.For(Model.Names, group.OrganizerId, group.OrganizerAlternates, Localize, true)" />@T["Organizer"]: @organizerName</span>
                     <span>@DashboardIcons.Render("users")@T["{0} members", group.MemberCount]</span>
                 </div>
                 @if (group.Games.Length > 0)

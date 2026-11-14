@@ -15,7 +15,8 @@ public sealed record SetWeeklyAvailabilityCommand(ulong GuildId, ulong UserId, D
 public sealed record GetWeeklyAvailabilityQuery(ulong GuildId, ulong UserId) : IQuery<IReadOnlyList<WeeklyAvailability>>;
 public sealed record ClearWeeklyAvailabilityCommand(ulong GuildId, ulong UserId, DayOfWeek Day) : ICommand;
 
-internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGuildSettingsStore settings, IClock clock) :
+internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGuildSettingsStore settings, IClock clock,
+    IAccountLinkStore accountLinks) :
     ICommandHandler<SetTodayAvailabilityCommand, AvailabilityWindow>,
     ICommandHandler<SetWeeklyAvailabilityCommand, WeeklyAvailability>,
     IQueryHandler<GetWeeklyAvailabilityQuery, IReadOnlyList<WeeklyAvailability>>,
@@ -28,7 +29,7 @@ internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGu
             var zone = await GetZoneAsync(command.GuildId, command.Offset, command.DefaultTimeZone, cancellationToken);
             var date = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(clock.UtcNow, zone).DateTime);
             if (command.FullDay)
-                return Result.Success(await store.SaveAsync(command.GuildId, command.UserId, null,
+                return Result.Success(await store.SaveAsync(command.GuildId, await MemberAsync(command.GuildId, command.UserId), null,
                     LocalTimes.StartOfDay(date, zone), LocalTimes.StartOfDay(date.AddDays(1), zone)));
 
             var (start, end) = ParseTimes(command.Start, command.End);
@@ -37,7 +38,7 @@ internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGu
             if (until <= clock.UtcNow)
                 throw new AvailabilityException("This window has already ended.");
 
-            return Result.Success(await store.SaveAsync(command.GuildId, command.UserId, null, from, until));
+            return Result.Success(await store.SaveAsync(command.GuildId, await MemberAsync(command.GuildId, command.UserId), null, from, until));
         }
         catch (AvailabilityException exception)
         {
@@ -55,7 +56,7 @@ internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGu
             var (start, end) = command.FullDay ? (TimeOnly.MinValue, TimeOnly.MinValue) : ParseTimes(command.Start, command.End);
             var zone = await GetZoneAsync(command.GuildId, command.Offset, command.DefaultTimeZone, cancellationToken);
             var window = new WeeklyAvailability(command.Day, start, end, zone.Id);
-            await store.SaveWeeklyAsync(command.GuildId, command.UserId, window);
+            await store.SaveWeeklyAsync(command.GuildId, await MemberAsync(command.GuildId, command.UserId), window);
             return Result.Success(window);
         }
         catch (AvailabilityException exception)
@@ -65,10 +66,10 @@ internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGu
     }
 
     public async Task<Result<IReadOnlyList<WeeklyAvailability>>> Handle(GetWeeklyAvailabilityQuery query,
-        CancellationToken cancellationToken) => Result.Success(await store.ListWeeklyAsync(query.GuildId, query.UserId));
+        CancellationToken cancellationToken) => Result.Success(await store.ListWeeklyAsync(query.GuildId, await MemberAsync(query.GuildId, query.UserId)));
 
     public async Task<Result> Handle(ClearWeeklyAvailabilityCommand command, CancellationToken cancellationToken) =>
-        await store.RemoveWeeklyAsync(command.GuildId, command.UserId, command.Day)
+        await store.RemoveWeeklyAsync(command.GuildId, await MemberAsync(command.GuildId, command.UserId), command.Day)
             ? Result.Success()
             : Result.Failure(new("Availability.NotFound", "No weekly window is set for that day."));
 
@@ -111,6 +112,9 @@ internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGu
             throw new AvailabilityException("This time is skipped or repeated by daylight saving. Supply an explicit UTC offset.");
         return new DateTimeOffset(local, zone.GetUtcOffset(local));
     }
+
+    /// <summary>Linked accounts share one schedule, stored on the family's primary account.</summary>
+    private async Task<ulong> MemberAsync(ulong guildId, ulong userId) => (await accountLinks.LoadAsync(guildId)).Member(userId);
 }
 
 /// <summary>Converts local calendar times to instants without failing on daylight-saving gaps or repeats.</summary>

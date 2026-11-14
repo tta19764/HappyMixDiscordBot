@@ -56,6 +56,7 @@ public static class DependencyInjection
         services.AddSingleton<DiscordSocketClient>();
         services.AddSingleton<IGroupRoleGateway, DiscordGroupRoleGateway>();
         services.AddSingleton<IMemberDirectory, DiscordMemberDirectory>();
+        services.AddSingleton<IGuildMemberGateway, DiscordGuildMemberGateway>();
         services.AddSingleton(static provider =>
             new InteractionService(provider.GetRequiredService<DiscordSocketClient>().Rest));
         services.AddHttpClient("Twitch", client => client.Timeout = TimeSpan.FromSeconds(5));

@@ -94,8 +94,20 @@ public sealed class SqliteGuildGroupTests
     }
 
     private static ServiceProvider CreateApplicationServices(IGuildGroupStore store, IGuildSettingsStore settings) =>
-        new ServiceCollection().AddLogging().AddSingleton(store).AddSingleton(settings)
+        new ServiceCollection().AddLogging().AddSingleton(store).AddSingleton(settings).AddSingleton<IAccountLinkStore>(new NoLinks())
             .AddSingleton<IGroupRoleGateway, TestGroupRoleGateway>().AddApplication().BuildServiceProvider();
+
+    private sealed class NoLinks : IAccountLinkStore
+    {
+        public Task<IReadOnlyList<AccountLink>> ListAsync(ulong guildId) => Task.FromResult<IReadOnlyList<AccountLink>>([]);
+        public Task<AccountLinkRequest> CreateRequestAsync(ulong guildId, ulong primaryId, byte[] tokenHash, DateTimeOffset now, DateTimeOffset expiresAt) => throw new NotSupportedException();
+        public Task<AccountLinkRequest?> GetRequestAsync(ulong guildId, Guid requestId) => Task.FromResult<AccountLinkRequest?>(null);
+        public Task<IReadOnlyList<AccountLinkRequest>> ListRequestsAsync(ulong guildId, ulong primaryId) => Task.FromResult<IReadOnlyList<AccountLinkRequest>>([]);
+        public Task<bool> RevokeRequestAsync(ulong guildId, ulong primaryId, Guid requestId) => Task.FromResult(false);
+        public Task<LinkOutcome> LinkAsync(ulong guildId, LinkPlan plan) => throw new NotSupportedException();
+        public Task<AvailabilitySnapshot?> GetSnapshotAsync(ulong guildId, ulong alternateId) => Task.FromResult<AvailabilitySnapshot?>(null);
+        public Task<bool> UnlinkAsync(ulong guildId, ulong primaryId, ulong alternateId, AvailabilitySnapshot restore) => Task.FromResult(false);
+    }
 
     private sealed class TestGroupRoleGateway : IGroupRoleGateway
     {
