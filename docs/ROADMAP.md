@@ -1,8 +1,8 @@
 # HappyMix implementation roadmap
 
-Reviewed: 2026-11-12.
+Reviewed: 2026-11-14.
 
-Day 5 adds one-off availability windows and live match-start alerts. Day 6 adds the daily availability board. Day 2 still requires restart, reboot, backup and billing verification.
+Days 1–6 record delivered development milestones. Days 7–30 are the remaining checklist. The group availability board is implemented and all 127 tests passed locally. Live verification of the latest deployment remains Day 7 work.
 
 ## How to maintain this plan
 
@@ -11,8 +11,8 @@ Open `docs/progress.html` directly in a browser. No server, npm install, or paid
 Commit the Markdown and generated HTML together. The dashboard is read-only; it never silently saves changes in browser storage.
 
 Statuses: `done`, `partial`, `planned`, `blocked`. Done means the acceptance criterion is implemented and verified; partial means some implementation exists. Record evidence when changing status.
-Days are adjustable work slots, not dates or promises. This is a fresh 30-slot plan from the current baseline, not a claim that 30 days have elapsed.
-Progress is counted by completed items, not estimated hours. Baseline capabilities and future plan are counted separately.
+Days are adjustable work slots, not dates or promises. The first six slots summarize work already delivered.
+Progress is counted by completed items, not estimated hours. Baseline capabilities and development days are counted separately.
 
 ## Current baseline
 
@@ -28,17 +28,17 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 | B08 | Reliability | done | Persistent announcement deduplication | Infrastructure/Persistence; EF migration, per-channel/game/event keys and first-run seeding; real-file restart tests pass; send-before-save crash window documented |
 | B09 | Quality | done | Application, provider, scheduling, embed and SQLite integration tests | 87 tests passed using installed .NET SDK 10.0.402 and isolated artifacts |
 
-## Next 30 work slots
+## Development checklist
 
 | Day | Area | Status | Deliverable | Acceptance criterion | Depends on |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Reliability | done | SQLite foundation and persistent announcement history | EF Core SQLite, versioned startup migration, configured path/volume, historical seeding and real-file restart tests pass; crash window documented in SQLITE_DAY1.md | B02 |
-| 2 | Operations | partial | Production hosting and deployment | Oracle deployment b4e61af verified running with zero container restarts, a persistent SQLite mount, Discord connection and successful PandaScore synchronization. Remaining: Always Free cost confirmation, live restart/reboot and off-VM backup checks | 1 |
-| 3 | Foundation | done | Guild settings and access policy | Admin-only settings store the announcement channel, time zone, team subscriptions, notifications, reminder lead time, organizer roles, and ping roles per guild. Organizer roles are saved for Day 4 group commands | 1 |
-| 4 | Groups | done | Saved groups and organizers | Discord group commands support creation, invitations, joining, leaving, removing members, listing and deletion. Invites include DM buttons and slash-command fallback. Organizer roles restrict creation when configured | 3 |
-| 5 | Availability | done | One-off availability windows | Add/edit/remove available windows; reject invalid or overlapping input; support windows across midnight | 3 |
-| 6 | Availability | planned | Daily board and confirmations | One message per local date in #availability; buttons confirm/change/unavailable; only explicit confirmation means confirmed | 5 |
-| 7 | Availability | planned | Weekly recurring availability | Generate expected windows from weekly patterns in member timezone; handle daylight-saving boundaries | 5 |
+| 1 | Reliability | done | SQLite and MediatR foundation | Startup migrations, persistent announcement history, application command and query handlers, and architecture tests. | B02 |
+| 2 | Operations | done | Oracle deployment and HTTPS | ARM64 images deploy through GitHub Actions and GHCR over Tailscale. Caddy served the dashboard through Duck DNS with a valid certificate. Recovery and spending checks remain on Day 29. | 1 |
+| 3 | Settings | done | Server settings and esports delivery | Discord and web settings share persisted preferences. CS2 and Dota 2 have separate routing, team catalogs, reminders, and Twitch preferences. Web announcement selectors accept standard text channels. | 1 |
+| 4 | Groups | done | Groups, membership, and game attachments | Invite-only groups, descriptions, rosters, role repair, and the web workspace. Games can be attached with an optional Steam App ID. | 3 |
+| 5 | Availability | done | Personal and recurring availability | Today and weekly timetable entry, named time zones, fixed offsets, overnight windows, and full-day shortcuts. MVC dashboard and English, Ukrainian, and Russian resources. | 2, 3 |
+| 6 | Availability | done | Group member availability board | Seven day tabs, member rows with No data, and distinct one-off and recurring hours with overnight carryover. Authorization and schedule behavior covered by tests. | 4, 5 |
+| 7 | Quality | planned | Live dashboard and board verification | Verify Discord sign-in, localization, text-channel selectors, group access, and overnight and full-day rendering on the deployed build. | 6 |
 | 8 | Availability | planned | Exceptions and opt-in prompts | Date exception overrides recurrence; snooze and quiet hours prevent unwanted prompts; keep commitment reasons private | 6, 7 |
 | 9 | Availability | planned | Weekly overview and overlap finder | Show confirmed versus expected hours separately; find shared windows of a requested duration | 8 |
 | 10 | Steam | planned | Profile linking and library import | Import a real public library by Steam ID/profile URL; resolve vanity names; show privacy errors; label link self-declared | 3 |
@@ -54,8 +54,8 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 | 20 | Groups | planned | Temporary roles and text spaces | Optional bot-owned role/channel grants only intended access; creation limits and organizer controls work; recover partial creation failures | 4, 19 |
 | 21 | Groups | planned | Temporary voice spaces | Create room; organizer can rename/lock/set capacity through bot; permissions remain scoped to their room | 20 |
 | 22 | Reliability | planned | Resource lifecycle and cleanup | Persist IDs/expiry; extend/close controls; lock text before later deletion; never remove occupied voice room or unrelated resource; reconcile after restart | 21 |
-| 23 | Esports | done | Team subscriptions and provider validation | Per-server team catalogs are saved in SQLite. Admins can configure teams, notifications, reminder roles, Twitch channels and separate Discord channels for CS2 and Dota 2 | 3 |
-| 24 | Esports | done | Dota 2 adapter and shared match model | Shared CS2/Dota models, paginated feeds, labelled schedules/results, game-scoped deduplication; fixture tests pass; six live request shapes validated | 23 |
+| 23 | Esports | planned | Live provider and routing regression pass | Verify saved per-game channels and team filters against live CS2 and Dota 2 notifications. | 3, 7 |
+| 24 | Esports | planned | Announcement recovery verification | Verify deduplication across restart and recovery from provider errors in the live workflow. | 23 |
 | 25 | Esports | planned | Schedule changes and spoiler controls | Persist message references; update reschedules/cancellations; track cross-midnight matches; suppress or hide result spoilers per channel setting | 1, 24 |
 | 26 | Esports | planned | Watch parties | Match notification creates group/session with attendance; participant reminders; optional temporary room | 16, 22, 25 |
 | 27 | Notifications | planned | Digest and targeted invitations | Weekly digest combines sessions/esports/availability; game-interest opt-in invitations; snooze, quiet hours and mention limits | 9, 16, 26 |

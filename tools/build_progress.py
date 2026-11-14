@@ -34,7 +34,7 @@ def read_rows(source, heading, size):
 
 source = SOURCE.read_text(encoding='utf-8')
 baseline = read_rows(source, 'Current baseline', 5)
-plan = read_rows(source, 'Next 30 work slots', 6)
+plan = read_rows(source, 'Development checklist', 6)
 if [row[0] for row in plan] != [str(i) for i in range(1, 31)]:
     raise ValueError('Plan must contain unique ordered slots 1 through 30')
 ids = {row[0] for row in baseline} | {row[0] for row in plan}
@@ -57,7 +57,7 @@ template = r'''<!doctype html>
 <section class="note next" id="next"></section>
 <p class="muted">Counts reflect the Markdown snapshot, not live bot telemetry. Partial items receive no completion credit. Each slot counts equally; this is not an effort estimate.</p>
 <details><summary>Implemented baseline and known limits</summary><div class="table-wrap"><table><thead><tr><th>ID</th><th>Area</th><th>Status</th><th>Capability</th><th>Evidence / limitation</th></tr></thead><tbody id="baseline"></tbody></table></div></details>
-<h2>Next 30 work slots</h2>
+<h2>Development checklist</h2>
 <div class="controls"><input id="search" aria-label="Search roadmap" placeholder="Search features, acceptance criteria…"><select id="status" aria-label="Filter status"><option value="">All statuses</option><option>planned</option><option>partial</option><option>done</option><option>blocked</option></select><select id="area" aria-label="Filter area"><option value="">All areas</option></select><button id="reset">Reset filters</button></div>
 <p id="count" class="muted" aria-live="polite"></p>
 <div class="table-wrap"><table><thead><tr><th>Day</th><th>Area</th><th>Status</th><th>Deliverable</th><th>Acceptance criterion</th><th>Depends on</th></tr></thead><tbody id="plan"></tbody></table></div><p id="empty" hidden>No matching work slots.</p>
@@ -70,7 +70,7 @@ const $=id=>document.getElementById(id);
 function cell(text){const td=document.createElement('td');td.textContent=text;return td}
 function rows(target,items){$(target).replaceChildren();for(const row of items){const tr=document.createElement('tr');row.forEach((value,i)=>{const td=cell(value);if(i===2){const badge=document.createElement('span');badge.className='badge '+value;badge.textContent=value;td.replaceChildren(badge)}tr.append(td)});$(target).append(tr)}}
 const done=items=>items.filter(r=>r[2]==='done').length;
-for(const [title,items] of [['Baseline capabilities',data.baseline],['Future plan completed',data.plan]]){const box=document.createElement('div');box.className='stat';const label=document.createElement('span');label.textContent=title;const value=document.createElement('strong');value.textContent=`${done(items)} / ${items.length}`;const progress=document.createElement('progress');progress.max=items.length;progress.value=done(items);progress.setAttribute('aria-label',title);const sub=document.createElement('small');sub.textContent=`${items.filter(r=>r[2]==='partial').length} partial · ${items.filter(r=>r[2]==='blocked').length} blocked`;box.append(label,value,progress,sub);$('stats').append(box)}
+for(const [title,items] of [['Baseline capabilities',data.baseline],['Development days completed',data.plan]]){const box=document.createElement('div');box.className='stat';const label=document.createElement('span');label.textContent=title;const value=document.createElement('strong');value.textContent=`${done(items)} / ${items.length}`;const progress=document.createElement('progress');progress.max=items.length;progress.value=done(items);progress.setAttribute('aria-label',title);const sub=document.createElement('small');sub.textContent=`${items.filter(r=>r[2]==='partial').length} partial · ${items.filter(r=>r[2]==='blocked').length} blocked`;box.append(label,value,progress,sub);$('stats').append(box)}
 const complete=new Set([...data.baseline,...data.plan].filter(r=>r[2]==='done').map(r=>r[0]));
 const next=data.plan.find(r=>r[2]!=='done'&&r[2]!=='blocked'&&r[5].split(',').every(d=>complete.has(d.trim())));
 $('next').textContent=next?`Next ready slot · Day ${next[0]}: ${next[3]}. ${next[4]}`:'No ready slot: review incomplete dependencies or blocked items in the roadmap.';
