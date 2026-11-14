@@ -115,8 +115,11 @@ public static class DashboardIcons
     private static readonly Dictionary<string, string> Paths = new(StringComparer.Ordinal)
     {
         ["chevron"] = "<path d=\"m6 9 6 6 6-6\"/>",
+        ["back"] = "<path d=\"M19 12H5M11 6l-6 6 6 6\"/>",
         ["arrow"] = "<path d=\"M5 12h14M13 6l6 6-6 6\"/>",
         ["globe"] = "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18\"/>",
+        ["sun"] = "<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4\"/>",
+        ["monitor"] = "<rect x=\"3\" y=\"4\" width=\"18\" height=\"12\" rx=\"2\"/><path d=\"M8 20h8M12 16v4\"/>",
         ["moon"] = "<path d=\"M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z\"/>",
         ["check"] = "<path d=\"m5 12 5 5 9-10\"/>",
         ["alert"] = "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7.5v5.5M12 16.5h.01\"/>",
@@ -201,3 +204,14 @@ public sealed record WeekRangeItemModel(WeekRow Row, int Index, string? Start, s
 {
     public string Id => $"{Row.Anchor}-range-{(Index < 0 ? "new" : Index.ToString(CultureInfo.InvariantCulture))}";
 }
+
+/// <summary>The saved colour theme: "light", "dark", or null to follow the system setting.</summary>
+public static class DashboardTheme
+{
+    public const string Cookie = "hm_theme";
+
+    public static string? Read(HttpRequest request) => request.Cookies[Cookie] is "light" or "dark" ? request.Cookies[Cookie] : null;
+}
+
+/// <summary>The command guide, plus the last server the member opened so the page can lead back to it.</summary>
+public sealed record InfoPage(HappyMix.Bot.Interactions.CommandGuide[] Commands, ulong? GuildId, string? GuildName);

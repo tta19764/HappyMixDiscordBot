@@ -1,11 +1,30 @@
 @using HappyMix.Bot.Interactions
-@model CommandGuide[]
+@model InfoPage
 @{
     Layout = "_DashboardLayout";
     ViewData["Title"] = T["Command guide"];
-    var modules = Model.GroupBy(command => command.Path.Contains(' ') ? command.Path.Split(' ')[0] : "general");
+    ViewData["NavGuildName"] = Model.GuildName;
+    var modules = Model.Commands.GroupBy(command => command.Path.Contains(' ') ? command.Path.Split(' ')[0] : "general");
 }
-<header class="hm-page-head"><div><h1>@T["Command guide"]</h1><p>@T["Browse Discord commands, workflows, and options."]</p></div></header>
+<nav class="hm-crumbs" aria-label="@T["Breadcrumb"]">
+    <a href="/">@T["Servers"]</a><span aria-hidden="true">/</span>
+    @if (Model.GuildId is { } guildId)
+    {
+        <a href="/availability/@guildId">@Model.GuildName</a><span aria-hidden="true">/</span>
+    }
+    <span>@T["Command guide"]</span>
+</nav>
+<header class="hm-page-head">
+    <div><h1>@T["Command guide"]</h1><p>@T["Browse Discord commands, workflows, and options."]</p></div>
+    @if (Model.GuildId is { } backId)
+    {
+        <a class="hm-btn" href="/availability/@backId">@DashboardIcons.Render("back")<span>@T["Back to {0}", Model.GuildName!]</span></a>
+    }
+    else
+    {
+        <a class="hm-btn" href="/">@DashboardIcons.Render("back")<span>@T["Choose a server"]</span></a>
+    }
+</header>
 <div class="hm-guide">
     <nav class="hm-card hm-sidenav hm-guide__nav" aria-label="@T["Command modules"]">
         @foreach (var module in modules)

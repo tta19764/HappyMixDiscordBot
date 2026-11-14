@@ -1124,4 +1124,37 @@
   <data name="This overlaps a range on another day." xml:space="preserve">
     <value>Это пересекается с промежутком другого дня.</value>
   </data>
+  <data name="System" xml:space="preserve">
+    <value>Как в системе</value>
+  </data>
+  <data name="Light" xml:space="preserve">
+    <value>Светлая</value>
+  </data>
+  <data name="Dark" xml:space="preserve">
+    <value>Тёмная</value>
+  </data>
+  <data name="Info" xml:space="preserve">
+    <value>Справка</value>
+  </data>
+  <data name="Theme" xml:space="preserve">
+    <value>Тема</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>Язык</value>
+  </data>
+  <data name="Command guide" xml:space="preserve">
+    <value>Справочник команд</value>
+  </data>
+  <data name="Browse Discord commands, workflows, and options." xml:space="preserve">
+    <value>Просмотрите команды Discord, сценарии и параметры.</value>
+  </data>
+  <data name="Back to {0}" xml:space="preserve">
+    <value>Назад к {0}</value>
+  </data>
+  <data name="Choose a server" xml:space="preserve">
+    <value>Выбрать сервер</value>
+  </data>
+  <data name="Command modules" xml:space="preserve">
+    <value>Разделы команд</value>
+  </data>
 </root>

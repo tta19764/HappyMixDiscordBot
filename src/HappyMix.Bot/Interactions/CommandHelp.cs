@@ -2,7 +2,7 @@ using Discord.Interactions;
 
 namespace HappyMix.Bot.Interactions;
 
-internal sealed record CommandGuide(string Path, string Description, string Flow, SlashCommandParameterInfo[] Options);
+public sealed record CommandGuide(string Path, string Description, string Flow, SlashCommandParameterInfo[] Options);
 internal static class CommandHelp
 {
     internal static string Flow(string module) => module switch

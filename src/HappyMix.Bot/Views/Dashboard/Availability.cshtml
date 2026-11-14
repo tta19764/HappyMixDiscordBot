@@ -117,9 +117,9 @@ else
             </div>
             <span class="hm-badge hm-tnum">@T["{0} of 7 days", Model.WeeklyCount]</span>
         </div>
-        <div class="hm-week__axis" aria-hidden="true"><span></span><span></span><span class="hm-axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></span><span></span></div>
 
         <div class="hm-week">
+            <div class="hm-week__axis" aria-hidden="true"><span></span><span></span><span class="hm-axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></span><span></span></div>
             @for (int index = 0; index < Model.Week.Count; index++)
             {
                 var row = Model.Week[index];

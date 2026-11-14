@@ -125,7 +125,42 @@ for (const button of document.querySelectorAll("[data-copy]")) {
         button.textContent = button.dataset.copied || "✓";
     });
 }
-document.querySelector("[data-language-select]")?.addEventListener("change", event => event.currentTarget.form.requestSubmit());
+// Header menus (theme, language): one open at a time, closed by Escape or a click outside.
+const menus = [...document.querySelectorAll("[data-menu]")];
+for (const menu of menus)
+    menu.addEventListener("toggle", () => { if (menu.open) for (const other of menus) if (other !== menu) other.open = false; });
+document.addEventListener("click", event => { for (const menu of menus) if (menu.open && !menu.contains(event.target)) menu.open = false; });
+document.addEventListener("keydown", event => {
+    if (event.key !== "Escape") return;
+    const open = menus.find(menu => menu.open);
+    if (open) { open.open = false; open.querySelector("summary").focus(); }
+});
+
+// Theme: switch in place and remember it in the same cookie the server reads; "system" follows the OS setting.
+document.querySelector("[data-theme-form]")?.addEventListener("submit", event => {
+    const theme = event.submitter?.value;
+    if (!theme) return;
+    event.preventDefault();
+    const root = document.documentElement;
+    const secure = location.protocol === "https:" ? "; Secure" : "";
+    if (theme === "system") {
+        root.removeAttribute("data-theme");
+        document.cookie = `hm_theme=; Path=/; Max-Age=0; SameSite=Lax${secure}`;
+    } else {
+        root.dataset.theme = theme;
+        document.cookie = `hm_theme=${theme}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
+    }
+    document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", theme === "system" ? "dark light" : theme);
+    for (const meta of document.querySelectorAll("meta[data-theme-color]"))
+        meta.media = theme === "system" ? `(prefers-color-scheme: ${meta.dataset.themeColor})` : meta.dataset.themeColor === theme ? "all" : "not all";
+    const form = event.currentTarget;
+    for (const button of form.querySelectorAll("[name=theme]")) button.setAttribute("aria-pressed", String(button.value === theme));
+    for (const icon of document.querySelectorAll("[data-theme-icon]")) icon.hidden = icon.dataset.themeIcon !== theme;
+    const summary = document.querySelector("[data-theme-summary]");
+    summary.setAttribute("aria-label", `${form.getAttribute("aria-label")}: ${event.submitter.textContent.trim()}`);
+    form.closest("[data-menu]").open = false;
+    summary.focus();
+});
 
 // Weekly day editor: a 30-hour track (the day plus the early hours of the next) drawn over the server-rendered
 // range list. The list's inputs stay the source of truth, so saving and the no-JavaScript form behave the same.

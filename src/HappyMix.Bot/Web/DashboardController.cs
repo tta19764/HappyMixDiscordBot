@@ -46,6 +46,21 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
         return LocalRedirect(Url.IsLocalUrl(returnUrl) ? returnUrl : "/");
     }
 
+    // Fallback for browsers without JavaScript; dashboard.js switches the theme in place and writes the same cookie.
+    [HttpPost("/theme")]
+    public IActionResult SetTheme(string theme, string? returnUrl)
+    {
+        if (theme is not ("system" or "light" or "dark"))
+            return BadRequest();
+
+        if (theme == "system")
+            Response.Cookies.Delete(DashboardTheme.Cookie, new CookieOptions { Path = "/" });
+        else
+            Response.Cookies.Append(DashboardTheme.Cookie, theme, new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1),
+                Secure = Request.IsHttps, SameSite = SameSiteMode.Lax, Path = "/" });
+        return LocalRedirect(Url.IsLocalUrl(returnUrl) ? returnUrl : "/");
+    }
+
     [HttpPost("/logout")]
     public IActionResult Logout() => SignOut(new AuthenticationProperties { RedirectUri = "/signed-out" });
 

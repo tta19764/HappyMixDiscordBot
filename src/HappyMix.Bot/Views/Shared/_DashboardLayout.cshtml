@@ -2,14 +2,21 @@
 @{
     string userName = User.FindFirstValue(ClaimTypes.Name) ?? "Signed in";
     string? guildName = ViewData["NavGuildName"] as string;
+    string? theme = DashboardTheme.Read(Context.Request);
+    string culture = System.Globalization.CultureInfo.CurrentUICulture.Name;
+    string returnUrl = Context.Request.Path + Context.Request.QueryString;
+    var languages = new[] { ("en", "English"), ("uk", "Українська"), ("ru", "Русский") };
+    var themes = new[] { ("system", "monitor", T["System"].Value), ("light", "sun", T["Light"].Value), ("dark", "moon", T["Dark"].Value) };
+    string currentTheme = theme ?? "system";
 }
 <!doctype html>
-<html lang="@System.Globalization.CultureInfo.CurrentUICulture.Name">
+<html lang="@culture" data-theme="@theme">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="dark">
-    <meta name="theme-color" content="#0e0f1c">
+    <meta name="color-scheme" content="@(theme ?? "dark light")">
+    <meta name="theme-color" content="#0e0f1c" media="(prefers-color-scheme: dark)" data-theme-color="dark">
+    <meta name="theme-color" content="#f4f5fb" media="(prefers-color-scheme: light)" data-theme-color="light">
     <title>@ViewData["Title"] · HappyMix</title>
     <link rel="icon" type="image/svg+xml" href="~/happymix.svg" asp-append-version="true">
     <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true">
@@ -31,17 +38,41 @@
                 <span class="hm-muted" style="font-size: var(--hm-fs-sm); font-weight: 600">@userName</span>
             </span>
             <a class="hm-btn hm-btn--ghost" href="/info" aria-current="@(Context.Request.Path == "/info" ? "page" : null)">@T["Info"]</a>
-            <form class="hm-language" method="post" action="/language" asp-antiforgery="false" aria-label="@T["Language"]">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)">
-                <select class="hm-select" name="culture" aria-label="@T["Language"]" data-language-select>
-                    @foreach (var (code, label) in new[] { ("en", "English"), ("uk", "Українська"), ("ru", "Русский") })
+            <details class="hm-menu" data-menu>
+                <summary class="hm-btn hm-btn--ghost hm-menu__button" aria-label="@T["Theme"]: @themes.First(item => item.Item1 == currentTheme).Item3" data-theme-summary>
+                    @foreach (var (value, icon, _) in themes)
                     {
-                        <option value="@code" lang="@code" selected="@(System.Globalization.CultureInfo.CurrentUICulture.Name == code)">@label</option>
+                        <span class="hm-menu__icon" data-theme-icon="@value" hidden="@(value != currentTheme)">@DashboardIcons.Render(icon)</span>
                     }
-                </select>
-                <noscript><button class="hm-btn">@T["Apply"]</button></noscript>
-            </form>
+                </summary>
+                <form class="hm-menu__panel" method="post" action="/theme" asp-antiforgery="false" aria-label="@T["Theme"]" data-theme-form>
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="returnUrl" value="@returnUrl">
+                    <p class="hm-menu__title">@T["Theme"]</p>
+                    @foreach (var (value, icon, label) in themes)
+                    {
+                        <button class="hm-menu__item" name="theme" value="@value" aria-pressed="@(value == currentTheme ? "true" : "false")">
+                            @DashboardIcons.Render(icon)<span>@label</span>@DashboardIcons.Render("check")
+                        </button>
+                    }
+                </form>
+            </details>
+            <details class="hm-menu" data-menu>
+                <summary class="hm-btn hm-btn--ghost hm-menu__button" aria-label="@T["Language"]: @languages.First(item => item.Item1 == culture).Item2">
+                    @DashboardIcons.Render("globe")<span class="hm-menu__code">@culture.ToUpperInvariant()</span>
+                </summary>
+                <form class="hm-menu__panel" method="post" action="/language" asp-antiforgery="false" aria-label="@T["Language"]">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="returnUrl" value="@returnUrl">
+                    <p class="hm-menu__title">@T["Language"]</p>
+                    @foreach (var (code, label) in languages)
+                    {
+                        <button class="hm-menu__item" name="culture" value="@code" lang="@code" aria-pressed="@(code == culture ? "true" : "false")">
+                            <span class="hm-menu__badge">@code.ToUpperInvariant()</span><span>@label</span>@DashboardIcons.Render("check")
+                        </button>
+                    }
+                </form>
+            </details>
             <form action="/logout" method="post" asp-antiforgery="false">
                 @Html.AntiForgeryToken()
                 <button class="hm-btn hm-btn--ghost" aria-label="@T["Sign out"]">@DashboardIcons.Render("logout")<span class="hm-signout__label">@T["Sign out"]</span></button>
