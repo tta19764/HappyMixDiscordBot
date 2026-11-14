@@ -78,15 +78,15 @@
     }
 
     // Settings: keep the Inherited / Custom / Off badge in sync with the control.
-    const sources = { default: ["Inherited", "inherit"], custom: ["Custom", "custom"], none: ["Off", ""] };
+    const sources = { default: [0, "inherit"], custom: [1, "custom"], none: [2, ""] };
     for (const field of document.querySelectorAll("[data-source]")) {
         const badge = field.querySelector("[data-source-badge]");
         field.addEventListener("change", () => {
             const select = field.querySelector("select[data-source-control]");
             const mode = select ? (select.value === "" ? "default" : "custom")
                 : field.querySelector("input[type=radio]:checked")?.value ?? "default";
-            const [text, tone] = sources[mode];
-            badge.textContent = text;
+            const [index, tone] = sources[mode];
+            badge.textContent = (badge.dataset.labels || "Inherited|Custom|Off").split("|")[index];
             badge.className = "hm-badge" + (tone ? ` hm-badge--${tone}` : "");
             if (select) field.classList.toggle("hm-field--inherited", mode === "default");
         });
@@ -417,5 +417,454 @@ for (const editor of document.querySelectorAll("[data-week-editor]")) {
     editor.classList.add("is-enhanced");
     editor.querySelector("[data-track-board]").hidden = false;
     addButton.hidden = false;
+    render();
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Shared listbox behaviour for the pickers below: arrow keys move, Enter picks, Escape closes.
+const listbox = (list, onPick) => {
+    let active = -1;
+    const options = () => [...list.querySelectorAll("[role=option]:not([aria-disabled=true])")];
+    const highlight = index => {
+        const all = options();
+        active = all.length === 0 ? -1 : (index + all.length) % all.length;
+        all.forEach((option, position) => option.classList.toggle("is-active", position === active));
+        all[active]?.scrollIntoView({ block: "nearest" });
+        return all[active];
+    };
+    list.addEventListener("mousedown", event => event.preventDefault());
+    list.addEventListener("click", event => {
+        const option = event.target.closest("[role=option]");
+        if (option && option.getAttribute("aria-disabled") !== "true") onPick(option);
+    });
+    return {
+        reset: (index = -1) => highlight(index),
+        get active() { return options()[active]; },
+        keydown(event) {
+            if (event.key === "ArrowDown") { event.preventDefault(); return highlight(active + 1), true; }
+            if (event.key === "ArrowUp") { event.preventDefault(); return highlight(active - 1), true; }
+            if (event.key === "Home" && event.ctrlKey) { event.preventDefault(); return highlight(0), true; }
+            if (event.key === "End" && event.ctrlKey) { event.preventDefault(); return highlight(-1), true; }
+            return false;
+        }
+    };
+};
+let pickerSerial = 0;
+
+// ---------------------------------------------------------------------------------------------------------------
+// Searchable dropdowns: <select data-picker> keeps posting its value; a button and a filterable list replace the
+// native menu, which is long and hard to scan for servers with many channels or roles.
+for (const select of document.querySelectorAll("select[data-picker]")) {
+    const id = `picker-${pickerSerial++}`;
+    const colors = JSON.parse(select.dataset.pickerColors || "{}");
+    const wrap = document.createElement("div");
+    wrap.className = "hm-picker";
+    select.before(wrap);
+    wrap.append(select);
+    select.classList.add("hm-picker__native");
+    select.tabIndex = -1;
+    select.setAttribute("aria-hidden", "true");
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "hm-select hm-picker__button";
+    button.id = `${select.id || id}-picker`;
+    button.setAttribute("aria-haspopup", "listbox");
+    button.setAttribute("aria-expanded", "false");
+    for (const name of ["aria-invalid", "aria-describedby"])
+        if (select.hasAttribute(name)) button.setAttribute(name, select.getAttribute(name));
+    const label = select.id ? document.querySelector(`label[for="${select.id}"]`) : null;
+    if (label) {
+        label.htmlFor = button.id;
+        label.id ||= `${button.id}-label`;
+        // Name the button "label, current value" so screen readers announce what is selected.
+        button.setAttribute("aria-labelledby", `${label.id} ${button.id}`);
+    }
+
+    const panel = document.createElement("div");
+    panel.className = "hm-picker__panel";
+    panel.hidden = true;
+    const search = document.createElement("input");
+    search.type = "search";
+    search.className = "hm-input hm-picker__search";
+    search.placeholder = select.dataset.pickerSearch || "";
+    search.setAttribute("aria-label", select.dataset.pickerSearch || "");
+    search.setAttribute("aria-controls", `${id}-list`);
+    search.autocomplete = "off";
+    const list = document.createElement("ul");
+    list.className = "hm-picker__list";
+    list.id = `${id}-list`;
+    list.setAttribute("role", "listbox");
+    if (label) list.setAttribute("aria-labelledby", label.id);
+    const empty = document.createElement("p");
+    empty.className = "hm-picker__empty";
+    empty.textContent = select.dataset.pickerEmpty || "";
+    empty.hidden = true;
+    const searchable = select.options.length > 7;
+    if (searchable) panel.append(search);
+    panel.append(list, empty);
+    wrap.append(button, panel);
+
+    const decorate = (element, option) => {
+        element.replaceChildren();
+        const value = option.value;
+        if (colors[value]) {
+            const dot = document.createElement("span");
+            dot.className = "hm-role-dot";
+            dot.style.background = colors[value];
+            element.append(dot);
+        }
+        const text = document.createElement("span");
+        text.className = "hm-picker__text";
+        text.textContent = option.text;
+        element.append(text);
+        element.classList.toggle("is-default", value === "" || value === "0");
+    };
+    const sync = () => decorate(button, select.options[select.selectedIndex] ?? select.options[0]);
+
+    const build = filter => {
+        const query = filter.trim().toLowerCase();
+        list.replaceChildren();
+        for (const option of select.options) {
+            if (query && !option.text.toLowerCase().includes(query)) continue;
+            const item = document.createElement("li");
+            item.setAttribute("role", "option");
+            item.className = "hm-picker__option";
+            item.dataset.value = option.value;
+            item.id = `${id}-${option.index}`;
+            item.setAttribute("aria-selected", String(option.selected));
+            decorate(item, option);
+            item.insertAdjacentHTML("beforeend", '<svg class="hm-icon hm-picker__check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>');
+            list.append(item);
+        }
+        empty.hidden = list.children.length > 0;
+        const selected = [...list.children].findIndex(item => item.getAttribute("aria-selected") === "true");
+        nav.reset(selected >= 0 ? selected : 0);
+    };
+
+    const close = (focus = true) => {
+        if (panel.hidden) return;
+        panel.hidden = true;
+        wrap.classList.remove("is-open");
+        button.setAttribute("aria-expanded", "false");
+        if (focus) button.focus();
+    };
+    const pick = item => {
+        if (select.value !== item.dataset.value) {
+            select.value = item.dataset.value;
+            select.dispatchEvent(new Event("input", { bubbles: true }));
+            select.dispatchEvent(new Event("change", { bubbles: true }));
+            sync();
+        }
+        close();
+    };
+    const nav = listbox(list, pick);
+    const open = () => {
+        for (const other of document.querySelectorAll(".hm-picker.is-open")) other.dispatchEvent(new Event("picker-close"));
+        search.value = "";
+        build("");
+        panel.hidden = false;
+        wrap.classList.add("is-open");
+        button.setAttribute("aria-expanded", "true");
+        (searchable ? search : list).focus({ preventScroll: true });
+        nav.active?.scrollIntoView({ block: "nearest" });
+    };
+    wrap.addEventListener("picker-close", () => close(false));
+    list.tabIndex = -1;
+
+    button.addEventListener("click", () => panel.hidden ? open() : close());
+    button.addEventListener("keydown", event => {
+        if (["ArrowDown", "ArrowUp", "Enter", " "].includes(event.key)) { event.preventDefault(); open(); }
+    });
+    const keys = event => {
+        if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); close(); return; }
+        if (event.key === "Tab") { close(false); return; }
+        if (event.key === "Enter") { event.preventDefault(); if (nav.active) pick(nav.active); return; }
+        nav.keydown(event);
+    };
+    search.addEventListener("keydown", keys);
+    list.addEventListener("keydown", keys);
+    // Typing in a search box changes nothing that is saved, so keep it from marking the form as edited.
+    search.addEventListener("input", event => { event.stopPropagation(); build(search.value); });
+    document.addEventListener("pointerdown", event => { if (!wrap.contains(event.target)) close(false); });
+    select.addEventListener("change", sync);
+    sync();
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Text boxes with suggestions (time zones): a filtered list instead of the browser's datalist, which shows hundreds
+// of entries at once. Typing anything else still works.
+for (const input of document.querySelectorAll("input[list]")) {
+    const source = document.getElementById(input.getAttribute("list"));
+    if (!source) continue;
+    const values = [...source.options].map(option => option.value);
+    const id = `combo-${pickerSerial++}`;
+    input.removeAttribute("list");
+    input.setAttribute("role", "combobox");
+    input.setAttribute("aria-autocomplete", "list");
+    input.setAttribute("aria-expanded", "false");
+    input.setAttribute("aria-controls", `${id}-list`);
+    const wrap = document.createElement("div");
+    wrap.className = "hm-combo hm-combo--plain";
+    input.before(wrap);
+    wrap.append(input);
+    const list = document.createElement("ul");
+    list.className = "hm-combo__list";
+    list.id = `${id}-list`;
+    list.setAttribute("role", "listbox");
+    list.hidden = true;
+    wrap.append(list);
+
+    const close = () => { list.hidden = true; input.setAttribute("aria-expanded", "false"); input.removeAttribute("aria-activedescendant"); };
+    const pick = option => {
+        input.value = option.dataset.value;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+        close();
+    };
+    const nav = listbox(list, pick);
+    const show = () => {
+        const query = input.value.trim().toLowerCase().replaceAll(" ", "_");
+        const matches = values.filter(value => !query || value.toLowerCase().includes(query))
+            .sort((a, b) => Number(!a.toLowerCase().startsWith(query)) - Number(!b.toLowerCase().startsWith(query)))
+            .slice(0, 40);
+        list.replaceChildren(...matches.map((value, index) => {
+            const item = document.createElement("li");
+            item.setAttribute("role", "option");
+            item.className = "hm-combo__option";
+            item.id = `${id}-${index}`;
+            item.dataset.value = value;
+            const slash = value.indexOf("/");
+            item.innerHTML = slash > 0 ? `<span class="hm-combo__region"></span><b></b>` : "<b></b>";
+            if (slash > 0) item.firstChild.textContent = value.slice(0, slash + 1);
+            item.querySelector("b").textContent = slash > 0 ? value.slice(slash + 1).replaceAll("_", " ") : value;
+            return item;
+        }));
+        list.hidden = matches.length === 0;
+        input.setAttribute("aria-expanded", String(!list.hidden));
+        nav.reset(-1);
+    };
+    input.addEventListener("focus", show);
+    input.addEventListener("input", event => { if (event.isTrusted) show(); });
+    input.addEventListener("blur", close);
+    input.addEventListener("keydown", event => {
+        if (event.key === "Escape" && !list.hidden) { event.preventDefault(); event.stopPropagation(); close(); return; }
+        if (event.key === "Enter" && !list.hidden && nav.active) { event.preventDefault(); pick(nav.active); return; }
+        if (list.hidden && event.key === "ArrowDown") { show(); }
+        if (nav.keydown(event)) input.setAttribute("aria-activedescendant", nav.active?.id ?? "");
+    });
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Followed teams and Twitch channels: rows with a remove button and an add box over a one-per-line textarea.
+for (const editor of document.querySelectorAll("[data-list-editor]")) {
+    const kind = editor.dataset.kind;
+    const max = Number(editor.dataset.max);
+    const labels = editor.dataset;
+    const textarea = editor.querySelector("textarea");
+    const items = editor.querySelector("[data-list-items]");
+    const emptyText = editor.querySelector("[data-list-empty]");
+    const add = editor.querySelector("[data-list-add]");
+    const input = editor.querySelector("[data-list-input]");
+    const commit = editor.querySelector("[data-list-commit]");
+    const options = editor.querySelector("[data-list-options]");
+    const status = editor.querySelector("[data-list-status]");
+    const textView = editor.querySelector("[data-list-text]");
+    const foot = editor.querySelector("[data-list-foot]");
+    const toggle = editor.querySelector("[data-list-toggle]");
+    const count = editor.querySelector("[data-list-count]");
+    const known = new Map(JSON.parse(labels.known || "[]").map(team => [team.id, team]));
+    const format = (template, ...values) => values.reduce((text, value, index) => text.replace(`{${index}}`, value), template);
+    let textMode = false;
+
+    const lines = () => textarea.value.split("\n").map(line => line.trim()).filter(Boolean);
+    const setLines = next => {
+        textarea.value = next.join("\n");
+        textarea.dispatchEvent(new Event("input", { bubbles: true }));
+        render();
+    };
+    const idOf = line => { const match = /#\s*(\d+)\s*$/.exec(line) ?? /^(\d+)$/.exec(line); return match ? Number(match[1]) : null; };
+    const handleOf = value => {
+        let text = value.trim();
+        const url = /^(?:https?:\/\/)?(?:www\.)?twitch\.tv\/([^/?#\s]+)\/?$/i.exec(text);
+        if (url) text = url[1];
+        return /^[A-Za-z0-9_]{1,25}$/.test(text) ? text.toLowerCase() : null;
+    };
+    const keyOf = line => kind === "teams" ? (idOf(line) !== null ? `#${idOf(line)}` : line.toLowerCase()) : (handleOf(line) ?? line.toLowerCase());
+    const say = (text, tone = "") => { status.textContent = text; status.dataset.tone = tone; };
+
+    const row = (line, index) => {
+        const item = document.createElement("li");
+        item.className = "hm-listedit__item";
+        const mark = document.createElement("span");
+        mark.className = "hm-listedit__mark";
+        mark.setAttribute("aria-hidden", "true");
+        const main = document.createElement("span");
+        main.className = "hm-listedit__main";
+        const title = document.createElement("span");
+        title.className = "hm-listedit__title";
+        const meta = document.createElement("span");
+        meta.className = "hm-listedit__meta";
+        let name = line;
+        if (kind === "teams") {
+            const id = idOf(line);
+            const team = id !== null ? known.get(id) : null;
+            name = team?.name ?? (line.replace(/#\s*\d+\s*$/, "").trim() || `#${id}`);
+            if (team?.image) {
+                const logo = document.createElement("img");
+                logo.src = team.image; logo.alt = ""; logo.loading = "lazy"; logo.referrerPolicy = "no-referrer";
+                logo.addEventListener("error", () => logo.remove());
+                mark.append(logo);
+            } else mark.textContent = (team?.acronym || name).replace(/[^\p{L}\p{N}]/gu, "").slice(0, 3).toUpperCase() || "?";
+            meta.textContent = id === null ? labels.labelUnresolved
+                : [team?.acronym && team.acronym !== name ? team.acronym : null, `#${id}`, team?.location].filter(Boolean).join(" · ");
+            if (id === null) item.classList.add("is-pending");
+        } else {
+            const handle = handleOf(line);
+            name = handle ?? line;
+            mark.innerHTML = '<svg class="hm-icon" viewBox="0 0 24 24"><path d="M5 3.5 3.5 7v12.5h4.5V22l2.5-2.5h3.5L20.5 13V3.5zM11 8v5M15.5 8v5"/></svg>';
+            meta.textContent = handle ? `twitch.tv/${handle}` : labels.labelInvalid;
+            if (!handle) item.classList.add("is-invalid");
+        }
+        title.textContent = name;
+        main.append(title, meta);
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "hm-btn hm-btn--ghost hm-listedit__remove";
+        remove.setAttribute("aria-label", format(labels.labelRemove, name));
+        remove.innerHTML = '<svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>';
+        remove.addEventListener("click", () => {
+            const next = lines();
+            next.splice(index, 1);
+            setLines(next);
+            say(format(labels.labelRemoved, name));
+            (items.children[Math.min(index, items.children.length - 1)]?.querySelector("button") ?? input).focus();
+        });
+        item.append(mark, main, remove);
+        return item;
+    };
+
+    function render() {
+        const current = lines();
+        items.replaceChildren(...current.map(row));
+        items.hidden = textMode || current.length === 0;
+        emptyText.hidden = textMode || current.length > 0;
+        add.hidden = textMode;
+        textView.hidden = !textMode;
+        const full = current.length >= max;
+        input.disabled = full;
+        commit.disabled = full;
+        input.placeholder = full ? labels.labelFull : input.getAttribute("aria-label");
+        count.textContent = format(labels.labelCount, current.length, max);
+        count.classList.toggle("is-over", current.length > max);
+    }
+
+    const append = line => {
+        const current = lines();
+        if (current.length >= max) return say(labels.labelFull, "warn"), false;
+        if (current.some(existing => keyOf(existing) === keyOf(line))) return say(labels.labelDuplicate, "warn"), false;
+        setLines([...current, line]);
+        say("");
+        return true;
+    };
+
+    // Twitch: validate and add on Enter or the Add button.
+    const addTyped = () => {
+        const value = input.value.trim();
+        if (!value) return;
+        if (kind === "twitch") {
+            const handle = handleOf(value);
+            if (!handle) return say(labels.labelInvalid, "error");
+            if (append(handle)) input.value = "";
+            return;
+        }
+        if (searchNav?.active) return pickTeam(searchNav.active);
+        if (append(value)) { input.value = ""; closeOptions(); }
+    };
+
+    // Teams: search as you type; pick a result, or press Enter to add the name as typed (resolved on save).
+    let searchNav = null, timer = 0, request = null;
+    const closeOptions = () => { options.hidden = true; input.setAttribute("aria-expanded", "false"); input.removeAttribute("aria-activedescendant"); };
+    const pickTeam = option => {
+        const team = JSON.parse(option.dataset.team);
+        known.set(team.id, team);
+        if (append(team.line)) input.value = "";
+        closeOptions();
+        input.focus();
+    };
+    if (kind === "teams") {
+        searchNav = listbox(options, pickTeam);
+        const search = async query => {
+            request?.abort();
+            request = new AbortController();
+            say(labels.labelSearching);
+            try {
+                const response = await fetch(`${labels.searchUrl}&q=${encodeURIComponent(query)}`, { signal: request.signal, headers: { Accept: "application/json" } });
+                if (!response.ok) throw new Error(String(response.status));
+                const teams = await response.json();
+                if (input.value.trim() !== query) return;
+                const taken = new Set(lines().map(keyOf));
+                options.replaceChildren(...teams.map((team, index) => {
+                    const item = document.createElement("li");
+                    item.setAttribute("role", "option");
+                    item.className = "hm-combo__option hm-combo__team";
+                    item.id = `${input.id}-option-${index}`;
+                    item.dataset.team = JSON.stringify(team);
+                    const already = taken.has(`#${team.id}`);
+                    if (already) { item.setAttribute("aria-disabled", "true"); item.title = labels.labelDuplicate; }
+                    const logo = team.image ? `<img src="" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="hm-combo__badge"></span>`;
+                    item.innerHTML = `${logo}<span class="hm-combo__name"><b></b><small></small></span><span class="hm-combo__id"></span>`;
+                    if (team.image) { const img = item.querySelector("img"); img.src = team.image; img.addEventListener("error", () => img.remove()); }
+                    else item.querySelector(".hm-combo__badge").textContent = (team.acronym || team.name).slice(0, 3).toUpperCase();
+                    item.querySelector("b").textContent = team.name;
+                    item.querySelector("small").textContent = [team.acronym, team.location].filter(Boolean).join(" · ");
+                    item.querySelector(".hm-combo__id").textContent = already ? "✓" : `#${team.id}`;
+                    return item;
+                }));
+                options.hidden = teams.length === 0;
+                input.setAttribute("aria-expanded", String(!options.hidden));
+                searchNav.reset(teams.findIndex(team => !taken.has(`#${team.id}`)));
+                say(teams.length === 0 ? labels.labelNone : "");
+            } catch (error) {
+                if (error.name === "AbortError") return;
+                closeOptions();
+                say(labels.labelUnavailable, "warn");
+            }
+        };
+        input.addEventListener("input", () => {
+            clearTimeout(timer);
+            const query = input.value.trim();
+            if (query.length < 2) { closeOptions(); say(""); return; }
+            timer = setTimeout(() => search(query), 250);
+        });
+        input.addEventListener("blur", () => setTimeout(closeOptions, 120));
+    }
+    input.addEventListener("keydown", event => {
+        if (event.key === "Enter") { event.preventDefault(); addTyped(); return; }
+        if (event.key === "Escape" && searchNav && !options.hidden) { event.preventDefault(); event.stopPropagation(); closeOptions(); return; }
+        if (searchNav && !options.hidden && searchNav.keydown(event)) input.setAttribute("aria-activedescendant", searchNav.active?.id ?? "");
+    });
+    commit.addEventListener("click", addTyped);
+    input.addEventListener("input", event => event.stopPropagation());
+
+    toggle.addEventListener("click", () => {
+        textMode = !textMode;
+        toggle.setAttribute("aria-pressed", String(textMode));
+        toggle.querySelector("span").textContent = textMode ? labels.labelList : labels.labelText;
+        render();
+        (textMode ? textarea : input).focus();
+    });
+    textarea.addEventListener("input", event => { if (event.isTrusted) render(); });
+
+    // Switching a list to Custom starts from what it inherited, so one team can be removed without retyping the rest.
+    const field = editor.closest(".hm-mode-field");
+    field?.addEventListener("change", event => {
+        if (event.target.matches("input[type=radio][value=custom]") && lines().length === 0 && labels.defaults) {
+            textarea.value = labels.defaults;
+            render();
+        }
+    });
+
+    foot.hidden = false;
     render();
 }

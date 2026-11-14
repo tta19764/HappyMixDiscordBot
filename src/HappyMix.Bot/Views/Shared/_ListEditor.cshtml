@@ -1,0 +1,40 @@
+@model ListEditorModel
+@* A one-per-line textarea (works without JavaScript) that dashboard.js turns into a list with a remove button per
+   row and an "add" box. The textarea stays the field that is posted, so both views always save the same thing. *@
+<div class="hm-listedit" data-list-editor data-kind="@Model.Kind" data-max="@Model.Max" data-search-url="@Model.SearchUrl"
+     data-known="@Model.KnownJson" data-defaults="@string.Join("\n", Model.DefaultLines)"
+     data-label-remove="@T["Remove {0}"]" data-label-text="@T["Edit as text"]" data-label-list="@T["Show as list"]"
+     data-label-none="@T["No matches. Press Enter to add it as typed; it's checked when you save."]"
+     data-label-unavailable="@T["Search isn't available right now. Press Enter to add it as typed."]"
+     data-label-searching="@T["Searching…"]" data-label-invalid="@T["That isn't a Twitch handle or twitch.tv link."]"
+     data-label-duplicate="@T["Already in the list."]" data-label-full="@T["The list is full."]"
+     data-label-unresolved="@T["Checked when you save"]" data-label-removed="@T["Removed {0}"]" data-label-count="@T["{0} of {1}"]">
+    <ul class="hm-listedit__items" data-list-items hidden aria-label="@Model.Label"></ul>
+    <p class="hm-listedit__empty" data-list-empty hidden>@Model.EmptyText</p>
+
+    <div class="hm-listedit__add" data-list-add hidden>
+        <div class="hm-combo">
+            @DashboardIcons.Render(Model.Kind == "teams" ? "search" : "twitch")
+            <input class="hm-input hm-combo__input" type="text" id="@Model.Id-add" autocomplete="off" spellcheck="false"
+                   placeholder="@Model.AddPlaceholder" aria-label="@Model.AddPlaceholder" data-list-input
+                   role="@(Model.Kind == "teams" ? "combobox" : null)" aria-autocomplete="@(Model.Kind == "teams" ? "list" : null)"
+                   aria-expanded="@(Model.Kind == "teams" ? "false" : null)"
+                   aria-controls="@Model.Id-options" aria-describedby="@Model.Id-status">
+            <ul class="hm-combo__list" id="@Model.Id-options" role="listbox" hidden data-list-options></ul>
+        </div>
+        <button class="hm-btn" type="button" data-list-commit>@DashboardIcons.Render("plus")<span>@T["Add"]</span></button>
+    </div>
+    <p class="hm-help hm-listedit__status" id="@Model.Id-status" aria-live="polite" data-list-status></p>
+
+    <div class="hm-listedit__text" data-list-text>
+        <label class="hm-sr-only" for="@Model.Id">@Model.Label</label>
+        <textarea class="hm-textarea" id="@Model.Id" name="@Model.Name" rows="6" maxlength="@Model.MaxLength" spellcheck="false"
+                  placeholder="@Model.TextPlaceholder" aria-invalid="@Model.Invalid" aria-describedby="@Model.DescribedBy">@Model.Value</textarea>
+        <p class="hm-help" id="@Model.Id-help">@Model.Help</p>
+    </div>
+
+    <div class="hm-listedit__foot" data-list-foot hidden>
+        <span class="hm-subtle" data-list-count></span>
+        <button class="hm-btn hm-btn--ghost hm-btn--sm" type="button" data-list-toggle aria-pressed="false">@DashboardIcons.Render("pencil")<span>@T["Edit as text"]</span></button>
+    </div>
+</div>

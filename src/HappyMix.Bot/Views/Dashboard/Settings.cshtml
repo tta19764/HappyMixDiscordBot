@@ -6,22 +6,22 @@
     ViewData["NavGuildName"] = settingsPage.GuildName;
     var state = ViewData.ModelState;
     var nav = new ServerNavModel(settingsPage.GuildId, settingsPage.GuildName, "settings", true, "Server settings",
-        "Where and when HappyMix posts esports announcements. Only server administrators see this page.");
+        T["Where and when HappyMix posts esports announcements. Only server administrators see this page."]);
 
     var labels = new Dictionary<string, string>
     {
-        ["ChannelId"] = "Server defaults · Announcement channel",
-        ["TimeZone"] = "Server defaults · Time zone",
-        ["ReminderMinutes"] = "Server defaults · Reminder lead time",
-        ["OrganizerRoles"] = "Server defaults · Organizer roles",
+        ["ChannelId"] = $"{T["Server defaults"]} · {T["Announcement channel"]}",
+        ["TimeZone"] = $"{T["Server defaults"]} · {T["Time zone"]}",
+        ["ReminderMinutes"] = $"{T["Server defaults"]} · {T["Reminder lead time"]}",
+        ["OrganizerRoles"] = $"{T["Server defaults"]} · {T["Organizer roles"]}",
     };
     foreach (var (prefix, game) in new[] { ("Cs", "Counter-Strike 2"), ("Dota", "Dota 2") })
     {
-        labels[$"{prefix}.Channel"] = $"{game} · Announcement channel";
-        labels[$"{prefix}.PingRole"] = $"{game} · Reminder ping role";
-        labels[$"{prefix}.Teams"] = $"{game} · Followed teams";
-        labels[$"{prefix}.Twitch"] = $"{game} · Twitch channels";
-        labels[$"{prefix}.Catalog"] = $"{game} · Team catalog";
+        labels[$"{prefix}.Channel"] = $"{game} · {T["Announcement channel"]}";
+        labels[$"{prefix}.PingRole"] = $"{game} · {T["Reminder ping role"]}";
+        labels[$"{prefix}.Teams"] = $"{game} · {T["Followed teams"]}";
+        labels[$"{prefix}.Twitch"] = $"{game} · {T["Twitch channels"]}";
+        labels[$"{prefix}.Catalog"] = $"{game} · {T["Team aliases"]}";
     }
 
     var fieldErrors = state.Where(entry => entry.Key.Length > 0 && entry.Value?.Errors.Count > 0).Select(entry => entry.Key).ToArray();
@@ -36,9 +36,9 @@
     {
         string title = fieldErrors.Length switch
         {
-            0 => "Settings not saved",
-            1 => "Settings not saved: 1 field needs attention",
-            var count => $"Settings not saved: {count} fields need attention"
+            0 => T["Settings not saved"].Value,
+            1 => T["Settings not saved: 1 field needs attention"].Value,
+            var count => T["Settings not saved: {0} fields need attention", count].Value
         };
         banner = new BannerModel("error", title, generalErrors.Length > 0 ? string.Join(" ", generalErrors) : null, true,
             fieldErrors.Select(key => (labels.GetValueOrDefault(key, key), "#" + FormErrors.Id(key) + (key.EndsWith(".Catalog") ? "-details" : ""))).ToList());
@@ -53,26 +53,26 @@
 <form method="post" action="/settings/@settingsPage.GuildId" asp-antiforgery="false" data-track-changes data-dirty="@(failed ? "true" : "false")">
     @Html.AntiForgeryToken()
     <div class="hm-split hm-split--nav">
-        <nav class="hm-sidenav" aria-label="Settings sections">
-            <a href="#defaults">Server defaults
+        <nav class="hm-sidenav" aria-label="@T["Settings sections"]">
+            <a href="#defaults">@T["Server defaults"]
                 @if (defaultErrors > 0)
                 {
-                    <span class="hm-badge hm-badge--danger" aria-label="@defaultErrors to fix">@defaultErrors</span>
+                    <span class="hm-badge hm-badge--danger" aria-label="@T["{0} to fix", defaultErrors]">@defaultErrors</span>
                 }
             </a>
             <a href="#cs2">Counter-Strike 2
                 @if (csErrors > 0)
                 {
-                    <span class="hm-badge hm-badge--danger" aria-label="@csErrors to fix">@csErrors</span>
+                    <span class="hm-badge hm-badge--danger" aria-label="@T["{0} to fix", csErrors]">@csErrors</span>
                 }
             </a>
             <a href="#dota2">Dota 2
                 @if (dotaErrors > 0)
                 {
-                    <span class="hm-badge hm-badge--danger" aria-label="@dotaErrors to fix">@dotaErrors</span>
+                    <span class="hm-badge hm-badge--danger" aria-label="@T["{0} to fix", dotaErrors]">@dotaErrors</span>
                 }
             </a>
-            <p class="hm-help" style="padding: var(--hm-space-3) var(--hm-space-3) 0; font-size: var(--hm-fs-xs)">Game sections inherit from Server defaults unless you override a value.</p>
+            <p class="hm-help" style="padding: var(--hm-space-3) var(--hm-space-3) 0; font-size: var(--hm-fs-xs)">@T["Game sections inherit from Server defaults unless you override a value."]</p>
         </nav>
 
         <div class="hm-stack" style="gap: var(--hm-space-6); min-width: 0">
@@ -85,8 +85,8 @@
                 <div class="hm-banner hm-banner--warn">
                     <span class="hm-banner__icon">@DashboardIcons.Render("bang")</span>
                     <div class="hm-banner__body">
-                        <p class="hm-banner__title">HappyMix can't post in any text channel yet</p>
-                        <p class="hm-banner__text">In Discord, give the HappyMix role View Channel, Send Messages and Embed Links in at least one standard text channel, then reload this page.</p>
+                        <p class="hm-banner__title">@T["HappyMix can't post in any text channel yet"]</p>
+                        <p class="hm-banner__text">@T["In Discord, give the HappyMix role View Channel, Send Messages and Embed Links in at least one standard text channel, then reload this page."]</p>
                     </div>
                 </div>
             }
@@ -94,23 +94,24 @@
             <section class="hm-card hm-section" id="defaults" aria-labelledby="defaults-title">
                 <div class="hm-section__head">
                     <span class="hm-game-mark" aria-hidden="true">@DashboardIcons.Render("sliders")</span>
-                    <div><h2 id="defaults-title">@T["Server defaults"]</h2><p>Used by every game unless the game overrides it.</p></div>
+                    <div><h2 id="defaults-title">@T["Server defaults"]</h2><p>@T["Used by every game unless the game overrides it."]</p></div>
                 </div>
                 <div class="hm-fields">
                     <div class="hm-field">
                         <label class="hm-label" asp-for="ChannelId">@T["Announcement channel"]</label>
-                        <select class="hm-select" asp-for="ChannelId" asp-items="settingsPage.Channels"
+                        <select class="hm-select" asp-for="ChannelId" asp-items="settingsPage.Channels" data-picker
+                                data-picker-search="@T["Find a channel"]" data-picker-empty="@T["No channels match."]"
                                 aria-invalid="@FormErrors.Invalid(state, "ChannelId")" aria-describedby="@FormErrors.DescribedBy(state, "ChannelId", "ChannelId-help")">
-                            <option value="0">Bot default · @settingsPage.DeploymentChannel</option>
+                            <option value="0">@T["Bot default · {0}", settingsPage.DeploymentChannel]</option>
                         </select>
-                        <p class="hm-help" id="ChannelId-help">Text channels where HappyMix can view, send messages and embed links.</p>
+                        <p class="hm-help" id="ChannelId-help">@T["Text channels where HappyMix can view, send messages and embed links."]</p>
                         @FormErrors.Render(state, "ChannelId")
                     </div>
                     <div class="hm-field">
                         <label class="hm-label" asp-for="TimeZone">@T["Time zone"]</label>
                         <input class="hm-input" asp-for="TimeZone" list="time-zones" autocomplete="off" spellcheck="false" placeholder="Europe/Kyiv"
                                aria-invalid="@FormErrors.Invalid(state, "TimeZone")" aria-describedby="@FormErrors.DescribedBy(state, "TimeZone", "TimeZone-help")">
-                        <p class="hm-help" id="TimeZone-help">Used for schedules and availability. An IANA name such as Europe/Kyiv or UTC.</p>
+                        <p class="hm-help" id="TimeZone-help">@T["Used for schedules and availability. Start typing a city, like Kyiv, or enter UTC."]</p>
                         @FormErrors.Render(state, "TimeZone")
                     </div>
                     <div class="hm-field">
@@ -120,15 +121,15 @@
                                    aria-invalid="@FormErrors.Invalid(state, "ReminderMinutes")" aria-describedby="@FormErrors.DescribedBy(state, "ReminderMinutes", "ReminderMinutes-help")">
                             <span class="hm-affix__text">@T["minutes"]</span>
                         </div>
-                        <p class="hm-help" id="ReminderMinutes-help">Before a followed match. 1–1440.</p>
+                        <p class="hm-help" id="ReminderMinutes-help">@T["Before a followed match. 1–1440."]</p>
                         @FormErrors.Render(state, "ReminderMinutes")
                     </div>
                     <fieldset class="hm-field" id="OrganizerRoles" style="border: 0; padding: 0; margin: 0"
                               aria-describedby="@FormErrors.DescribedBy(state, "OrganizerRoles", "OrganizerRoles-help")">
-                        <legend class="hm-label" style="margin-bottom: var(--hm-space-2)">Organizer roles <span class="hm-label__opt">@T["optional"]</span></legend>
+                        <legend class="hm-label" style="margin-bottom: var(--hm-space-2)">@T["Organizer roles"] <span class="hm-label__opt">@T["optional"]</span></legend>
                         @if (settingsPage.Roles.Length == 0)
                         {
-                            <p class="hm-help">This server has no roles yet.</p>
+                            <p class="hm-help">@T["This server has no roles yet."]</p>
                         }
                         else
                         {
@@ -139,17 +140,17 @@
                                 }
                             </div>
                         }
-                        <p class="hm-help" id="OrganizerRoles-help" style="margin-top: var(--hm-space-2)">With none selected, any member can organize a group.</p>
+                        <p class="hm-help" id="OrganizerRoles-help" style="margin-top: var(--hm-space-2)">@T["With none selected, any member can organize a group."]</p>
                         @FormErrors.Render(state, "OrganizerRoles")
                     </fieldset>
                     <fieldset class="hm-field hm-field--wide" style="border: 0; padding: 0; margin: 0">
                         <legend class="hm-label" style="margin-bottom: var(--hm-space-2)">@T["Post to the channel"]</legend>
                         <div class="hm-checks">
-                            <label class="hm-check"><input asp-for="Schedule"><span>@T["Daily schedule"]<small>Today's matches for followed teams</small></span></label>
-                            <label class="hm-check"><input asp-for="Reminders"><span>@T["Reminders"]<small>Before a match, using the lead time</small></span></label>
-                            <label class="hm-check"><input asp-for="MatchStarts"><span>@T["Match starts"]<small>When a followed match goes live</small></span></label>
-                            <label class="hm-check"><input asp-for="Maps"><span>@T["Map results"]<small>After each map</small></span></label>
-                            <label class="hm-check"><input asp-for="Results"><span>@T["Match results"]<small>Final score</small></span></label>
+                            <label class="hm-check"><input asp-for="Schedule"><span>@T["Daily schedule"]<small>@T["Today's matches for followed teams"]</small></span></label>
+                            <label class="hm-check"><input asp-for="Reminders"><span>@T["Reminders"]<small>@T["Before a match, using the lead time"]</small></span></label>
+                            <label class="hm-check"><input asp-for="MatchStarts"><span>@T["Match starts"]<small>@T["When a followed match goes live"]</small></span></label>
+                            <label class="hm-check"><input asp-for="Maps"><span>@T["Map results"]<small>@T["After each map"]</small></span></label>
+                            <label class="hm-check"><input asp-for="Results"><span>@T["Match results"]<small>@T["Final score"]</small></span></label>
                         </div>
                     </fieldset>
                 </div>
@@ -165,11 +166,11 @@
             <span class="hm-savebar__status" aria-live="polite">
                 @if (failed)
                 {
-                    <span class="hm-savebar__dirty"><b aria-hidden="true">●</b>@T["Unsaved changes"]<span aria-hidden="true">·</span><span style="color: var(--hm-danger); font-weight: 600">@(fieldErrors.Length > 0 ? $"{fieldErrors.Length} to fix" : "Not saved")</span></span>
+                    <span class="hm-savebar__dirty"><b aria-hidden="true">●</b>@T["Unsaved changes"]<span aria-hidden="true">·</span><span style="color: var(--hm-danger); font-weight: 600">@(fieldErrors.Length > 0 ? T["{0} to fix", fieldErrors.Length] : T["Not saved"])</span></span>
                 }
                 else
                 {
-                    <span class="hm-savebar__clean">@DashboardIcons.Render("check", "color: var(--hm-mint)")No unsaved changes</span>
+                    <span class="hm-savebar__clean">@DashboardIcons.Render("check", "color: var(--hm-mint)")@T["No unsaved changes"]</span>
                     <span class="hm-savebar__dirty"><b aria-hidden="true">●</b>@T["Unsaved changes"]</span>
                 }
             </span>

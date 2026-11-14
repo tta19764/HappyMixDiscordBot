@@ -2,7 +2,10 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using Discord;
 using Discord.WebSocket;
+using HappyMix.Application.Abstractions.Esports;
 using HappyMix.Application.Abstractions.Guilds;
+using HappyMix.Application.Esports;
+using HappyMix.Domain.Esports;
 using HappyMix.Application.Guilds;
 using HappyMix.Bot.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -37,9 +40,11 @@ public sealed class GameSettingsForm
     public ulong? Channel { get; set; }
     public ulong? PingRole { get; set; }
     public string TeamsMode { get; set; } = Inherit;
-    [StringLength(500)] public string? Teams { get; set; }
+    /// <summary>One team per line: a name, or "Name #123" where the number is the team's ID.</summary>
+    [StringLength(4000)] public string? Teams { get; set; }
     public string TwitchMode { get; set; } = Inherit;
-    [StringLength(500)] public string? Twitch { get; set; }
+    /// <summary>One Twitch handle or twitch.tv link per line.</summary>
+    [StringLength(1000)] public string? Twitch { get; set; }
     public string CatalogMode { get; set; } = Inherit;
     [StringLength(16000)] public string? Catalog { get; set; }
 }
@@ -55,6 +60,7 @@ public sealed partial class DashboardController
         RememberServer(guildId);
         var saved = (await sender.Send(new GetGuildSettingsQuery(guildId), HttpContext.RequestAborted)).Value;
         var prefs = saved?.Preferences ?? GuildEsportsPreferences.Default;
+        var names = await GetTeamNamesAsync([.. prefs.CounterStrikeTeamIds ?? [], .. prefs.Dota2TeamIds ?? []]);
         var form = new ServerSettingsForm
         {
             ChannelId = saved?.ChannelId ?? 0,
@@ -67,14 +73,32 @@ public sealed partial class DashboardController
             MatchStarts = prefs.MatchStarts,
             OrganizerRoles = prefs.OrganizerRoleIds ?? [],
             Cs = ToGameForm(prefs.CounterStrikeChannelId, prefs.CounterStrikePingRoleId, prefs.CounterStrikeTeamIds,
-                prefs.CounterStrikeTwitchChannels, prefs.CounterStrikeTeamAliases),
+                prefs.CounterStrikeTwitchChannels, prefs.CounterStrikeTeamAliases, names),
             Dota = ToGameForm(prefs.Dota2ChannelId, prefs.Dota2PingRoleId, prefs.Dota2TeamIds,
-                prefs.Dota2TwitchChannels, prefs.Dota2TeamAliases)
+                prefs.Dota2TwitchChannels, prefs.Dota2TeamAliases, names)
         };
         var banner = TempData["SettingsMessage"] is string message
-            ? new BannerModel("success", message, "New announcements use these settings right away.")
+            ? new BannerModel("success", message, text["New announcements use these settings right away."])
             : null;
-        return SettingsView(guild, form, banner);
+        return await SettingsViewAsync(guild, form, banner);
+    }
+
+    /// <summary>Team search for the "add a team" box. Admins only, like the page itself.</summary>
+    [HttpGet("/settings/{guildId}/teams")]
+    public async Task<IActionResult> SearchTeams(ulong guildId, string? game, string? q)
+    {
+        if (await GetAdministratorAsync(guildId) is null)
+            return StatusCode(StatusCodes.Status403Forbidden);
+
+        var result = await sender.Send(new SearchEsportsTeamsQuery(game == "dota" ? Esport.Dota2 : Esport.CounterStrike2, q ?? ""),
+            HttpContext.RequestAborted);
+        if (result.IsFailure)
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = text[result.Error.Description].Value });
+        return Json(result.Value.Take(10).Select(team => new
+        {
+            id = team.Id, name = team.Name, acronym = team.Acronym, location = team.Location, image = team.ImageUrl,
+            line = TeamText.Format(team)
+        }));
     }
 
     [HttpPost("/settings/{guildId}")]
@@ -88,27 +112,27 @@ public sealed partial class DashboardController
         {
             form.TimeZone = form.TimeZone.Trim();
             if (!TimeZoneInfo.TryFindSystemTimeZoneById(form.TimeZone, out zone) || (!zone.HasIanaId && zone.Id != "UTC"))
-                ModelState.AddModelError(nameof(form.TimeZone), "Enter an IANA time zone such as Europe/Kyiv or UTC.");
+                ModelState.AddModelError(nameof(form.TimeZone), text["Enter an IANA time zone such as Europe/Kyiv or UTC."]);
         }
 
         foreach (var (key, id) in new[] { ("ChannelId", (ulong?)form.ChannelId), ("Cs.Channel", form.Cs.Channel), ("Dota.Channel", form.Dota.Channel) })
         {
             if (id is { } channelId and not 0 && (guild.GetTextChannel(channelId) is not { } channel || !CanPostAnnouncements(guild, channel)))
-                ModelState.AddModelError(key, "HappyMix can't post there. Choose a text channel where it can view, send messages and embed links.");
+                ModelState.AddModelError(key, text["HappyMix can't post there. Choose a text channel where it can view, send messages and embed links."]);
         }
 
         if (form.OrganizerRoles.Any(id => id == guildId || guild.GetRole(id) is null))
-            ModelState.AddModelError(nameof(form.OrganizerRoles), "Choose roles from this server other than @everyone.");
+            ModelState.AddModelError(nameof(form.OrganizerRoles), text["Choose roles from this server other than @everyone."]);
         foreach (var (key, id) in new[] { ("Cs.PingRole", form.Cs.PingRole), ("Dota.PingRole", form.Dota.PingRole) })
         {
             if (id is { } roleId && (roleId == guildId || guild.GetRole(roleId) is null))
-                ModelState.AddModelError(key, "Choose a role from this server other than @everyone.");
+                ModelState.AddModelError(key, text["Choose a role from this server other than @everyone."]);
         }
 
-        var cs = ParseGame(form.Cs, "Cs", options.Value.CounterStrikeTeamAliases);
-        var dota = ParseGame(form.Dota, "Dota", options.Value.Dota2TeamAliases);
+        var cs = await ParseGameAsync(form.Cs, "Cs", Esport.CounterStrike2, options.Value.CounterStrikeTeamAliases);
+        var dota = await ParseGameAsync(form.Dota, "Dota", Esport.Dota2, options.Value.Dota2TeamAliases);
         if (!ModelState.IsValid || zone is null)
-            return SettingsView(guild, form, null);
+            return await SettingsViewAsync(guild, form, null);
 
         var notifications = (form.Schedule ? EsportsNotifications.Schedule : 0) |
             (form.Reminders ? EsportsNotifications.Reminders : 0) |
@@ -122,14 +146,14 @@ public sealed partial class DashboardController
             HttpContext.RequestAborted);
         if (result.IsFailure)
         {
-            ModelState.AddModelError("", result.Error.Description);
-            return SettingsView(guild, form, null);
+            ModelState.AddModelError("", text[result.Error.Description]);
+            return await SettingsViewAsync(guild, form, null);
         }
-        TempData["SettingsMessage"] = "Server settings saved";
+        TempData["SettingsMessage"] = text["Server settings saved"].Value;
         return RedirectToAction(nameof(Settings), new { guildId });
     }
 
-    private ViewResult SettingsView(SocketGuild guild, ServerSettingsForm form, BannerModel? banner)
+    private async Task<ViewResult> SettingsViewAsync(SocketGuild guild, ServerSettingsForm form, BannerModel? banner)
     {
         var channels = guild.TextChannels
             .Where(channel => CanPostAnnouncements(guild, channel))
@@ -142,38 +166,51 @@ public sealed partial class DashboardController
                 role.Colors.PrimaryColor.RawValue == 0 ? "#9aa1c4" : "#" + role.Colors.PrimaryColor.RawValue.ToString("x6", CultureInfo.InvariantCulture)))
             .ToArray();
         string deployment = guild.GetTextChannel(discordOptions.Value.AnnouncementChannelId) is { } fallback
-            ? "#" + fallback.Name : "Bot default channel";
+            ? "#" + fallback.Name : text["Bot default channel"];
         string server = form.ChannelId == 0 ? deployment
             : channels.FirstOrDefault(item => item.Value == form.ChannelId.ToString(CultureInfo.InvariantCulture))?.Text
-              ?? "a channel HappyMix can't post in";
+              ?? text["a channel HappyMix can't post in"];
 
+        long[] csDefaults = options.Value.DefaultCounterStrikeTeams, dotaDefaults = options.Value.DefaultDota2Teams;
+        // Names for the default lists and every team typed into the form, so the editor can show names and logos.
+        var typed = new[] { form.Cs.Teams, form.Dota.Teams }.SelectMany(Lines)
+            .Select(line => TeamText.TryGetId(line, out long id) ? id : 0).Where(id => id > 0);
+        var known = await GetTeamNamesAsync([.. csDefaults, .. dotaDefaults, .. typed]);
         ViewData["Settings"] = new SettingsPage(guild.Id, guild.Name, channels, roles, deployment, server,
-            GetGameDefaults(options.Value.CounterStrikeTeamIds, options.Value.CounterStrikeTeamAliases,
-                discordOptions.Value.CounterStrikeTwitchChannels),
-            GetGameDefaults(options.Value.Dota2TeamIds, options.Value.Dota2TeamAliases,
-                discordOptions.Value.Dota2TwitchChannels),
-            banner);
+            GetGameDefaults(csDefaults, options.Value.CounterStrikeTeamAliases, discordOptions.Value.CounterStrikeTwitchChannels, known),
+            GetGameDefaults(dotaDefaults, options.Value.Dota2TeamAliases, discordOptions.Value.Dota2TwitchChannels, known),
+            banner, known.Values.ToArray());
         return View("Settings", form);
     }
 
-    private static GameDefaults GetGameDefaults(long[]? teams, Dictionary<string, long> catalog, string[] twitch)
+    private async Task<Dictionary<long, EsportsTeam>> GetTeamNamesAsync(long[] ids)
     {
-        var names = catalog.GroupBy(pair => pair.Value).ToDictionary(group => group.Key, group => group.First().Key);
-        string teamText = teams switch
-        {
-            null => catalog.Count > 0 ? "Every team in the team catalog" : "Built-in team list",
-            [] => "No teams",
-            _ => Summarize(teams.Select(id => names.TryGetValue(id, out var name) ? name : id.ToString(CultureInfo.InvariantCulture)))
-        };
-        string twitchText = twitch.Length == 0 ? "No channels" : Summarize(twitch);
-        string catalogText = catalog.Count == 0 ? "Built-in team list" : $"{catalog.Count} teams";
-        return new GameDefaults(teamText, twitchText, catalogText);
+        var result = await sender.Send(new GetEsportsTeamsQuery(ids), HttpContext.RequestAborted);
+        return (result.IsSuccess ? result.Value : []).ToDictionary(team => team.Id);
     }
 
-    private static string Summarize(IEnumerable<string> items)
+    private static string TeamLine(long id, Dictionary<long, EsportsTeam> known, Dictionary<string, long>? catalog) =>
+        known.TryGetValue(id, out var team) ? TeamText.Format(team)
+        : catalog?.FirstOrDefault(pair => pair.Value == id).Key is { } alias ? $"{alias} #{id}"
+        : $"#{id}";
+
+    private GameDefaults GetGameDefaults(long[] teams, Dictionary<string, long> catalog, string[] twitch,
+        Dictionary<long, EsportsTeam> known)
+    {
+        string Name(long id) => known.TryGetValue(id, out var team) ? team.Name
+            : catalog.FirstOrDefault(pair => pair.Value == id).Key ?? $"#{id}";
+        string teamText = teams.Length == 0 ? text["No teams"] : Summarize(teams.Select(Name));
+        string twitchText = twitch.Length == 0 ? text["No channels"] : Summarize(twitch);
+        string catalogText = catalog.Count == 0 ? text["Built-in team list"] : text["{0} teams", catalog.Count];
+        return new GameDefaults(teamText, twitchText, catalogText,
+            teams.Select(id => TeamLine(id, known, catalog)).ToArray(),
+            twitch.Select(TwitchChannels.GetHandle).OfType<string>().ToArray());
+    }
+
+    private string Summarize(IEnumerable<string> items)
     {
         var list = items.ToArray();
-        return list.Length <= 4 ? string.Join(", ", list) : $"{string.Join(", ", list.Take(4))} +{list.Length - 4} more";
+        return list.Length <= 4 ? string.Join(", ", list) : $"{string.Join(", ", list.Take(4))} {text["+{0} more", list.Length - 4]}";
     }
 
     private async Task<IActionResult> SettingsForbiddenAsync(ulong guildId)
@@ -194,14 +231,14 @@ public sealed partial class DashboardController
         (await GetDiscordMemberAsync(guildId))?.GuildPermissions.Administrator == true ? discord.GetGuild(guildId) : null;
 
     private static GameSettingsForm ToGameForm(ulong? channel, ulong? role, long[]? teams, string[]? twitch,
-        Dictionary<string, long>? catalog) => new()
+        Dictionary<string, long>? catalog, Dictionary<long, EsportsTeam> known) => new()
     {
         Channel = channel,
         PingRole = role,
         TeamsMode = ModeOf(teams),
-        Teams = teams is { Length: > 0 } ? string.Join(", ", teams) : null,
+        Teams = teams is { Length: > 0 } ? string.Join("\n", teams.Select(id => TeamLine(id, known, catalog))) : null,
         TwitchMode = ModeOf(twitch),
-        Twitch = twitch is { Length: > 0 } ? string.Join(", ", twitch) : null,
+        Twitch = twitch is { Length: > 0 } ? string.Join("\n", twitch) : null,
         CatalogMode = catalog is null ? GameSettingsForm.Inherit : GameSettingsForm.Custom,
         Catalog = catalog is null ? null : string.Join("\n", catalog.Select(pair =>
             $"{pair.Key}={pair.Value.ToString(CultureInfo.InvariantCulture)}"))
@@ -210,8 +247,8 @@ public sealed partial class DashboardController
     private static string ModeOf<T>(T[]? values) =>
         values is null ? GameSettingsForm.Inherit : values.Length == 0 ? GameSettingsForm.None : GameSettingsForm.Custom;
 
-    private (long[]? Teams, string[]? Twitch, Dictionary<string, long>? Catalog) ParseGame(
-        GameSettingsForm form, string prefix, IEnumerable<KeyValuePair<string, long>> defaultCatalog)
+    private async Task<(long[]? Teams, string[]? Twitch, Dictionary<string, long>? Catalog)> ParseGameAsync(
+        GameSettingsForm form, string prefix, Esport game, IEnumerable<KeyValuePair<string, long>> defaultCatalog)
     {
         long[]? teams = null;
         string[]? twitch = null;
@@ -221,12 +258,13 @@ public sealed partial class DashboardController
             twitch = [];
         else if (form.TwitchMode == GameSettingsForm.Custom)
         {
-            var items = Split(form.Twitch);
+            var items = Lines(form.Twitch)
+                .SelectMany(line => line.Split([',', ' '], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)).ToArray();
             string? invalid = items.FirstOrDefault(item => TwitchChannels.GetHandle(item) is null);
             if (invalid is not null)
-                ModelState.AddModelError($"{prefix}.Twitch", $"\"{invalid}\" isn't a Twitch handle. Use handles or twitch.tv links, separated by commas.");
+                ModelState.AddModelError($"{prefix}.Twitch", text["\"{0}\" isn't a Twitch channel. Use a handle like shroud or a twitch.tv link.", invalid]);
             else if (items.Length is 0 or > 5)
-                ModelState.AddModelError($"{prefix}.Twitch", "Enter one to five Twitch handles or links, or choose None.");
+                ModelState.AddModelError($"{prefix}.Twitch", text["Add one to five Twitch channels, or choose None."]);
             twitch = items.Select(TwitchChannels.GetHandle).OfType<string>().Distinct(StringComparer.Ordinal).ToArray();
         }
 
@@ -243,7 +281,7 @@ public sealed partial class DashboardController
                     !long.TryParse(line[(separator + 1)..].Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out long id) ||
                     id <= 0 || !catalog.TryAdd(name, id))
                 {
-                    ModelState.AddModelError($"{prefix}.Catalog", $"Check \"{line}\". Use one unique Team name=123 entry per line.");
+                    ModelState.AddModelError($"{prefix}.Catalog", text["Check \"{0}\". Use one unique alias=123 entry per line.", line]);
                     break;
                 }
             }
@@ -254,20 +292,45 @@ public sealed partial class DashboardController
         else if (form.TeamsMode == GameSettingsForm.Custom)
         {
             var aliases = catalog ?? new Dictionary<string, long>(defaultCatalog, StringComparer.OrdinalIgnoreCase);
-            var items = Split(form.Teams);
-            string? unknown = items.FirstOrDefault(item => !aliases.ContainsKey(item) &&
-                !(long.TryParse(item, NumberStyles.None, CultureInfo.InvariantCulture, out long parsed) && parsed > 0));
-            if (unknown is not null)
-                ModelState.AddModelError($"{prefix}.Teams", $"\"{unknown}\" isn't in the team catalog or a team ID.");
-            else if (items.Length is 0 or > 20)
-                ModelState.AddModelError($"{prefix}.Teams", "Enter 1 to 20 team names or IDs, or choose None.");
-            teams = items.Select(item => aliases.TryGetValue(item, out long id) ||
-                long.TryParse(item, NumberStyles.None, CultureInfo.InvariantCulture, out id) ? id : 0)
-                .Where(id => id > 0).Distinct().ToArray();
+            var items = Lines(form.Teams);
+            var ids = new List<long>();
+            if (items.Length is 0 or > 20)
+                ModelState.AddModelError($"{prefix}.Teams", text["Add 1 to 20 teams, or choose None."]);
+            else
+            {
+                // A catalog alias wins, then the provider's team search, so a plain name like "Vitality" is enough.
+                foreach (string item in items)
+                {
+                    if (aliases.TryGetValue(item, out long alias))
+                    {
+                        ids.Add(alias);
+                        continue;
+                    }
+                    var resolved = await sender.Send(new ResolveEsportsTeamQuery(game, item), HttpContext.RequestAborted);
+                    string? problem = resolved switch
+                    {
+                        { IsFailure: true } => text[resolved.Error.Description].Value,
+                        { Value.Team: null, Value.Candidates.Count: 0 } => text[
+                            "No {0} team called \"{1}\" was found. Check the spelling, or add the team's number like \"{1} #123\".",
+                            game.DisplayName(), item].Value,
+                        { Value.Team: null } => text[
+                            "Several {0} teams match \"{1}\": {2}. Pick one from the search, or add its number like \"{1} #123\".",
+                            game.DisplayName(), item, string.Join(", ", resolved.Value.Candidates.Select(TeamText.Describe))].Value,
+                        _ => null
+                    };
+                    if (problem is not null)
+                    {
+                        ModelState.AddModelError($"{prefix}.Teams", problem);
+                        break;
+                    }
+                    ids.Add(resolved.Value.Team!.Id);
+                }
+            }
+            teams = ids.Distinct().ToArray();
         }
         return (teams, twitch, catalog);
     }
 
-    private static string[] Split(string? text) =>
-        (text ?? "").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+    private static string[] Lines(string? value) =>
+        (value ?? "").Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 }

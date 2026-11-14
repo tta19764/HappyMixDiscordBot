@@ -25,24 +25,26 @@
         <partial name="_Banner" model="errorBanner" />
     }
     <form method="get" class="hm-card hm-stack">
-        <label class="hm-field"><span class="hm-label">@T["Primary"]</span>
-            <select class="hm-select" name="primary" required>
+        <div class="hm-field"><label class="hm-label" for="link-primary">@T["Primary"]</label>
+            <select class="hm-select" id="link-primary" name="primary" required data-picker
+                    data-picker-search="@T["Find a member"]" data-picker-empty="@T["No members match."]">
                 <option value="">@T["Choose an account"]</option>
                 @foreach (var member in candidates)
                 {
                     <option value="@member.Id">@member.DisplayName (@member.Username) · @member.Id</option>
                 }
             </select>
-        </label>
-        <label class="hm-field"><span class="hm-label">@T["Alternate (twink)"]</span>
-            <select class="hm-select" name="alternate" required>
+        </div>
+        <div class="hm-field"><label class="hm-label" for="link-alternate">@T["Alternate (twink)"]</label>
+            <select class="hm-select" id="link-alternate" name="alternate" required data-picker
+                    data-picker-search="@T["Find a member"]" data-picker-empty="@T["No members match."]">
                 <option value="">@T["Choose an account"]</option>
                 @foreach (var member in candidates)
                 {
                     <option value="@member.Id">@member.DisplayName (@member.Username) · @member.Id</option>
                 }
             </select>
-        </label>
+        </div>
         <div class="hm-row"><button class="hm-btn hm-btn--primary">@T["Review link"]</button></div>
     </form>
 }

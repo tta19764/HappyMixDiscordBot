@@ -8,30 +8,48 @@
     string Key(string name) => ViewData.TemplateInfo.GetFullHtmlFieldName(name);
     string Id(string name) => FormErrors.Id(Key(name));
     var roles = settingsPage.Roles.Select(role => new SelectListItem("@" + role.Name, role.Id.ToString())).ToArray();
-    var modes = new[] { (GameSettingsForm.Inherit, "Inherit"), (GameSettingsForm.Custom, "Custom"), (GameSettingsForm.None, "None") };
+    string roleColors = System.Text.Json.JsonSerializer.Serialize(settingsPage.Roles.ToDictionary(role => role.Id.ToString(), role => role.Color));
+    var modes = new[] { (GameSettingsForm.Inherit, T["Inherit"].Value), (GameSettingsForm.Custom, T["Custom"].Value), (GameSettingsForm.None, T["None"].Value) };
     bool catalogOpen = Model.CatalogMode == GameSettingsForm.Custom || FormErrors.Message(state, Key("Catalog")) is not null;
+    string searchGame = sectionId == "dota2" ? "dota" : "cs";
+    string knownJson = System.Text.Json.JsonSerializer.Serialize(settingsPage.KnownTeams.Select(team => new
+        { id = team.Id, name = team.Name, acronym = team.Acronym, location = team.Location, image = team.ImageUrl }));
+
+    var teams = new ListEditorModel("teams", Id("Teams"), Key("Teams"), Model.Teams, 20, 4000,
+        T["{0} followed teams", game], T["No teams yet. Search for a team by name to add it."],
+        T["Search for a team by name"], "Team Vitality\nNatus Vincere #3216",
+        T["One team per line. A name is enough; if several teams share it, add the number shown in search, like \"Vitality #3455\"."],
+        defaults.TeamLines, FormErrors.Invalid(state, Key("Teams")),
+        FormErrors.DescribedBy(state, Key("Teams"), Id("Teams") + "-help"),
+        $"/settings/{settingsPage.GuildId}/teams?game={searchGame}", knownJson);
+    var twitch = new ListEditorModel("twitch", Id("Twitch"), Key("Twitch"), Model.Twitch, 5, 1000,
+        T["{0} Twitch channels", game], T["No channels yet."], T["Twitch handle or twitch.tv link"], "shroud\nhttps://twitch.tv/esl_csgo",
+        T["One Twitch handle or twitch.tv link per line, up to five."], defaults.TwitchLines,
+        FormErrors.Invalid(state, Key("Twitch")), FormErrors.DescribedBy(state, Key("Twitch"), Id("Twitch") + "-help"));
 }
 <section class="hm-card hm-section" id="@sectionId" aria-labelledby="@sectionId-title">
     <div class="hm-section__head">
         <span class="hm-game-mark" aria-hidden="true">@ViewData["GameMark"]</span>
-        <div><h2 id="@sectionId-title">@game</h2><p>Leave a value on Inherit to follow Server defaults.</p></div>
+        <div><h2 id="@sectionId-title">@game</h2><p>@T["Leave a value on Inherit to follow Server defaults."]</p></div>
     </div>
     <div class="hm-fields">
         <div class="hm-field @(Model.Channel is null ? "hm-field--inherited" : "")" data-source>
             <div class="hm-row hm-row--between">
                 <label class="hm-label" asp-for="Channel">@T["Announcement channel"]</label>
-                @FormErrors.SourceBadge(Model.Channel is null ? GameSettingsForm.Inherit : GameSettingsForm.Custom)
+                @FormErrors.SourceBadge(Model.Channel is null ? GameSettingsForm.Inherit : GameSettingsForm.Custom, T)
             </div>
-            <select class="hm-select" asp-for="Channel" asp-items="settingsPage.Channels" data-source-control
+            <select class="hm-select" asp-for="Channel" asp-items="settingsPage.Channels" data-source-control data-picker
+                    data-picker-search="@T["Find a channel"]" data-picker-empty="@T["No channels match."]"
                     aria-invalid="@FormErrors.Invalid(state, Key("Channel"))" aria-describedby="@FormErrors.DescribedBy(state, Key("Channel"))">
-                <option value="">Server default · @settingsPage.ServerChannel</option>
+                <option value="">@T["Server default · {0}", settingsPage.ServerChannel]</option>
             </select>
             @FormErrors.Render(state, Key("Channel"))
         </div>
 
         <div class="hm-field">
             <label class="hm-label" asp-for="PingRole">@T["Reminder ping role"]</label>
-            <select class="hm-select" asp-for="PingRole" asp-items="roles"
+            <select class="hm-select" asp-for="PingRole" asp-items="roles" data-picker data-picker-colors="@roleColors"
+                    data-picker-search="@T["Find a role"]" data-picker-empty="@T["No roles match."]"
                     aria-invalid="@FormErrors.Invalid(state, Key("PingRole"))" aria-describedby="@FormErrors.DescribedBy(state, Key("PingRole"))">
                 <option value="">@T["No ping"]</option>
             </select>
@@ -41,7 +59,7 @@
         <div class="hm-field hm-field--wide hm-mode-field" data-source>
             <div class="hm-row hm-row--between">
                 <span class="hm-label" id="@Id("Teams")-label">@T["Followed teams"]</span>
-                @FormErrors.SourceBadge(Model.TeamsMode)
+                @FormErrors.SourceBadge(Model.TeamsMode, T)
             </div>
             <div class="hm-mode" role="radiogroup" aria-labelledby="@Id("Teams")-label">
                 @foreach (var (value, label) in modes)
@@ -51,18 +69,16 @@
             </div>
             <div class="hm-inherited hm-mode-inherit"><span class="hm-inherited__src">@T["Default ·"]</span><span class="hm-inherited__value">@defaults.Teams</span></div>
             <div class="hm-mode-custom">
-                <input class="hm-input" id="@Id("Teams")" name="@Key("Teams")" value="@Model.Teams" maxlength="500" placeholder="Team name or ID, separated by commas"
-                       aria-labelledby="@Id("Teams")-label" aria-invalid="@FormErrors.Invalid(state, Key("Teams"))" aria-describedby="@FormErrors.DescribedBy(state, Key("Teams"), Id("Teams") + "-help")">
-                <p class="hm-help" id="@Id("Teams")-help" style="margin-top: var(--hm-space-2)">Up to 20 team names from the catalog or team IDs, separated by commas.</p>
+                <partial name="_ListEditor" model="teams" />
                 @FormErrors.Render(state, Key("Teams"), "margin-top: var(--hm-space-2)")
             </div>
-            <div class="hm-inherited hm-mode-none" style="border-style: solid; border-color: var(--hm-border); background: var(--hm-sunken)">No @game teams followed, so match posts for this game stop.</div>
+            <div class="hm-inherited hm-mode-none hm-inherited--off">@T["No {0} teams followed, so match posts for this game stop.", game]</div>
         </div>
 
         <div class="hm-field hm-field--wide hm-mode-field" data-source>
             <div class="hm-row hm-row--between">
                 <span class="hm-label" id="@Id("Twitch")-label">@T["Twitch channels"]</span>
-                @FormErrors.SourceBadge(Model.TwitchMode)
+                @FormErrors.SourceBadge(Model.TwitchMode, T)
             </div>
             <div class="hm-mode" role="radiogroup" aria-labelledby="@Id("Twitch")-label">
                 @foreach (var (value, label) in modes)
@@ -72,17 +88,15 @@
             </div>
             <div class="hm-inherited hm-mode-inherit"><span class="hm-inherited__src">@T["Default ·"]</span><span class="hm-inherited__value">@defaults.Twitch</span></div>
             <div class="hm-mode-custom">
-                <input class="hm-input" id="@Id("Twitch")" name="@Key("Twitch")" value="@Model.Twitch" maxlength="500" placeholder="handle or twitch.tv link, separated by commas"
-                       aria-labelledby="@Id("Twitch")-label" aria-invalid="@FormErrors.Invalid(state, Key("Twitch"))" aria-describedby="@FormErrors.DescribedBy(state, Key("Twitch"), Id("Twitch") + "-help")">
-                <p class="hm-help" id="@Id("Twitch")-help" style="margin-top: var(--hm-space-2)">Up to five Twitch handles or twitch.tv links.</p>
+                <partial name="_ListEditor" model="twitch" />
                 @FormErrors.Render(state, Key("Twitch"), "margin-top: var(--hm-space-2)")
             </div>
-            <div class="hm-inherited hm-mode-none" style="border-style: solid; border-color: var(--hm-border); background: var(--hm-sunken)">No Twitch links in @game announcements.</div>
+            <div class="hm-inherited hm-mode-none hm-inherited--off">@T["No Twitch links in {0} announcements.", game]</div>
         </div>
 
         <details class="hm-details hm-field hm-field--wide hm-mode-field" id="@Id("Catalog")-details" data-source open="@catalogOpen">
-            <summary>Team catalog @FormErrors.SourceBadge(Model.CatalogMode == GameSettingsForm.Custom ? GameSettingsForm.Custom : GameSettingsForm.Inherit)<span class="hm-subtle" style="font-weight: 500">Name-to-ID aliases used by Followed teams</span></summary>
-            <div class="hm-mode" role="radiogroup" aria-label="Team catalog source">
+            <summary>@T["Team aliases"] @FormErrors.SourceBadge(Model.CatalogMode == GameSettingsForm.Custom ? GameSettingsForm.Custom : GameSettingsForm.Inherit, T)<span class="hm-subtle" style="font-weight: 500">@T["Optional short names for teams, checked before team search"]</span></summary>
+            <div class="hm-mode" role="radiogroup" aria-label="@T["Team aliases source"]">
                 @foreach (var (value, label) in modes.Take(2))
                 {
                     <label><input type="radio" name="@Key("CatalogMode")" value="@value" checked="@((Model.CatalogMode == GameSettingsForm.Custom ? GameSettingsForm.Custom : GameSettingsForm.Inherit) == value)">@label</label>
@@ -90,10 +104,10 @@
             </div>
             <div class="hm-inherited hm-mode-inherit"><span class="hm-inherited__src">@T["Default ·"]</span><span class="hm-inherited__value">@defaults.Catalog</span></div>
             <div class="hm-mode-custom">
-                <label class="hm-sr-only" for="@Id("Catalog")">@game team catalog</label>
-                <textarea class="hm-textarea" id="@Id("Catalog")" name="@Key("Catalog")" rows="5" maxlength="16000" placeholder="Team name=123"
+                <label class="hm-sr-only" for="@Id("Catalog")">@T["{0} team aliases", game]</label>
+                <textarea class="hm-textarea" id="@Id("Catalog")" name="@Key("Catalog")" rows="5" maxlength="16000" placeholder="NAVI=3216"
                           aria-invalid="@FormErrors.Invalid(state, Key("Catalog"))" aria-describedby="@FormErrors.DescribedBy(state, Key("Catalog"), Id("Catalog") + "-help")">@Model.Catalog</textarea>
-                <p class="hm-help" id="@Id("Catalog")-help" style="margin-top: var(--hm-space-2)">One Team name=ID per line.</p>
+                <p class="hm-help" id="@Id("Catalog")-help" style="margin-top: var(--hm-space-2)">@T["One alias=team number per line, for example NAVI=3216. Usually not needed: team names are found automatically."]</p>
                 @FormErrors.Render(state, Key("Catalog"), "margin-top: var(--hm-space-2)")
             </div>
         </details>

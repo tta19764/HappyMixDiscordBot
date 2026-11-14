@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using HappyMix.Application.Abstractions;
 using HappyMix.Application.Abstractions.Esports;
 using HappyMix.Application.Abstractions.Guilds;
@@ -67,6 +68,10 @@ public static class DependencyInjection
         });
         services.AddTransient<IPandaScoreClient>(provider => provider.GetRequiredService<PandaScoreClient>());
         services.AddTransient<IGuildMatchFeed>(provider => provider.GetRequiredService<PandaScoreClient>());
+        services.AddHttpClient(PandaScoreTeamDirectory.HttpClientName, (provider, client) =>
+            client.BaseAddress = new Uri(provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<PandaScoreOptions>>().Value.BaseUrl));
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddSingleton<IEsportsTeamDirectory, PandaScoreTeamDirectory>();
 
         return services;
     }

@@ -56,9 +56,9 @@ internal sealed class PandaScoreClient : IPandaScoreClient, IGuildMatchFeed
         {
             (Game: Esport.CounterStrike2, Path: "csgo", Teams: preferences.CounterStrikeTeamIds ?? _options.CounterStrikeTeamIds ??
                 GetAliasIds(preferences.CounterStrikeTeamAliases ?? _options.CounterStrikeTeamAliases,
-                    [3216, 136955, 131441, 129381, 136497, 3210])),
+                    PandaScoreOptions.BuiltInCounterStrikeTeamIds)),
             (Game: Esport.Dota2, Path: "dota2", Teams: preferences.Dota2TeamIds ?? _options.Dota2TeamIds ??
-                GetAliasIds(preferences.Dota2TeamAliases ?? _options.Dota2TeamAliases, [1699, 132557]))
+                GetAliasIds(preferences.Dota2TeamAliases ?? _options.Dota2TeamAliases, PandaScoreOptions.BuiltInDota2TeamIds))
         };
         var matches = new List<EsportsMatch>();
         // Keep requests sequential to avoid bursts against the provider's minute limit.

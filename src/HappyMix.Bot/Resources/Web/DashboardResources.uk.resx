@@ -1157,4 +1157,241 @@
   <data name="Command modules" xml:space="preserve">
     <value>Розділи команд</value>
   </data>
+  <data name="Where and when HappyMix posts esports announcements. Only server administrators see this page." xml:space="preserve">
+    <value>Де й коли HappyMix публікує кіберспортивні оголошення. Цю сторінку бачать лише адміністратори сервера.</value>
+  </data>
+  <data name="Team aliases" xml:space="preserve">
+    <value>Скорочення команд</value>
+  </data>
+  <data name="Settings not saved" xml:space="preserve">
+    <value>Налаштування не збережено</value>
+  </data>
+  <data name="Settings not saved: 1 field needs attention" xml:space="preserve">
+    <value>Налаштування не збережено: перевірте 1 поле</value>
+  </data>
+  <data name="Settings not saved: {0} fields need attention" xml:space="preserve">
+    <value>Налаштування не збережено: перевірте поля ({0})</value>
+  </data>
+  <data name="Settings sections" xml:space="preserve">
+    <value>Розділи налаштувань</value>
+  </data>
+  <data name="{0} to fix" xml:space="preserve">
+    <value>виправити: {0}</value>
+  </data>
+  <data name="Game sections inherit from Server defaults unless you override a value." xml:space="preserve">
+    <value>Розділи ігор успадковують значення сервера, доки ви їх не зміните.</value>
+  </data>
+  <data name="HappyMix can't post in any text channel yet" xml:space="preserve">
+    <value>HappyMix поки не може писати в жоден текстовий канал</value>
+  </data>
+  <data name="In Discord, give the HappyMix role View Channel, Send Messages and Embed Links in at least one standard text channel, then reload this page." xml:space="preserve">
+    <value>У Discord надайте ролі HappyMix права «Переглядати канал», «Надсилати повідомлення» й «Вбудовувати посилання» хоча б в одному текстовому каналі, а потім оновіть сторінку.</value>
+  </data>
+  <data name="Used by every game unless the game overrides it." xml:space="preserve">
+    <value>Діє для всіх ігор, якщо гра не задає власне значення.</value>
+  </data>
+  <data name="Find a channel" xml:space="preserve">
+    <value>Знайти канал</value>
+  </data>
+  <data name="No channels match." xml:space="preserve">
+    <value>Немає відповідних каналів.</value>
+  </data>
+  <data name="Bot default · {0}" xml:space="preserve">
+    <value>Типовий для бота · {0}</value>
+  </data>
+  <data name="Text channels where HappyMix can view, send messages and embed links." xml:space="preserve">
+    <value>Текстові канали, де HappyMix може переглядати, писати й вбудовувати посилання.</value>
+  </data>
+  <data name="Used for schedules and availability. Start typing a city, like Kyiv, or enter UTC." xml:space="preserve">
+    <value>Для розкладів і доступності. Почніть вводити місто, наприклад Kyiv, або введіть UTC.</value>
+  </data>
+  <data name="Before a followed match. 1–1440." xml:space="preserve">
+    <value>До матчу відстежуваної команди. 1–1440.</value>
+  </data>
+  <data name="This server has no roles yet." xml:space="preserve">
+    <value>На цьому сервері ще немає ролей.</value>
+  </data>
+  <data name="With none selected, any member can organize a group." xml:space="preserve">
+    <value>Якщо нічого не вибрано, організувати групу може будь-хто.</value>
+  </data>
+  <data name="Today's matches for followed teams" xml:space="preserve">
+    <value>Сьогоднішні матчі відстежуваних команд</value>
+  </data>
+  <data name="Before a match, using the lead time" xml:space="preserve">
+    <value>Перед матчем, за вказаний час</value>
+  </data>
+  <data name="When a followed match goes live" xml:space="preserve">
+    <value>Коли матч відстежуваної команди починається</value>
+  </data>
+  <data name="After each map" xml:space="preserve">
+    <value>Після кожної карти</value>
+  </data>
+  <data name="Final score" xml:space="preserve">
+    <value>Підсумковий рахунок</value>
+  </data>
+  <data name="Not saved" xml:space="preserve">
+    <value>Не збережено</value>
+  </data>
+  <data name="No unsaved changes" xml:space="preserve">
+    <value>Немає незбережених змін</value>
+  </data>
+  <data name="{0} followed teams" xml:space="preserve">
+    <value>Відстежувані команди {0}</value>
+  </data>
+  <data name="No teams yet. Search for a team by name to add it." xml:space="preserve">
+    <value>Команд ще немає. Знайдіть команду за назвою, щоб додати її.</value>
+  </data>
+  <data name="Search for a team by name" xml:space="preserve">
+    <value>Знайти команду за назвою</value>
+  </data>
+  <data name="One team per line. A name is enough; if several teams share it, add the number shown in search, like &quot;Vitality #3455&quot;." xml:space="preserve">
+    <value>Одна команда на рядок. Достатньо назви; якщо так звуться кілька команд, додайте номер із пошуку, наприклад «Vitality #3455».</value>
+  </data>
+  <data name="{0} Twitch channels" xml:space="preserve">
+    <value>Канали Twitch {0}</value>
+  </data>
+  <data name="No channels yet." xml:space="preserve">
+    <value>Каналів ще немає.</value>
+  </data>
+  <data name="Twitch handle or twitch.tv link" xml:space="preserve">
+    <value>Нік Twitch або посилання twitch.tv</value>
+  </data>
+  <data name="One Twitch handle or twitch.tv link per line, up to five." xml:space="preserve">
+    <value>Один нік Twitch або посилання twitch.tv на рядок, до п’яти.</value>
+  </data>
+  <data name="Leave a value on Inherit to follow Server defaults." xml:space="preserve">
+    <value>Залиште «Успадкувати», щоб використовувати значення сервера.</value>
+  </data>
+  <data name="Server default · {0}" xml:space="preserve">
+    <value>Типовий для сервера · {0}</value>
+  </data>
+  <data name="Find a role" xml:space="preserve">
+    <value>Знайти роль</value>
+  </data>
+  <data name="No roles match." xml:space="preserve">
+    <value>Немає відповідних ролей.</value>
+  </data>
+  <data name="No {0} teams followed, so match posts for this game stop." xml:space="preserve">
+    <value>Команди {0} не відстежуються, тож дописи про матчі цієї гри припиняться.</value>
+  </data>
+  <data name="No Twitch links in {0} announcements." xml:space="preserve">
+    <value>Без посилань Twitch в оголошеннях {0}.</value>
+  </data>
+  <data name="Optional short names for teams, checked before team search" xml:space="preserve">
+    <value>Необов’язкові короткі назви команд, перевіряються перед пошуком</value>
+  </data>
+  <data name="Team aliases source" xml:space="preserve">
+    <value>Джерело скорочень команд</value>
+  </data>
+  <data name="{0} team aliases" xml:space="preserve">
+    <value>Скорочення команд {0}</value>
+  </data>
+  <data name="One alias=team number per line, for example NAVI=3216. Usually not needed: team names are found automatically." xml:space="preserve">
+    <value>Одне скорочення=номер команди на рядок, наприклад NAVI=3216. Зазвичай не потрібно: назви команд знаходяться автоматично.</value>
+  </data>
+  <data name="Edit as text" xml:space="preserve">
+    <value>Редагувати як текст</value>
+  </data>
+  <data name="Show as list" xml:space="preserve">
+    <value>Показати списком</value>
+  </data>
+  <data name="No matches. Press Enter to add it as typed; it's checked when you save." xml:space="preserve">
+    <value>Нічого не знайдено. Натисніть Enter, щоб додати як є; перевірка буде під час збереження.</value>
+  </data>
+  <data name="Search isn't available right now. Press Enter to add it as typed." xml:space="preserve">
+    <value>Пошук зараз недоступний. Натисніть Enter, щоб додати як є.</value>
+  </data>
+  <data name="Searching…" xml:space="preserve">
+    <value>Пошук…</value>
+  </data>
+  <data name="That isn't a Twitch handle or twitch.tv link." xml:space="preserve">
+    <value>Це не нік Twitch і не посилання twitch.tv.</value>
+  </data>
+  <data name="Already in the list." xml:space="preserve">
+    <value>Уже є в списку.</value>
+  </data>
+  <data name="The list is full." xml:space="preserve">
+    <value>Список заповнено.</value>
+  </data>
+  <data name="Checked when you save" xml:space="preserve">
+    <value>Перевіриться під час збереження</value>
+  </data>
+  <data name="Removed {0}" xml:space="preserve">
+    <value>Видалено: {0}</value>
+  </data>
+  <data name="{0} of {1}" xml:space="preserve">
+    <value>{0} з {1}</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>Додати</value>
+  </data>
+  <data name="New announcements use these settings right away." xml:space="preserve">
+    <value>Нові оголошення одразу використовують ці налаштування.</value>
+  </data>
+  <data name="Enter an IANA time zone such as Europe/Kyiv or UTC." xml:space="preserve">
+    <value>Введіть часовий пояс IANA, наприклад Europe/Kyiv або UTC.</value>
+  </data>
+  <data name="HappyMix can't post there. Choose a text channel where it can view, send messages and embed links." xml:space="preserve">
+    <value>HappyMix не може туди писати. Виберіть текстовий канал, де він може переглядати, писати й вбудовувати посилання.</value>
+  </data>
+  <data name="Choose roles from this server other than @everyone." xml:space="preserve">
+    <value>Виберіть ролі цього сервера, крім @everyone.</value>
+  </data>
+  <data name="Choose a role from this server other than @everyone." xml:space="preserve">
+    <value>Виберіть роль цього сервера, крім @everyone.</value>
+  </data>
+  <data name="Server settings saved" xml:space="preserve">
+    <value>Налаштування сервера збережено</value>
+  </data>
+  <data name="Bot default channel" xml:space="preserve">
+    <value>Типовий канал бота</value>
+  </data>
+  <data name="a channel HappyMix can't post in" xml:space="preserve">
+    <value>канал, у який HappyMix не може писати</value>
+  </data>
+  <data name="No teams" xml:space="preserve">
+    <value>Без команд</value>
+  </data>
+  <data name="No channels" xml:space="preserve">
+    <value>Без каналів</value>
+  </data>
+  <data name="Built-in team list" xml:space="preserve">
+    <value>Вбудований список команд</value>
+  </data>
+  <data name="{0} teams" xml:space="preserve">
+    <value>Команд: {0}</value>
+  </data>
+  <data name="+{0} more" xml:space="preserve">
+    <value>і ще {0}</value>
+  </data>
+  <data name="&quot;{0}&quot; isn't a Twitch channel. Use a handle like shroud or a twitch.tv link." xml:space="preserve">
+    <value>«{0}» — не канал Twitch. Вкажіть нік, наприклад shroud, або посилання twitch.tv.</value>
+  </data>
+  <data name="Add one to five Twitch channels, or choose None." xml:space="preserve">
+    <value>Додайте від одного до п’яти каналів Twitch або виберіть «Немає».</value>
+  </data>
+  <data name="Check &quot;{0}&quot;. Use one unique alias=123 entry per line." xml:space="preserve">
+    <value>Перевірте «{0}». Один унікальний запис скорочення=123 на рядок.</value>
+  </data>
+  <data name="Add 1 to 20 teams, or choose None." xml:space="preserve">
+    <value>Додайте від 1 до 20 команд або виберіть «Немає».</value>
+  </data>
+  <data name="Inherited" xml:space="preserve">
+    <value>Успадковано</value>
+  </data>
+  <data name="Team search isn't available right now. Add the team's number like &quot;Team name #123&quot;, or try again later." xml:space="preserve">
+    <value>Пошук команд зараз недоступний. Додайте номер команди, наприклад «Назва #123», або спробуйте пізніше.</value>
+  </data>
+  <data name="No {0} team called &quot;{1}&quot; was found. Check the spelling, or add the team's number like &quot;{1} #123&quot;." xml:space="preserve">
+    <value>Команду {0} з назвою «{1}» не знайдено. Перевірте написання або додайте номер команди, наприклад «{1} #123».</value>
+  </data>
+  <data name="Several {0} teams match &quot;{1}&quot;: {2}. Pick one from the search, or add its number like &quot;{1} #123&quot;." xml:space="preserve">
+    <value>Назві «{1}» відповідають кілька команд {0}: {2}. Виберіть потрібну в пошуку або додайте її номер, наприклад «{1} #123».</value>
+  </data>
+  <data name="Find a member" xml:space="preserve">
+    <value>Знайти учасника</value>
+  </data>
+  <data name="No members match." xml:space="preserve">
+    <value>Немає відповідних учасників.</value>
+  </data>
 </root>

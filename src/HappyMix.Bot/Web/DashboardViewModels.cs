@@ -69,9 +69,11 @@ public sealed record SettingsPage(
     string ServerChannel,
     GameDefaults CounterStrike,
     GameDefaults Dota,
-    BannerModel? Banner);
+    BannerModel? Banner,
+    HappyMix.Application.Abstractions.Esports.EsportsTeam[] KnownTeams);
 
-public sealed record GameDefaults(string Teams, string Twitch, string Catalog);
+/// <summary>What a game inherits: summaries for display, and the lines a "Custom" list starts from.</summary>
+public sealed record GameDefaults(string Teams, string Twitch, string Catalog, string[] TeamLines, string[] TwitchLines);
 
 public static class AvailabilityFormat
 {
@@ -115,6 +117,9 @@ public static class DashboardIcons
     private static readonly Dictionary<string, string> Paths = new(StringComparer.Ordinal)
     {
         ["chevron"] = "<path d=\"m6 9 6 6 6-6\"/>",
+        ["search"] = "<circle cx=\"11\" cy=\"11\" r=\"6.5\"/><path d=\"m20 20-4.2-4.2\"/>",
+        ["twitch"] = "<path d=\"M5 3.5 3.5 7v12.5h4.5V22l2.5-2.5h3.5L20.5 13V3.5zM11 8v5M15.5 8v5\"/>",
+        ["minus"] = "<path d=\"M5 12h14\"/>",
         ["back"] = "<path d=\"M19 12H5M11 6l-6 6 6 6\"/>",
         ["arrow"] = "<path d=\"M5 12h14M13 6l6 6-6 6\"/>",
         ["globe"] = "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18\"/>",
@@ -183,12 +188,18 @@ public static class FormErrors
                 $"{DashboardIcons.Render("alert")}{HtmlEncoder.Default.Encode(message)}</p>")
             : HtmlString.Empty;
 
-    public static IHtmlContent SourceBadge(string mode) => new HtmlString(mode switch
+    public static IHtmlContent SourceBadge(string mode, Microsoft.Extensions.Localization.IStringLocalizer text)
     {
-        GameSettingsForm.Custom => "<span class=\"hm-badge hm-badge--custom\" data-source-badge>Custom</span>",
-        GameSettingsForm.None => "<span class=\"hm-badge\" data-source-badge>Off</span>",
-        _ => "<span class=\"hm-badge hm-badge--inherit\" data-source-badge>Inherited</span>"
-    });
+        string[] labels = [text["Inherited"], text["Custom"], text["Off"]];
+        string names = HtmlEncoder.Default.Encode(string.Join("|", labels));
+        var (label, tone) = mode switch
+        {
+            GameSettingsForm.Custom => (labels[1], " hm-badge--custom"),
+            GameSettingsForm.None => (labels[2], ""),
+            _ => (labels[0], " hm-badge--inherit")
+        };
+        return new HtmlString($"<span class=\"hm-badge{tone}\" data-source-badge data-labels=\"{names}\">{HtmlEncoder.Default.Encode(label)}</span>");
+    }
 }
 
 /// <summary>The weekly day editor: the day's ranges in one time zone, edited together and saved at once.</summary>
@@ -215,3 +226,8 @@ public static class DashboardTheme
 
 /// <summary>The command guide, plus the last server the member opened so the page can lead back to it.</summary>
 public sealed record InfoPage(HappyMix.Bot.Interactions.CommandGuide[] Commands, ulong? GuildId, string? GuildName);
+
+/// <summary>A one-per-line list field that the dashboard shows as rows with remove buttons and an add box.</summary>
+public sealed record ListEditorModel(string Kind, string Id, string Name, string? Value, int Max, int MaxLength,
+    string Label, string EmptyText, string AddPlaceholder, string TextPlaceholder, string Help, string[] DefaultLines,
+    string? Invalid, string? DescribedBy, string? SearchUrl = null, string? KnownJson = null);
