@@ -30,6 +30,11 @@ public interface IAvailabilityStore
     Task<IReadOnlyList<WeeklyAvailability>> ListWeeklyAsync(ulong guildId, ulong userId);
     /// <summary>Adds a weekly range or updates the range with the same day, start and time zone.</summary>
     Task SaveWeeklyAsync(ulong guildId, ulong userId, WeeklyAvailability window);
+    /// <summary>
+    /// Replaces the ranges on one day in one time zone. Rejects overlaps with the member's other days in that zone,
+    /// including overnight ranges spilling into the next or previous day.
+    /// </summary>
+    Task ReplaceWeeklyDayAsync(ulong guildId, ulong userId, DayOfWeek day, string timeZone, IReadOnlyList<WeeklyAvailability> ranges);
     /// <summary>Removes all ranges on a day, or just the range identified by start and time zone.</summary>
     Task<bool> RemoveWeeklyAsync(ulong guildId, ulong userId, DayOfWeek day, TimeOnly? start = null, string? timeZone = null);
 

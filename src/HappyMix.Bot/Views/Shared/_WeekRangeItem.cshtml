@@ -1,0 +1,34 @@
+@model WeekRangeItemModel
+@{
+    string id = Model.Id;
+}
+<li class="hm-wrange" data-range-item data-blank="@(Model.Blank ? "true" : "false")">
+    <button class="hm-wrange__summary" type="button" data-select-range hidden aria-describedby="@id-preview"></button>
+    <div class="hm-wrange__fields" data-range-fields>
+        <div class="hm-field">
+            <label class="hm-label" for="@id-start">@T["From"]</label>
+            <input class="hm-time hm-wrange__time" id="@id-start" name="rangeStart" type="time" step="300" value="@Model.Start" data-range-start>
+        </div>
+        <div class="hm-field">
+            <label class="hm-label" for="@id-end">@T["Until"]</label>
+            <input class="hm-time hm-wrange__time" id="@id-end" name="rangeEnd" type="time" step="300" value="@Model.End" data-range-end>
+        </div>
+        <div class="hm-field">
+            <label class="hm-label" for="@id-kind">@T["Certainty"]</label>
+            <select class="hm-select" id="@id-kind" name="rangeKind" data-range-kind>
+                <option value="definite" selected="@(!Model.Tentative)">@T["Definite"]</option>
+                <option value="tentative" selected="@Model.Tentative">@T["Tentative"]</option>
+            </select>
+        </div>
+        <div class="hm-wrange__actions">
+            <button class="hm-btn" type="button" data-all-day hidden>@T["All day"]</button>
+            <button class="hm-btn hm-btn--danger" type="button" data-remove-range hidden>@DashboardIcons.Render("trash")<span class="hm-btn__label">@T["Remove range"]</span></button>
+        </div>
+    </div>
+    <p class="hm-help hm-wrange__preview" id="@id-preview" data-range-preview-line aria-live="polite">
+        @if (Model.Blank)
+        {
+            @T["Add a range: pick From and Until. 00:00 to 00:00 means all day. Clear both to remove a range."]
+        }
+    </p>
+</li>

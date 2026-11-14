@@ -126,3 +126,261 @@ for (const button of document.querySelectorAll("[data-copy]")) {
     });
 }
 document.querySelector("[data-language-select]")?.addEventListener("change", event => event.currentTarget.form.requestSubmit());
+
+// Weekly day editor: a 30-hour track (the day plus the early hours of the next) drawn over the server-rendered
+// range list. The list's inputs stay the source of truth, so saving and the no-JavaScript form behave the same.
+for (const editor of document.querySelectorAll("[data-week-editor]")) {
+    const TRACK = 30, STEP = 0.25, MIN = 0.25;
+    const list = editor.querySelector("[data-range-list]");
+    const track = editor.querySelector("[data-track]");
+    const empty = editor.querySelector("[data-track-empty]");
+    const template = editor.querySelector("[data-range-template]");
+    const addButton = editor.querySelector("[data-add-range]");
+    const labels = editor.dataset;
+    const blocks = new Map();
+    let selected = null;
+    let serial = 0;
+
+    const toHours = value => value ? Number(value.slice(0, 2)) + Number(value.slice(3, 5)) / 60 : null;
+    const toTime = hours => {
+        let minutes = Math.round(hours * 60) % 1440;
+        if (minutes < 0) minutes += 1440;
+        return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+    };
+    const snap = hours => Math.round(hours / STEP) * STEP;
+    const clamp = (value, low, high) => Math.min(Math.max(value, low), high);
+    const items = () => [...list.querySelectorAll("[data-range-item]")];
+    const field = (item, name) => item.querySelector(`[data-range-${name}]`);
+    const tentative = item => field(item, "kind").value === "tentative";
+
+    const read = item => {
+        const start = toHours(field(item, "start").value), end = toHours(field(item, "end").value);
+        if (start === null || end === null) return null;
+        if (start === 0 && end === 0) return { start: 0, end: 24, allDay: true };
+        return { start, end: end <= start ? end + 24 : end, allDay: false };
+    };
+    const write = (item, start, end) => {
+        field(item, "start").value = toTime(start);
+        field(item, "end").value = toTime(end);
+    };
+    const duration = range => {
+        const minutes = Math.round((range.end - range.start) * 60);
+        return minutes % 60 ? `${Math.floor(minutes / 60)}h ${minutes % 60}m` : `${minutes / 60}h`;
+    };
+    const describe = (item, range) => {
+        const kind = tentative(item) ? labels.labelTentative : labels.labelDefinite;
+        if (range.allDay) return `${labels.labelAllDay} · ${kind}`;
+        const next = range.end >= 24 ? `${labels.nextDay} ` : "";
+        return `${toTime(range.start)} → ${next}${toTime(range.end)} · ${duration(range)} · ${kind}`;
+    };
+
+    // Neighbours limit dragging so ranges never overlap on the track.
+    const bounds = item => {
+        const range = read(item);
+        let low = 0, high = TRACK;
+        for (const other of items()) {
+            if (other === item) continue;
+            const span = read(other);
+            if (!span) continue;
+            if (span.start < range.start) low = Math.max(low, span.end);
+            else high = Math.min(high, span.start);
+        }
+        return { low, high };
+    };
+
+    const place = (item, range) => {
+        const block = blocks.get(item);
+        block.style.left = `${range.start / TRACK * 100}%`;
+        block.style.width = `${(range.end - range.start) / TRACK * 100}%`;
+        block.classList.toggle("is-tentative", tentative(item));
+        block.classList.toggle("is-selected", item === selected);
+        block.setAttribute("aria-pressed", String(item === selected));
+        const text = describe(item, range);
+        block.setAttribute("aria-label", text);
+        block.querySelector(".hm-weditor__label").textContent = range.allDay ? labels.labelAllDay : `${toTime(range.start)}–${toTime(range.end)}`;
+        for (const [handle, value, label] of [[block.handles[0], range.start, labels.labelStart], [block.handles[1], range.end, labels.labelEnd]]) {
+            handle.setAttribute("aria-valuenow", String(value));
+            handle.setAttribute("aria-valuetext", `${label} ${toTime(value)}${value > 24 ? ` (${labels.nextDay})` : ""}`);
+        }
+        const preview = field(item, "preview-line");
+        if (preview) preview.textContent = `${labels.day} · ${text}`;
+        const summary = item.querySelector("[data-select-range]");
+        summary.textContent = text;
+    };
+
+    const drag = (item, mode, event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        select(item, false);
+        const start = read(item);
+        const { low, high } = bounds(item);
+        const rect = track.getBoundingClientRect();
+        const origin = (event.clientX - rect.left) / rect.width * TRACK;
+        const target = event.currentTarget;
+        try { target.setPointerCapture(event.pointerId); } catch { /* synthetic or already released pointer */ }
+        const move = moveEvent => {
+            const at = (moveEvent.clientX - rect.left) / rect.width * TRACK;
+            let { start: from, end: until } = start;
+            if (mode === "start") from = clamp(snap(at), Math.max(low, until - 24 + (until > 24 ? MIN : 0)), Math.min(until - MIN, 24 - MIN));
+            else if (mode === "end") until = clamp(snap(at), from + MIN, Math.min(high, from + 24 - (from === 0 ? 0 : MIN), TRACK));
+            else {
+                const length = until - from;
+                from = clamp(snap(start.start + at - origin), low, Math.min(24 - MIN, high - length, TRACK - length));
+                until = from + length;
+            }
+            write(item, from, until);
+            place(item, read(item));
+        };
+        const stop = () => {
+            target.removeEventListener("pointermove", move);
+            target.removeEventListener("pointerup", stop);
+            target.removeEventListener("pointercancel", stop);
+            render();
+        };
+        target.addEventListener("pointermove", move);
+        target.addEventListener("pointerup", stop);
+        target.addEventListener("pointercancel", stop);
+    };
+
+    const nudge = (item, which, event) => {
+        const steps = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[event.key];
+        if (!steps && event.key !== "Home" && event.key !== "End") return;
+        event.preventDefault();
+        const range = read(item);
+        const { low, high } = bounds(item);
+        const delta = (steps ?? 0) * (event.shiftKey ? 1 : STEP);
+        if (which === "start") {
+            const min = Math.max(low, range.end - 24), max = Math.min(range.end - MIN, 24 - MIN);
+            range.start = event.key === "Home" ? min : event.key === "End" ? max : clamp(range.start + delta, min, max);
+        } else {
+            const min = range.start + MIN, max = Math.min(high, range.start + 24 - (range.start === 0 ? 0 : MIN), TRACK);
+            range.end = event.key === "Home" ? min : event.key === "End" ? max : clamp(range.end + delta, min, max);
+        }
+        write(item, range.start, range.end);
+        place(item, read(item));
+    };
+
+    const blockFor = item => {
+        if (blocks.has(item)) return blocks.get(item);
+        const block = document.createElement("div");
+        block.className = "hm-weditor__block";
+        block.tabIndex = 0;
+        block.setAttribute("role", "button");
+        const label = document.createElement("span");
+        label.className = "hm-weditor__label";
+        block.append(label);
+        block.handles = ["start", "end"].map(which => {
+            const handle = document.createElement("span");
+            handle.className = `hm-weditor__handle hm-weditor__handle--${which}`;
+            handle.tabIndex = 0;
+            handle.setAttribute("role", "slider");
+            handle.setAttribute("aria-valuemin", "0");
+            handle.setAttribute("aria-valuemax", String(TRACK));
+            handle.setAttribute("aria-label", which === "start" ? labels.labelStart : labels.labelEnd);
+            handle.addEventListener("pointerdown", event => drag(item, which, event));
+            handle.addEventListener("keydown", event => nudge(item, which, event));
+            handle.addEventListener("focus", () => { if (selected !== item) select(item, false); });
+            block.append(handle);
+            return handle;
+        });
+        block.addEventListener("pointerdown", event => {
+            if (event.target !== block && event.target !== label) return;
+            if (selected === item) drag(item, "move", event);
+            else select(item);
+        });
+        block.addEventListener("keydown", event => {
+            if (event.target !== block) return;
+            if (event.key === "Enter" || event.key === " ") { event.preventDefault(); select(item); }
+        });
+        track.append(block);
+        blocks.set(item, block);
+        return block;
+    };
+
+    function render() {
+        const current = items();
+        for (const [item, block] of blocks)
+            if (!current.includes(item)) { block.remove(); blocks.delete(item); }
+        let shown = 0;
+        for (const item of current) {
+            item.classList.toggle("is-selected", item === selected);
+            const summary = item.querySelector("[data-select-range]");
+            summary.hidden = item === selected;
+            const range = read(item);
+            if (!range) {
+                blocks.get(item)?.remove();
+                blocks.delete(item);
+                summary.textContent = "–";
+                continue;
+            }
+            blockFor(item);
+            place(item, range);
+            shown++;
+        }
+        empty.hidden = shown > 0;
+    }
+
+    function select(item, focusFields = true) {
+        selected = item;
+        render();
+        if (focusFields && item) field(item, "start").focus({ preventScroll: true });
+        blocks.get(item)?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+
+    const prepare = item => {
+        const suffix = `x${serial++}`;
+        for (const element of item.querySelectorAll("[id]")) {
+            const old = element.id;
+            element.id = `${old}-${suffix}`;
+            item.querySelector(`[for="${old}"]`)?.setAttribute("for", element.id);
+            for (const described of item.querySelectorAll(`[aria-describedby="${old}"]`)) described.setAttribute("aria-describedby", element.id);
+        }
+        for (const button of item.querySelectorAll("[data-all-day], [data-remove-range], [data-select-range]")) button.hidden = false;
+        item.querySelector("[data-select-range]").addEventListener("click", () => select(item));
+        item.querySelector("[data-remove-range]").addEventListener("click", () => {
+            const position = items().indexOf(item);
+            item.remove();
+            const rest = items();
+            selected = rest[Math.min(position, rest.length - 1)] ?? null;
+            render();
+            (selected ? blocks.get(selected) : addButton)?.focus();
+        });
+        item.querySelector("[data-all-day]").addEventListener("click", () => {
+            write(item, 0, 24);
+            render();
+        });
+        return item;
+    };
+
+    // Start a new range at 18:00 when free, otherwise in the first free gap of an hour or more.
+    const freeSlot = () => {
+        const taken = items().map(read).filter(Boolean).sort((a, b) => a.start - b.start);
+        const fits = (from, until) => taken.every(range => until <= range.start || from >= range.end);
+        for (const from of [18, 19, 20, 21, 12, 9, 6, 0, 22, 23])
+            for (const length of [3, 2, 1])
+                if (fits(from, from + length)) return [from, from + length];
+        return null;
+    };
+
+    addButton.addEventListener("click", () => {
+        const slot = freeSlot();
+        if (!slot) return;
+        const item = prepare(template.content.firstElementChild.cloneNode(true));
+        list.append(item);
+        write(item, slot[0], slot[1]);
+        select(item);
+    });
+
+    list.addEventListener("input", render);
+    list.addEventListener("change", render);
+
+    // Enhance: drop the empty fallback row, show the track and tools, and collapse unselected ranges.
+    for (const item of items()) {
+        if (item.dataset.blank === "true" && !read(item)) item.remove();
+        else prepare(item);
+    }
+    editor.classList.add("is-enhanced");
+    editor.querySelector("[data-track-board]").hidden = false;
+    addButton.hidden = false;
+    render();
+}

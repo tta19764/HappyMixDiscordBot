@@ -15,7 +15,7 @@ public sealed record SetWeeklyAvailabilityCommand(ulong GuildId, ulong UserId, D
 public sealed record GetWeeklyAvailabilityQuery(ulong GuildId, ulong UserId) : IQuery<IReadOnlyList<WeeklyAvailability>>;
 public sealed record ClearWeeklyAvailabilityCommand(ulong GuildId, ulong UserId, DayOfWeek Day, TimeOnly? Start = null, string? TimeZone = null) : ICommand;
 
-internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGuildSettingsStore settings, IClock clock,
+internal sealed partial class AvailabilityScheduleHandlers(IAvailabilityStore store, IGuildSettingsStore settings, IClock clock,
     IAccountLinkStore accountLinks) :
     ICommandHandler<SetTodayAvailabilityCommand, AvailabilityWindow>,
     ICommandHandler<SetWeeklyAvailabilityCommand, WeeklyAvailability>,

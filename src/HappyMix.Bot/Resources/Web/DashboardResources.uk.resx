@@ -1052,4 +1052,76 @@
   <data name="{0} linked members · {1} accounts" xml:space="preserve"><value>{0} пов’язаних учасників · {1} акаунтів</value></data>
   <data name="No linked accounts yet" xml:space="preserve"><value>Пов’язаних акаунтів ще немає</value></data>
   <data name="Link accounts above, or let members link their own accounts." xml:space="preserve"><value>Пов’яжіть акаунти вище або дозвольте учасникам пов’язати їх самостійно.</value></data>
+  <data name="{0} cleared" xml:space="preserve">
+    <value>{0}: очищено</value>
+  </data>
+  <data name="{0} saved" xml:space="preserve">
+    <value>{0}: збережено</value>
+  </data>
+  <data name="{0} ranges" xml:space="preserve">
+    <value>Проміжків: {0}</value>
+  </data>
+  <data name="Repeats every week. A day can have several ranges, each definite or tentative." xml:space="preserve">
+    <value>Повторюється щотижня. День може мати кілька проміжків, кожен — точний або ймовірний.</value>
+  </data>
+  <data name="{0} of 7 days" xml:space="preserve">
+    <value>{0} із 7 днів</value>
+  </data>
+  <data name="Editing" xml:space="preserve">
+    <value>Редагування</value>
+  </data>
+  <data name="Edit {0}" xml:space="preserve">
+    <value>Редагувати: {0}</value>
+  </data>
+  <data name="Remove every weekly range on {0}?" xml:space="preserve">
+    <value>Видалити всі щотижневі проміжки на {0}?</value>
+  </data>
+  <data name="Clear {0}" xml:space="preserve">
+    <value>Очистити: {0}</value>
+  </data>
+  <data name="Start" xml:space="preserve">
+    <value>Початок</value>
+  </data>
+  <data name="End" xml:space="preserve">
+    <value>Кінець</value>
+  </data>
+  <data name="Ranges on {0}" xml:space="preserve">
+    <value>Проміжки: {0}</value>
+  </data>
+  <data name="No ranges yet." xml:space="preserve">
+    <value>Проміжків ще немає.</value>
+  </data>
+  <data name="Click a range to select it. Drag its ends or the whole range, or type exact times below." xml:space="preserve">
+    <value>Клацніть проміжок, щоб вибрати його. Тягніть його краї чи весь проміжок або введіть точний час нижче.</value>
+  </data>
+  <data name="Add time range" xml:space="preserve">
+    <value>Додати проміжок часу</value>
+  </data>
+  <data name="Time zone for this day" xml:space="preserve">
+    <value>Часовий пояс для цього дня</value>
+  </data>
+  <data name="Ranges saved in another time zone stay as they are: {0}" xml:space="preserve">
+    <value>Проміжки, збережені в іншому часовому поясі, залишаться без змін: {0}</value>
+  </data>
+  <data name="Save {0}" xml:space="preserve">
+    <value>Зберегти: {0}</value>
+  </data>
+  <data name="Add a range: pick From and Until. 00:00 to 00:00 means all day. Clear both to remove a range." xml:space="preserve">
+    <value>Додайте проміжок: виберіть «З» і «До». 00:00–00:00 означає весь день. Очистьте обидва поля, щоб видалити проміжок.</value>
+  </data>
+  <data name="Choose a valid day of the week." xml:space="preserve">
+    <value>Виберіть правильний день тижня.</value>
+  </data>
+  <data name="Use up to 8 ranges per day." xml:space="preserve">
+    <value>Можна до 8 проміжків на день.</value>
+  </data>
+  <data name="A full day can't be combined with other ranges on the same day." xml:space="preserve">
+    <value>Весь день не можна поєднувати з іншими проміжками того ж дня.</value>
+  </data>
+  <data name="These ranges overlap. Adjust them so each one starts after the previous one ends." xml:space="preserve">
+    <value>Ці проміжки перетинаються. Змініть їх так, щоб кожен починався після кінця попереднього.</value>
+  </data>
+  <data name="This overlaps a range on another day." xml:space="preserve">
+    <value>Це перетинається з проміжком іншого дня.</value>
+  </data>
 </root>

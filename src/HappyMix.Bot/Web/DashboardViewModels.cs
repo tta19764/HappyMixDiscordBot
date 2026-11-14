@@ -33,7 +33,11 @@ public sealed record WeekRow(DayOfWeek Day, IReadOnlyList<WeeklyAvailability> Wi
     public string NextShortName => AvailabilityFormat.ShortDay((DayOfWeek)(((int)Day + 1) % 7));
 }
 
-public sealed record AvailabilityForm(string? Start = null, string? End = null, string? Offset = null, bool AllDay = false, bool Tentative = false);
+public sealed record AvailabilityForm(string? Start = null, string? End = null, string? Offset = null, bool AllDay = false, bool Tentative = false)
+{
+    /// <summary>Ranges submitted from the weekly day editor, kept when saving fails.</summary>
+    public IReadOnlyList<HappyMix.Application.Guilds.WeeklyRangeInput>? Ranges { get; init; }
+}
 
 public sealed record AvailabilityPage(
     ulong GuildId,
@@ -182,4 +186,18 @@ public static class FormErrors
         GameSettingsForm.None => "<span class=\"hm-badge\" data-source-badge>Off</span>",
         _ => "<span class=\"hm-badge hm-badge--inherit\" data-source-badge>Inherited</span>"
     });
+}
+
+/// <summary>The weekly day editor: the day's ranges in one time zone, edited together and saved at once.</summary>
+public sealed record WeekDayEditorModel(WeekRow Row, IReadOnlyList<HappyMix.Application.Guilds.WeeklyRangeInput> Ranges,
+    IReadOnlyList<WeeklyAvailability> OtherZones, string Zone, string ServerZone, string ServerZoneOffset, string BaseUrl, string WeeklyUrl)
+{
+    /// <summary>Hours shown on the track: the whole day plus the first six hours of the next one, for overnight ranges.</summary>
+    public const int TrackHours = 30;
+    public bool CustomZone => Zone != ServerZone;
+}
+
+public sealed record WeekRangeItemModel(WeekRow Row, int Index, string? Start, string? End, bool Tentative, bool Blank = false)
+{
+    public string Id => $"{Row.Anchor}-range-{(Index < 0 ? "new" : Index.ToString(CultureInfo.InvariantCulture))}";
 }

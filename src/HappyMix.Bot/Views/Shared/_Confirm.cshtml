@@ -11,6 +11,10 @@
         <p>@Model.Question</p>
         <form method="post" action="@Model.Action" asp-antiforgery="false" class="hm-row">
             @Html.AntiForgeryToken()
+            @foreach (var (name, value) in Model.Fields ?? new Dictionary<string, string>())
+            {
+                <input type="hidden" name="@name" value="@value">
+            }
             <button class="hm-btn hm-btn--ghost" type="button" data-close-details hidden>@T["Cancel"]</button>
             <button class="hm-btn @(Model.Danger ? "hm-btn--danger" : "hm-btn--primary")">@Model.ConfirmLabel</button>
         </form>

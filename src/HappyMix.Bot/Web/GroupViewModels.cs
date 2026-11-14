@@ -137,6 +137,7 @@ public sealed class MemberNames(IReadOnlyDictionary<ulong, MemberProfile> member
 
 /// <summary>A destructive action behind a disclosure that names the group or member affected.</summary>
 public sealed record ConfirmModel(string Trigger, string Question, string Action, string ConfirmLabel,
-    string? Icon = "trash", bool Danger = true, bool Inline = false, string? TriggerLabel = null);
+    string? Icon = "trash", bool Danger = true, bool Inline = false, string? TriggerLabel = null,
+    IReadOnlyDictionary<string, string>? Fields = null);
 
 public sealed record AvatarModel(MemberProfile Profile, string Name, bool Small = false);

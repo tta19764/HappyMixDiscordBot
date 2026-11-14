@@ -85,7 +85,8 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
     [HttpPost("/availability/{guildId}")]
     public async Task<IActionResult> Save(ulong guildId, string action, string? start, string? end,
         DayOfWeek? day, string? offset, Guid? windowId, string? startHour, string? startMinute,
-        string? endHour, string? endMinute, bool allDay = false, bool tentative = false)
+        string? endHour, string? endMinute, bool allDay = false, bool tentative = false,
+        string[]? rangeStart = null, string[]? rangeEnd = null, string[]? rangeKind = null)
     {
         if (await GetDiscordMemberAsync(guildId) is not { } member)
             return NotMember();
@@ -98,6 +99,9 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
         end ??= TimeRangeModel.Join(endHour, endMinute);
         var form = new AvailabilityForm(start, end, offset, allDay, tentative);
         bool hasTimes = allDay || (start is not null && end is not null);
+
+        if (action == "weekly-day" && day is { } editedDay)
+            return await SaveWeeklyDayAsync(guildId, member, editedDay, offset, rangeStart ?? [], rangeEnd ?? [], rangeKind ?? []);
 
         switch (action)
         {
@@ -127,9 +131,9 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
 
                 return Saved("Availability saved", text[tentative ? "Tentative" : "Definite"], guildId, "weekly", weekday);
             }
-            case "remove-weekly" when day is { } rangeDay && TimeOnly.TryParse(start, CultureInfo.InvariantCulture, out var rangeStart) && offset is not null:
+            case "remove-weekly" when day is { } rangeDay && TimeOnly.TryParse(start, CultureInfo.InvariantCulture, out var removeStart) && offset is not null:
             {
-                var result = await sender.Send(new ClearWeeklyAvailabilityCommand(guildId, userId, rangeDay, rangeStart, offset), cancellationToken);
+                var result = await sender.Send(new ClearWeeklyAvailabilityCommand(guildId, userId, rangeDay, removeStart, offset), cancellationToken);
                 if (result.IsFailure)
                     return await RenderAvailabilityAsync(guildId, member, "weekly", null, null,
                         Error("Couldn't remove that window", result.Error.Description), new AvailabilityForm());
@@ -206,6 +210,38 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
             AvailabilityFormat.Offset(zone.GetUtcOffset(clock.UtcNow)),
             now.ToString("dddd d MMMM", CultureInfo.CurrentCulture), rows, week,
             GetPresets(now, weekly.FirstOrDefault(item => item.Day == now.DayOfWeek)), banner, form));
+    }
+
+    /// <summary>
+    /// Saves the day editor: every range on that day (in the editor's time zone) is replaced at once, so existing
+    /// ranges can be moved, resized, retyped or removed. Blank rows are ignored; 00:00–00:00 means all day.
+    /// </summary>
+    private async Task<IActionResult> SaveWeeklyDayAsync(ulong guildId, Discord.Rest.RestGuildUser member, DayOfWeek day,
+        string? offset, string[] starts, string[] ends, string[] kinds)
+    {
+        var ranges = new List<WeeklyRangeInput>();
+        for (int index = 0; index < Math.Max(starts.Length, ends.Length); index++)
+        {
+            string start = index < starts.Length ? starts[index]?.Trim() ?? "" : "";
+            string end = index < ends.Length ? ends[index]?.Trim() ?? "" : "";
+            if (start.Length == 0 && end.Length == 0)
+                continue;
+            bool tentative = index < kinds.Length && kinds[index] == "tentative";
+            bool fullDay = start == "00:00" && end == "00:00";
+            ranges.Add(new WeeklyRangeInput(start, end, fullDay, tentative));
+        }
+
+        var result = await sender.Send(new SetWeeklyDayCommand(guildId, member.Id, day, ranges, offset, options.Value.TimeZoneId),
+            HttpContext.RequestAborted);
+        if (result.IsFailure)
+            return await RenderAvailabilityAsync(guildId, member, "weekly", day, null,
+                Error(text["Couldn't save {0}", CultureInfo.CurrentUICulture.DateTimeFormat.GetDayName(day)], text[result.Error.Description]),
+                new AvailabilityForm(Offset: offset) { Ranges = ranges });
+
+        string name = CultureInfo.CurrentUICulture.DateTimeFormat.GetDayName(day);
+        return ranges.Count == 0
+            ? Saved(text["{0} cleared", name], null, guildId, "weekly", day, false)
+            : Saved(text["{0} saved", name], text["{0} ranges", ranges.Count], guildId, "weekly", day);
     }
 
     private static AvailabilityPreset[] GetPresets(DateTimeOffset now, WeeklyAvailability? todayWeekly)

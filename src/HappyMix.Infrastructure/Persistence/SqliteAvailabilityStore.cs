@@ -45,6 +45,44 @@ internal sealed class SqliteAvailabilityStore(IDbContextFactory<HappyMixDbContex
         await transaction.CommitAsync();
     }
 
+    public async Task ReplaceWeeklyDayAsync(ulong guildId, ulong userId, DayOfWeek day, string timeZone,
+        IReadOnlyList<WeeklyAvailability> ranges)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        string guild = guildId.ToString(CultureInfo.InvariantCulture);
+        string user = userId.ToString(CultureInfo.InvariantCulture);
+        int dayNumber = (int)day;
+        await using var transaction = await context.Database.BeginTransactionAsync();
+        var others = await WeeklyForMember(context, guildId, userId)
+            .Where(row => row.TimeZone == timeZone && row.Day != dayNumber).ToListAsync();
+        long week = TimeSpan.TicksPerDay * 7;
+        static (long From, long Until) Span(int day, long start, long end)
+        {
+            long from = day * TimeSpan.TicksPerDay + start;
+            return (from, from + (end > start ? end - start : TimeSpan.TicksPerDay + end - start));
+        }
+        foreach (var range in ranges)
+        {
+            var (from, until) = Span(dayNumber, range.Start.Ticks, range.End.Ticks);
+            foreach (var other in others)
+            {
+                var (otherFrom, otherUntil) = Span(other.Day, other.StartTicks, other.EndTicks);
+                if (new[] { -week, 0L, week }.Any(shift => from < otherUntil + shift && otherFrom + shift < until))
+                    throw new AvailabilityException("This overlaps a range on another day.");
+            }
+        }
+
+        await WeeklyForMember(context, guildId, userId).Where(row => row.Day == dayNumber && row.TimeZone == timeZone).ExecuteDeleteAsync();
+        foreach (var range in ranges)
+            context.Add(new WeeklyAvailabilityRecord
+            {
+                GuildId = guild, UserId = user, Day = dayNumber, StartTicks = range.Start.Ticks,
+                EndTicks = range.End.Ticks, TimeZone = timeZone, Tentative = range.Tentative
+            });
+        await context.SaveChangesAsync();
+        await transaction.CommitAsync();
+    }
+
     public async Task<bool> RemoveWeeklyAsync(ulong guildId, ulong userId, DayOfWeek day, TimeOnly? start = null, string? timeZone = null)
     {
         await using var context = await factory.CreateDbContextAsync();

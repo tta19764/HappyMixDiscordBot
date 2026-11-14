@@ -1052,4 +1052,76 @@
   <data name="{0} linked members · {1} accounts" xml:space="preserve"><value>{0} связанных участников · {1} аккаунтов</value></data>
   <data name="No linked accounts yet" xml:space="preserve"><value>Связанных аккаунтов пока нет</value></data>
   <data name="Link accounts above, or let members link their own accounts." xml:space="preserve"><value>Свяжите аккаунты выше или позвольте участникам связать их самостоятельно.</value></data>
+  <data name="{0} cleared" xml:space="preserve">
+    <value>{0}: очищено</value>
+  </data>
+  <data name="{0} saved" xml:space="preserve">
+    <value>{0}: сохранено</value>
+  </data>
+  <data name="{0} ranges" xml:space="preserve">
+    <value>Промежутков: {0}</value>
+  </data>
+  <data name="Repeats every week. A day can have several ranges, each definite or tentative." xml:space="preserve">
+    <value>Повторяется каждую неделю. В дне может быть несколько промежутков, каждый — точный или вероятный.</value>
+  </data>
+  <data name="{0} of 7 days" xml:space="preserve">
+    <value>{0} из 7 дней</value>
+  </data>
+  <data name="Editing" xml:space="preserve">
+    <value>Редактирование</value>
+  </data>
+  <data name="Edit {0}" xml:space="preserve">
+    <value>Редактировать: {0}</value>
+  </data>
+  <data name="Remove every weekly range on {0}?" xml:space="preserve">
+    <value>Удалить все еженедельные промежутки на {0}?</value>
+  </data>
+  <data name="Clear {0}" xml:space="preserve">
+    <value>Очистить: {0}</value>
+  </data>
+  <data name="Start" xml:space="preserve">
+    <value>Начало</value>
+  </data>
+  <data name="End" xml:space="preserve">
+    <value>Конец</value>
+  </data>
+  <data name="Ranges on {0}" xml:space="preserve">
+    <value>Промежутки: {0}</value>
+  </data>
+  <data name="No ranges yet." xml:space="preserve">
+    <value>Промежутков пока нет.</value>
+  </data>
+  <data name="Click a range to select it. Drag its ends or the whole range, or type exact times below." xml:space="preserve">
+    <value>Нажмите на промежуток, чтобы выбрать его. Тяните его края или весь промежуток либо введите точное время ниже.</value>
+  </data>
+  <data name="Add time range" xml:space="preserve">
+    <value>Добавить промежуток времени</value>
+  </data>
+  <data name="Time zone for this day" xml:space="preserve">
+    <value>Часовой пояс для этого дня</value>
+  </data>
+  <data name="Ranges saved in another time zone stay as they are: {0}" xml:space="preserve">
+    <value>Промежутки, сохранённые в другом часовом поясе, останутся без изменений: {0}</value>
+  </data>
+  <data name="Save {0}" xml:space="preserve">
+    <value>Сохранить: {0}</value>
+  </data>
+  <data name="Add a range: pick From and Until. 00:00 to 00:00 means all day. Clear both to remove a range." xml:space="preserve">
+    <value>Добавьте промежуток: выберите «С» и «До». 00:00–00:00 означает весь день. Очистите оба поля, чтобы удалить промежуток.</value>
+  </data>
+  <data name="Choose a valid day of the week." xml:space="preserve">
+    <value>Выберите правильный день недели.</value>
+  </data>
+  <data name="Use up to 8 ranges per day." xml:space="preserve">
+    <value>Можно до 8 промежутков в день.</value>
+  </data>
+  <data name="A full day can't be combined with other ranges on the same day." xml:space="preserve">
+    <value>Весь день нельзя совмещать с другими промежутками того же дня.</value>
+  </data>
+  <data name="These ranges overlap. Adjust them so each one starts after the previous one ends." xml:space="preserve">
+    <value>Эти промежутки пересекаются. Измените их так, чтобы каждый начинался после окончания предыдущего.</value>
+  </data>
+  <data name="This overlaps a range on another day." xml:space="preserve">
+    <value>Это пересекается с промежутком другого дня.</value>
+  </data>
 </root>

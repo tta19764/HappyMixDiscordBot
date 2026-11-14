@@ -95,6 +95,55 @@ public sealed class AvailabilityScheduleTests
     }
 
     [Fact]
+    public async Task WeeklyDayEditorReplacesTheWholeDaySoExistingRangesCanBeEdited()
+    {
+        using var database = await SqliteTestDatabase.CreateAsync();
+        using var services = CreateServices(database.Services);
+        var sender = services.GetRequiredService<ISender>();
+        var day = new SetWeeklyDayCommand(1, 2, DayOfWeek.Monday,
+            [new("19:00", "23:00"), new("12:00", "14:00", Tentative: true)], "UTC", "UTC");
+        Assert.True((await sender.Send(day)).IsSuccess);
+        Assert.True((await sender.Send(new SetWeeklyAvailabilityCommand(1, 2, DayOfWeek.Monday, "08", "09", "Europe/Kyiv", "UTC"))).IsSuccess);
+
+        // Moving the start of an existing range used to be impossible because ranges are keyed by their start.
+        Assert.True((await sender.Send(day with { Ranges = [new("18:00", "01:00"), new("12:30", "14:00", Tentative: true)] })).IsSuccess);
+
+        using var reopened = CreateServices(await database.OpenAsync());
+        sender = reopened.GetRequiredService<ISender>();
+        var weekly = (await sender.Send(new GetWeeklyAvailabilityQuery(1, 2))).Value;
+        Assert.Equal(3, weekly.Count);
+        Assert.Contains(new WeeklyAvailability(DayOfWeek.Monday, new(12, 30), new(14, 0), "UTC", true), weekly);
+        Assert.Contains(new WeeklyAvailability(DayOfWeek.Monday, new(18, 0), new(1, 0), "UTC", false), weekly);
+        Assert.Contains(weekly, range => range.TimeZone == "Europe/Kyiv" && range.Start == new TimeOnly(8, 0));
+
+        Assert.True((await sender.Send(day with { Ranges = [] })).IsSuccess);
+        Assert.Equal("Europe/Kyiv", Assert.Single((await sender.Send(new GetWeeklyAvailabilityQuery(1, 2))).Value).TimeZone);
+    }
+
+    [Fact]
+    public async Task WeeklyDayEditorRejectsOverlapsAndKeepsTheSavedDay()
+    {
+        using var database = await SqliteTestDatabase.CreateAsync();
+        using var services = CreateServices(database.Services);
+        var sender = services.GetRequiredService<ISender>();
+        Assert.True((await sender.Send(new SetWeeklyAvailabilityCommand(1, 2, DayOfWeek.Sunday, "23", "02", "UTC", "UTC"))).IsSuccess);
+        var monday = new SetWeeklyDayCommand(1, 2, DayOfWeek.Monday, [new("10:00", "12:00")], "UTC", "UTC");
+        Assert.True((await sender.Send(monday)).IsSuccess);
+
+        Assert.True((await sender.Send(monday with { Ranges = [new("10:00", "12:00"), new("11:00", "13:00")] })).IsFailure);
+        Assert.True((await sender.Send(monday with { Ranges = [new("22:00", "01:00"), new("23:30", "23:45")] })).IsFailure);
+        Assert.True((await sender.Send(monday with { Ranges = [new("", "", FullDay: true), new("18:00", "19:00")] })).IsFailure);
+        Assert.True((await sender.Send(monday with { Ranges = [new("01:00", "03:00")] })).IsFailure); // Sunday night spills over
+        Assert.True((await sender.Send(monday with { Ranges = [new("21:00", "02:00")], Day = DayOfWeek.Saturday })).IsSuccess);
+        Assert.True((await sender.Send(monday with { Day = DayOfWeek.Sunday, Ranges = [new("01:00", "03:00")] })).IsFailure); // Saturday night
+        Assert.True((await sender.Send(monday with { Ranges = Enumerable.Range(0, 9).Select(hour => new WeeklyRangeInput($"{hour:00}:00", $"{hour:00}:30")).ToArray() })).IsFailure);
+
+        var weekly = (await sender.Send(new GetWeeklyAvailabilityQuery(1, 2))).Value;
+        Assert.Equal(3, weekly.Count);
+        Assert.Contains(new WeeklyAvailability(DayOfWeek.Monday, new(10, 0), new(12, 0), "UTC", false), weekly);
+    }
+
+    [Fact]
     public async Task DiscordDiscoversBothSetSubcommands()
     {
         using var database = await SqliteTestDatabase.CreateAsync();

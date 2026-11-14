@@ -252,6 +252,19 @@ public sealed class AccountLinkTests
     }
 
     [Fact]
+    public async Task TheWeeklyDayEditorOfAnAlternateSavesToThePrimary()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        await fixture.LinkAsync(Main, Twink);
+
+        var day = new SetWeeklyDayCommand(Guild, Twink, DayOfWeek.Friday, [new("18:00", "20:00"), new("21:00", "01:00", Tentative: true)], null, Kyiv);
+        Assert.True((await fixture.Sender.Send(day)).IsSuccess);
+
+        Assert.Equal(2, (await fixture.Availability.ListWeeklyAsync(Guild, Main)).Count);
+        Assert.Empty(await fixture.Availability.ListWeeklyAsync(Guild, Twink));
+    }
+
+    [Fact]
     public async Task ConflictingDataMustBeResolvedAndNothingIsSilentlyLost()
     {
         using var fixture = await Fixture.CreateAsync();

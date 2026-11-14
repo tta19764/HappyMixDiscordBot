@@ -1,0 +1,68 @@
+@model WeekDayEditorModel
+@{
+    var row = Model.Row;
+    string Hour(int hour) => (hour % 24).ToString("00");
+    var blank = new WeekRangeItemModel(row, Model.Ranges.Count, null, null, false, Blank: true);
+    var template = new WeekRangeItemModel(row, -1, null, null, false);
+}
+@* Server-rendered list of ranges works without JavaScript; dashboard.js adds the draggable track on top. *@
+<form class="hm-weditor" method="post" action="@Model.BaseUrl" asp-antiforgery="false" aria-label="@T["Edit {0}", row.Name]"
+      data-week-editor data-day="@row.ShortName" data-next-day="@row.NextShortName"
+      data-label-start="@T["Start"]" data-label-end="@T["End"]" data-label-definite="@T["Definite"]"
+      data-label-tentative="@T["Tentative"]" data-label-all-day="@T["All day"]">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="day" value="@row.Day">
+
+    <div class="hm-weditor__board" data-track-board hidden>
+        <div class="hm-weditor__axis" aria-hidden="true">
+            @for (int hour = 0; hour <= WeekDayEditorModel.TrackHours; hour += 3)
+            {
+                <span class="@(hour > 24 ? "hm-weditor__next" : "")" style="left: @AvailabilityFormat.Css(hour * 100.0 / WeekDayEditorModel.TrackHours)">@Hour(hour)</span>
+            }
+        </div>
+        <div class="hm-weditor__track" data-track role="group" aria-label="@T["Ranges on {0}", row.Name]">
+            <span class="hm-weditor__nextday" style="left: @AvailabilityFormat.Css(2400.0 / WeekDayEditorModel.TrackHours)" aria-hidden="true">@row.NextShortName</span>
+            <p class="hm-weditor__empty" data-track-empty>@T["No ranges yet."]</p>
+        </div>
+        <p class="hm-help hm-weditor__hint" data-track-hint>@T["Click a range to select it. Drag its ends or the whole range, or type exact times below."]</p>
+    </div>
+
+    <ol class="hm-weditor__list" data-range-list>
+        @{ var ranges = Model.Ranges; }
+        @for (int index = 0; index < ranges.Count; index++)
+        {
+            var range = ranges[index];
+            var item = new WeekRangeItemModel(row, index, range.FullDay ? "00:00" : range.Start, range.FullDay ? "00:00" : range.End, range.Tentative);
+            <partial name="_WeekRangeItem" model="item" />
+        }
+        @* One blank row so the form works without JavaScript; the script removes it while it is empty. *@
+        <partial name="_WeekRangeItem" model="blank" />
+    </ol>
+    <template data-range-template>
+        <partial name="_WeekRangeItem" model="template" />
+    </template>
+
+    <div class="hm-row hm-weditor__tools">
+        <button class="hm-btn" type="button" data-add-range hidden>@DashboardIcons.Render("plus")@T["Add time range"]</button>
+        <details class="hm-tz" open="@Model.CustomZone">
+            <summary>@DashboardIcons.Render("globe")<span class="hm-tz__zone">@Model.Zone</span><span class="hm-tz__change">@T["Change"]</span></summary>
+            <div class="hm-tz__panel">
+                <label class="hm-label" for="@(row.Anchor)-offset">@T["Time zone for this day"] <span class="hm-label__opt">@T["optional"]</span></label>
+                <input class="hm-input" id="@(row.Anchor)-offset" name="offset" list="time-zones" value="@(Model.CustomZone ? Model.Zone : null)"
+                       placeholder="@Model.ServerZone" maxlength="100" autocomplete="off" spellcheck="false">
+                <p class="hm-help">@T["Leave empty for the server default. A UTC offset like +02:00 also works."]</p>
+            </div>
+        </details>
+    </div>
+
+    @if (Model.OtherZones.Count > 0)
+    {
+        <p class="hm-help">@T["Ranges saved in another time zone stay as they are: {0}", string.Join(", ", Model.OtherZones.Select(window =>
+            $"{AvailabilityFormat.Time(window.Start)}–{AvailabilityFormat.Time(window.End)} {window.TimeZone}"))]</p>
+    }
+
+    <div class="hm-row" style="justify-content: flex-end">
+        <a class="hm-btn hm-btn--ghost" href="@Model.WeeklyUrl#@row.Anchor">@T["Cancel"]</a>
+        <button class="hm-btn hm-btn--primary" name="action" value="weekly-day">@DashboardIcons.Render("check")@T["Save {0}", row.Name]</button>
+    </div>
+</form>
