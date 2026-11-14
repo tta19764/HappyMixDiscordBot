@@ -6,6 +6,7 @@ using HappyMix.Bot.Configuration;
 using HappyMix.Infrastructure;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,11 @@ var web = builder.Configuration.GetSection("Dashboard");
 bool enabled = web.GetValue<bool>("Enabled");
 if (enabled)
 {
+    if (web["KeyDirectory"] is { Length: > 0 } keyDirectory)
+        builder.Services.AddDataProtection()
+            .SetApplicationName("HappyMix.Dashboard")
+            .PersistKeysToFileSystem(new DirectoryInfo(keyDirectory));
+
     builder.Services.AddControllersWithViews();
     builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
         .AddCookie(options =>

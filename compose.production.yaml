@@ -13,6 +13,7 @@ services:
       ASPNETCORE_URLS: http://+:8080
       DOTNET_ENVIRONMENT: Production
       Storage__DatabasePath: /app/data/happymix.db
+      Dashboard__KeyDirectory: /app/data/dashboard-keys
       Logging__LogLevel__HappyMix.Bot.Jobs.SynchronizeMatchesJob: Debug
     volumes:
       - happymix-data:/app/data
