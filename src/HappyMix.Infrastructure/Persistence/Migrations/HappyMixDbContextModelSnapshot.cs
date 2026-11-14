@@ -8,7 +8,7 @@ namespace HappyMix.Infrastructure.Persistence.Migrations;
 internal sealed class HappyMixDbContextModelSnapshot : ModelSnapshot
 {
     /// <inheritdoc />
-    protected override void BuildModel(ModelBuilder modelBuilder) => AddAvailabilityWindows.BuildModel(modelBuilder);
+    protected override void BuildModel(ModelBuilder modelBuilder) => AddWeeklyAvailability.BuildModel(modelBuilder);
 }
 
 /// <summary>Immutable initial model, shared only by this migration and its initial snapshot.</summary>

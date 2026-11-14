@@ -26,7 +26,7 @@ public sealed class SqliteAnnouncementHistoryTests
         await database.Services.InitializeDatabaseAsync();
         await using var context = await database.Services.GetRequiredService<IDbContextFactory<HappyMixDbContext>>().CreateDbContextAsync();
         Assert.Equal(["20261109000100_InitialAnnouncementHistory", "20261111000100_AddGuildSettings",
-                "20261111000200_AddGuildPreferences", "20261112000100_AddGuildGroups", "20261113000100_AddAvailabilityWindows"],
+                "20261111000200_AddGuildPreferences", "20261112000100_AddGuildGroups", "20261113000100_AddAvailabilityWindows", "20261114000100_AddWeeklyAvailability"],
             await context.Database.GetAppliedMigrationsAsync());
         Assert.False(context.Database.HasPendingModelChanges());
         Assert.True(state.WasSchedulePublished(Day));

@@ -19,7 +19,9 @@ public sealed class GeneralModule(ISender sender) : InteractionModuleBase<Socket
             Use `/group leave` to leave. Organizers can use `/group remove` to remove a member or revoke an invite, and `/group delete` to close the group.
 
             **Availability**
-            Use `/availability add` to save a window. Enter both dates and times with an offset, such as `2026-11-13 20:00 +02:00`.
+            Use `/availability set today start:17 end:00:30` for tonight, or `/availability set timetable` to set a recurring day.
+            Times use the server time zone unless you supply an offset like `+02:00`. An earlier end time means tomorrow.
+            Use `/availability timetable` to view weekly availability and `/availability clear-day` to remove a day.
             Use `/availability list` to find the window ID for `/availability edit` or `/availability remove`.
 
             **Esports settings · Manage Server or Administrator**

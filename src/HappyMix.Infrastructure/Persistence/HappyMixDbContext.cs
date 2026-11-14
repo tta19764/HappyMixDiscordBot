@@ -17,6 +17,10 @@ internal sealed class HappyMixDbContext(DbContextOptions<HappyMixDbContext> opti
         availability.HasKey(item => item.Id);
         availability.HasIndex(item => new { item.GuildId, item.UserId });
 
+        var weekly = modelBuilder.Entity<WeeklyAvailabilityRecord>();
+        weekly.ToTable("WeeklyAvailability");
+        weekly.HasKey(item => new { item.GuildId, item.UserId, item.Day });
+
         var groups = modelBuilder.Entity<GuildGroupRecord>();
         groups.ToTable("GuildGroups");
         groups.HasKey(item => new { item.GuildId, item.NameKey });

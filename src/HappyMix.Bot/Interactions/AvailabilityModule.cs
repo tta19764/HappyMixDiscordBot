@@ -9,9 +9,9 @@ using MediatR;
 namespace HappyMix.Bot.Interactions;
 
 /// <summary>Manages the calling member's one-off availability in this server.</summary>
-[Group("availability", "Manage your one-off gaming availability.")]
+[Group("availability", "Manage your gaming availability.")]
 [RequireContext(ContextType.Guild)]
-public sealed class AvailabilityModule(ISender sender) : InteractionModuleBase<SocketInteractionContext>
+public sealed partial class AvailabilityModule(ISender sender) : InteractionModuleBase<SocketInteractionContext>
 {
     [SlashCommand("add", "Add a window using date, time and UTC offset.")]
     public Task AddAsync(string start, string end) => SaveAsync(null, start, end);

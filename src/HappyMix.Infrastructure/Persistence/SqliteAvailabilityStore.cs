@@ -6,6 +6,45 @@ namespace HappyMix.Infrastructure.Persistence;
 
 internal sealed class SqliteAvailabilityStore(IDbContextFactory<HappyMixDbContext> factory) : IAvailabilityStore
 {
+    public async Task<IReadOnlyList<WeeklyAvailability>> ListWeeklyAsync(ulong guildId, ulong userId)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        return await WeeklyForMember(context, guildId, userId).OrderBy(row => (row.Day + 6) % 7)
+            .Select(row => new WeeklyAvailability((DayOfWeek)row.Day, new TimeOnly(row.StartTicks),
+                new TimeOnly(row.EndTicks), row.TimeZone)).ToListAsync();
+    }
+
+    public async Task SaveWeeklyAsync(ulong guildId, ulong userId, WeeklyAvailability window)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        string guild = guildId.ToString(CultureInfo.InvariantCulture);
+        string user = userId.ToString(CultureInfo.InvariantCulture);
+        int day = (int)window.Day;
+        long start = window.Start.Ticks;
+        long end = window.End.Ticks;
+        string zone = window.TimeZone;
+        await context.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO WeeklyAvailability (GuildId, UserId, Day, StartTicks, EndTicks, TimeZone)
+            VALUES ({guild}, {user}, {day}, {start}, {end}, {zone})
+            ON CONFLICT (GuildId, UserId, Day) DO UPDATE
+            SET StartTicks = excluded.StartTicks, EndTicks = excluded.EndTicks, TimeZone = excluded.TimeZone
+            """);
+    }
+
+    public async Task<bool> RemoveWeeklyAsync(ulong guildId, ulong userId, DayOfWeek day)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        return await WeeklyForMember(context, guildId, userId)
+            .Where(row => row.Day == (int)day).ExecuteDeleteAsync() > 0;
+    }
+
+    private static IQueryable<WeeklyAvailabilityRecord> WeeklyForMember(HappyMixDbContext context, ulong guildId, ulong userId)
+    {
+        string guild = guildId.ToString(CultureInfo.InvariantCulture);
+        string user = userId.ToString(CultureInfo.InvariantCulture);
+        return context.Set<WeeklyAvailabilityRecord>().Where(row => row.GuildId == guild && row.UserId == user);
+    }
+
     public async Task<IReadOnlyList<AvailabilityWindow>> ListAsync(ulong guildId, ulong userId)
     {
         await using var context = await factory.CreateDbContextAsync();
@@ -71,4 +110,14 @@ internal sealed class AvailabilityRecord
     public required string UserId { get; init; }
     public long StartUtc { get; set; }
     public long EndUtc { get; set; }
+}
+
+internal sealed class WeeklyAvailabilityRecord
+{
+    public required string GuildId { get; init; }
+    public required string UserId { get; init; }
+    public int Day { get; init; }
+    public long StartTicks { get; init; }
+    public long EndTicks { get; init; }
+    public required string TimeZone { get; init; }
 }
