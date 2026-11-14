@@ -7,22 +7,7 @@
     var roles = guild.Roles.Where(role => role.Id != guild.Id).OrderByDescending(role => role.Position)
         .Select(role => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem(role.Name, role.Id.ToString())).ToArray();
 }
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Server settings · HappyMix</title>
-    <style>
-        body { font: 1rem system-ui; color: #172334; background: #f4f6fa; max-width: 52rem; margin: 2rem auto; padding: 0 1rem; }
-        fieldset { background: white; margin: 1rem 0; padding: 1rem; border: 1px solid #ccd3df; border-radius: .7rem; }
-        legend { font-weight: 700; } .fields { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
-        .fields label { display: grid; gap: .3rem; align-content: start; }
-        input, textarea, select, button { font: inherit; padding: .5rem; border: 1px solid #797f8b; border-radius: .4rem; }
-        button { background: #243b77; color: white; cursor: pointer; } .validation-summary-errors { color: #9a172a; }
-        .checks { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; }
-    </style>
-</head>
-<body>
+@{ Layout = "_DashboardLayout"; ViewData["Title"] = "Server settings"; }
 <nav><a href="/">Servers</a> · <a href="/availability/@guild.Id">Availability</a></nav>
 <h1>Server settings</h1>
 <p>@guild.Name</p>
@@ -77,5 +62,3 @@
     </fieldset>
     <button>Save settings</button>
 </form>
-</body>
-</html>

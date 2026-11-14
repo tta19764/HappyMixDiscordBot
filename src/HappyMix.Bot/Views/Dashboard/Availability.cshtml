@@ -1,20 +1,5 @@
 @model HappyMix.Bot.Web.DashboardPage
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Availability · HappyMix</title>
-    <style>
-        body { font: 1rem system-ui; color: #172334; background: #f4f6fa; max-width: 45rem; margin: 2rem auto; padding: 0 1rem; }
-        section { background: white; padding: 1.2rem; margin-block: 1rem; border-radius: 1rem; }
-        h2 { margin-top: 0; } label { display: grid; gap: .3rem; }
-        .fields { display: flex; flex-wrap: wrap; gap: .8rem; align-items: end; }
-        input, select, button { font: inherit; padding: .5rem; border: 1px solid #797f8b; border-radius: .4rem; }
-        button { background: #243b77; color: white; cursor: pointer; }
-        .saved { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .5rem; padding-block: .5rem; border-bottom: 1px solid #e0e5ee; }
-    </style>
-</head>
-<body>
+@{ Layout = "_DashboardLayout"; ViewData["Title"] = "Availability"; }
     <nav><a href="/">Servers</a></nav>
     <h1>Availability</h1>
     <p>@Model.GuildName · Server time zone: @Model.TimeZone</p>
@@ -104,5 +89,3 @@
             time.textContent = new Date(time.dateTime).toLocaleString();
         }
     </script>
-</body>
-</html>

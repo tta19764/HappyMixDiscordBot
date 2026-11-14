@@ -1,0 +1,24 @@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@ViewData["Title"] · HappyMix</title>
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true">
+</head>
+<body>
+    <header class="site-header">
+        <div class="shell header-inner">
+            <a class="brand" href="/"><span class="brand-icon" aria-hidden="true">H</span> HappyMix</a>
+            <form action="/logout" method="post" asp-antiforgery="false">
+                @Html.AntiForgeryToken()
+                <button class="quiet">Sign out</button>
+            </form>
+        </div>
+    </header>
+    <main class="shell">
+        @RenderBody()
+    </main>
+</body>
+</html>

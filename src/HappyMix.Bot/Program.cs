@@ -60,6 +60,7 @@ await using var app = builder.Build();
 if (enabled)
 {
     app.UseForwardedHeaders();
+    app.UseStaticFiles();
     app.UseRouting();
     app.UseAuthentication();
     app.UseAuthorization();
