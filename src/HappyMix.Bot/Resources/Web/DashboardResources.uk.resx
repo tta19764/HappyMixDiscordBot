@@ -1047,4 +1047,9 @@
   <data name="Free together counts definite availability only." xml:space="preserve"><value>«Вільні разом» враховує лише позначені як «Точно» проміжки.</value></data>
   <data name="{0} definite, {1} tentative at {2}:00" xml:space="preserve"><value>{0} точно, {1} можливо о {2}:00</value></data>
   <data name="Clear existing ranges before saving a full day." xml:space="preserve"><value>Очистіть наявні проміжки, перш ніж зберегти цілий день.</value></data>
+  <data name="All linked accounts" xml:space="preserve"><value>Усі пов’язані акаунти</value></data>
+  <data name="Each card is one member: a primary account and its linked alternates." xml:space="preserve"><value>Кожна картка — один учасник: основний акаунт і пов’язані додаткові.</value></data>
+  <data name="{0} linked members · {1} accounts" xml:space="preserve"><value>{0} пов’язаних учасників · {1} акаунтів</value></data>
+  <data name="No linked accounts yet" xml:space="preserve"><value>Пов’язаних акаунтів ще немає</value></data>
+  <data name="Link accounts above, or let members link their own accounts." xml:space="preserve"><value>Пов’яжіть акаунти вище або дозвольте учасникам пов’язати їх самостійно.</value></data>
 </root>

@@ -193,12 +193,15 @@ public sealed partial class DashboardController
         return Redirect($"/links/{guildId}/admin");
     }
 
-    private async Task<ViewResult> RenderAdminLinksAsync(ulong guildId, ulong administrator, GroupViewer viewer,
+    private async Task<IActionResult> RenderAdminLinksAsync(ulong guildId, ulong administrator, GroupViewer viewer,
         ulong primary, ulong alternate, string? error)
     {
         var ct = HttpContext.RequestAborted;
         var (members, available) = await memberDirectory.GetMembersAsync(guildId, ct);
-        ViewData["Candidates"] = members.Values.Where(member => member.InServer && !member.IsBot)
+        var directory = await sender.Send(new GetServerAccountLinksQuery(guildId, administrator), ct);
+        if (directory.IsFailure)
+            return StatusCode(StatusCodes.Status403Forbidden);
+        var candidates = members.Values.Where(member => member.InServer && !member.IsBot)
             .OrderBy(member => member.DisplayName, StringComparer.CurrentCultureIgnoreCase).ToArray();
         ViewData["AdminMode"] = true;
         ViewData["Banner"] = TakeBanner();
@@ -212,7 +215,7 @@ public sealed partial class DashboardController
                 error ??= text[result.Error.Description];
         }
         var zone = await GetGuildZoneAsync(guildId, ct);
-        return View("AdminLinks", new ApproveLinkPage(guildId, GuildName(guildId), viewer, Guid.Empty, "",
-            preview, error, false, new MemberNames(members, available), zone.Id));
+        return View("AdminLinks", new AdminLinksPage(new ApproveLinkPage(guildId, GuildName(guildId), viewer, Guid.Empty, "",
+            preview, error, false, new MemberNames(members, available), zone.Id), candidates, directory.Value));
     }
 }

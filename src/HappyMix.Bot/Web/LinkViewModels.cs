@@ -18,6 +18,8 @@ public sealed record LinksPage(ulong GuildId, string GuildName, GroupViewer View
 public sealed record ApproveLinkPage(ulong GuildId, string GuildName, GroupViewer Viewer, Guid RequestId, string Token,
     LinkPreview? Preview, string? Error, bool SameAccount, MemberNames Names, string TimeZone);
 
+public sealed record AdminLinksPage(ApproveLinkPage Link, MemberProfile[] Candidates, LinkedAccountFamily[] Families);
+
 public sealed record UnlinkPage(ulong GuildId, string GuildName, GroupViewer Viewer, UnlinkPreview Preview, MemberNames Names);
 
 public static class MemberStacks

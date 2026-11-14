@@ -694,3 +694,8 @@ form[data-dirty="true"] .hm-savebar__clean { display: none; }
 .hm-availability-day { scroll-margin-top: calc(var(--hm-header-h) + var(--hm-space-6)); }
 .hm-tgrid__block.hm-tgrid__block--tentative { background: var(--hm-warn-tint); color: var(--hm-warn); border: 1px dashed var(--hm-warn); }
 .hm-swatch--tentative { background: var(--hm-warn-tint); border: 1px dashed var(--hm-warn); }
+
+.hm-server-links { margin-top: var(--hm-space-8); }
+.hm-server-links .hm-page-head { margin-bottom: 0; }
+.hm-server-links .hm-roster__item { flex-wrap: wrap; }
+.hm-server-links .hm-roster__sub { overflow-wrap: anywhere; }

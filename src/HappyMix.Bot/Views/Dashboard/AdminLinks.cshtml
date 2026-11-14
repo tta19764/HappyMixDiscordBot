@@ -1,22 +1,25 @@
-@model ApproveLinkPage
+@model AdminLinksPage
 @using HappyMix.Bot.Services
 @{
     Layout = "_DashboardLayout";
     ViewData["Title"] = T["Manage links"];
-    ViewData["NavGuildName"] = Model.GuildName;
-    var candidates = (MemberProfile[])ViewData["Candidates"]!;
+    ViewData["NavGuildName"] = Model.Link.GuildName;
+    var candidates = Model.Candidates;
+    string Localize(string key) => T[key];
+    var zone = TimeZoneInfo.TryFindSystemTimeZoneById(Model.Link.TimeZone, out var found) ? found : TimeZoneInfo.Utc;
+    string LinkedTime(DateTimeOffset value) => TimeZoneInfo.ConvertTime(value, zone).ToString("g", System.Globalization.CultureInfo.CurrentCulture);
 }
-<partial name="_ServerNav" model='new ServerNavModel(Model.GuildId, Model.GuildName, "links", Model.Viewer.CanConfigure, "Linked accounts", T["Connect an alternate account (twink) so HappyMix treats both as one member in this server."])' />
-<partial name="_LinkTabs" model="(Model.GuildId, true)" />
+<partial name="_ServerNav" model='new ServerNavModel(Model.Link.GuildId, Model.Link.GuildName, "links", Model.Link.Viewer.CanConfigure, "Linked accounts", T["Connect an alternate account (twink) so HappyMix treats both as one member in this server."])' />
+<partial name="_LinkTabs" model="(Model.Link.GuildId, true)" />
 @if (ViewData["Banner"] is BannerModel banner)
 {
     <partial name="_Banner" model="banner" />
 }
-@if (Model.Preview is null)
+@if (Model.Link.Preview is null)
 {
     <header class="hm-page-head"><div><h2>@T["Link server accounts"]</h2>
     <p>@T["Select a primary account and an alternate, then review the changes before linking."]</p></div></header>
-    @if (Model.Error is { } error)
+    @if (Model.Link.Error is { } error)
     {
         var errorBanner = new BannerModel("error", error, null, true);
         <partial name="_Banner" model="errorBanner" />
@@ -45,5 +48,59 @@
 }
 else
 {
-    <partial name="ApproveLink" model="Model" />
+    <partial name="ApproveLink" model="Model.Link" />
 }
+
+<section class="hm-stack hm-server-links" aria-labelledby="server-links-title">
+    <header class="hm-page-head">
+        <div>
+            <h2 id="server-links-title">@T["All linked accounts"]</h2>
+            <p>@T["Each card is one member: a primary account and its linked alternates."]</p>
+        </div>
+        <span class="hm-badge">@T["{0} linked members · {1} accounts", Model.Families.Length, Model.Families.Sum(family => family.Alternates.Length + 1)]</span>
+    </header>
+    @if (Model.Families.Length == 0)
+    {
+        <div class="hm-card hm-empty">
+            <span class="hm-empty__icon">@DashboardIcons.Render("users")</span>
+            <h3>@T["No linked accounts yet"]</h3>
+            <p>@T["Link accounts above, or let members link their own accounts."]</p>
+        </div>
+    }
+    else
+    {
+        <div class="hm-grid">
+            @foreach (var family in Model.Families.OrderBy(item => Model.Link.Names.Name(item.PrimaryId, Localize), StringComparer.CurrentCultureIgnoreCase))
+            {
+                var primary = Model.Link.Names.Get(family.PrimaryId);
+                string primaryName = Model.Link.Names.Name(family.PrimaryId, Localize);
+                <section class="hm-card hm-stack" aria-label="@T["Linked accounts"] · @primaryName">
+                    <div class="hm-roster__item">
+                        <partial name="_Avatar" model="new AvatarModel(primary, primaryName)" />
+                        <div class="hm-roster__who">
+                            <h3 class="hm-roster__name">@primaryName</h3>
+                            <span class="hm-roster__sub">@(primary.Username is { } username ? "@" + username + " · " : "")@family.PrimaryId</span>
+                        </div>
+                        <span class="hm-badge hm-badge--custom">@T["Primary"]</span>
+                    </div>
+                    <ul class="hm-roster">
+                        @foreach (var link in family.Alternates)
+                        {
+                            var account = Model.Link.Names.Get(link.AlternateId);
+                            string name = Model.Link.Names.Name(link.AlternateId, Localize);
+                            <li class="hm-roster__item">
+                                <partial name="_Avatar" model="new AvatarModel(account, name)" />
+                                <div class="hm-roster__who">
+                                    <span class="hm-roster__name">@name</span>
+                                    <span class="hm-roster__sub">@(account.Username is { } alias ? "@" + alias + " · " : "")@link.AlternateId</span>
+                                    <span class="hm-roster__sub">@T["Linked {0}", LinkedTime(link.LinkedAt)] · @Model.Link.TimeZone</span>
+                                </div>
+                                <span class="hm-badge hm-badge--inherit">@T["Alternate (twink)"]</span>
+                            </li>
+                        }
+                    </ul>
+                </section>
+            }
+        </div>
+    }
+</section>

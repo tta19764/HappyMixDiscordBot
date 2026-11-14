@@ -1047,4 +1047,9 @@
   <data name="Free together counts definite availability only." xml:space="preserve"><value>«Свободны вместе» учитывает только интервалы с отметкой «Точно».</value></data>
   <data name="{0} definite, {1} tentative at {2}:00" xml:space="preserve"><value>{0} точно, {1} возможно в {2}:00</value></data>
   <data name="Clear existing ranges before saving a full day." xml:space="preserve"><value>Очистите существующие интервалы, прежде чем сохранить целый день.</value></data>
+  <data name="All linked accounts" xml:space="preserve"><value>Все связанные аккаунты</value></data>
+  <data name="Each card is one member: a primary account and its linked alternates." xml:space="preserve"><value>Каждая карточка — один участник: основной аккаунт и связанные дополнительные.</value></data>
+  <data name="{0} linked members · {1} accounts" xml:space="preserve"><value>{0} связанных участников · {1} аккаунтов</value></data>
+  <data name="No linked accounts yet" xml:space="preserve"><value>Связанных аккаунтов пока нет</value></data>
+  <data name="Link accounts above, or let members link their own accounts." xml:space="preserve"><value>Свяжите аккаунты выше или позвольте участникам связать их самостоятельно.</value></data>
 </root>

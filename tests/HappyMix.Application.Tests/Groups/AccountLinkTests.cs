@@ -402,6 +402,29 @@ public sealed class AccountLinkTests
         Assert.False(twinkView.CanCreateRequest);
     }
 
+    [Fact]
+    public async Task AdminDirectoryListsEveryFamilyOnlyInTheRequestedServer()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        fixture.Members.Add(Stranger);
+        await fixture.LinkAsync(Main, Twink);
+        await fixture.LinkAsync(Main, SecondTwink);
+        await fixture.LinkAsync(Friend, Stranger);
+
+        var result = await fixture.Sender.Send(new GetServerAccountLinksQuery(Guild, Friend));
+        Assert.True(result.IsSuccess);
+        Assert.Equal(2, result.Value.Length);
+        var main = Assert.Single(result.Value, family => family.PrimaryId == Main);
+        Assert.Equal(new[] { Twink, SecondTwink }.Order(), main.Alternates.Select(link => link.AlternateId).Order());
+        Assert.Equal(Stranger, Assert.Single(result.Value.Single(family => family.PrimaryId == Friend).Alternates).AlternateId);
+        Assert.Empty((await fixture.Sender.Send(new GetServerAccountLinksQuery(Guild + 1, Friend))).Value);
+
+        // Owning a linked family grants no administrative access.
+        Assert.True((await fixture.Sender.Send(new GetServerAccountLinksQuery(Guild, Main))).IsFailure);
+        fixture.Members.Remove(Friend);
+        Assert.True((await fixture.Sender.Send(new GetServerAccountLinksQuery(Guild, Friend))).IsFailure);
+    }
+
     private static DateTimeOffset At(int day, int hour) => new(2026, 10, day, hour, 0, 0, TimeSpan.FromHours(2));
 
     private sealed class Fixture : IDisposable
