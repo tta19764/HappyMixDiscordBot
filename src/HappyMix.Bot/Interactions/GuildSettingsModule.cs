@@ -1,6 +1,8 @@
 using Discord;
 using Discord.Interactions;
 using HappyMix.Application.Abstractions.Guilds;
+using HappyMix.Application.Guilds;
+using MediatR;
 using HappyMix.Bot.Configuration;
 using HappyMix.Bot.Services;
 using HappyMix.Domain.Esports;
@@ -13,14 +15,14 @@ namespace HappyMix.Bot.Interactions;
 [RequireContext(ContextType.Guild)]
 [RequireUserPermission(GuildPermission.Administrator)]
 [DefaultMemberPermissions(GuildPermission.Administrator)]
-public sealed class GuildSettingsModule(IGuildSettingsStore store, IOptions<PandaScoreOptions> pandaScore,
+public sealed class GuildSettingsModule(ISender sender, IOptions<PandaScoreOptions> pandaScore,
     IOptions<DiscordOptions> discord)
     : InteractionModuleBase<SocketInteractionContext>
 {
     [SlashCommand("show", "Show saved server settings.")]
     public async Task ShowAsync()
     {
-        var settings = await store.GetAsync(Context.Guild.Id);
+        var settings = (await sender.Send(new GetGuildSettingsQuery(Context.Guild.Id))).Value;
         var preferences = settings?.Preferences ?? GuildEsportsPreferences.Default;
         string channel = settings is { ChannelId: > 0 } ? $"<#{settings.ChannelId}>" : "Deployment default";
         string organizers = preferences.OrganizerRoleIds is { Length: > 0 } roles
@@ -97,7 +99,7 @@ public sealed class GuildSettingsModule(IGuildSettingsStore store, IOptions<Pand
     public async Task TeamCatalogAsync(Esport game, [MinValue(1)] int page = 1)
     {
         const int pageSize = 20;
-        var settings = await store.GetAsync(Context.Guild.Id);
+        var settings = (await sender.Send(new GetGuildSettingsQuery(Context.Guild.Id))).Value;
         var catalog = GetCatalog(settings?.Preferences ?? GuildEsportsPreferences.Default, game);
         int pages = Math.Max(1, (catalog.Count + pageSize - 1) / pageSize);
         if (page < 1 || page > pages)
@@ -116,7 +118,7 @@ public sealed class GuildSettingsModule(IGuildSettingsStore store, IOptions<Pand
     public async Task TeamsAsync(Esport game,
         [Summary(description: "Comma-separated team names or PandaScore IDs, default, or none")] string teams)
     {
-        var settings = await store.GetAsync(Context.Guild.Id);
+        var settings = (await sender.Send(new GetGuildSettingsQuery(Context.Guild.Id))).Value;
         var catalog = GetCatalog(settings?.Preferences ?? GuildEsportsPreferences.Default, game);
         long[]? ids = null;
         teams = teams.Trim();
@@ -290,7 +292,7 @@ public sealed class GuildSettingsModule(IGuildSettingsStore store, IOptions<Pand
     private async Task SaveAsync(Func<GuildSettings, GuildSettings> update, string response)
     {
         await DeferAsync(ephemeral: true);
-        await store.UpdateAsync(Context.Guild.Id, pandaScore.Value.TimeZoneId, update);
+        await sender.Send(new UpdateGuildSettingsCommand(Context.Guild.Id, pandaScore.Value.TimeZoneId, update));
         await ModifyOriginalResponseAsync(message =>
         {
             message.Content = response;

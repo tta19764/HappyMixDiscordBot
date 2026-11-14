@@ -1,7 +1,7 @@
 using HappyMix.Application.Abstractions;
 using HappyMix.Application.Abstractions.Esports;
 using HappyMix.Application.Abstractions.Guilds;
-using HappyMix.Application.Abstractions.Notifications;
+using HappyMix.Application.Guilds;
 using HappyMix.Application.Matches.SynchronizeMatches;
 using HappyMix.Bot.Configuration;
 using HappyMix.Bot.Services;
@@ -21,10 +21,7 @@ internal sealed partial class SynchronizeMatchesJob(
     ISender sender,
     ILogger<SynchronizeMatchesJob> logger,
     IClock clock,
-    IPandaScoreClient pandaScore,
     IGuildMatchFeed guildFeed,
-    IGuildSettingsStore settingsStore,
-    IMatchAnnouncementStateFactory stateFactory,
     DiscordMatchAnnouncementPublisher publisher,
     IOptions<DiscordOptions> discord) : IJob
 {
@@ -32,7 +29,7 @@ internal sealed partial class SynchronizeMatchesJob(
     public async Task Execute(IJobExecutionContext context)
     {
         var cancellationToken = context.CancellationToken;
-        var saved = await settingsStore.ListAsync(cancellationToken);
+        var saved = (await sender.Send(new ListGuildSettingsQuery(), cancellationToken)).Value;
         var destinations = saved.Where(item => GetRoutes(item).Count > 0).ToList();
         var errors = new List<Exception>();
         ulong legacyChannel = discord.Value.AnnouncementChannelId;
@@ -69,7 +66,7 @@ internal sealed partial class SynchronizeMatchesJob(
 
             try
             {
-                var zone = TimeZoneInfo.FindSystemTimeZoneById(settings.TimeZoneId);
+                _ = TimeZoneInfo.FindSystemTimeZoneById(settings.TimeZoneId);
                 var matches = await guildFeed.GetMatchesAsync(now, settings.TimeZoneId, preferences, cancellationToken);
                 foreach (var route in GetRoutes(settings))
                 {
@@ -80,9 +77,9 @@ internal sealed partial class SynchronizeMatchesJob(
                     };
                     try
                     {
-                        var handler = new SynchronizeMatchesCommandHandler(clock, pandaScore, publisher.ForGuild(target),
-                            stateFactory.ForChannel(route.Key));
-                        await handler.PublishAsync(channelMatches, now, preferences, zone, cancellationToken);
+                        var result = await sender.Send(new PublishGuildMatchesCommand(target, channelMatches, now), cancellationToken);
+                        if (result.IsFailure)
+                            throw new InvalidOperationException(result.Error.Description);
                     }
                     catch (Exception exception) when (exception is not OperationCanceledException)
                     {

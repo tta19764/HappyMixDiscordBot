@@ -2,6 +2,7 @@ using Discord;
 using Discord.WebSocket;
 using HappyMix.Application.Abstractions.Guilds;
 using HappyMix.Application.Abstractions.Notifications;
+using HappyMix.Application.Matches.SynchronizeMatches;
 using HappyMix.Bot.Configuration;
 using HappyMix.Domain.Esports;
 using Microsoft.Extensions.Options;
@@ -15,13 +16,15 @@ internal sealed class DiscordMatchAnnouncementPublisher(
     DiscordSocketClient client,
     IOptions<DiscordOptions> options,
     TwitchLiveStreams twitch,
-    GuildSettings? settings = null) : IMatchAnnouncementPublisher
+    GuildSettings? settings = null) : IMatchAnnouncementPublisher, IGuildAnnouncementPublisher
 {
     private readonly DiscordOptions _options = options.Value;
     private ulong ChannelId => settings?.ChannelId ?? _options.AnnouncementChannelId;
 
     internal DiscordMatchAnnouncementPublisher ForGuild(GuildSettings destination) =>
         new(client, options, twitch, destination);
+
+    IMatchAnnouncementPublisher IGuildAnnouncementPublisher.ForGuild(GuildSettings destination) => ForGuild(destination);
 
     /// <inheritdoc />
     public async Task PublishDailyScheduleAsync(

@@ -1,12 +1,14 @@
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using HappyMix.Application.Abstractions.Guilds;
+using HappyMix.Application.Guilds;
+using MediatR;
 
 namespace HappyMix.Bot.Interactions;
 
 /// <summary>Handles group invitations from Discord direct messages.</summary>
-public sealed class GroupInvitationModule(IGuildGroupStore groups) : InteractionModuleBase<SocketInteractionContext>
+public sealed class GroupInvitationModule(ISender sender)
+    : InteractionModuleBase<SocketInteractionContext>
 {
     [ComponentInteraction("group-invite:*:*:*", ignoreGroupNames: true)]
     public async Task RespondToInviteAsync(string action, string server, string invitation)
@@ -20,56 +22,17 @@ public sealed class GroupInvitationModule(IGuildGroupStore groups) : Interaction
         }
 
         await component.DeferAsync();
-        ulong userId = Context.User.Id;
         bool accept = action == "accept";
-        var group = (await groups.ListAsync(guildId)).FirstOrDefault(item =>
-            item.InviteTokens?.GetValueOrDefault(userId) == token);
-        bool resolved = false;
-        if (group is not null)
-        {
-            await groups.UpdateAsync(guildId, group.Name, current =>
-            {
-                if (current?.InviteTokens?.GetValueOrDefault(userId) != token)
-                    return current;
-
-                var updated = GroupInvitation.Resolve(current, userId, accept);
-                resolved = updated is not null;
-                return updated ?? current;
-            });
-        }
-
+        var result = await sender.Send(new ResolveGroupInviteCommand(
+            new GroupActor(guildId, Context.User.Id, false), null, token, accept));
         await component.ModifyOriginalResponseAsync(message =>
         {
-            message.Content = !resolved ? "This invitation is no longer pending."
-                : accept ? $"You joined **{group!.Name}**." : $"You declined the invitation to **{group!.Name}**.";
+            message.Content = result.IsFailure ? result.Error.Description
+                : accept ? $"You joined **{result.Value.Name}**." : $"You declined the invitation to **{result.Value.Name}**.";
+            if (result.IsSuccess && result.Value.RoleSyncFailed)
+                message.Content += " A server moderator can restore your group role with /group repair-roles.";
             message.Components = new ComponentBuilder().Build();
             message.AllowedMentions = AllowedMentions.None;
         });
-    }
-}
-
-internal static class GroupInvitation
-{
-    internal static GuildGroup? Resolve(GuildGroup group, ulong userId, bool accept)
-    {
-        if (!group.Invites.Contains(userId))
-            return null;
-
-        return group with
-        {
-            Members = accept ? group.Members.Append(userId).Distinct().ToArray() : group.Members,
-            Invites = group.Invites.Where(id => id != userId).ToArray(),
-            InviteTokens = RemoveToken(group, userId)
-        };
-    }
-
-    internal static Dictionary<ulong, Guid>? RemoveToken(GuildGroup group, ulong userId)
-    {
-        if (group.InviteTokens is not { } saved)
-            return null;
-
-        var tokens = new Dictionary<ulong, Guid>(saved);
-        tokens.Remove(userId);
-        return tokens.Count == 0 ? null : tokens;
     }
 }

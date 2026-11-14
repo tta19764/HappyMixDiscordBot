@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HappyMix.Domain\HappyMix.Domain.csproj" />
+    <InternalsVisibleTo Include="HappyMix.Application.Tests" />
   </ItemGroup>
 
   <ItemGroup>

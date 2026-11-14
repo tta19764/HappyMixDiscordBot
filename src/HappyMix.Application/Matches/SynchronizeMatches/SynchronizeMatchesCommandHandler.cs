@@ -15,7 +15,7 @@ namespace HappyMix.Application.Matches.SynchronizeMatches;
 /// <param name="pandaScore">Provides followed main-team fixtures for CS2 and Dota 2.</param>
 /// <param name="publisher">Publishes provider-neutral match announcements.</param>
 /// <param name="state">Tracks which announcements have already been published.</param>
-public sealed class SynchronizeMatchesCommandHandler(
+internal sealed class SynchronizeMatchesCommandHandler(
     IClock clock,
     IPandaScoreClient pandaScore,
     IMatchAnnouncementPublisher publisher,

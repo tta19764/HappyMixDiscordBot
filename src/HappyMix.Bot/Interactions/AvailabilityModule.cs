@@ -3,13 +3,15 @@ using System.Text.RegularExpressions;
 using Discord.Interactions;
 using Discord.WebSocket;
 using HappyMix.Application.Abstractions.Guilds;
+using HappyMix.Application.Guilds;
+using MediatR;
 
 namespace HappyMix.Bot.Interactions;
 
 /// <summary>Manages the calling member's one-off availability in this server.</summary>
 [Group("availability", "Manage your one-off gaming availability.")]
 [RequireContext(ContextType.Guild)]
-public sealed class AvailabilityModule(IAvailabilityStore store) : InteractionModuleBase<SocketInteractionContext>
+public sealed class AvailabilityModule(ISender sender) : InteractionModuleBase<SocketInteractionContext>
 {
     [SlashCommand("add", "Add a window using date, time and UTC offset.")]
     public Task AddAsync(string start, string end) => SaveAsync(null, start, end);
@@ -21,7 +23,7 @@ public sealed class AvailabilityModule(IAvailabilityStore store) : InteractionMo
     [SlashCommand("remove", "Remove a window using its ID from /availability list.")]
     public async Task RemoveAsync(string id)
     {
-        bool removed = Guid.TryParse(id, out var key) && await store.RemoveAsync(Context.Guild.Id, Context.User.Id, key);
+        bool removed = Guid.TryParse(id, out var key) && (await sender.Send(new RemoveAvailabilityCommand(Context.Guild.Id, Context.User.Id, key))).IsSuccess;
         await RespondAsync(removed ? "Window removed." : "Availability window not found.", ephemeral: true);
     }
 
@@ -29,8 +31,7 @@ public sealed class AvailabilityModule(IAvailabilityStore store) : InteractionMo
     public async Task ListAsync([MinValue(1)] int page = 1)
     {
         const int pageSize = 15;
-        var windows = await store.ListAsync(Context.Guild.Id, Context.User.Id);
-        var upcoming = windows.Where(window => window.End > DateTimeOffset.UtcNow).ToArray();
+        var upcoming = (await sender.Send(new GetUpcomingAvailabilityQuery(Context.Guild.Id, Context.User.Id))).Value;
         int pages = (upcoming.Length + pageSize - 1) / pageSize;
         if (page > pages)
         {
@@ -51,15 +52,8 @@ public sealed class AvailabilityModule(IAvailabilityStore store) : InteractionMo
         }
 
         await DeferAsync(ephemeral: true);
-        try
-        {
-            var window = await store.SaveAsync(Context.Guild.Id, Context.User.Id, id, from, until);
-            await FollowupAsync($"Saved {Format(window)}", ephemeral: true);
-        }
-        catch (AvailabilityException exception)
-        {
-            await FollowupAsync(exception.Message, ephemeral: true);
-        }
+        var result = await sender.Send(new SaveAvailabilityCommand(Context.Guild.Id, Context.User.Id, id, from, until));
+        await FollowupAsync(result.IsSuccess ? $"Saved {Format(result.Value)}" : result.Error.Description, ephemeral: true);
     }
 
     internal static bool TryParse(string input, out DateTimeOffset value)

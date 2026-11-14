@@ -1,6 +1,8 @@
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using HappyMix.Application.Guilds;
+using HappyMix.Application.Matches.SynchronizeMatches;
 using HappyMix.Application.Abstractions.Notifications;
 using HappyMix.Bot.Jobs;
 using HappyMix.Bot.Services;
@@ -52,11 +54,14 @@ public static class DependencyInjection
         // DiscordSocketClient and InteractionService hold connection and command state,
         // so one shared instance of each must be used for the entire process lifetime.
         services.AddSingleton<DiscordSocketClient>();
+        services.AddSingleton<IGroupRoleGateway, DiscordGroupRoleGateway>();
         services.AddSingleton(static provider =>
             new InteractionService(provider.GetRequiredService<DiscordSocketClient>().Rest));
         services.AddHttpClient("Twitch", client => client.Timeout = TimeSpan.FromSeconds(5));
         services.AddSingleton<TwitchLiveStreams>();
         services.AddSingleton<DiscordMatchAnnouncementPublisher>();
+        services.AddSingleton<IGuildAnnouncementPublisher>(provider =>
+            provider.GetRequiredService<DiscordMatchAnnouncementPublisher>());
         services.AddSingleton<IMatchAnnouncementPublisher>(provider =>
             provider.GetRequiredService<DiscordMatchAnnouncementPublisher>());
 

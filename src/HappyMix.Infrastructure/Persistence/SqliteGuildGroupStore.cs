@@ -21,7 +21,7 @@ internal sealed class SqliteGuildGroupStore(IDbContextFactory<HappyMixDbContext>
         await using var context = await factory.CreateDbContextAsync();
         await using var transaction = await context.Database.BeginTransactionAsync();
         string scope = guildId.ToString(CultureInfo.InvariantCulture);
-        string key = name.Trim().ToUpperInvariant();
+        string key = GuildGroup.GetNameKey(name);
         var rows = context.Set<GuildGroupRecord>();
         var row = await rows.FindAsync(scope, key);
         var group = update(row is null ? null : JsonSerializer.Deserialize<GuildGroup>(row.Data));

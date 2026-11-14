@@ -1,6 +1,9 @@
 using Discord.Interactions;
 using Discord.WebSocket;
+using HappyMix.Application;
 using HappyMix.Application.Abstractions.Guilds;
+using HappyMix.Application.Guilds;
+using MediatR;
 using HappyMix.Bot.Interactions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,13 +18,21 @@ public sealed class SqliteGuildGroupTests
         var store = database.Services.GetRequiredService<IGuildGroupStore>();
         await store.UpdateAsync(1, "Friday", _ => new GuildGroup("Friday", 10, [10], [20]));
         await store.UpdateAsync(2, "Friday", _ => new GuildGroup("Friday", 30, [30], []));
-        await store.UpdateAsync(1, "friday", group => group! with { Members = [10, 20], Invites = [] });
+        await store.UpdateAsync(1, "friday", group => group! with
+        {
+            Members = [10, 20],
+            Invites = [],
+            Description = "Friday co-op",
+            RoleId = 123
+        });
 
         var reopened = await database.OpenAsync();
         store = reopened.GetRequiredService<IGuildGroupStore>();
         var first = Assert.Single(await store.ListAsync(1));
         Assert.Equal([10UL, 20UL], first.Members);
         Assert.Empty(first.Invites);
+        Assert.Equal("Friday co-op", first.Description);
+        Assert.Equal(123UL, first.RoleId);
         Assert.Equal(30UL, Assert.Single(await store.ListAsync(2)).OrganizerId);
 
         await store.UpdateAsync(1, "FRIDAY", _ => null);
@@ -45,15 +56,18 @@ public sealed class SqliteGuildGroupTests
         store = reopened.GetRequiredService<IGuildGroupStore>();
         var pending = Assert.Single(await store.ListAsync(1));
         Assert.Equal(token, pending.InviteTokens![20]);
-        Assert.Null(GroupInvitation.Resolve(pending, 99, accept));
-        await store.UpdateAsync(1, "Friday", group => GroupInvitation.Resolve(group!, 20, accept));
+        using var services = CreateApplicationServices(store, reopened.GetRequiredService<IGuildSettingsStore>());
+        var sender = services.GetRequiredService<ISender>();
+        Assert.True((await sender.Send(new ResolveGroupInviteCommand(new(1, 99, false), null, token, accept))).IsFailure);
+        var command = new ResolveGroupInviteCommand(new(1, 20, false), null, token, accept);
+        Assert.True((await sender.Send(command)).IsSuccess);
 
         var resolved = Assert.Single(await store.ListAsync(1));
         Assert.Equal(accept, resolved.Members.Contains(20UL));
         Assert.Equal([30UL], resolved.Invites);
         Assert.Equal(otherToken, resolved.InviteTokens![30]);
         Assert.False(resolved.InviteTokens.ContainsKey(20));
-        Assert.Null(GroupInvitation.Resolve(resolved, 20, accept));
+        Assert.True((await sender.Send(command)).IsFailure);
     }
 
     [Fact]
@@ -62,14 +76,37 @@ public sealed class SqliteGuildGroupTests
         using var client = new DiscordSocketClient();
         using var interactions = new InteractionService(client.Rest);
         using var database = await SqliteTestDatabase.CreateAsync();
-        var module = await interactions.AddModuleAsync<GuildGroupModule>(database.Services);
+        using var services = CreateApplicationServices(database.Services.GetRequiredService<IGuildGroupStore>(),
+            database.Services.GetRequiredService<IGuildSettingsStore>());
+        var module = await interactions.AddModuleAsync<GuildGroupModule>(services);
 
-        Assert.Equal(8, module.SlashCommands.Count);
+        Assert.Equal(11, module.SlashCommands.Count);
+        Assert.Contains(module.SlashCommands, command => command.Name == "repair-roles");
+        Assert.Single(module.ComponentCommands);
+        Assert.Contains(module.SlashCommands, command => command.Name == "me");
+        Assert.Contains(module.SlashCommands, command => command.Name == "edit-description");
         Assert.Contains(module.SlashCommands, command => command.Name == "invite");
         Assert.Contains(module.SlashCommands, command => command.Name == "join");
         Assert.Contains(module.SlashCommands, command => command.Name == "decline");
-        var buttons = await interactions.AddModuleAsync<GroupInvitationModule>(database.Services);
+        var buttons = await interactions.AddModuleAsync<GroupInvitationModule>(services);
         Assert.Single(buttons.ComponentCommands);
         Assert.Contains(module.Preconditions, condition => condition is RequireContextAttribute);
+    }
+
+    private static ServiceProvider CreateApplicationServices(IGuildGroupStore store, IGuildSettingsStore settings) =>
+        new ServiceCollection().AddLogging().AddSingleton(store).AddSingleton(settings)
+            .AddSingleton<IGroupRoleGateway, TestGroupRoleGateway>().AddApplication().BuildServiceProvider();
+
+    private sealed class TestGroupRoleGateway : IGroupRoleGateway
+    {
+        public Task<IReadOnlyCollection<ulong>> GetRoleIdsAsync(ulong guildId) =>
+            Task.FromResult<IReadOnlyCollection<ulong>>([]);
+
+        public Task<ulong> CreateAsync(ulong guildId, string name) => Task.FromResult(123UL);
+
+        public Task DeleteAsync(ulong guildId, ulong roleId) => Task.CompletedTask;
+
+        public Task ApplyAsync(ulong guildId, ulong? userId, Func<ulong, IReadOnlyCollection<ulong>, GroupRoleDelta> getDelta) =>
+            Task.CompletedTask;
     }
 }

@@ -1,4 +1,5 @@
 using System.Reflection;
+using HappyMix.Application.Guilds;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HappyMix.Application;
@@ -19,6 +20,7 @@ public static class DependencyInjection
         // layer while allowing adapters to dispatch requests through MediatR.
         services.AddMediatR(configuration =>
             configuration.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+        services.AddSingleton<GroupRoles>();
 
         return services;
     }

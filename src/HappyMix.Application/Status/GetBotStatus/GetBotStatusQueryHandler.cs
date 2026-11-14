@@ -9,7 +9,7 @@ namespace HappyMix.Application.Status.GetBotStatus;
 /// Handles bot-status queries using the Application layer's clock abstraction.
 /// </summary>
 /// <param name="clock">Supplies the current UTC time without coupling the use case to the system clock.</param>
-public sealed class GetBotStatusQueryHandler(IClock clock)
+internal sealed class GetBotStatusQueryHandler(IClock clock)
     : IQueryHandler<GetBotStatusQuery, BotStatus>
 {
     /// <summary>
