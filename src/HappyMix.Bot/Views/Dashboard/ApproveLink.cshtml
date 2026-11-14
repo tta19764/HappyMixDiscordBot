@@ -115,16 +115,16 @@ else
                 {
                     <fieldset class="hm-choice">
                         <legend>@T["Every {0}", Day(conflict.Day)]</legend>
-                        <label><input type="radio" name="weekly-@conflict.Day" value="primary" required> @T["Keep {0}'s", primaryName] <b>@MemberStacks.Weekly(conflict.Primary)</b></label>
-                        <label><input type="radio" name="weekly-@conflict.Day" value="alternate"> @T["Keep {0}'s", alternateName] <b>@MemberStacks.Weekly(conflict.Alternate)</b></label>
+                        <label><input type="radio" name="weekly-@conflict.Day" value="primary" required> @T["Keep {0}'s", primaryName] <b>@string.Join(", ", conflict.Primary.Select(window => MemberStacks.Weekly(window, Localize)))</b></label>
+                        <label><input type="radio" name="weekly-@conflict.Day" value="alternate"> @T["Keep {0}'s", alternateName] <b>@string.Join(", ", conflict.Alternate.Select(window => MemberStacks.Weekly(window, Localize)))</b></label>
                     </fieldset>
                 }
                 @foreach (var conflict in preview.WindowConflicts)
                 {
                     <fieldset class="hm-choice">
-                        <legend>@MemberStacks.Window(conflict.Alternate, Model.TimeZone)</legend>
-                        <label><input type="radio" name="window-@conflict.Alternate.Id" value="primary" required> @T["Keep {0}'s", primaryName] <b>@string.Join(", ", conflict.Primary.Select(window => MemberStacks.Window(window, Model.TimeZone)))</b></label>
-                        <label><input type="radio" name="window-@conflict.Alternate.Id" value="alternate"> @T["Keep {0}'s", alternateName] <b>@MemberStacks.Window(conflict.Alternate, Model.TimeZone)</b></label>
+                        <legend>@MemberStacks.Window(conflict.Alternate, Model.TimeZone, Localize)</legend>
+                        <label><input type="radio" name="window-@conflict.Alternate.Id" value="primary" required> @T["Keep {0}'s", primaryName] <b>@string.Join(", ", conflict.Primary.Select(window => MemberStacks.Window(window, Model.TimeZone, Localize)))</b></label>
+                        <label><input type="radio" name="window-@conflict.Alternate.Id" value="alternate"> @T["Keep {0}'s", alternateName] <b>@MemberStacks.Window(conflict.Alternate, Model.TimeZone, Localize)</b></label>
                     </fieldset>
                 }
             }

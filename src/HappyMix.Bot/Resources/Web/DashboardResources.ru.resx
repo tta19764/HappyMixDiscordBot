@@ -1034,4 +1034,17 @@
   <data name="This links both accounts in the selected server." xml:space="preserve"><value>Оба аккаунта будут связаны на выбранном сервере.</value></data>
   <data name="Only server administrators can link other accounts." xml:space="preserve"><value>Только администраторы сервера могут связывать чужие аккаунты.</value></data>
   <data name="Choose two different accounts." xml:space="preserve"><value>Выберите два разных аккаунта.</value></data>
+  <data name="Certainty" xml:space="preserve"><value>Уверенность</value></data>
+  <data name="Definite" xml:space="preserve"><value>Точно</value></data>
+  <data name="Tentative" xml:space="preserve"><value>Возможно</value></data>
+  <data name="Definite: I can play. Tentative: I might be able to play." xml:space="preserve"><value>Точно: я могу играть. Возможно: пока не уверен, смогу ли.</value></data>
+  <data name="Save a range, then add another. Each range has its own certainty." xml:space="preserve"><value>Сохраните интервал, затем добавьте следующий. Для каждого укажите, насколько вы уверены.</value></data>
+  <data name="The same start time and time zone updates an existing weekly range." xml:space="preserve"><value>То же время начала и часовой пояс обновляют существующий еженедельный интервал.</value></data>
+  <data name="Add range" xml:space="preserve"><value>Добавить интервал</value></data>
+  <data name="Save range" xml:space="preserve"><value>Сохранить интервал</value></data>
+  <data name="Remove range" xml:space="preserve"><value>Удалить интервал</value></data>
+  <data name="Clear day" xml:space="preserve"><value>Очистить день</value></data>
+  <data name="Free together counts definite availability only." xml:space="preserve"><value>«Свободны вместе» учитывает только интервалы с отметкой «Точно».</value></data>
+  <data name="{0} definite, {1} tentative at {2}:00" xml:space="preserve"><value>{0} точно, {1} возможно в {2}:00</value></data>
+  <data name="Clear existing ranges before saving a full day." xml:space="preserve"><value>Очистите существующие интервалы, прежде чем сохранить целый день.</value></data>
 </root>

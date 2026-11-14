@@ -9,9 +9,9 @@ internal sealed class SqliteAvailabilityStore(IDbContextFactory<HappyMixDbContex
     public async Task<IReadOnlyList<WeeklyAvailability>> ListWeeklyAsync(ulong guildId, ulong userId)
     {
         await using var context = await factory.CreateDbContextAsync();
-        return await WeeklyForMember(context, guildId, userId).OrderBy(row => (row.Day + 6) % 7)
+        return await WeeklyForMember(context, guildId, userId).OrderBy(row => (row.Day + 6) % 7).ThenBy(row => row.StartTicks)
             .Select(row => new WeeklyAvailability((DayOfWeek)row.Day, new TimeOnly(row.StartTicks),
-                new TimeOnly(row.EndTicks), row.TimeZone)).ToListAsync();
+                new TimeOnly(row.EndTicks), row.TimeZone, row.Tentative)).ToListAsync();
     }
 
     public async Task SaveWeeklyAsync(ulong guildId, ulong userId, WeeklyAvailability window)
@@ -23,19 +23,34 @@ internal sealed class SqliteAvailabilityStore(IDbContextFactory<HappyMixDbContex
         long start = window.Start.Ticks;
         long end = window.End.Ticks;
         string zone = window.TimeZone;
+        await using var transaction = await context.Database.BeginTransactionAsync();
+        var others = await WeeklyForMember(context, guildId, userId).Where(row => row.TimeZone == zone).ToListAsync();
+        long week = TimeSpan.TicksPerDay * 7;
+        long from = day * TimeSpan.TicksPerDay + start;
+        long until = from + (end > start ? end - start : TimeSpan.TicksPerDay + end - start);
+        foreach (var other in others.Where(row => row.Day != day || row.StartTicks != start))
+        {
+            long otherStart = other.Day * TimeSpan.TicksPerDay + other.StartTicks;
+            long otherEnd = otherStart + (other.EndTicks > other.StartTicks ? other.EndTicks - other.StartTicks
+                : TimeSpan.TicksPerDay + other.EndTicks - other.StartTicks);
+            if (new[] { -week, 0L, week }.Any(shift => from < otherEnd + shift && otherStart + shift < until))
+                throw new AvailabilityException("This overlaps another availability window.");
+        }
         await context.Database.ExecuteSqlInterpolatedAsync($"""
-            INSERT INTO WeeklyAvailability (GuildId, UserId, Day, StartTicks, EndTicks, TimeZone)
-            VALUES ({guild}, {user}, {day}, {start}, {end}, {zone})
-            ON CONFLICT (GuildId, UserId, Day) DO UPDATE
-            SET StartTicks = excluded.StartTicks, EndTicks = excluded.EndTicks, TimeZone = excluded.TimeZone
+            INSERT INTO WeeklyAvailability (GuildId, UserId, Day, StartTicks, EndTicks, TimeZone, Tentative)
+            VALUES ({guild}, {user}, {day}, {start}, {end}, {zone}, {window.Tentative})
+            ON CONFLICT (GuildId, UserId, Day, StartTicks, TimeZone) DO UPDATE
+            SET EndTicks = excluded.EndTicks, Tentative = excluded.Tentative
             """);
+        await transaction.CommitAsync();
     }
 
-    public async Task<bool> RemoveWeeklyAsync(ulong guildId, ulong userId, DayOfWeek day)
+    public async Task<bool> RemoveWeeklyAsync(ulong guildId, ulong userId, DayOfWeek day, TimeOnly? start = null, string? timeZone = null)
     {
         await using var context = await factory.CreateDbContextAsync();
         return await WeeklyForMember(context, guildId, userId)
-            .Where(row => row.Day == (int)day).ExecuteDeleteAsync() > 0;
+            .Where(row => row.Day == (int)day && (start == null || row.StartTicks == start.Value.Ticks) &&
+                (timeZone == null || row.TimeZone == timeZone)).ExecuteDeleteAsync() > 0;
     }
 
     private static IQueryable<WeeklyAvailabilityRecord> WeeklyForMember(HappyMixDbContext context, ulong guildId, ulong userId)
@@ -50,12 +65,12 @@ internal sealed class SqliteAvailabilityStore(IDbContextFactory<HappyMixDbContex
         await using var context = await factory.CreateDbContextAsync();
         return await ForMember(context, guildId, userId).OrderBy(row => row.StartUtc)
             .Select(row => new AvailabilityWindow(row.Id,
-                new DateTimeOffset(row.StartUtc, TimeSpan.Zero), new DateTimeOffset(row.EndUtc, TimeSpan.Zero)))
+                new DateTimeOffset(row.StartUtc, TimeSpan.Zero), new DateTimeOffset(row.EndUtc, TimeSpan.Zero), row.Tentative))
             .ToListAsync();
     }
 
     public async Task<AvailabilityWindow> SaveAsync(
-        ulong guildId, ulong userId, Guid? id, DateTimeOffset start, DateTimeOffset finish)
+        ulong guildId, ulong userId, Guid? id, DateTimeOffset start, DateTimeOffset finish, bool tentative = false)
     {
         if (finish <= start)
             throw new AvailabilityException("End must be after start.");
@@ -81,12 +96,13 @@ internal sealed class SqliteAvailabilityStore(IDbContextFactory<HappyMixDbContex
         };
         window.StartUtc = startUtc;
         window.EndUtc = endUtc;
+        window.Tentative = tentative;
         if (existing is null)
             context.Add(window);
 
         await context.SaveChangesAsync();
         await transaction.CommitAsync();
-        return new AvailabilityWindow(window.Id, start.ToUniversalTime(), finish.ToUniversalTime());
+        return new AvailabilityWindow(window.Id, start.ToUniversalTime(), finish.ToUniversalTime(), tentative);
     }
 
     public async Task<bool> RemoveAsync(ulong guildId, ulong userId, Guid id)
@@ -114,10 +130,10 @@ internal sealed class SqliteAvailabilityStore(IDbContextFactory<HappyMixDbContex
             .ToListAsync();
         return new MemberAvailabilitySnapshot(
             windows.Select(row => new MemberWindow(ulong.Parse(row.UserId, CultureInfo.InvariantCulture),
-                new AvailabilityWindow(row.Id, new DateTimeOffset(row.StartUtc, TimeSpan.Zero), new DateTimeOffset(row.EndUtc, TimeSpan.Zero))))
+                new AvailabilityWindow(row.Id, new DateTimeOffset(row.StartUtc, TimeSpan.Zero), new DateTimeOffset(row.EndUtc, TimeSpan.Zero), row.Tentative)))
                 .ToArray(),
             weekly.Select(row => new MemberWeekly(ulong.Parse(row.UserId, CultureInfo.InvariantCulture),
-                new WeeklyAvailability((DayOfWeek)row.Day, new TimeOnly(row.StartTicks), new TimeOnly(row.EndTicks), row.TimeZone)))
+                new WeeklyAvailability((DayOfWeek)row.Day, new TimeOnly(row.StartTicks), new TimeOnly(row.EndTicks), row.TimeZone, row.Tentative)))
                 .ToArray());
     }
 
@@ -136,12 +152,14 @@ internal sealed class AvailabilityRecord
     public required string UserId { get; init; }
     public long StartUtc { get; set; }
     public long EndUtc { get; set; }
+    public bool Tentative { get; set; }
 }
 
 internal sealed class WeeklyAvailabilityRecord
 {
     public required string GuildId { get; init; }
     public required string UserId { get; init; }
+    public bool Tentative { get; init; }
     public int Day { get; init; }
     public long StartTicks { get; init; }
     public long EndTicks { get; init; }

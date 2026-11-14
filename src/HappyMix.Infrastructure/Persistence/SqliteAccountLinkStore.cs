@@ -115,10 +115,11 @@ internal sealed class SqliteAccountLinkStore(IDbContextFactory<HappyMixDbContext
         await windows.Where(row => row.GuildId == guild && row.UserId == alternate).ExecuteDeleteAsync();
 
         var weekly = context.Set<WeeklyAvailabilityRecord>();
+        foreach (var dayNumber in plan.PrimaryWeeklyToSet.Select(day => (int)day.Day).Distinct())
+            await weekly.Where(row => row.GuildId == guild && row.UserId == primary && row.Day == dayNumber).ExecuteDeleteAsync();
         foreach (var day in plan.PrimaryWeeklyToSet)
         {
             int dayNumber = (int)day.Day;
-            await weekly.Where(row => row.GuildId == guild && row.UserId == primary && row.Day == dayNumber).ExecuteDeleteAsync();
             weekly.Add(new WeeklyAvailabilityRecord
             {
                 GuildId = guild,
@@ -126,7 +127,7 @@ internal sealed class SqliteAccountLinkStore(IDbContextFactory<HappyMixDbContext
                 Day = dayNumber,
                 StartTicks = day.Start.Ticks,
                 EndTicks = day.End.Ticks,
-                TimeZone = day.TimeZone
+                TimeZone = day.TimeZone, Tentative = day.Tentative
             });
         }
         await weekly.Where(row => row.GuildId == guild && row.UserId == alternate).ExecuteDeleteAsync();
@@ -166,14 +167,14 @@ internal sealed class SqliteAccountLinkStore(IDbContextFactory<HappyMixDbContext
             return false;
 
         var weekly = context.Set<WeeklyAvailabilityRecord>();
+        await weekly.Where(row => row.GuildId == guild && row.UserId == alternate).ExecuteDeleteAsync();
         foreach (var day in restore.Weekly)
         {
             int dayNumber = (int)day.Day;
-            await weekly.Where(row => row.GuildId == guild && row.UserId == alternate && row.Day == dayNumber).ExecuteDeleteAsync();
             weekly.Add(new WeeklyAvailabilityRecord
             {
                 GuildId = guild, UserId = alternate, Day = dayNumber,
-                StartTicks = day.Start.Ticks, EndTicks = day.End.Ticks, TimeZone = day.TimeZone
+                StartTicks = day.Start.Ticks, EndTicks = day.End.Ticks, TimeZone = day.TimeZone, Tentative = day.Tentative
             });
         }
 
@@ -181,7 +182,7 @@ internal sealed class SqliteAccountLinkStore(IDbContextFactory<HappyMixDbContext
             context.Add(new AvailabilityRecord
             {
                 Id = Guid.NewGuid(), GuildId = guild, UserId = alternate,
-                StartUtc = window.Start.UtcTicks, EndUtc = window.End.UtcTicks
+                StartUtc = window.Start.UtcTicks, EndUtc = window.End.UtcTicks, Tentative = window.Tentative
             });
 
         await context.SaveChangesAsync();

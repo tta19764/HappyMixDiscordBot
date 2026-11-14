@@ -92,7 +92,8 @@ public sealed partial class GuildGroupModule
             string displayName = Context.Guild.GetUser(row.UserId)?.DisplayName ?? row.UserId.ToString(CultureInfo.InvariantCulture);
             var ranges = row.Ranges.Take(8).Select(range =>
                 (range.AllDay ? "All day" : $"{range.Start:HH:mm}–{range.End:HH:mm}") +
-                (range.Source == AvailabilitySource.Weekly ? " (weekly)" : ""));
+                (range.Source == AvailabilitySource.Weekly ? " (weekly)" : "") +
+                (range.Tentative ? " · tentative" : " · definite"));
             string times = row.Ranges.Length == 0 ? "No data" : string.Join(", ", ranges);
             return $"**{Format.Sanitize(displayName)}** {times}" + (row.Ranges.Length > 8 ? " …" : "");
         });

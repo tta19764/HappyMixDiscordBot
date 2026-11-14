@@ -33,11 +33,11 @@ public sealed partial class AvailabilityModule(ISender sender, IConfiguration co
     }
 
     [SlashCommand("add", "Add a window using date, time and UTC offset.")]
-    public Task AddAsync(string start, string end) => SaveAsync(null, start, end);
+    public Task AddAsync(string start, string end, bool tentative = false) => SaveAsync(null, start, end, tentative);
 
     [SlashCommand("edit", "Edit a window using its ID from /availability list.")]
-    public Task EditAsync(string id, string start, string end) =>
-        Guid.TryParse(id, out var key) ? SaveAsync(key, start, end) : RespondAsync("Invalid window ID.", ephemeral: true);
+    public Task EditAsync(string id, string start, string end, bool tentative = false) =>
+        Guid.TryParse(id, out var key) ? SaveAsync(key, start, end, tentative) : RespondAsync("Invalid window ID.", ephemeral: true);
 
     [SlashCommand("remove", "Remove a window using its ID from /availability list.")]
     public async Task RemoveAsync(string id)
@@ -49,7 +49,7 @@ public sealed partial class AvailabilityModule(ISender sender, IConfiguration co
     [SlashCommand("list", "Show your upcoming availability and window IDs.")]
     public async Task ListAsync([MinValue(1)] int page = 1)
     {
-        const int pageSize = 15;
+        const int pageSize = 8;
         var upcoming = (await sender.Send(new GetUpcomingAvailabilityQuery(Context.Guild.Id, Context.User.Id))).Value;
         int pages = (upcoming.Length + pageSize - 1) / pageSize;
         if (page > pages)
@@ -62,7 +62,7 @@ public sealed partial class AvailabilityModule(ISender sender, IConfiguration co
         await RespondAsync($"Upcoming availability ({page}/{pages})\n{string.Join("\n", lines)}", ephemeral: true);
     }
 
-    private async Task SaveAsync(Guid? id, string start, string end)
+    private async Task SaveAsync(Guid? id, string start, string end, bool tentative)
     {
         if (!TryParse(start, out var from) || !TryParse(end, out var until))
         {
@@ -71,7 +71,7 @@ public sealed partial class AvailabilityModule(ISender sender, IConfiguration co
         }
 
         await DeferAsync(ephemeral: true);
-        var result = await sender.Send(new SaveAvailabilityCommand(Context.Guild.Id, Context.User.Id, id, from, until));
+        var result = await sender.Send(new SaveAvailabilityCommand(Context.Guild.Id, Context.User.Id, id, from, until, tentative));
         await FollowupAsync(result.IsSuccess ? $"Saved {Format(result.Value)}" : result.Error.Description, ephemeral: true);
     }
 
@@ -84,5 +84,5 @@ public sealed partial class AvailabilityModule(ISender sender, IConfiguration co
     }
 
     private static string Format(AvailabilityWindow window) =>
-        $"<t:{window.Start.ToUnixTimeSeconds()}:f> to <t:{window.End.ToUnixTimeSeconds()}:f> · `{window.Id}`";
+        $"<t:{window.Start.ToUnixTimeSeconds()}:f> to <t:{window.End.ToUnixTimeSeconds()}:f> · {(window.Tentative ? "Tentative" : "Definite")} · `{window.Id}`";
 }

@@ -9,7 +9,7 @@ public enum AvailabilitySource
 {
     /// <summary>A dated window the member saved for a specific day.</summary>
     OneOff,
-    /// <summary>Recurring weekly hours. Expected, not confirmed for the date.</summary>
+    /// <summary>Recurring weekly hours. Certainty is stored separately on each range.</summary>
     Weekly
 }
 
@@ -18,7 +18,7 @@ public enum AvailabilitySource
 /// <see cref="FromPreviousDay"/> and <see cref="IntoNextDay"/> mark ranges clipped at local midnight.
 /// </summary>
 public sealed record BoardRange(AvailabilitySource Source, TimeOnly Start, TimeOnly End, bool FromPreviousDay,
-    bool IntoNextDay, bool AllDay);
+    bool IntoNextDay, bool AllDay, bool Tentative = false);
 
 /// <summary>One saved group member. An empty <see cref="Ranges"/> list means no data, not "unavailable".</summary>
 public sealed record BoardRow(ulong UserId, BoardRange[] Ranges)
@@ -27,12 +27,16 @@ public sealed record BoardRow(ulong UserId, BoardRange[] Ranges)
 }
 
 /// <summary>
-/// The board for one date. <see cref="FreeByHour"/> counts, for each local hour 0–23, the members free at any time
+/// The board for one date. <see cref="FreeByHour"/> counts, for each local hour 0–23, the members definitely free at any time
 /// within that hour. <see cref="Now"/> is the current local time when the date is today.
 /// </summary>
 public sealed record GroupAvailabilityBoard(Guid GroupId, string TimeZone, DateOnly Today, DateOnly Date,
     DateOnly[] Days, BoardRow[] Rows, int[] FreeByHour, TimeOnly? Now)
 {
+    public int[] TentativeByHour => Enumerable.Range(0, 24).Select(hour => Rows.Count(row =>
+        row.Ranges.Any(range => range.Tentative && StartHours(range) < hour + 1 && EndHours(range) > hour) &&
+        !row.Ranges.Any(range => !range.Tentative && StartHours(range) < hour + 1 && EndHours(range) > hour))).ToArray();
+
     /// <summary>Range end in hours, where a range clipped at midnight ends at 24.</summary>
     public static double EndHours(BoardRange range) =>
         range.AllDay || range.IntoNextDay || (range.End == TimeOnly.MinValue && range.Start != TimeOnly.MinValue)
@@ -78,30 +82,45 @@ internal sealed class GroupAvailabilityBoardQueries(IGuildGroupStore groups, IAv
         var windows = snapshot.Windows.ToLookup(item => item.UserId, item => item.Window);
         var weekly = snapshot.Weekly.ToLookup(item => item.UserId, item => item.Weekly);
         var rows = members.Select(userId => new BoardRow(userId,
-                windows[links.Member(userId)].Select(window => (AvailabilitySource.OneOff, window.Start, window.End))
-                    .Concat(weekly[links.Member(userId)].SelectMany(item => Occurrences(item, date))
-                        .Select(occurrence => (AvailabilitySource.Weekly, occurrence.Start, occurrence.End)))
+                windows[links.Member(userId)].Select(window => (AvailabilitySource.OneOff, window.Start, window.End, window.Tentative))
+                    .Concat(weekly[links.Member(userId)].SelectMany(item => WeeklyOccurrences.ForDate(item, date)
+                        .Select(occurrence => (AvailabilitySource.Weekly, occurrence.Start, occurrence.End, item.Tentative))))
                     .Where(item => item.Item2 < dayEnd && dayStart < item.Item3)
                     .OrderBy(item => item.Item2).ThenBy(item => item.Item1)
-                    .Select(item => Clip(item.Item1, item.Item2, item.Item3, dayStart, dayEnd, zone))
+                    .Select(item => Clip(item.Item1, item.Item2, item.Item3, dayStart, dayEnd, zone, item.Item4))
                     .ToArray()))
             .OrderByDescending(row => row.HasData)
             .ToArray();
 
         var freeByHour = Enumerable.Range(0, 24).Select(hour => rows.Count(row => row.Ranges.Any(range =>
-            GroupAvailabilityBoard.StartHours(range) < hour + 1 && GroupAvailabilityBoard.EndHours(range) > hour))).ToArray();
+            !range.Tentative && GroupAvailabilityBoard.StartHours(range) < hour + 1 && GroupAvailabilityBoard.EndHours(range) > hour))).ToArray();
         TimeOnly? now = date == today ? TimeOnly.FromDateTime(TimeZoneInfo.ConvertTime(clock.UtcNow, zone).DateTime) : null;
         return Result.Success(new GroupAvailabilityBoard(group.Id, zone.Id, today, date, days, rows, freeByHour, now));
     }
 
+    private static BoardRange Clip(AvailabilitySource source, DateTimeOffset start, DateTimeOffset end,
+        DateTimeOffset dayStart, DateTimeOffset dayEnd, TimeZoneInfo zone, bool tentative)
+    {
+        bool fromPrevious = start < dayStart;
+        bool intoNext = end > dayEnd;
+        var from = TimeOnly.FromDateTime(TimeZoneInfo.ConvertTime(fromPrevious ? dayStart : start, zone).DateTime);
+        var until = TimeOnly.FromDateTime(TimeZoneInfo.ConvertTime(intoNext ? dayEnd : end, zone).DateTime);
+        return new BoardRange(source, from, until, fromPrevious, intoNext, start <= dayStart && end >= dayEnd, tentative);
+    }
+
+    private static TimeZoneInfo? FindZone(string? id) =>
+        id is not null && TimeZoneInfo.TryFindSystemTimeZoneById(id, out var zone) ? zone : null;
+}
+
+public static class WeeklyOccurrences
+{
     /// <summary>
     /// Weekly occurrences that could touch the board date. Each one is resolved in the member's own zone on its
     /// own date, so daylight-saving changes and zone differences across midnight are handled per occurrence.
     /// </summary>
-    internal static IEnumerable<(DateTimeOffset Start, DateTimeOffset End)> Occurrences(WeeklyAvailability weekly, DateOnly boardDate)
+    public static IEnumerable<(DateTimeOffset Start, DateTimeOffset End)> ForDate(WeeklyAvailability weekly, DateOnly boardDate)
     {
-        var zone = FindZone(weekly.TimeZone);
-        if (zone is null)
+        if (LocalTimes.FindZone(weekly.TimeZone) is not { } zone)
             yield break;
 
         // Zone offsets differ by at most 26 hours, so occurrences two days either side are enough.
@@ -117,16 +136,4 @@ internal sealed class GroupAvailabilityBoardQueries(IGuildGroupStore groups, IAv
         }
     }
 
-    private static BoardRange Clip(AvailabilitySource source, DateTimeOffset start, DateTimeOffset end,
-        DateTimeOffset dayStart, DateTimeOffset dayEnd, TimeZoneInfo zone)
-    {
-        bool fromPrevious = start < dayStart;
-        bool intoNext = end > dayEnd;
-        var from = TimeOnly.FromDateTime(TimeZoneInfo.ConvertTime(fromPrevious ? dayStart : start, zone).DateTime);
-        var until = TimeOnly.FromDateTime(TimeZoneInfo.ConvertTime(intoNext ? dayEnd : end, zone).DateTime);
-        return new BoardRange(source, from, until, fromPrevious, intoNext, start <= dayStart && end >= dayEnd);
-    }
-
-    private static TimeZoneInfo? FindZone(string? id) =>
-        id is not null && TimeZoneInfo.TryFindSystemTimeZoneById(id, out var zone) ? zone : null;
 }

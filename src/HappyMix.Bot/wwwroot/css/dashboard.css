@@ -687,3 +687,10 @@ form[data-dirty="true"] .hm-savebar__clean { display: none; }
     .hm-header .hm-brand span { display: none; }
     .hm-language select { width: 8.5rem; }
 }
+
+/* Availability certainty is explicit; recurrence is a separate cue. */
+.hm-certainty--definite { background: var(--hm-mint-tint); color: var(--hm-mint); }
+.hm-certainty--tentative { background: var(--hm-warn-tint); color: var(--hm-warn); border: 1px dashed var(--hm-warn); }
+.hm-availability-day { scroll-margin-top: calc(var(--hm-header-h) + var(--hm-space-6)); }
+.hm-tgrid__block.hm-tgrid__block--tentative { background: var(--hm-warn-tint); color: var(--hm-warn); border: 1px dashed var(--hm-warn); }
+.hm-swatch--tentative { background: var(--hm-warn-tint); border: 1px dashed var(--hm-warn); }

@@ -1,13 +1,13 @@
 namespace HappyMix.Application.Abstractions.Guilds;
 
 /// <summary>A member's one-off availability within a Discord server.</summary>
-public sealed record AvailabilityWindow(Guid Id, DateTimeOffset Start, DateTimeOffset End);
+public sealed record AvailabilityWindow(Guid Id, DateTimeOffset Start, DateTimeOffset End, bool Tentative = false);
 
 /// <summary>
 /// A recurring weekly window in its own time zone. Equal start and end (00:00–00:00) means the whole day,
 /// anchored to local midnight so it stays a full day across daylight-saving changes.
 /// </summary>
-public sealed record WeeklyAvailability(DayOfWeek Day, TimeOnly Start, TimeOnly End, string TimeZone)
+public sealed record WeeklyAvailability(DayOfWeek Day, TimeOnly Start, TimeOnly End, string TimeZone, bool Tentative = false)
 {
     public bool IsFullDay => Start == End;
 }
@@ -24,12 +24,14 @@ public interface IAvailabilityStore
     Task<IReadOnlyList<AvailabilityWindow>> ListAsync(ulong guildId, ulong userId);
 
     /// <summary>Creates a window or replaces the specified member-owned window.</summary>
-    Task<AvailabilityWindow> SaveAsync(ulong guildId, ulong userId, Guid? id, DateTimeOffset start, DateTimeOffset finish);
+    Task<AvailabilityWindow> SaveAsync(ulong guildId, ulong userId, Guid? id, DateTimeOffset start, DateTimeOffset finish, bool tentative = false);
 
     Task<bool> RemoveAsync(ulong guildId, ulong userId, Guid id);
     Task<IReadOnlyList<WeeklyAvailability>> ListWeeklyAsync(ulong guildId, ulong userId);
+    /// <summary>Adds a weekly range or updates the range with the same day, start and time zone.</summary>
     Task SaveWeeklyAsync(ulong guildId, ulong userId, WeeklyAvailability window);
-    Task<bool> RemoveWeeklyAsync(ulong guildId, ulong userId, DayOfWeek day);
+    /// <summary>Removes all ranges on a day, or just the range identified by start and time zone.</summary>
+    Task<bool> RemoveWeeklyAsync(ulong guildId, ulong userId, DayOfWeek day, TimeOnly? start = null, string? timeZone = null);
 
     /// <summary>One-off windows overlapping the UTC range, plus weekly windows, for the given members only.</summary>
     Task<MemberAvailabilitySnapshot> ListForMembersAsync(ulong guildId, IReadOnlyCollection<ulong> userIds,

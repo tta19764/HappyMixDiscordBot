@@ -30,7 +30,7 @@ public enum ScheduleChoice
     KeepAlternate
 }
 
-public sealed record WeeklyConflict(DayOfWeek Day, WeeklyAvailability Primary, WeeklyAvailability Alternate);
+public sealed record WeeklyConflict(DayOfWeek Day, WeeklyAvailability[] Primary, WeeklyAvailability[] Alternate);
 public sealed record WindowConflict(AvailabilityWindow Alternate, AvailabilityWindow[] Primary);
 
 /// <summary>What linking would change. Conflicts must be resolved and organizer roles acknowledged to approve.</summary>
@@ -220,7 +220,7 @@ internal sealed class AccountLinkHandlers(IAccountLinkStore links, IGuildGroupSt
             saved.Where(group => !group.Members.Contains(query.AlternateId) && group.Members.Any(family.Contains))
                 .Select(group => group.Name).ToArray(),
             saved.Where(group => group.OrganizerId == query.AlternateId).Select(group => group.Name).ToArray(),
-            restore.Windows.Length, restore.Weekly.Length));
+            restore.Windows.Length, restore.Weekly.Select(window => window.Day).Distinct().Count()));
     }
 
     public async Task<Result<UnlinkResult>> Handle(UnlinkAccountCommand command, CancellationToken cancellationToken) =>
@@ -313,7 +313,7 @@ internal sealed class AccountLinkHandlers(IAccountLinkStore links, IGuildGroupSt
         var keepAlternate = preview.WindowConflicts.Where(conflict => choices.Windows[conflict.Alternate.Id] == ScheduleChoice.KeepAlternate).ToArray();
         var weeklyToSet = data.MovedWeekly
             .Concat(preview.WeeklyConflicts.Where(conflict => choices.Weekly[conflict.Day] == ScheduleChoice.KeepAlternate)
-                .Select(conflict => conflict.Alternate))
+                .SelectMany(conflict => conflict.Alternate))
             .Select(day => day with { })
             .ToArray();
         var family = map.Accounts(request.PrimaryId).Append(alternate).ToHashSet();
@@ -342,18 +342,19 @@ internal sealed class AccountLinkHandlers(IAccountLinkStore links, IGuildGroupSt
         var family = primaryFamily.Append(alternate).ToHashSet();
         var merged = Names(group => !ReferenceEquals(DeduplicateInvitations(group, family, primary), group));
 
-        var now = clock.UtcNow;
+        // Linking changes the owner of saved data, not its lifetime. The group board includes
+        // earlier hours of today, so filtering by UtcNow here would erase visible history.
         var altWindows = (await availability.ListAsync(guildId, alternate)).ToArray();
-        var primaryWindows = (await availability.ListAsync(guildId, primary)).Where(window => window.End > now).ToArray();
+        var primaryWindows = (await availability.ListAsync(guildId, primary)).ToArray();
         var altWeekly = (await availability.ListWeeklyAsync(guildId, alternate)).ToArray();
-        var primaryWeekly = (await availability.ListWeeklyAsync(guildId, primary)).ToDictionary(day => day.Day);
+        var primaryWeekly = (await availability.ListWeeklyAsync(guildId, primary)).ToLookup(day => day.Day);
 
         var moved = new List<Guid>();
         var conflicts = new List<WindowConflict>();
         int duplicates = 0;
-        foreach (var window in altWindows.Where(window => window.End > now))
+        foreach (var window in altWindows)
         {
-            if (primaryWindows.Any(item => item.Start == window.Start && item.End == window.End))
+            if (primaryWindows.Any(item => item.Start == window.Start && item.End == window.End && item.Tentative == window.Tentative))
             {
                 duplicates++;
                 continue;
@@ -367,18 +368,20 @@ internal sealed class AccountLinkHandlers(IAccountLinkStore links, IGuildGroupSt
 
         var movedWeekly = new List<WeeklyAvailability>();
         var weeklyConflicts = new List<WeeklyConflict>();
-        foreach (var day in altWeekly)
+        foreach (var day in altWeekly.GroupBy(window => window.Day))
         {
-            if (!primaryWeekly.TryGetValue(day.Day, out var existing))
-                movedWeekly.Add(day);
-            else if (existing == day)
-                duplicates++;
+            var existing = primaryWeekly[day.Key].ToArray();
+            var alternateRanges = day.ToArray();
+            if (existing.Length == 0)
+                movedWeekly.AddRange(alternateRanges);
+            else if (existing.Length == alternateRanges.Length && existing.All(alternateRanges.Contains))
+                duplicates += alternateRanges.Length;
             else
-                weeklyConflicts.Add(new WeeklyConflict(day.Day, existing, day));
+                weeklyConflicts.Add(new WeeklyConflict(day.Key, existing, alternateRanges));
         }
 
         var preview = new LinkPreview(primary, alternate, request.ExpiresAt, shared, fromAlternate, fromPrimary, organized, merged,
-            moved.Count, movedWeekly.Count, duplicates, weeklyConflicts.ToArray(), conflicts.ToArray());
+            moved.Count, movedWeekly.Select(window => window.Day).Distinct().Count(), duplicates, weeklyConflicts.ToArray(), conflicts.ToArray());
         return (preview, new Analysis(new AvailabilitySnapshot(altWindows, altWeekly), moved.ToArray(), movedWeekly.ToArray()));
     }
 

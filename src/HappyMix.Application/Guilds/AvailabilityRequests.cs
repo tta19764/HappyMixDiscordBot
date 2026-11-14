@@ -7,7 +7,7 @@ namespace HappyMix.Application.Guilds;
 
 public sealed record GetUpcomingAvailabilityQuery(ulong GuildId, ulong UserId) : IQuery<AvailabilityWindow[]>;
 public sealed record SaveAvailabilityCommand(ulong GuildId, ulong UserId, Guid? Id, DateTimeOffset Start,
-    DateTimeOffset End) : ICommand<AvailabilityWindow>;
+    DateTimeOffset End, bool Tentative = false) : ICommand<AvailabilityWindow>;
 public sealed record RemoveAvailabilityCommand(ulong GuildId, ulong UserId, Guid Id) : ICommand;
 
 internal sealed class AvailabilityHandlers(IAvailabilityStore store, IClock clock, IAccountLinkStore accountLinks) :
@@ -25,7 +25,7 @@ internal sealed class AvailabilityHandlers(IAvailabilityStore store, IClock cloc
     {
         try
         {
-            return Result.Success(await store.SaveAsync(command.GuildId, await MemberAsync(command.GuildId, command.UserId), command.Id, command.Start, command.End));
+            return Result.Success(await store.SaveAsync(command.GuildId, await MemberAsync(command.GuildId, command.UserId), command.Id, command.Start, command.End, command.Tentative));
         }
         catch (AvailabilityException exception)
         {

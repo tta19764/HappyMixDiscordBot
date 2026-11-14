@@ -43,6 +43,8 @@
             </div>
 
             <partial name="_TimeRange" model="todayRange" />
+            <partial name="_Certainty" model="Model.Form.Tentative" />
+            <p class="hm-help">@T["Save a range, then add another. Each range has its own certainty."]</p>
 
             @if (Model.Presets.Count > 0)
             {
@@ -60,7 +62,7 @@
             <hr class="hm-divider" style="margin: 0">
             <p class="hm-help">@T["Nothing is shared until you save."]</p>
             <div class="hm-sticky-action" style="display: flex; justify-content: flex-end; margin-top: calc(-1 * var(--hm-space-2))">
-                <button class="hm-btn hm-btn--primary hm-btn--lg" name="action" value="today" data-range-save>@DashboardIcons.Render("check")@T["Save today"]</button>
+                <button class="hm-btn hm-btn--primary hm-btn--lg" name="action" value="today" data-range-save>@DashboardIcons.Render("check")@T["Add range"]</button>
             </div>
         </form>
 
@@ -85,6 +87,7 @@
                                 <div class="hm-list__main">
                                     <p class="hm-list__title">@window.Title</p>
                                     <p class="hm-list__meta">@window.Meta</p>
+                                    <span class="hm-badge @(window.Tentative ? "hm-certainty--tentative" : "hm-certainty--definite")">@T[window.Tentative ? "Tentative" : "Definite"]</span>
                                 </div>
                                 <form method="post" action="@baseUrl" asp-antiforgery="false">
                                     @Html.AntiForgeryToken()
@@ -104,112 +107,82 @@
         </aside>
     </div>
 }
-else if (Model.WeeklyCount == 0 && !Model.IsEditing)
-{
-    <section class="hm-card">
-        <div class="hm-empty">
-            <span class="hm-empty__icon">@DashboardIcons.Render("calendar", "width: 1.5rem; height: 1.5rem")</span>
-            <h2>@T["No weekly hours yet"]</h2>
-            <p>Add the evenings you usually play once. HappyMix repeats them every week.</p>
-            <a class="hm-btn hm-btn--primary" href="@weeklyUrl&amp;edit=Monday#monday">@DashboardIcons.Render("plus")Add Monday hours</a>
-        </div>
-    </section>
-}
 else
 {
-    <section class="hm-card hm-card--flush" aria-labelledby="week-title">
-        <div class="hm-card__head" style="padding: var(--hm-space-5) var(--hm-space-5) 0">
-            <div>
-                <h2 id="week-title">@T["Your usual week"]</h2>
-                <p>@T["Repeats every week until you clear a day."]</p>
-            </div>
-            <span class="hm-badge hm-tnum">@Model.WeeklyCount of 7 days</span>
+    <div class="hm-stack">
+        <div class="hm-card hm-stack hm-stack--sm">
+            <h2>@T["Your usual week"]</h2>
+            <p class="hm-help">@T["Save a range, then add another. Each range has its own certainty."]</p>
+            <p class="hm-help">@T["The same start time and time zone updates an existing weekly range."] @T["Clear existing ranges before saving a full day."]</p>
         </div>
-        <div class="hm-week__axis" aria-hidden="true"><span></span><span></span><span class="hm-axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></span><span></span></div>
-
-        <div class="hm-week">
-            @foreach (var row in Model.Week)
-            {
-                string editUrl = $"{weeklyUrl}&edit={row.Name}#{row.Anchor}";
-                if (row.IsEditing)
+        @foreach (var row in Model.Week)
+        {
+            <section class="hm-card hm-stack hm-availability-day" id="@row.Anchor" aria-labelledby="@(row.Anchor)-title">
+                <div class="hm-row hm-row--between">
+                    <h2 id="@(row.Anchor)-title">@row.Name</h2>
+                    @if (row.IsToday) { <span class="hm-badge">@T["Today"]</span> }
+                    @if (row.IsSaved) { <span class="hm-badge hm-certainty--definite">@T["✓ Saved"]</span> }
+                </div>
+                @if (row.Windows.Count == 0)
                 {
-                    <div class="hm-day hm-day--editing" id="@row.Anchor">
-                        <span class="hm-day__name" style="padding-top: 1.9rem">@row.Name<small>@(row.Window is null ? "Adding hours" : "Editing")</small></span>
-                        <form class="hm-day__editor" method="post" action="@baseUrl" asp-antiforgery="false"
-                              data-range data-day="@row.ShortName" data-next-day="@row.NextShortName" aria-label="Edit @row.Name hours">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="day" value="@row.Day">
-                            <partial name="_TimeRange" model="new TimeRangeModel(row.Anchor, row.ShortName, Model.Form.Start, Model.Form.End, Model.Form.Offset, Model.TimeZone, Model.TimeZoneOffset, Model.Form.AllDay)" />
-                            <div class="hm-row" style="justify-content: flex-end">
-                                <a class="hm-btn hm-btn--ghost" href="@weeklyUrl#@row.Anchor">@T["Cancel"]</a>
-                                <button class="hm-btn hm-btn--primary" name="action" value="weekly" data-range-save>@DashboardIcons.Render("check")Save @row.Name</button>
-                            </div>
-                        </form>
-                    </div>
-                    continue;
+                    <p class="hm-help">@T["No hours"]</p>
                 }
-
-                string label = row.Window is { } w
-                    ? $"{AvailabilityFormat.Time(w.Start)} to {AvailabilityFormat.Time(w.End)}{(row.Overnight ? " " + row.NextShortName : "")}"
-                    : "No hours";
-                if (row.CarryPercent is not null)
-                    label = "Carried over from the night before, then " + label;
-                <div class="hm-day @(row.IsToday ? "hm-day--today" : "") @(row.IsSaved ? "hm-day--saved" : "")" id="@row.Anchor">
-                    <div class="hm-day__label">
-                        <span class="hm-day__name">@row.Name
-                            @if (row.IsSaved)
-                            {
-                                <small style="color: var(--hm-mint)">@T["✓ Saved"]</small>
-                            }
-                            else if (row.IsToday)
-                            {
-                                <small>@T["Today"]</small>
-                            }
-                        </span>
-                        @if (row.Window is { } window)
+                else
+                {
+                    <ul class="hm-list">
+                        @foreach (var window in row.Windows)
                         {
-                            <span class="hm-day__time">@(row.FullDay ? T["All day"].Value : $"{AvailabilityFormat.Time(window.Start)} → {AvailabilityFormat.Time(window.End)}")<small style="@(row.Overnight ? "color: var(--hm-mint)" : null)">@(row.Overnight ? $"Overnight · into {row.NextShortName}" : row.Duration)@(row.ZoneNote is { } zone ? " · " + zone : "")</small></span>
+                            <li class="hm-list__item">
+                                <div class="hm-list__main">
+                                    <p class="hm-list__title">@(window.IsFullDay ? T["All day"].Value : $"{AvailabilityFormat.Time(window.Start)} → {AvailabilityFormat.Time(window.End)}")
+                                        @if (window.End < window.Start) { <span class="hm-muted">· @row.NextShortName</span> }
+                                    </p>
+                                    <p class="hm-list__meta">@window.TimeZone</p>
+                                    <span class="hm-badge @(window.Tentative ? "hm-certainty--tentative" : "hm-certainty--definite")">@T[window.Tentative ? "Tentative" : "Definite"]</span>
+                                </div>
+                                <form method="post" action="@baseUrl" asp-antiforgery="false">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="day" value="@row.Day">
+                                    <input type="hidden" name="start" value="@AvailabilityFormat.Time(window.Start)">
+                                    <input type="hidden" name="offset" value="@window.TimeZone">
+                                    <button class="hm-btn hm-btn--ghost hm-btn--icon" name="action" value="remove-weekly" aria-label="@T["Remove range"] · @row.Name · @AvailabilityFormat.Time(window.Start)">@DashboardIcons.Render("trash")</button>
+                                </form>
+                            </li>
                         }
-                        else
+                    </ul>
+                }
+                @if (row.IsEditing)
+                {
+                    <form class="hm-stack" method="post" action="@baseUrl" asp-antiforgery="false"
+                          data-range data-day="@row.ShortName" data-next-day="@row.NextShortName" aria-label="@T["Add range"] · @row.Name">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="day" value="@row.Day">
+                        <partial name="_TimeRange" model="new TimeRangeModel(row.Anchor, row.ShortName, Model.Form.Start, Model.Form.End, Model.Form.Offset, Model.TimeZone, Model.TimeZoneOffset, Model.Form.AllDay)" />
+                        <partial name="_Certainty" model="Model.Form.Tentative" />
+                        <div class="hm-row">
+                            <button class="hm-btn hm-btn--primary" name="action" value="weekly" data-range-save>@DashboardIcons.Render("plus")@T["Save range"]</button>
+                            <a class="hm-btn hm-btn--ghost" href="@weeklyUrl#@row.Anchor">@T["Cancel"]</a>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <div class="hm-row">
+                        <a class="hm-btn" href="@weeklyUrl&amp;edit=@row.Day#@row.Anchor">@DashboardIcons.Render("plus")@T["Add range"]</a>
+                        @if (row.Windows.Count > 0)
                         {
-                            <span class="hm-day__none">@T["No hours"]</span>
-                        }
-                    </div>
-                    <div class="hm-dayline" role="img" aria-label="@row.Name: @label">
-                        @if (row.CarryPercent is { } carry)
-                        {
-                            <span class="hm-dayline__seg hm-dayline__seg--carry" style="left: 0; width: @AvailabilityFormat.Css(carry)"></span>
-                        }
-                        @if (row.Window is not null)
-                        {
-                            <span class="hm-dayline__seg @(row.Overnight ? "hm-dayline__seg--overnight" : "")" style="left: @AvailabilityFormat.Css(row.Left); width: @AvailabilityFormat.Css(row.Width)"></span>
-                        }
-                    </div>
-                    <div class="hm-day__actions">
-                        @if (row.Window is not null)
-                        {
-                            <a class="hm-btn" href="@editUrl" aria-label="Edit @row.Name hours">@DashboardIcons.Render("pencil")<span class="hm-btn__label">@T["Edit"]</span></a>
                             <form method="post" action="@baseUrl" asp-antiforgery="false">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="day" value="@row.Day">
-                                <button class="hm-btn hm-btn--danger" name="action" value="clear" aria-label="Clear @row.Name hours">@DashboardIcons.Render("trash")<span class="hm-btn__label">@T["Clear"]</span></button>
+                                <button class="hm-btn hm-btn--danger" name="action" value="clear">@T["Clear day"]</button>
                             </form>
                         }
-                        else
-                        {
-                            <a class="hm-btn" href="@editUrl" aria-label="Add @row.Name hours">@DashboardIcons.Render("plus")<span class="hm-btn__label">@T["Add hours"]</span></a>
-                        }
                     </div>
-                </div>
-            }
-        </div>
-        <div class="hm-row" style="gap: var(--hm-space-5); padding: var(--hm-space-3) var(--hm-space-5); border-top: 1px solid var(--hm-border); font-size: var(--hm-fs-xs); color: var(--hm-text-subtle)">
-            <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg" style="position: static; display: inline-block; width: 1.75rem; height: .625rem"></span>@T["Available"]</span>
-            <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg hm-dayline__seg--carry" style="position: static; display: inline-block; width: 1.75rem; height: .625rem; border-radius: 999px"></span>@T["Carried over from the night before"]</span>
-        </div>
-    </section>
+                }
+            </section>
+        }
+    </div>
 }
-
 <datalist id="time-zones">
     @foreach (var zone in HappyMix.Bot.Interactions.AvailabilityTimeZoneAutocomplete.Names)
     {

@@ -66,7 +66,7 @@ rejected, so no existing row has that meaning. A one-off full day is an ordinary
 - Overnight weekly range split across midnight, plus multiple ranges and a one-off on the same day.
 - Weekly full day on the 25-hour Kyiv fall-back day stays exactly one board day and doesn't spill into Monday.
 - Saving Free all day adds one window without changing weekly hours or other windows; 18:00–00:30 still means
-  6.5 hours; weekly full day replaces only that day; equal start and end is still rejected for ordinary ranges.
+  6.5 hours; weekly full day requires clearing any overlapping ranges first; equal start and end is still rejected for ordinary ranges.
 
 ## Localization
 
@@ -104,3 +104,25 @@ Design: canvas row 6, "Group availability — hour grid". Implemented as designe
 Application: `GroupAvailabilityBoard` gains `FreeByHour` (24 counts) and `Now`. Same authorization and batched
 reads as before. New test: `FreeTogetherCountsEachHourAndNowIsOnlyShownForToday`. 128 tests pass. 15 new
 strings in Ukrainian and Russian. No storage migration.
+
+
+## Multiple ranges and certainty
+
+Today and each weekday support multiple separate ranges. Each range stores an independent
+`Tentative` flag (false means definite). Existing data migrates to definite without deleting ranges.
+The weekly key is server, member, weekday, start and time zone: saving that same key updates
+its end and certainty; a different start adds a range. Overlaps in the same weekly time zone
+are rejected, including rollover between Sunday and Monday. Ranges in different time zones
+retain their own recurrence rules.
+
+The dashboard lists every range with its time zone and a definite/tentative badge. Remove one
+range or clear a whole weekday. Discord mirrors this with `tentative` on availability save
+commands and `/availability remove-weekly day start timezone`; copy the exact zone from
+`/availability timetable`. Use `/availability list` and `/availability remove` for dated ranges.
+Weekly command output is paginated.
+
+The group board distinguishes tentative ranges with amber dashed borders and text labels.
+“Free together” counts definite ranges only; hourly tooltips also show tentative member counts.
+Linked accounts share all ranges. Weekly link conflicts are resolved per whole weekday so
+choosing either account preserves all of that account's ranges for the day. Unlinking restores
+the saved ranges and their certainty.

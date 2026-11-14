@@ -1034,4 +1034,17 @@
   <data name="This links both accounts in the selected server." xml:space="preserve"><value>Обидва облікові записи буде пов’язано на вибраному сервері.</value></data>
   <data name="Only server administrators can link other accounts." xml:space="preserve"><value>Лише адміністратори сервера можуть пов’язувати чужі облікові записи.</value></data>
   <data name="Choose two different accounts." xml:space="preserve"><value>Виберіть два різні облікові записи.</value></data>
+  <data name="Certainty" xml:space="preserve"><value>Впевненість</value></data>
+  <data name="Definite" xml:space="preserve"><value>Точно</value></data>
+  <data name="Tentative" xml:space="preserve"><value>Можливо</value></data>
+  <data name="Definite: I can play. Tentative: I might be able to play." xml:space="preserve"><value>Точно: я можу грати. Можливо: ще не впевнений, чи зможу.</value></data>
+  <data name="Save a range, then add another. Each range has its own certainty." xml:space="preserve"><value>Збережіть проміжок, потім додайте наступний. Для кожного вкажіть, наскільки ви впевнені.</value></data>
+  <data name="The same start time and time zone updates an existing weekly range." xml:space="preserve"><value>Той самий час початку й часовий пояс оновлюють наявний щотижневий проміжок.</value></data>
+  <data name="Add range" xml:space="preserve"><value>Додати проміжок</value></data>
+  <data name="Save range" xml:space="preserve"><value>Зберегти проміжок</value></data>
+  <data name="Remove range" xml:space="preserve"><value>Видалити проміжок</value></data>
+  <data name="Clear day" xml:space="preserve"><value>Очистити день</value></data>
+  <data name="Free together counts definite availability only." xml:space="preserve"><value>«Вільні разом» враховує лише позначені як «Точно» проміжки.</value></data>
+  <data name="{0} definite, {1} tentative at {2}:00" xml:space="preserve"><value>{0} точно, {1} можливо о {2}:00</value></data>
+  <data name="Clear existing ranges before saving a full day." xml:space="preserve"><value>Очистіть наявні проміжки, перш ніж зберегти цілий день.</value></data>
 </root>

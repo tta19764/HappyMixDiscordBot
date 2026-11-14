@@ -32,22 +32,66 @@ public sealed class AvailabilityScheduleTests
     }
 
     [Fact]
-    public async Task WeeklyAvailabilityReplacesOneDayAndSurvivesRestart()
+    public async Task WeeklyAvailabilityAddsRangesAndUpdatesMatchingStartAndZone()
     {
         using var database = await SqliteTestDatabase.CreateAsync();
         using var services = CreateServices(database.Services);
         var sender = services.GetRequiredService<ISender>();
         var command = new SetWeeklyAvailabilityCommand(1, 2, DayOfWeek.Friday, "17", "00:30", "-05:00", "UTC");
         Assert.True((await sender.Send(command)).IsSuccess);
-        Assert.True((await sender.Send(command with { Start = "18" })).IsSuccess);
+        Assert.True((await sender.Send(command with { End = "01:00", Tentative = true })).IsSuccess);
 
         using var reopened = CreateServices(await database.OpenAsync());
         sender = reopened.GetRequiredService<ISender>();
         var saved = Assert.Single((await sender.Send(new GetWeeklyAvailabilityQuery(1, 2))).Value);
-        Assert.Equal(new WeeklyAvailability(DayOfWeek.Friday, new TimeOnly(18, 0), new TimeOnly(0, 30), "UTC-05:00"), saved);
+        Assert.Equal(new WeeklyAvailability(DayOfWeek.Friday, new TimeOnly(17, 0), new TimeOnly(1, 0), "UTC-05:00", true), saved);
         Assert.Empty((await sender.Send(new GetWeeklyAvailabilityQuery(1, 3))).Value);
         Assert.True((await sender.Send(new ClearWeeklyAvailabilityCommand(1, 2, DayOfWeek.Friday))).IsSuccess);
         Assert.Empty((await sender.Send(new GetWeeklyAvailabilityQuery(1, 2))).Value);
+    }
+
+    [Fact]
+    public async Task MultipleTodayAndWeeklyRangesKeepCertaintyAndCanBeRemovedIndividually()
+    {
+        using var database = await SqliteTestDatabase.CreateAsync();
+        using var services = CreateServices(database.Services);
+        var sender = services.GetRequiredService<ISender>();
+        Assert.True((await sender.Send(new SetTodayAvailabilityCommand(1, 2, "17", "19", "Europe/Kyiv", "UTC"))).IsSuccess);
+        Assert.True((await sender.Send(new SetTodayAvailabilityCommand(1, 2, "21", "00:30", "Europe/Kyiv", "UTC", Tentative: true))).IsSuccess);
+        var today = (await sender.Send(new GetUpcomingAvailabilityQuery(1, 2))).Value;
+        Assert.Equal(2, today.Length);
+        Assert.False(today[0].Tentative);
+        Assert.True(today[1].Tentative);
+        Assert.True((await sender.Send(new RemoveAvailabilityCommand(1, 2, today[0].Id))).IsSuccess);
+        Assert.True(Assert.Single((await sender.Send(new GetUpcomingAvailabilityQuery(1, 2))).Value).Tentative);
+
+        var morning = new SetWeeklyAvailabilityCommand(1, 2, DayOfWeek.Monday, "10", "12", "UTC", "UTC");
+        Assert.True((await sender.Send(morning)).IsSuccess);
+        Assert.True((await sender.Send(morning with { Start = "18", End = "00:30", Tentative = true })).IsSuccess);
+        using var reopened = CreateServices(await database.OpenAsync());
+        sender = reopened.GetRequiredService<ISender>();
+        var weekly = (await sender.Send(new GetWeeklyAvailabilityQuery(1, 2))).Value;
+        Assert.Equal(2, weekly.Count);
+        Assert.True(weekly[1].Tentative);
+        Assert.True((await sender.Send(new ClearWeeklyAvailabilityCommand(1, 3, DayOfWeek.Monday, new(10, 0), "UTC"))).IsFailure);
+        Assert.True((await sender.Send(new ClearWeeklyAvailabilityCommand(1, 2, DayOfWeek.Monday, new(10, 0), "UTC"))).IsSuccess);
+        Assert.True(Assert.Single((await sender.Send(new GetWeeklyAvailabilityQuery(1, 2))).Value).Tentative);
+        Assert.True((await sender.Send(new ClearWeeklyAvailabilityCommand(1, 2, DayOfWeek.Monday))).IsSuccess);
+        Assert.Empty((await sender.Send(new GetWeeklyAvailabilityQuery(1, 2))).Value);
+    }
+
+    [Fact]
+    public async Task WeeklyOverlapIncludingSundayRolloverIsRejectedWithoutLosingRanges()
+    {
+        using var database = await SqliteTestDatabase.CreateAsync();
+        using var services = CreateServices(database.Services);
+        var sender = services.GetRequiredService<ISender>();
+        var night = new SetWeeklyAvailabilityCommand(1, 2, DayOfWeek.Sunday, "23", "02", "UTC", "UTC");
+        Assert.True((await sender.Send(night)).IsSuccess);
+        Assert.True((await sender.Send(night with { Day = DayOfWeek.Monday, Start = "01", End = "03" })).IsFailure);
+        Assert.True((await sender.Send(night with { Day = DayOfWeek.Monday, Start = "02", End = "03", Tentative = true })).IsSuccess);
+        Assert.True((await sender.Send(night with { Day = DayOfWeek.Monday, FullDay = true })).IsFailure);
+        Assert.Equal(2, (await sender.Send(new GetWeeklyAvailabilityQuery(1, 2))).Value.Count);
     }
 
     [Fact]

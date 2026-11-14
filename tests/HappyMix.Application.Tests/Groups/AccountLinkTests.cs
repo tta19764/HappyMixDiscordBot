@@ -179,6 +179,39 @@ public sealed class AccountLinkTests
         Assert.True((await fixture.Sender.Send(new LeaveGroupCommand(new GroupActor(Guild, Twink, false), "Raid"))).IsFailure);
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task LinkingPreservesAlternatesTodayRangeOnGroupBoard(bool afterRangeEnds, bool admin)
+    {
+        using var fixture = await Fixture.CreateAsync();
+        // Kyiv is UTC+3 on this fixture's date. The alternate alone saved 20:00–23:00.
+        var start = new DateTimeOffset(2026, 10, 24, 20, 0, 0, TimeSpan.FromHours(3));
+        var window = await fixture.Availability.SaveAsync(Guild, Twink, null, start, start.AddHours(3));
+        await fixture.Groups.UpdateAsync(Guild, "Evening", _ => new GuildGroup("Evening", Friend, [Friend, Twink, Main], []));
+        var group = Assert.Single(await fixture.Groups.ListAsync(Guild));
+        fixture.Clock.Advance(TimeSpan.FromHours(afterRangeEnds ? 11.5 : 8.5)); // 23:30 or 20:30 local.
+        var query = new GetGroupAvailabilityBoardQuery(new GroupActor(Guild, Friend, false), group.Id, null, Kyiv);
+        var before = (await fixture.Sender.Send(query)).Value;
+        Assert.True(before.Rows.Single(row => row.UserId == Twink).HasData);
+
+        if (admin)
+            Assert.True((await fixture.Sender.Send(new AdminLinkAccountsCommand(Guild, Friend, Main, Twink, LinkResolutions.None))).IsSuccess);
+        else
+            await fixture.LinkAsync(Main, Twink);
+
+        var board = (await fixture.Sender.Send(query)).Value;
+        Assert.Equal(2, board.Rows.Length);
+        // The group-specific representative stays the alternate, but reads the primary's schedule.
+        var range = Assert.Single(board.Rows.Single(row => row.UserId == Twink).Ranges);
+        Assert.Equal(new TimeOnly(20, 0), range.Start);
+        Assert.Equal(new TimeOnly(23, 0), range.End);
+        Assert.Equal(window.Id, Assert.Single(await fixture.Availability.ListAsync(Guild, Main)).Id);
+        Assert.Empty(await fixture.Availability.ListAsync(Guild, Twink));
+    }
+
     [Fact]
     public async Task MembersAndOverlapCountOncePerFamily()
     {
@@ -256,6 +289,30 @@ public sealed class AccountLinkTests
         var snapshot = await fixture.Links.GetSnapshotAsync(Guild, Twink);
         Assert.Equal((2, 2), (snapshot!.Windows.Length, snapshot.Weekly.Length));
         Assert.Contains(snapshot.Windows, window => window.Id == clash.Id);
+    }
+
+    [Fact]
+    public async Task LinkingAndUnlinkingPreserveMultipleRangesAndCertainty()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        await fixture.Availability.SaveWeeklyAsync(Guild, Main, new WeeklyAvailability(DayOfWeek.Monday, new(8, 0), new(9, 0), Kyiv));
+        var morning = new WeeklyAvailability(DayOfWeek.Monday, new(10, 0), new(12, 0), Kyiv);
+        var evening = new WeeklyAvailability(DayOfWeek.Monday, new(18, 0), new(20, 0), Kyiv, true);
+        await fixture.Availability.SaveWeeklyAsync(Guild, Twink, morning);
+        await fixture.Availability.SaveWeeklyAsync(Guild, Twink, evening);
+        await fixture.Availability.SaveAsync(Guild, Twink, null, At(26, 18), At(26, 20), true);
+        var request = await fixture.RequestAsync(Main);
+        var preview = (await fixture.Sender.Send(new PreviewAccountLinkQuery(Guild, Twink, request.RequestId, request.Token))).Value;
+        Assert.Equal(2, Assert.Single(preview.WeeklyConflicts).Alternate.Length);
+        var choices = new LinkResolutions(new Dictionary<DayOfWeek, ScheduleChoice> { [DayOfWeek.Monday] = ScheduleChoice.KeepAlternate },
+            new Dictionary<Guid, ScheduleChoice>(), AcknowledgeOrganizer: true);
+        Assert.True((await fixture.Sender.Send(new ApproveAccountLinkCommand(Guild, Twink, request.RequestId, request.Token, choices))).IsSuccess);
+        Assert.Equal([morning, evening], await fixture.Availability.ListWeeklyAsync(Guild, Main));
+        Assert.True(Assert.Single(await fixture.Availability.ListAsync(Guild, Main)).Tentative);
+        Assert.True((await fixture.Sender.Send(new UnlinkAccountCommand(Guild, Main, Twink))).IsSuccess);
+        Assert.Equal([morning, evening], await fixture.Availability.ListWeeklyAsync(Guild, Twink));
+        Assert.True(Assert.Single(await fixture.Availability.ListAsync(Guild, Twink)).Tentative);
+        Assert.Equal([morning, evening], await fixture.Availability.ListWeeklyAsync(Guild, Main));
     }
 
     [Fact]

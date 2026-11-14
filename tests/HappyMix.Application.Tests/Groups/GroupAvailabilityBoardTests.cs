@@ -161,7 +161,7 @@ public sealed class GroupAvailabilityBoardTests
         Assert.False(Row((await fixture.Board(Member, group)).Value, Member).HasData);
         Assert.False(Row((await fixture.Board(Member, group, date: Monday)).Value, Member).HasData);
 
-        var occurrence = GroupAvailabilityBoardQueries.Occurrences(saved.Value, Sunday).Single(item => item.Start.Day == 25);
+        var occurrence = WeeklyOccurrences.ForDate(saved.Value, Sunday).Single(item => item.Start.Day == 25);
         Assert.Equal(TimeSpan.FromHours(25), occurrence.End - occurrence.Start);
     }
 
@@ -193,7 +193,7 @@ public sealed class GroupAvailabilityBoardTests
     }
 
     [Fact]
-    public async Task WeeklyFullDayReplacesOnlyThatDay()
+    public async Task WeeklyFullDayRequiresClearingExistingRangesFirst()
     {
         using var fixture = await Fixture.CreateAsync();
         await fixture.SeedAsync();
@@ -201,12 +201,40 @@ public sealed class GroupAvailabilityBoardTests
         await fixture.Availability.SaveWeeklyAsync(Guild, Member, friday);
         await fixture.Availability.SaveWeeklyAsync(Guild, Member, new WeeklyAvailability(DayOfWeek.Sunday, new(10, 0), new(12, 0), Kyiv));
 
+        Assert.True((await fixture.Sender.Send(new SetWeeklyAvailabilityCommand(Guild, Member, DayOfWeek.Sunday, "", "", null, Kyiv, true))).IsFailure);
+        Assert.True((await fixture.Sender.Send(new ClearWeeklyAvailabilityCommand(Guild, Member, DayOfWeek.Sunday))).IsSuccess);
         Assert.True((await fixture.Sender.Send(new SetWeeklyAvailabilityCommand(Guild, Member, DayOfWeek.Sunday, "", "", null, Kyiv, true))).IsSuccess);
 
         var saved = await fixture.Availability.ListWeeklyAsync(Guild, Member);
         Assert.Equal(friday, saved.Single(item => item.Day == DayOfWeek.Friday));
         Assert.True(saved.Single(item => item.Day == DayOfWeek.Sunday).IsFullDay);
         Assert.True((await fixture.Sender.Send(new SetWeeklyAvailabilityCommand(Guild, Member, DayOfWeek.Monday, "18:00", "18:00", null, Kyiv))).IsFailure);
+    }
+
+    [Fact]
+    public async Task BoardShowsAllRangesAndCountsTentativeSeparately()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        Guid group = await fixture.SeedAsync();
+        await fixture.Availability.SaveWeeklyAsync(Guild, Member, new WeeklyAvailability(DayOfWeek.Saturday, new(14, 0), new(16, 0), Kyiv));
+        await fixture.Availability.SaveWeeklyAsync(Guild, Member, new WeeklyAvailability(DayOfWeek.Saturday, new(18, 0), new(20, 0), Kyiv, true));
+        await fixture.Availability.SaveAsync(Guild, Quiet, null, Now.AddHours(6), Now.AddHours(8), true);
+        var board = (await fixture.Board(Organizer, group)).Value;
+        Assert.Equal(2, Row(board, Member).Ranges.Length);
+        Assert.True(Row(board, Member).Ranges[1].Tentative);
+        Assert.True(Assert.Single(Row(board, Quiet).Ranges).Tentative);
+        Assert.Equal(1, board.FreeByHour[14]);
+        Assert.Equal(0, board.FreeByHour[18]);
+        Assert.Equal(2, board.TentativeByHour[18]);
+    }
+
+    [Fact]
+    public void WeeklyFixedOffsetRangesAreProjected()
+    {
+        var range = new WeeklyAvailability(DayOfWeek.Saturday, new(23, 0), new(1, 0), "UTC-05:00", true);
+        var occurrence = Assert.Single(WeeklyOccurrences.ForDate(range, Sunday));
+        Assert.Equal(new DateTimeOffset(2026, 10, 25, 4, 0, 0, TimeSpan.Zero), occurrence.Start.ToUniversalTime());
+        Assert.Equal(TimeSpan.FromHours(2), occurrence.End - occurrence.Start);
     }
 
     private static BoardRow Row(GroupAvailabilityBoard board, ulong user) => board.Rows.Single(row => row.UserId == user);

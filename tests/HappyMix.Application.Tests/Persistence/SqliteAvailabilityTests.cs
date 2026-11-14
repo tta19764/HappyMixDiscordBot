@@ -1,3 +1,8 @@
+using HappyMix.Infrastructure.Persistence;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using HappyMix.Application.Abstractions.Guilds;
 using HappyMix.Bot.Interactions;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,6 +11,28 @@ namespace HappyMix.Application.Tests.Persistence;
 
 public sealed class SqliteAvailabilityTests
 {
+    [Fact]
+    public async Task UpgradePreservesExistingRangesAsDefinite()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var context = new HappyMixDbContext(new DbContextOptionsBuilder<HappyMixDbContext>().UseSqlite(connection).Options);
+        var migrator = context.GetService<IMigrator>();
+        await migrator.MigrateAsync("20261116000100_AddAccountLinks");
+        var id = Guid.NewGuid();
+        await context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO AvailabilityWindows (Id, GuildId, UserId, StartUtc, EndUtc) VALUES ({id}, '1', '2', 100, 200)");
+        await context.Database.ExecuteSqlRawAsync("INSERT INTO WeeklyAvailability (GuildId, UserId, Day, StartTicks, EndTicks, TimeZone) VALUES ('1', '2', 1, 100, 200, 'UTC')");
+        await migrator.MigrateAsync();
+        var window = Assert.Single(await context.Set<AvailabilityRecord>().ToListAsync());
+        Assert.Equal(id, window.Id);
+        Assert.Equal(100, window.StartUtc);
+        Assert.False(window.Tentative);
+        var weekly = Assert.Single(await context.Set<WeeklyAvailabilityRecord>().ToListAsync());
+        Assert.Equal(100, weekly.StartTicks);
+        Assert.False(weekly.Tentative);
+        Assert.False(context.Database.HasPendingModelChanges());
+    }
+
     [Fact]
     public async Task OvernightWindowSurvivesReopenAndOnlyItsOwnerCanChangeIt()
     {

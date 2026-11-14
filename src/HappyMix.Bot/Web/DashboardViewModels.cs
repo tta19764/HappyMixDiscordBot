@@ -23,23 +23,17 @@ public sealed record AvailabilityPreset(string Label, string Start, string End)
     public string Range => $"{Start}–{End}";
 }
 
-public sealed record UpcomingRow(Guid Id, string Title, string Meta);
+public sealed record UpcomingRow(Guid Id, string Title, string Meta, bool Tentative = false);
 
-public sealed record WeekRow(DayOfWeek Day, WeeklyAvailability? Window, bool IsToday, bool IsEditing, bool IsSaved,
-    double? CarryPercent, string? ZoneNote)
+public sealed record WeekRow(DayOfWeek Day, IReadOnlyList<WeeklyAvailability> Windows, bool IsToday, bool IsEditing, bool IsSaved)
 {
     public string Name => CultureInfo.CurrentUICulture.DateTimeFormat.GetDayName(Day);
-    public string Anchor => CultureInfo.CurrentUICulture.DateTimeFormat.GetDayName(Day).ToLowerInvariant();
+    public string Anchor => Day.ToString().ToLowerInvariant();
     public string ShortName => AvailabilityFormat.ShortDay(Day);
     public string NextShortName => AvailabilityFormat.ShortDay((DayOfWeek)(((int)Day + 1) % 7));
-    public bool Overnight => Window is { } window && window.End < window.Start;
-    public bool FullDay => Window?.IsFullDay == true;
-    public double Left => Window is { } window && !window.IsFullDay ? AvailabilityFormat.Percent(window.Start) : 0;
-    public double Width => Window is { } window ? (Overnight || window.IsFullDay ? 100 : AvailabilityFormat.Percent(window.End)) - Left : 0;
-    public string Duration => Window is { } window ? AvailabilityFormat.Duration(window.Start, window.End) : "";
 }
 
-public sealed record AvailabilityForm(string? Start = null, string? End = null, string? Offset = null, bool AllDay = false);
+public sealed record AvailabilityForm(string? Start = null, string? End = null, string? Offset = null, bool AllDay = false, bool Tentative = false);
 
 public sealed record AvailabilityPage(
     ulong GuildId,
@@ -56,7 +50,7 @@ public sealed record AvailabilityPage(
     AvailabilityForm Form)
 {
     public bool IsWeekly => View == "weekly";
-    public int WeeklyCount => Week.Count(row => row.Window is not null);
+    public int WeeklyCount => Week.Count(row => row.Windows.Count > 0);
     public bool IsEditing => Week.Any(row => row.IsEditing);
 }
 

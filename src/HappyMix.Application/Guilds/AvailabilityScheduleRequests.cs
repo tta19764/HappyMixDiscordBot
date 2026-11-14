@@ -8,12 +8,12 @@ namespace HappyMix.Application.Guilds;
 
 /// <summary>Today's window. <paramref name="FullDay"/> saves local midnight today through local midnight tomorrow.</summary>
 public sealed record SetTodayAvailabilityCommand(ulong GuildId, ulong UserId, string Start, string End,
-    string? Offset, string DefaultTimeZone, bool FullDay = false) : ICommand<AvailabilityWindow>;
+    string? Offset, string DefaultTimeZone, bool FullDay = false, bool Tentative = false) : ICommand<AvailabilityWindow>;
 /// <summary>A weekly window. <paramref name="FullDay"/> saves 00:00–00:00, the whole local day.</summary>
 public sealed record SetWeeklyAvailabilityCommand(ulong GuildId, ulong UserId, DayOfWeek Day, string Start, string End,
-    string? Offset, string DefaultTimeZone, bool FullDay = false) : ICommand<WeeklyAvailability>;
+    string? Offset, string DefaultTimeZone, bool FullDay = false, bool Tentative = false) : ICommand<WeeklyAvailability>;
 public sealed record GetWeeklyAvailabilityQuery(ulong GuildId, ulong UserId) : IQuery<IReadOnlyList<WeeklyAvailability>>;
-public sealed record ClearWeeklyAvailabilityCommand(ulong GuildId, ulong UserId, DayOfWeek Day) : ICommand;
+public sealed record ClearWeeklyAvailabilityCommand(ulong GuildId, ulong UserId, DayOfWeek Day, TimeOnly? Start = null, string? TimeZone = null) : ICommand;
 
 internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGuildSettingsStore settings, IClock clock,
     IAccountLinkStore accountLinks) :
@@ -30,7 +30,7 @@ internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGu
             var date = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(clock.UtcNow, zone).DateTime);
             if (command.FullDay)
                 return Result.Success(await store.SaveAsync(command.GuildId, await MemberAsync(command.GuildId, command.UserId), null,
-                    LocalTimes.StartOfDay(date, zone), LocalTimes.StartOfDay(date.AddDays(1), zone)));
+                    LocalTimes.StartOfDay(date, zone), LocalTimes.StartOfDay(date.AddDays(1), zone), command.Tentative));
 
             var (start, end) = ParseTimes(command.Start, command.End);
             var from = Resolve(date.ToDateTime(start), zone);
@@ -38,7 +38,7 @@ internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGu
             if (until <= clock.UtcNow)
                 throw new AvailabilityException("This window has already ended.");
 
-            return Result.Success(await store.SaveAsync(command.GuildId, await MemberAsync(command.GuildId, command.UserId), null, from, until));
+            return Result.Success(await store.SaveAsync(command.GuildId, await MemberAsync(command.GuildId, command.UserId), null, from, until, command.Tentative));
         }
         catch (AvailabilityException exception)
         {
@@ -55,7 +55,7 @@ internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGu
 
             var (start, end) = command.FullDay ? (TimeOnly.MinValue, TimeOnly.MinValue) : ParseTimes(command.Start, command.End);
             var zone = await GetZoneAsync(command.GuildId, command.Offset, command.DefaultTimeZone, cancellationToken);
-            var window = new WeeklyAvailability(command.Day, start, end, zone.Id);
+            var window = new WeeklyAvailability(command.Day, start, end, zone.Id, command.Tentative);
             await store.SaveWeeklyAsync(command.GuildId, await MemberAsync(command.GuildId, command.UserId), window);
             return Result.Success(window);
         }
@@ -69,7 +69,7 @@ internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGu
         CancellationToken cancellationToken) => Result.Success(await store.ListWeeklyAsync(query.GuildId, await MemberAsync(query.GuildId, query.UserId)));
 
     public async Task<Result> Handle(ClearWeeklyAvailabilityCommand command, CancellationToken cancellationToken) =>
-        await store.RemoveWeeklyAsync(command.GuildId, await MemberAsync(command.GuildId, command.UserId), command.Day)
+        await store.RemoveWeeklyAsync(command.GuildId, await MemberAsync(command.GuildId, command.UserId), command.Day, command.Start, command.TimeZone)
             ? Result.Success()
             : Result.Failure(new("Availability.NotFound", "No weekly window is set for that day."));
 
@@ -79,7 +79,7 @@ internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGu
         if (offset is not null)
         {
             offset = offset.Trim();
-            if (TimeZoneInfo.TryFindSystemTimeZoneById(offset, out var namedZone))
+            if (LocalTimes.FindZone(offset) is { } namedZone)
                 return namedZone;
 
             if (!DateTimeOffset.TryParseExact("2000-01-01 " + offset, "yyyy-MM-dd zzz",
@@ -120,6 +120,16 @@ internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGu
 /// <summary>Converts local calendar times to instants without failing on daylight-saving gaps or repeats.</summary>
 public static class LocalTimes
 {
+    public static TimeZoneInfo? FindZone(string id)
+    {
+        if (TimeZoneInfo.TryFindSystemTimeZoneById(id, out var zone))
+            return zone;
+        if (id.StartsWith("UTC", StringComparison.Ordinal) && DateTimeOffset.TryParseExact("2000-01-01 " + id[3..],
+                "yyyy-MM-dd zzz", CultureInfo.InvariantCulture, DateTimeStyles.None, out var fixedTime))
+            return TimeZoneInfo.CreateCustomTimeZone(id, fixedTime.Offset, id, id);
+        return null;
+    }
+
     /// <summary>The first instant of a local date. A skipped midnight moves forward to the first valid time.</summary>
     public static DateTimeOffset StartOfDay(DateOnly date, TimeZoneInfo zone) => ToInstant(date.ToDateTime(TimeOnly.MinValue), zone);
 

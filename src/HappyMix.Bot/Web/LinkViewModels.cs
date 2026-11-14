@@ -32,17 +32,18 @@ public static class MemberStacks
         For(page.Names, member, page.Detail.LinkedAccounts.TryGetValue(member, out var alternates) ? alternates : [], localize, small);
 
     /// <summary>A window shown in the server's time zone, for example "Mon 26 Oct 19:00–21:00".</summary>
-    public static string Window(AvailabilityWindow window, string zoneId)
+    public static string Window(AvailabilityWindow window, string zoneId, Func<string, string> localize)
     {
         var zone = TimeZoneInfo.TryFindSystemTimeZoneById(zoneId, out var found) ? found : TimeZoneInfo.Utc;
         var start = TimeZoneInfo.ConvertTime(window.Start, zone);
         var end = TimeZoneInfo.ConvertTime(window.End, zone);
         var culture = CultureInfo.CurrentCulture;
         return start.ToString("ddd d MMM HH:mm", culture) + "–" +
-            end.ToString(end.Date == start.Date ? "HH:mm" : "ddd HH:mm", culture);
+            end.ToString(end.Date == start.Date ? "HH:mm" : "ddd HH:mm", culture) + " · " + localize(window.Tentative ? "Tentative" : "Definite");
     }
 
-    public static string Weekly(WeeklyAvailability day) => day.IsFullDay
+    public static string Weekly(WeeklyAvailability day, Func<string, string> localize) => (day.IsFullDay
         ? "00:00–24:00"
-        : $"{AvailabilityFormat.Time(day.Start)}–{AvailabilityFormat.Time(day.End)}" + (day.TimeZone is { Length: > 0 } ? $" · {day.TimeZone}" : "");
+        : $"{AvailabilityFormat.Time(day.Start)}–{AvailabilityFormat.Time(day.End)}" + (day.TimeZone is { Length: > 0 } ? $" · {day.TimeZone}" : "")) + " · " + localize(day.Tentative ? "Tentative" : "Definite");
+
 }
