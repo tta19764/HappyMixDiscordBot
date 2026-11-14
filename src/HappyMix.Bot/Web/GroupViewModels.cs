@@ -47,9 +47,61 @@ public sealed record GroupPage(
     BannerModel? Banner,
     string BackUrl,
     GroupFormState? Form,
-    GroupAvailabilityBoard? Board = null)
+    GroupAvailabilityBoard? Board = null,
+    bool Evening = false,
+    string? Tab = null)
 {
-    public string DayUrl(DateOnly day) => $"{Url}?day={day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}#availability";
+    /// <summary>Availability is the default Members tab when the board is visible; invite errors open the roster.</summary>
+    public bool ShowRoster => Board is null || Tab == "roster" || Form?.Section == "members";
+
+    public int FirstHour => Evening ? 12 : 0;
+    public int HourSpan => Evening ? 12 : 24;
+
+    public string DayUrl(DateOnly day) => Link(day, Evening, null) + "#availability";
+    public string HoursUrl(bool evening) => Link(Board?.Date, evening, null) + "#availability";
+    public string TabUrl(string tab) => Link(Board?.Date, Evening, tab == "roster" ? "roster" : null) + "#members";
+
+    private string Link(DateOnly? day, bool evening, string? tab)
+    {
+        var query = new List<string>();
+        if (day is { } date && Board is { } board && date != board.Today)
+            query.Add("day=" + date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        if (evening)
+            query.Add("hours=12-24");
+        if (tab is not null)
+            query.Add("tab=" + tab);
+        return Url + (query.Count > 0 ? "?" + string.Join('&', query) : "");
+    }
+
+    /// <summary>Left and width as percentages of the visible hours, or null when the range is outside them.</summary>
+    public (double Left, double Width)? Place(BoardRange range)
+    {
+        double start = Math.Max(GroupAvailabilityBoard.StartHours(range), FirstHour);
+        double end = Math.Min(GroupAvailabilityBoard.EndHours(range), FirstHour + HourSpan);
+        return end <= start ? null : ((start - FirstHour) / HourSpan * 100, (end - start) / HourSpan * 100);
+    }
+
+    /// <summary>The longest run of visible hours with the most members free (at least two), or null.</summary>
+    public (int From, int To, int Count)? BestOverlap()
+    {
+        if (Board is null)
+            return null;
+        var hours = Enumerable.Range(FirstHour, HourSpan).ToArray();
+        int best = hours.Max(hour => Board.FreeByHour[hour]);
+        if (best < 2)
+            return null;
+        (int From, int To)? run = null, current = null;
+        foreach (int hour in hours)
+        {
+            if (Board.FreeByHour[hour] == best)
+                current = current is { } open ? (open.From, hour + 1) : (hour, hour + 1);
+            else
+                current = null;
+            if (current is { } candidate && (run is null || candidate.To - candidate.From > run.Value.To - run.Value.From))
+                run = candidate;
+        }
+        return (run!.Value.From, run.Value.To, best);
+    }
 
     public GroupSummary Group => Detail.Summary;
     public string Url => $"/groups/{GuildId}/{Group.Id}";

@@ -82,3 +82,25 @@ request culture's own formats.
 3. A real server time zone other than the deployment default, and a member who saves weekly hours in a different
    zone.
 4. The hour/minute selects on iOS and Android pickers.
+
+## Update: hour grid (replaces the list-style board)
+
+Design: canvas row 6, "Group availability — hour grid". Implemented as designed.
+
+- **Members tabs.** The Members card now has **Availability | Roster & invites**. Availability is the default when
+  the board is visible; `?tab=roster` opens the roster, and membership actions and invite errors return there.
+- **Grid.** One column per hour, one row per saved member. Free periods are blocks placed at their exact times:
+  solid mint = one-off, striped with a blue outline = usual weekly hours (not confirmed). Grey = busy (the member has
+  times that day, not at that hour). Hatched with "No data" = nothing saved. Night hours 00–06 are shaded.
+- **Free together.** A row with how many members are free in each hour (free at any point in that hour), shaded by
+  share of the group. The longest run with the most people free (two or more) is outlined and written out.
+- **Now line** on today, in the board's time zone.
+- **Hours toggle.** `00–24` or `12–24` (`?hours=12-24`); day, hours and tab are all kept in the URL.
+- **Tooltips.** Blocks are focusable; hover or keyboard focus shows who, when and whether it's one-off or weekly.
+  Each row also has a screen-reader summary ("Free: 18:00–22:00 (usual weekly hours, not confirmed)").
+- **Phones.** Each member becomes a card with a full-width track (3-hour ticks) and the times written below.
+  Only the day tabs scroll sideways.
+
+Application: `GroupAvailabilityBoard` gains `FreeByHour` (24 counts) and `Now`. Same authorization and batched
+reads as before. New test: `FreeTogetherCountsEachHourAndNowIsOnlyShownForToday`. 128 tests pass. 15 new
+strings in Ukrainian and Russian. No storage migration.

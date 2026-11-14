@@ -121,6 +121,31 @@ public sealed class GroupAvailabilityBoardTests
     }
 
     [Fact]
+    public async Task FreeTogetherCountsEachHourAndNowIsOnlyShownForToday()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        Guid group = await fixture.SeedAsync();
+        await fixture.Availability.SaveWeeklyAsync(Guild, Member, new WeeklyAvailability(DayOfWeek.Saturday, new(18, 30), new(22, 0), Kyiv));
+        await fixture.Availability.SaveWeeklyAsync(Guild, Organizer, new WeeklyAvailability(DayOfWeek.Saturday, new(20, 0), new(1, 0), Kyiv));
+
+        var today = (await fixture.Board(Member, group)).Value;
+
+        Assert.Equal(24, today.FreeByHour.Length);
+        Assert.Equal(0, today.FreeByHour[17]);
+        Assert.Equal(1, today.FreeByHour[18]); // 18:30 counts for the 18:00 hour
+        Assert.Equal(2, today.FreeByHour[20]);
+        Assert.Equal(2, today.FreeByHour[21]);
+        Assert.Equal(1, today.FreeByHour[22]); // Member ends exactly at 22:00
+        Assert.Equal(1, today.FreeByHour[23]); // Organizer continues past midnight
+        Assert.Equal(new TimeOnly(12, 0), today.Now);
+
+        var sunday = (await fixture.Board(Member, group, date: Sunday)).Value;
+        Assert.Null(sunday.Now);
+        Assert.Equal(1, sunday.FreeByHour[0]); // carried over until 01:00
+        Assert.Equal(0, sunday.FreeByHour[1]);
+    }
+
+    [Fact]
     public async Task RecurringFullDayStaysOnLocalMidnightAcrossDaylightSaving()
     {
         using var fixture = await Fixture.CreateAsync();

@@ -5,30 +5,34 @@
     var board = Model.Board!;
     var culture = CultureInfo.CurrentCulture;
     string Localize(string key) => T[key];
-    // Members with availability first; within each part, organizer first, then by name, so the order is stable.
+    int first = Model.FirstHour;
+    int span = Model.HourSpan;
+    int total = board.Rows.Length;
+    var best = Model.BestOverlap();
+    // Members with availability first; then organizer, name and ID so the order never jumps.
     var rows = board.Rows
         .OrderByDescending(row => row.HasData)
         .ThenBy(row => row.UserId == Model.Group.OrganizerId ? 0 : 1)
         .ThenBy(row => Model.Names.Name(row.UserId, Localize), StringComparer.CurrentCultureIgnoreCase)
         .ThenBy(row => row.UserId)
         .ToArray();
-    string selectedLabel = board.Date == board.Today ? T["Today"] : board.Date.ToString("dddd", culture);
+    string dayTitle = board.Date == board.Today ? T["Today"] : board.Date.ToString("dddd", culture);
+    string Hour(int hour) => hour.ToString("00", CultureInfo.InvariantCulture);
+    string Css(double value) => value.ToString("0.###", CultureInfo.InvariantCulture) + "%";
+    string RangeText(BoardRange range) => range.AllDay ? T["All day"]
+        : (range.FromPreviousDay ? "↤ " : "") + AvailabilityFormat.Time(range.Start) +
+          (range.IntoNextDay ? " ↦" : "–" + AvailabilityFormat.Time(range.End));
+    string Kind(BoardRange range) => range.Source == AvailabilitySource.Weekly
+        ? T["usual weekly hours, not confirmed"] : T["one-off for this date"];
+    int Level(int count) => count == 0 || total == 0 ? 0 : Math.Clamp((int)Math.Ceiling(count * 4.0 / total), 1, 4);
+    double? nowLeft = board.Now is { } now && now.ToTimeSpan().TotalHours >= first && now.ToTimeSpan().TotalHours < first + span
+        ? (now.ToTimeSpan().TotalHours - first) / span * 100 : null;
 }
 <div class="hm-board" id="availability">
-    <div class="hm-board__head">
-        <h3>@T["Availability"]</h3>
-        <p class="hm-help hm-board__zone">
-            @DashboardIcons.Render("globe")
-            <span>@T["Times in {0}", board.TimeZone]</span>
-            <a href="#roster">@T["Manage members"] ↓</a>
-        </p>
-    </div>
-
     <nav class="hm-day-tabs" data-day-tabs aria-label="@T["Choose a day"]">
         @foreach (var day in board.Days)
         {
-            bool selected = day == board.Date;
-            <a class="hm-day-tab" href="@Model.DayUrl(day)" aria-current="@(selected ? "page" : null)"
+            <a class="hm-day-tab" href="@Model.DayUrl(day)" aria-current="@(day == board.Date ? "page" : null)"
                aria-label="@(day == board.Today ? T["Today"] + ", " : "")@day.ToString("D", culture)">
                 <span class="hm-day-tab__name">@(day == board.Today ? T["Today"] : day.ToString("ddd", culture))</span>
                 <span class="hm-day-tab__date">@day.ToString("d MMM", culture)</span>
@@ -36,64 +40,125 @@
         }
     </nav>
 
-    <table class="hm-board__table">
-        <caption class="hm-sr-only">@T["Availability on {0} in {1}", board.Date.ToString("D", culture), board.TimeZone]</caption>
-        <thead>
-            <tr><th scope="col">@T["Member"]</th><th scope="col">@selectedLabel, @board.Date.ToString("d MMM", culture)</th></tr>
-        </thead>
-        <tbody>
-            @foreach (var row in rows)
-            {
-                var profile = Model.Names.Get(row.UserId);
-                string name = Model.Names.Name(row.UserId, Localize);
-                var avatar = new AvatarModel(profile, name, true);
-                <tr class="@(row.HasData ? "" : "hm-board__row--empty")">
-                    <th scope="row">
-                        <span class="hm-board__who"><partial name="_Avatar" model="avatar" /><span>@name</span></span>
-                    </th>
-                    <td>
+    <div class="hm-board__head">
+        <p class="hm-help hm-board__zone">
+            @DashboardIcons.Render("globe")
+            <span>@T["Times in {0}", board.TimeZone]</span>
+            <span class="hm-subtle">· @dayTitle, @board.Date.ToString("d MMMM", culture)</span>
+        </p>
+        <nav class="hm-segment hm-segment--compact" aria-label="@T["Hours shown"]">
+            <a href="@Model.HoursUrl(false)" aria-current="@(Model.Evening ? null : "page")">00–24</a>
+            <a href="@Model.HoursUrl(true)" aria-current="@(Model.Evening ? "page" : null)">12–24</a>
+        </nav>
+    </div>
+
+    <div class="hm-tgrid @(Model.Evening ? "hm-tgrid--evening" : "")" role="table"
+         aria-label="@T["Availability on {0} in {1}", board.Date.ToString("D", culture), board.TimeZone]"
+         style="--hm-tgrid-hours: @span">
+        <div class="hm-tgrid__row hm-tgrid__row--head" role="row">
+            <span class="hm-tgrid__name" role="columnheader">@T["Member"]</span>
+            <span class="hm-tgrid__hours" role="columnheader">
+                <span class="hm-sr-only">@T["Free time from {0}:00 to {1}:00", Hour(first), Hour(first + span)]</span>
+                @for (int hour = first; hour < first + span; hour++)
+                {
+                    <span class="hm-tgrid__hour @(hour % 3 == 0 ? "hm-tgrid__hour--major" : "")" aria-hidden="true"
+                          style="left: @Css((hour - first) * 100.0 / span)">@Hour(hour)</span>
+                }
+                @if (nowLeft is { } nowTag)
+                {
+                    <span class="hm-tgrid__now-tag @(nowTag > 80 ? "hm-tgrid__now-tag--end" : "")" style="left: @Css(nowTag)" aria-hidden="true">@T["Now {0}", AvailabilityFormat.Time(board.Now!.Value)]</span>
+                }
+            </span>
+        </div>
+
+        <div class="hm-tgrid__row hm-tgrid__row--together" role="row">
+            <span class="hm-tgrid__name" role="rowheader">
+                @DashboardIcons.Render("users")<span>@T["Free together"]</span>
+            </span>
+            <span class="hm-tgrid__heat" role="cell">
+                @if (best is { } overlap)
+                {
+                    <span class="hm-tgrid__best-text">@T["Best: {0}:00–{1}:00 · {2} of {3} free", Hour(overlap.From), Hour(overlap.To), overlap.Count, total]</span>
+                }
+                else
+                {
+                    <span class="hm-tgrid__best-text hm-subtle">@T["No hour with two or more members free"]</span>
+                }
+                <span class="hm-tgrid__cells" aria-hidden="true">
+                    @for (int hour = first; hour < first + span; hour++)
+                    {
+                        int count = board.FreeByHour[hour];
+                        bool inBest = best is { } b && hour >= b.From && hour < b.To;
+                        <span class="hm-tgrid__cell hm-tgrid__cell--@Level(count) @(inBest ? "hm-tgrid__cell--best" : "")"
+                              title="@T["{0} of {1} free at {2}:00", count, total, Hour(hour)]">@count</span>
+                    }
+                </span>
+            </span>
+        </div>
+
+        @foreach (var row in rows)
+        {
+            var profile = Model.Names.Get(row.UserId);
+            string name = Model.Names.Name(row.UserId, Localize);
+            var avatar = new AvatarModel(profile, name, true);
+            <div class="hm-tgrid__row @(row.HasData ? "" : "hm-tgrid__row--empty")" role="row">
+                <span class="hm-tgrid__name" role="rowheader">
+                    <partial name="_Avatar" model="avatar" /><span class="hm-tgrid__who">@name</span>
+                    @if (row.UserId == Model.Group.OrganizerId)
+                    {
+                        <span class="hm-badge hm-badge--custom hm-tgrid__org">@T["Organizer"]</span>
+                    }
+                </span>
+                <span class="hm-tgrid__cellwrap" role="cell">
+                    <span class="hm-sr-only">
+                        @(row.HasData ? T["Free: {0}", string.Join(", ", row.Ranges.Select(range => RangeText(range) + " (" + Kind(range) + ")"))] : T["No data"])
+                    </span>
+                    <span class="hm-tgrid__track" aria-hidden="@(row.HasData ? null : "true")">
                         @if (!row.HasData)
                         {
-                            <span class="hm-board__none">@T["No data"]</span>
+                            <span class="hm-tgrid__nodata">@T["No data"]</span>
                         }
-                        else
+                        @foreach (var range in row.Ranges)
                         {
-                            <ul class="hm-slots">
-                                @foreach (var range in row.Ranges)
+                            if (Model.Place(range) is not (double left, double width))
+                            {
+                                continue;
+                            }
+                            bool weekly = range.Source == AvailabilitySource.Weekly;
+                            string tip = $"{name} · {RangeText(range)} · {Kind(range)}";
+                            <span class="hm-tgrid__block @(weekly ? "hm-tgrid__block--weekly" : "") @(range.FromPreviousDay ? "hm-tgrid__block--carry" : "") @(range.IntoNextDay ? "hm-tgrid__block--next" : "") @(left > 55 ? "hm-tgrid__block--end" : "")"
+                                  style="left: @Css(left); width: @Css(width)" tabindex="0" data-tip="@tip" aria-label="@tip">
+                                @if (width >= 200.0 / span)
                                 {
-                                    bool weekly = range.Source == AvailabilitySource.Weekly;
-                                    <li class="hm-slot @(weekly ? "hm-slot--weekly" : "hm-slot--oneoff")">
-                                        <span class="hm-slot__time">
-                                            @if (range.AllDay)
-                                            {
-                                                @T["All day"]
-                                            }
-                                            else
-                                            {
-                                                @if (range.FromPreviousDay)
-                                                {
-                                                    <span aria-hidden="true">↤ </span><span class="hm-sr-only">@T["from the previous day"] </span>
-                                                }
-                                                @AvailabilityFormat.Time(range.Start)<span aria-hidden="true">–</span><span class="hm-sr-only"> @T["to"] </span>@AvailabilityFormat.Time(range.End)
-                                                @if (range.IntoNextDay)
-                                                {
-                                                    <span aria-hidden="true"> ↦</span><span class="hm-sr-only"> @T["continues the next day"]</span>
-                                                }
-                                            }
-                                        </span>
-                                        <span class="hm-slot__kind">@(weekly ? T["Weekly"] : T["One-off"])</span>
-                                    </li>
+                                    <span class="hm-tgrid__label">@RangeText(range)</span>
                                 }
-                            </ul>
+                            </span>
                         }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                        @if (nowLeft is { } nowPosition)
+                        {
+                            <span class="hm-tgrid__now" style="left: @Css(nowPosition)"></span>
+                        }
+                    </span>
+                    @if (row.HasData)
+                    {
+                        <span class="hm-tgrid__texts" aria-hidden="true">
+                            @foreach (var range in row.Ranges)
+                            {
+                                bool weekly = range.Source == AvailabilitySource.Weekly;
+                                <span><b>@RangeText(range)</b> <span class="hm-slot__kind @(weekly ? "hm-slot__kind--weekly" : "hm-slot__kind--oneoff")">@(weekly ? T["Weekly"] : T["One-off"])</span></span>
+                            }
+                        </span>
+                    }
+                </span>
+            </div>
+        }
+    </div>
+
     <p class="hm-help hm-board__legend">
-        <span><span class="hm-slot__kind hm-slot__kind--oneoff">@T["One-off"]</span> @T["saved for this date"]</span>
-        <span><span class="hm-slot__kind hm-slot__kind--weekly">@T["Weekly"]</span> @T["usual hours, not confirmed for this date"]</span>
+        <span><i class="hm-swatch hm-swatch--oneoff"></i>@T["Free · one-off for this date"]</span>
+        <span><i class="hm-swatch hm-swatch--weekly"></i>@T["Free · usual weekly hours, not confirmed"]</span>
+        <span><i class="hm-swatch hm-swatch--busy"></i>@T["Busy · has times that day, not this hour"]</span>
+        <span><i class="hm-swatch hm-swatch--nodata"></i>@T["No data"]</span>
         <span>↤ ↦ @T["continues from or into the next day"]</span>
     </p>
 </div>

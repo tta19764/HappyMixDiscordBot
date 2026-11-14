@@ -26,8 +26,20 @@ public sealed record BoardRow(ulong UserId, BoardRange[] Ranges)
     public bool HasData => Ranges.Length > 0;
 }
 
+/// <summary>
+/// The board for one date. <see cref="FreeByHour"/> counts, for each local hour 0–23, the members free at any time
+/// within that hour. <see cref="Now"/> is the current local time when the date is today.
+/// </summary>
 public sealed record GroupAvailabilityBoard(Guid GroupId, string TimeZone, DateOnly Today, DateOnly Date,
-    DateOnly[] Days, BoardRow[] Rows);
+    DateOnly[] Days, BoardRow[] Rows, int[] FreeByHour, TimeOnly? Now)
+{
+    /// <summary>Range end in hours, where a range clipped at midnight ends at 24.</summary>
+    public static double EndHours(BoardRange range) =>
+        range.AllDay || range.IntoNextDay || (range.End == TimeOnly.MinValue && range.Start != TimeOnly.MinValue)
+            ? 24 : range.End.ToTimeSpan().TotalHours;
+
+    public static double StartHours(BoardRange range) => range.AllDay ? 0 : range.Start.ToTimeSpan().TotalHours;
+}
 
 /// <summary>
 /// Availability of a group's saved members for one of the next seven days. Uses the same roster rule as the
@@ -75,7 +87,10 @@ internal sealed class GroupAvailabilityBoardQueries(IGuildGroupStore groups, IAv
             .OrderByDescending(row => row.HasData)
             .ToArray();
 
-        return Result.Success(new GroupAvailabilityBoard(group.Id, zone.Id, today, date, days, rows));
+        var freeByHour = Enumerable.Range(0, 24).Select(hour => rows.Count(row => row.Ranges.Any(range =>
+            GroupAvailabilityBoard.StartHours(range) < hour + 1 && GroupAvailabilityBoard.EndHours(range) > hour))).ToArray();
+        TimeOnly? now = date == today ? TimeOnly.FromDateTime(TimeZoneInfo.ConvertTime(clock.UtcNow, zone).DateTime) : null;
+        return Result.Success(new GroupAvailabilityBoard(group.Id, zone.Id, today, date, days, rows, freeByHour, now));
     }
 
     /// <summary>

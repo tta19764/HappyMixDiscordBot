@@ -707,4 +707,49 @@
   <data name="Today · all day" xml:space="preserve">
     <value>Сегодня · весь день</value>
   </data>
+  <data name="Members view" xml:space="preserve">
+    <value>Вид участников</value>
+  </data>
+  <data name="Roster &amp; invites" xml:space="preserve">
+    <value>Состав и приглашения</value>
+  </data>
+  <data name="usual weekly hours, not confirmed" xml:space="preserve">
+    <value>обычные еженедельные часы, не подтверждено</value>
+  </data>
+  <data name="one-off for this date" xml:space="preserve">
+    <value>разово на эту дату</value>
+  </data>
+  <data name="Hours shown" xml:space="preserve">
+    <value>Показанные часы</value>
+  </data>
+  <data name="Free time from {0}:00 to {1}:00" xml:space="preserve">
+    <value>Свободное время с {0}:00 до {1}:00</value>
+  </data>
+  <data name="Now {0}" xml:space="preserve">
+    <value>Сейчас {0}</value>
+  </data>
+  <data name="Free together" xml:space="preserve">
+    <value>Свободны вместе</value>
+  </data>
+  <data name="Best: {0}:00–{1}:00 · {2} of {3} free" xml:space="preserve">
+    <value>Лучше всего: {0}:00–{1}:00 · свободны {2} из {3}</value>
+  </data>
+  <data name="No hour with two or more members free" xml:space="preserve">
+    <value>Нет часа, когда свободны двое или больше</value>
+  </data>
+  <data name="{0} of {1} free at {2}:00" xml:space="preserve">
+    <value>В {2}:00 свободны {0} из {1}</value>
+  </data>
+  <data name="Free: {0}" xml:space="preserve">
+    <value>Свободен: {0}</value>
+  </data>
+  <data name="Free · one-off for this date" xml:space="preserve">
+    <value>Свободен · разово на эту дату</value>
+  </data>
+  <data name="Free · usual weekly hours, not confirmed" xml:space="preserve">
+    <value>Свободен · обычные еженедельные часы, не подтверждено</value>
+  </data>
+  <data name="Busy · has times that day, not this hour" xml:space="preserve">
+    <value>Занят · есть время в этот день, но не в этот час</value>
+  </data>
 </root>

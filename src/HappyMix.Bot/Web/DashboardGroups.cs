@@ -78,7 +78,7 @@ public sealed partial class DashboardController
     }
 
     [HttpGet("/groups/{guildId}/{groupId:guid}")]
-    public async Task<IActionResult> Group(ulong guildId, Guid groupId, string? back, string? day)
+    public async Task<IActionResult> Group(ulong guildId, Guid groupId, string? back, string? day, string? hours, string? tab)
     {
         if (await GetGroupActorAsync(guildId) is not ({ } actor, { } viewer, _))
             return NotMember();
@@ -86,7 +86,8 @@ public sealed partial class DashboardController
         RememberServer(guildId);
         DateOnly? date = DateOnly.TryParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed)
             ? parsed : null;
-        return await RenderGroupAsync(guildId, actor, viewer, groupId, back, TakeBanner(), null, date);
+        return await RenderGroupAsync(guildId, actor, viewer, groupId, back, TakeBanner(), null, date,
+            evening: hours == "12-24", tab: tab == "roster" ? "roster" : null);
     }
 
     [HttpPost("/groups/{guildId}/{groupId:guid}/invitation")]
@@ -132,7 +133,7 @@ public sealed partial class DashboardController
         TempData["GroupBannerText"] = delivered
             ? text["They got a Discord message with Accept and Decline buttons, and can also answer here."].Value
             : text["Discord couldn't deliver the message. They can still accept from Groups or with /group join."].Value;
-        return Redirect($"/groups/{guildId}/{groupId}#members");
+        return Redirect($"/groups/{guildId}/{groupId}?tab=roster#members");
     }
 
     [HttpPost("/groups/{guildId}/{groupId:guid}/members/{memberId}/remove")]
@@ -220,11 +221,12 @@ public sealed partial class DashboardController
 
         SetSavedBanner(result.Value, text[success], null);
         // After declining or leaving, the group may no longer be visible to this user.
-        return Redirect(afterDecline ? $"/groups/{guildId}" : $"/groups/{guildId}/{groupId}#{section}");
+        return Redirect(afterDecline ? $"/groups/{guildId}"
+            : $"/groups/{guildId}/{groupId}{(section == "members" ? "?tab=roster" : "")}#{section}");
     }
 
     private async Task<IActionResult> RenderGroupAsync(ulong guildId, GroupActor actor, GroupViewer viewer, Guid groupId,
-        string? back, BannerModel? banner, GroupFormState? form, DateOnly? day = null)
+        string? back, BannerModel? banner, GroupFormState? form, DateOnly? day = null, bool evening = false, string? tab = null)
     {
         var cancellationToken = HttpContext.RequestAborted;
         var detail = await sender.Send(new GetGroupDetailQuery(actor, groupId), cancellationToken);
@@ -247,7 +249,7 @@ public sealed partial class DashboardController
         string backUrl = back is not null && back.StartsWith($"/groups/{guildId}", StringComparison.Ordinal) && Url.IsLocalUrl(back)
             ? back : $"/groups/{guildId}";
         var view = View("Group", new GroupPage(guildId, GuildName(guildId), viewer, group, new MemberNames(members, available),
-            candidates, banner, backUrl, form, board));
+            candidates, banner, backUrl, form, board, evening, tab));
         if (form?.Error is not null)
             view.StatusCode = StatusCodes.Status422UnprocessableEntity;
         return view;

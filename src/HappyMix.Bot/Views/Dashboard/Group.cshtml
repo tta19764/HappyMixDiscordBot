@@ -146,10 +146,18 @@
             }
             @if (Model.Board is not null)
             {
-                <partial name="_AvailabilityBoard" model="Model" />
-                <hr class="hm-divider" style="margin: 0">
+                <nav class="hm-segment" aria-label="@T["Members view"]">
+                    <a href="@Model.TabUrl("availability")" aria-current="@(Model.ShowRoster ? null : "page")">@DashboardIcons.Render("calendar")@T["Availability"]</a>
+                    <a href="@Model.TabUrl("roster")" aria-current="@(Model.ShowRoster ? "page" : null)">@DashboardIcons.Render("users")@T["Roster & invites"]</a>
+                </nav>
             }
-            <h3 id="roster">@T["Roster"]</h3>
+            @if (!Model.ShowRoster)
+            {
+                <partial name="_AvailabilityBoard" model="Model" />
+            }
+            else
+            {
+            <h3 id="roster" class="hm-sr-only">@T["Roster"]</h3>
             <ul class="hm-roster" aria-label="@T["Roster"]">
                 @foreach (ulong id in detail.Members.OrderBy(id => id == group.OrganizerId ? 0 : 1).ThenBy(id => Model.Names.Name(id, Localize), StringComparer.CurrentCultureIgnoreCase))
                 {
@@ -255,6 +263,7 @@
                         </ul>
                     }
                 </div>
+            }
             }
         }
     </section>
