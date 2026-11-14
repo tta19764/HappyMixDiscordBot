@@ -1,0 +1,178 @@
+@using HappyMix.Application.Guilds
+@model GroupsPage
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = T["Groups"];
+    ViewData["NavGuildName"] = Model.GuildName;
+    var nav = new ServerNavModel(Model.GuildId, Model.GuildName, "groups", Model.Viewer.CanConfigure, "Groups",
+        T["Invite-only gaming groups in this server. Members get a matching Discord role."]);
+    var directory = Model.Directory;
+    string back = Model.Url(page: directory.Page);
+    var filters = new List<(GroupDirectoryFilter Filter, string Label, int Count)>
+    {
+        (GroupDirectoryFilter.Mine, T["My groups"].Value, directory.MineCount),
+        (GroupDirectoryFilter.Invited, T["Pending invitations"].Value, directory.InvitedCount),
+        (GroupDirectoryFilter.All, Model.Viewer.CanModerate ? T["All groups in this server"].Value : T["All groups I can access"].Value, directory.AllCount)
+    };
+    string Localize(string key) => T[key];
+    var repairAll = new ConfirmModel(T["Repair roles for everyone"],
+        T["Reapply group roles for every member of {0}? This lists the whole server and can take a while.", Model.GuildName],
+        $"/groups/{Model.GuildId}/repair-roles", T["Repair all members"], Icon: "refresh", Danger: false);
+}
+
+<partial name="_ServerNav" model="nav" />
+
+@if (Model.Banner is { } banner)
+{
+    <div style="margin-bottom: var(--hm-space-4)"><partial name="_Banner" model="banner" /></div>
+}
+
+<div class="hm-toolbar">
+    <nav class="hm-filters" aria-label="@T["Filter groups"]">
+        @foreach (var (filter, label, count) in filters)
+        {
+            <a class="hm-chip" href="@Model.Url(filter, 1)" aria-current="@(Model.Filter == filter ? "page" : null)">@label <span class="hm-count">@count</span></a>
+        }
+    </nav>
+    @if (Model.CanCreate)
+    {
+        <a class="hm-btn hm-btn--primary" href="/groups/@Model.GuildId/new">@DashboardIcons.Render("plus")@T["New group"]</a>
+    }
+</div>
+
+<form class="hm-search" method="get" action="/groups/@Model.GuildId" role="search" style="margin-bottom: var(--hm-space-5)">
+    @if (Model.Filter != GroupDirectoryFilter.Mine)
+    {
+        <input type="hidden" name="filter" value="@Model.Filter.ToString().ToLowerInvariant()">
+    }
+    <label class="hm-sr-only" for="group-search">@T["Search groups"]</label>
+    <input class="hm-input" id="group-search" type="search" name="q" value="@Model.Search" maxlength="60"
+           placeholder="@T["Search by name, description or game"]" autocomplete="off">
+    <button class="hm-btn">@T["Search"]</button>
+    @if (!string.IsNullOrEmpty(Model.Search))
+    {
+        <a class="hm-btn hm-btn--ghost" href="@Model.Url(search: "", page: 1)">@T["Clear"]</a>
+    }
+</form>
+
+@if (directory.Items.Length == 0)
+{
+    <section class="hm-card">
+        <div class="hm-empty">
+            <span class="hm-empty__icon">@DashboardIcons.Render("users", "width: 1.5rem; height: 1.5rem")</span>
+            @if (!string.IsNullOrEmpty(Model.Search))
+            {
+                <h2>@T["No groups match \"{0}\"", Model.Search]</h2>
+                <p>@T["Try another name or game, or clear the search."]</p>
+            }
+            else if (Model.Filter == GroupDirectoryFilter.Invited)
+            {
+                <h2>@T["No pending invitations"]</h2>
+                <p>@T["When an organizer invites you, the invitation shows up here and in your Discord messages."]</p>
+            }
+            else
+            {
+                <h2>@T["You're not in any groups yet"]</h2>
+                <p>@T["Groups are invite-only. Ask an organizer to invite you, or start your own."]</p>
+                @if (Model.CanCreate)
+                {
+                    <a class="hm-btn hm-btn--primary" href="/groups/@Model.GuildId/new">@DashboardIcons.Render("plus")@T["New group"]</a>
+                }
+            }
+        </div>
+    </section>
+}
+else
+{
+    <p class="hm-help" style="margin-bottom: var(--hm-space-3)" aria-live="polite">@T["{0} groups", directory.Total]</p>
+    <div class="hm-grid" style="grid-template-columns: repeat(auto-fill, minmax(min(100%, 21rem), 1fr))">
+        @foreach (var group in directory.Items)
+        {
+            string url = $"/groups/{Model.GuildId}/{group.Id}?back={Uri.EscapeDataString(back)}";
+            var organizer = Model.Names.Get(group.OrganizerId);
+            string organizerName = Model.Names.Name(group.OrganizerId, Localize);
+            <section class="hm-card hm-group-card" aria-labelledby="group-@group.Id">
+                <div class="hm-group-card__head">
+                    <a class="hm-server__name" id="group-@group.Id" href="@url">@group.Name</a>
+                    <partial name="_GroupBadge" model="(group.Relation, Model.Viewer.CanModerate)" />
+                </div>
+                @if (group.Description is { } description)
+                {
+                    <p class="hm-group-card__desc">@description</p>
+                }
+                else
+                {
+                    <p class="hm-group-card__desc hm-group-card__desc--empty">@T["No description"]</p>
+                }
+                <div class="hm-meta">
+                    <span><partial name="_Avatar" model="new AvatarModel(organizer, organizerName, true)" />@T["Organizer"]: @organizerName</span>
+                    <span>@DashboardIcons.Render("users")@T["{0} members", group.MemberCount]</span>
+                </div>
+                @if (group.Games.Length > 0)
+                {
+                    <div class="hm-games" aria-label="@T["Games"]">
+                        @foreach (var game in group.Games.Take(4))
+                        {
+                            <span class="hm-game-tag">@game</span>
+                        }
+                        @if (group.Games.Length > 4)
+                        {
+                            <span class="hm-game-tag">+@(group.Games.Length - 4)</span>
+                        }
+                    </div>
+                }
+                <div class="hm-group-card__actions">
+                    @if (group.Relation == GroupRelation.Invited)
+                    {
+                        <form method="post" action="/groups/@Model.GuildId/@group.Id/invitation" asp-antiforgery="false">
+                            @Html.AntiForgeryToken()
+                            <button class="hm-btn hm-btn--primary" name="decision" value="accept">@DashboardIcons.Render("check")@T["Accept"]</button>
+                            <button class="hm-btn" name="decision" value="decline">@T["Decline"]</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a class="hm-btn" href="@url#members">@DashboardIcons.Render("users")@T["Roster"]</a>
+                        <a class="hm-btn hm-btn--ghost" href="@url">@T["Open"] @DashboardIcons.Render("arrow")</a>
+                    }
+                </div>
+            </section>
+        }
+    </div>
+
+    @if (directory.PageCount > 1)
+    {
+        <nav class="hm-pager" aria-label="@T["Pages"]">
+            @if (directory.Page > 1)
+            {
+                <a class="hm-btn" href="@Model.Url(page: directory.Page - 1)" rel="prev">← @T["Previous"]</a>
+            }
+            <span class="hm-pager__status">@T["Page {0} of {1}", directory.Page, directory.PageCount]</span>
+            @if (directory.Page < directory.PageCount)
+            {
+                <a class="hm-btn" href="@Model.Url(page: directory.Page + 1)" rel="next">@T["Next"] →</a>
+            }
+        </nav>
+    }
+}
+
+@if (Model.CanCreate)
+{
+    <div class="hm-sticky-action hm-mobile-only" style="margin-top: var(--hm-space-6)">
+        <a class="hm-btn hm-btn--primary hm-btn--lg" href="/groups/@Model.GuildId/new">@DashboardIcons.Render("plus")@T["New group"]</a>
+    </div>
+}
+
+@if (Model.Viewer.CanModerate)
+{
+    <section class="hm-card" style="margin-top: var(--hm-space-8)" aria-labelledby="repair-title">
+        <div class="hm-card__head" style="margin-bottom: var(--hm-space-2)">
+            <div>
+                <h2 id="repair-title" style="font-size: var(--hm-fs-lg)">@T["Discord role repair"] <span class="hm-badge hm-badge--inherit">@T["Moderators"]</span></h2>
+                <p>@T["Saved group membership is the source of truth. Repair reapplies the matching Discord roles."]</p>
+            </div>
+        </div>
+        <p class="hm-help" style="margin-bottom: var(--hm-space-3)">@T["To repair one person, open a group and use Repair roles next to their name."]</p>
+        <partial name="_Confirm" model="repairAll" />
+    </section>
+}

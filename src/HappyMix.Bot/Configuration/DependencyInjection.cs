@@ -55,6 +55,7 @@ public static class DependencyInjection
         // so one shared instance of each must be used for the entire process lifetime.
         services.AddSingleton<DiscordSocketClient>();
         services.AddSingleton<IGroupRoleGateway, DiscordGroupRoleGateway>();
+        services.AddSingleton<IMemberDirectory, DiscordMemberDirectory>();
         services.AddSingleton(static provider =>
             new InteractionService(provider.GetRequiredService<DiscordSocketClient>().Rest));
         services.AddHttpClient("Twitch", client => client.Timeout = TimeSpan.FromSeconds(5));

@@ -68,3 +68,18 @@
     // Move focus to a status or error banner rendered after a redirect so screen readers announce it.
     document.querySelector("[data-focus-on-load]")?.focus();
 })();
+
+// Confirmation panels: reveal the Cancel button and let Escape close an open panel.
+for (const details of document.querySelectorAll("details.hm-confirm")) {
+    const cancel = details.querySelector("[data-close-details]");
+    if (cancel) {
+        cancel.hidden = false;
+        cancel.addEventListener("click", () => { details.open = false; details.querySelector("summary").focus(); });
+    }
+    details.addEventListener("keydown", event => {
+        if (event.key === "Escape" && details.open) {
+            details.open = false;
+            details.querySelector("summary").focus();
+        }
+    });
+}

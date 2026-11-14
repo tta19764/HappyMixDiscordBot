@@ -9,11 +9,31 @@ public sealed record GuildGroup(
     string? Description = null,
     ulong? RoleId = null)
 {
+    /// <summary>Durable identifier assigned by the store. Stays the same for the group's lifetime.</summary>
+    public Guid Id { get; init; }
+
     public static string GetNameKey(string name) => name.Trim().ToUpperInvariant();
+}
+
+/// <summary>A game attached to a group. Steam-linked games carry the provider and external ID for later joins.</summary>
+public sealed record GroupGame(Guid Id, Guid GroupId, string Name, string? Provider = null, string? ExternalId = null)
+{
+    public const string SteamProvider = "steam";
+
+    public string? SteamAppId => Provider == SteamProvider ? ExternalId : null;
 }
 
 public interface IGuildGroupStore
 {
     Task<IReadOnlyList<GuildGroup>> ListAsync(ulong guildId);
     Task UpdateAsync(ulong guildId, string name, Func<GuildGroup?, GuildGroup?> update);
+
+    /// <summary>Lists every game attached to groups in the server.</summary>
+    Task<IReadOnlyList<GroupGame>> ListGamesAsync(ulong guildId);
+
+    /// <summary>Inserts or updates a game. Returns false when the group already has that provider ID.</summary>
+    Task<bool> SaveGameAsync(ulong guildId, GroupGame game);
+
+    /// <summary>Removes a game when it belongs to the given group in the given server.</summary>
+    Task<bool> RemoveGameAsync(ulong guildId, Guid groupId, Guid gameId);
 }

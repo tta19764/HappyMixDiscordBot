@@ -1,0 +1,20 @@
+@using HappyMix.Application.Guilds
+@model (GroupRelation Relation, bool CanModerate)
+@switch (Model.Relation)
+{
+    case GroupRelation.Organizer:
+        <span class="hm-badge hm-badge--custom">@DashboardIcons.Render("shield")@T["Organizer"]</span>
+        break;
+    case GroupRelation.Member:
+        <span class="hm-badge hm-badge--mint">@DashboardIcons.Render("check")@T["Member"]</span>
+        break;
+    case GroupRelation.Invited:
+        <span class="hm-badge hm-badge--warn">@T["Invited"]</span>
+        break;
+    default:
+        if (Model.CanModerate)
+        {
+            <span class="hm-badge hm-badge--inherit">@T["Moderator"]</span>
+        }
+        break;
+}

@@ -1,0 +1,94 @@
+@model CreateGroupPage
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = T["New group"];
+    ViewData["NavGuildName"] = Model.GuildName;
+    string? FieldError(string field) => Model.ErrorField == field ? Model.Error : null;
+    BannerModel? topError = Model.Error is not null && Model.ErrorField is "" or null
+        ? new BannerModel("error", T["Group not created"], Model.Error) : null;
+}
+
+<nav class="hm-crumbs" aria-label="@T["Breadcrumb"]">
+    <a href="/">@T["Servers"]</a><span aria-hidden="true">/</span>
+    <a href="/groups/@Model.GuildId">@T["Groups"]</a><span aria-hidden="true">/</span>
+    <span>@T["New group"]</span>
+</nav>
+<div class="hm-page-head">
+    <div>
+        <h1>@T["New group"]</h1>
+        <p>@T["You'll be the organizer. The group is invite-only, and HappyMix creates a matching Discord role."]</p>
+    </div>
+</div>
+
+@if (!Model.CanCreate)
+{
+    <section class="hm-card hm-forbidden" style="margin-top: 0">
+        <div class="hm-empty" style="border: 0">
+            <span class="hm-empty__icon">@DashboardIcons.Render("shield", "width: 1.5rem; height: 1.5rem")</span>
+            <h2>@T["You can't create groups here"]</h2>
+            <p>@T["This server lets only members with an organizer role create groups. Ask a server admin for the role."]</p>
+            <a class="hm-btn" href="/groups/@Model.GuildId">@T["Back to groups"]</a>
+        </div>
+    </section>
+}
+else
+{
+    <form class="hm-card hm-stack" style="gap: var(--hm-space-5); max-width: 44rem" method="post" action="/groups/@Model.GuildId/new" asp-antiforgery="false">
+        @Html.AntiForgeryToken()
+        @if (topError is not null)
+        {
+            <partial name="_Banner" model="topError" />
+        }
+
+        <div class="hm-field">
+            <label class="hm-label" for="group-name">@T["Group name"]</label>
+            <input class="hm-input" id="group-name" name="name" required maxlength="40" value="@Model.Name"
+                   autocomplete="off" aria-describedby="group-name-help @(FieldError("name") is null ? "" : "group-name-error")"
+                   aria-invalid="@(FieldError("name") is null ? null : "true")">
+            <p class="hm-help" id="group-name-help">@T["1–40 letters, digits, spaces, hyphens or underscores. It becomes the Discord role name."]</p>
+            @if (FieldError("name") is { } nameError)
+            {
+                <p class="hm-error" id="group-name-error">@DashboardIcons.Render("alert")@nameError</p>
+            }
+        </div>
+
+        <div class="hm-field">
+            <label class="hm-label" for="group-description">@T["Description"] <span class="hm-label__opt">@T["optional"]</span></label>
+            <textarea class="hm-textarea" id="group-description" name="description" rows="3" maxlength="200"
+                      style="font-family: var(--hm-font); font-size: var(--hm-fs-md)"
+                      aria-invalid="@(FieldError("description") is null ? null : "true")">@Model.Description</textarea>
+            <p class="hm-help">@T["Up to 200 characters. Shown in the directory and to invited members."]</p>
+            @if (FieldError("description") is { } descriptionError)
+            {
+                <p class="hm-error">@DashboardIcons.Render("alert")@descriptionError</p>
+            }
+        </div>
+
+        <fieldset class="hm-field" style="border: 0; padding: 0; margin: 0">
+            <legend class="hm-label" style="margin-bottom: var(--hm-space-2)">@T["Games"] <span class="hm-label__opt">@T["optional"]</span></legend>
+            @for (int i = 0; i < CreateGroupPage.GameRows; i++)
+            {
+                <div class="hm-inline-form" style="grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); margin-bottom: var(--hm-space-2)">
+                    <div class="hm-field">
+                        <label class="hm-label @(i > 0 ? "hm-sr-only" : "")" for="game-name-@i">@T["Game name"] @(i + 1)</label>
+                        <input class="hm-input" id="game-name-@i" name="gameName" maxlength="60" value="@Model.GameName(i)" placeholder="@(i == 0 ? "Counter-Strike 2" : "")">
+                    </div>
+                    <div class="hm-field">
+                        <label class="hm-label @(i > 0 ? "hm-sr-only" : "")" for="game-steam-@i">@T["Steam App ID or link"] @(i + 1)</label>
+                        <input class="hm-input" id="game-steam-@i" name="gameSteam" maxlength="200" inputmode="url" value="@Model.GameSteam(i)" placeholder="@(i == 0 ? "730" : "")">
+                    </div>
+                </div>
+            }
+            <p class="hm-help">@T["Steam is optional: paste a number like 730 or a store link. You can add more games and link Steam later."]</p>
+            @if (FieldError("games") is { } gamesError)
+            {
+                <p class="hm-error">@DashboardIcons.Render("alert")@gamesError</p>
+            }
+        </fieldset>
+
+        <div class="hm-row hm-sticky-action" style="justify-content: flex-end">
+            <a class="hm-btn hm-btn--ghost" href="/groups/@Model.GuildId">@T["Cancel"]</a>
+            <button class="hm-btn hm-btn--primary hm-btn--lg">@DashboardIcons.Render("check")@T["Create group"]</button>
+        </div>
+    </form>
+}

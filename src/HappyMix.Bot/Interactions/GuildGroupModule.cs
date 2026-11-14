@@ -2,6 +2,7 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using HappyMix.Application.Guilds;
+using HappyMix.Bot.Services;
 using MediatR;
 
 namespace HappyMix.Bot.Interactions;
@@ -34,29 +35,9 @@ public sealed class GuildGroupModule(ISender sender)
 
         Guid token = Guid.NewGuid();
         await ExecuteAsync(new InviteGroupMemberCommand(Actor, name, member.Id, token), async () =>
-        {
-            var buttons = new ComponentBuilder()
-                .WithButton("Accept", $"group-invite:accept:{Context.Guild.Id}:{token:N}", ButtonStyle.Success)
-                .WithButton("Decline", $"group-invite:decline:{Context.Guild.Id}:{token:N}", ButtonStyle.Secondary)
-                .Build();
-            try
-            {
-                var dm = await member.CreateDMChannelAsync();
-                await dm.SendMessageAsync(
-                    $"You’re invited to **{name.Trim()}** in **{Format.Sanitize(Context.Guild.Name)}**.",
-                    components: buttons, allowedMentions: AllowedMentions.None,
-                    options: new RequestOptions { Timeout = 10000 });
-                return "Invitation saved and sent by DM.";
-            }
-            catch (Discord.Net.HttpException)
-            {
-                return "Invitation saved. DM delivery failed. The member can use /group list, then /group join or /group decline.";
-            }
-            catch (TimeoutException)
-            {
-                return "Invitation saved. DM delivery timed out. The member can use /group list, then /group join or /group decline.";
-            }
-        });
+            await GroupInviteMessages.SendAsync(member, Context.Guild.Id, Context.Guild.Name, name, token)
+                ? "Invitation saved and sent by DM."
+                : "Invitation saved. DM delivery failed. The member can use /group list, then /group join or /group decline.");
     }
 
     [SlashCommand("join", "Accept a group invitation.")]

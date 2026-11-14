@@ -4,11 +4,13 @@ using HappyMix.Domain.Abstractions;
 
 namespace HappyMix.Application.Guilds;
 
-internal sealed class GroupCommands(IGuildGroupStore groups, IGuildSettingsStore settings, GroupRoles roles) :
+internal sealed partial class GroupCommands(IGuildGroupStore groups, IGuildSettingsStore settings, GroupRoles roles) :
     ICommandHandler<CreateGroupCommand, GroupChange>, ICommandHandler<InviteGroupMemberCommand, GroupChange>,
     ICommandHandler<ResolveGroupInviteCommand, GroupChange>, ICommandHandler<LeaveGroupCommand, GroupChange>,
     ICommandHandler<RemoveGroupMemberCommand, GroupChange>, ICommandHandler<DeleteGroupCommand, GroupChange>,
-    ICommandHandler<EditGroupDescriptionCommand, GroupChange>, ICommandHandler<RepairGroupRolesCommand, GroupChange>
+    ICommandHandler<EditGroupDescriptionCommand, GroupChange>, ICommandHandler<RepairGroupRolesCommand, GroupChange>,
+    ICommandHandler<AddGroupGameCommand, GroupChange>, ICommandHandler<UpdateGroupGameCommand, GroupChange>,
+    ICommandHandler<RemoveGroupGameCommand, GroupChange>
 {
     public Task<Result<GroupChange>> Handle(CreateGroupCommand command, CancellationToken cancellationToken) =>
         RunAsync(async () =>
@@ -21,9 +23,20 @@ internal sealed class GroupCommands(IGuildGroupStore groups, IGuildSettingsStore
 
             string name = ValidateName(command.Name);
             string? description = NormalizeDescription(command.Description);
-            return await UpdateAsync(actor, name, group => group is null
+            var games = (command.Games ?? []).Select(game => NormalizeGame(game.Name, game.Steam)).ToArray();
+            if (games.Length > MaxGames)
+                throw new GroupRuleException(TooManyGames);
+            if (games.Where(game => game.SteamAppId is not null).GroupBy(game => game.SteamAppId).Any(group => group.Count() > 1))
+                throw new GroupRuleException(DuplicateGame);
+
+            var change = await UpdateAsync(actor, name, group => group is null
                 ? new GuildGroup(name, actor.UserId, [actor.UserId], [], Description: description)
                 : throw new GroupRuleException("A group with that name already exists."), actor.UserId);
+            string key = GuildGroup.GetNameKey(name);
+            Guid id = (await groups.ListAsync(actor.GuildId)).First(group => GuildGroup.GetNameKey(group.Name) == key).Id;
+            foreach (var (gameName, steam) in games.Select(game => (game.Name, game.SteamAppId)))
+                await groups.SaveGameAsync(actor.GuildId, CreateGame(id, Guid.NewGuid(), gameName, steam));
+            return change with { GroupId = id };
         }, cancellationToken);
 
     public Task<Result<GroupChange>> Handle(InviteGroupMemberCommand command, CancellationToken cancellationToken) =>

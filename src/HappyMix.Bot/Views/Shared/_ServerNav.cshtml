@@ -8,6 +8,7 @@
 </div>
 <nav class="hm-tabs" aria-label="Server">
     <a href="/availability/@Model.GuildId" aria-current="@(Model.Active == "availability" ? "page" : null)">@T["Availability"]</a>
+    <a href="/groups/@Model.GuildId" aria-current="@(Model.Active == "groups" ? "page" : null)">@T["Groups"]</a>
     @if (Model.CanConfigure)
     {
         <a href="/settings/@Model.GuildId" aria-current="@(Model.Active == "settings" ? "page" : null)">@T["Settings"]</a>

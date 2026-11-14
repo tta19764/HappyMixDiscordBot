@@ -6,7 +6,8 @@ namespace HappyMix.Application.Guilds;
 
 public sealed record GroupActor(ulong GuildId, ulong UserId, bool CanModerate);
 public abstract record GroupCommand(GroupActor Actor) : ICommand<GroupChange>;
-public sealed record CreateGroupCommand(GroupActor Actor, string Name, string? Description, ulong[] RoleIds) : GroupCommand(Actor);
+public sealed record CreateGroupCommand(GroupActor Actor, string Name, string? Description, ulong[] RoleIds,
+    GroupGameInput[]? Games = null) : GroupCommand(Actor);
 public sealed record InviteGroupMemberCommand(GroupActor Actor, string Name, ulong MemberId, Guid Token) : GroupCommand(Actor);
 public sealed record ResolveGroupInviteCommand(GroupActor Actor, string? Name, Guid? Token, bool Accept) : GroupCommand(Actor);
 public sealed record LeaveGroupCommand(GroupActor Actor, string Name) : GroupCommand(Actor);
@@ -14,7 +15,7 @@ public sealed record RemoveGroupMemberCommand(GroupActor Actor, string Name, ulo
 public sealed record DeleteGroupCommand(GroupActor Actor, string Name) : GroupCommand(Actor);
 public sealed record EditGroupDescriptionCommand(GroupActor Actor, string Name, string? Description) : GroupCommand(Actor);
 public sealed record RepairGroupRolesCommand(GroupActor Actor, ulong? MemberId) : GroupCommand(Actor);
-public sealed record GroupChange(string? Name, bool RoleSyncFailed = false);
+public sealed record GroupChange(string? Name, bool RoleSyncFailed = false, Guid? GroupId = null);
 
 public sealed record GetVisibleGroupsQuery(GroupActor Actor, bool MembersOnly) : IQuery<GuildGroup[]>;
 public sealed record SuggestGroupNamesQuery(GroupActor Actor, string Action, string Search) : IQuery<string[]>;

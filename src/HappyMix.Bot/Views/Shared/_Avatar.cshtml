@@ -1,0 +1,11 @@
+@model AvatarModel
+<span class="hm-avatar @(Model.Small ? "hm-avatar--sm" : "") @(Model.Profile.InServer ? "" : "hm-avatar--gone")" aria-hidden="true">
+    @if (Model.Profile.AvatarUrl is { } url)
+    {
+        <img src="@url" alt="" width="32" height="32" loading="lazy" referrerpolicy="no-referrer">
+    }
+    else
+    {
+        @(Model.Profile.InServer ? DashboardIcons.Initials(Model.Name) : "?")
+    }
+</span>

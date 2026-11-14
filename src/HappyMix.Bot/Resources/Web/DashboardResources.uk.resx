@@ -197,4 +197,451 @@
   <data name="Carried over from the night before">
     <value>Продовження з попередньої ночі</value>
   </data>
+  <data name="Groups" xml:space="preserve">
+    <value>Групи</value>
+  </data>
+  <data name="Invite-only gaming groups in this server. Members get a matching Discord role." xml:space="preserve">
+    <value>Ігрові групи цього сервера, лише за запрошенням. Учасники отримують відповідну роль у Discord.</value>
+  </data>
+  <data name="My groups" xml:space="preserve">
+    <value>Мої групи</value>
+  </data>
+  <data name="Pending invitations" xml:space="preserve">
+    <value>Запрошення</value>
+  </data>
+  <data name="All groups in this server" xml:space="preserve">
+    <value>Усі групи сервера</value>
+  </data>
+  <data name="All groups I can access" xml:space="preserve">
+    <value>Усі доступні мені групи</value>
+  </data>
+  <data name="Repair roles for everyone" xml:space="preserve">
+    <value>Відновити ролі для всіх</value>
+  </data>
+  <data name="Reapply group roles for every member of {0}? This lists the whole server and can take a while." xml:space="preserve">
+    <value>Повторно призначити ролі груп усім учасникам {0}? Це перевіряє весь сервер і може тривати певний час.</value>
+  </data>
+  <data name="Repair all members" xml:space="preserve">
+    <value>Відновити для всіх учасників</value>
+  </data>
+  <data name="Filter groups" xml:space="preserve">
+    <value>Фільтр груп</value>
+  </data>
+  <data name="New group" xml:space="preserve">
+    <value>Нова група</value>
+  </data>
+  <data name="Search groups" xml:space="preserve">
+    <value>Пошук груп</value>
+  </data>
+  <data name="Search by name, description or game" xml:space="preserve">
+    <value>Пошук за назвою, описом або грою</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Шукати</value>
+  </data>
+  <data name="No groups match &quot;{0}&quot;" xml:space="preserve">
+    <value>Немає груп за запитом «{0}»</value>
+  </data>
+  <data name="Try another name or game, or clear the search." xml:space="preserve">
+    <value>Спробуйте іншу назву чи гру або очистьте пошук.</value>
+  </data>
+  <data name="No pending invitations" xml:space="preserve">
+    <value>Немає запрошень</value>
+  </data>
+  <data name="When an organizer invites you, the invitation shows up here and in your Discord messages." xml:space="preserve">
+    <value>Коли організатор вас запросить, запрошення з’явиться тут і в повідомленнях Discord.</value>
+  </data>
+  <data name="You're not in any groups yet" xml:space="preserve">
+    <value>Ви ще не в жодній групі</value>
+  </data>
+  <data name="Groups are invite-only. Ask an organizer to invite you, or start your own." xml:space="preserve">
+    <value>Групи доступні лише за запрошенням. Попросіть організатора запросити вас або створіть власну.</value>
+  </data>
+  <data name="{0} groups" xml:space="preserve">
+    <value>Груп: {0}</value>
+  </data>
+  <data name="No description" xml:space="preserve">
+    <value>Без опису</value>
+  </data>
+  <data name="Organizer" xml:space="preserve">
+    <value>Організатор</value>
+  </data>
+  <data name="{0} members" xml:space="preserve">
+    <value>Учасників: {0}</value>
+  </data>
+  <data name="Games" xml:space="preserve">
+    <value>Ігри</value>
+  </data>
+  <data name="Accept" xml:space="preserve">
+    <value>Прийняти</value>
+  </data>
+  <data name="Decline" xml:space="preserve">
+    <value>Відхилити</value>
+  </data>
+  <data name="Roster" xml:space="preserve">
+    <value>Склад</value>
+  </data>
+  <data name="Open" xml:space="preserve">
+    <value>Відкрити</value>
+  </data>
+  <data name="Pages" xml:space="preserve">
+    <value>Сторінки</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Назад</value>
+  </data>
+  <data name="Page {0} of {1}" xml:space="preserve">
+    <value>Сторінка {0} з {1}</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Далі</value>
+  </data>
+  <data name="Discord role repair" xml:space="preserve">
+    <value>Відновлення ролей Discord</value>
+  </data>
+  <data name="Moderators" xml:space="preserve">
+    <value>Модератори</value>
+  </data>
+  <data name="Saved group membership is the source of truth. Repair reapplies the matching Discord roles." xml:space="preserve">
+    <value>Основою є збережений склад груп. Відновлення повторно призначає відповідні ролі Discord.</value>
+  </data>
+  <data name="To repair one person, open a group and use Repair roles next to their name." xml:space="preserve">
+    <value>Щоб відновити ролі однієї людини, відкрийте групу й натисніть «Відновити ролі» біля її імені.</value>
+  </data>
+  <data name="Leave group" xml:space="preserve">
+    <value>Вийти з групи</value>
+  </data>
+  <data name="Leave {0}? You'll lose its Discord role until someone invites you again." xml:space="preserve">
+    <value>Вийти з {0}? Ви втратите роль Discord, доки вас не запросять знову.</value>
+  </data>
+  <data name="Leave {0}" xml:space="preserve">
+    <value>Вийти з {0}</value>
+  </data>
+  <data name="Close group" xml:space="preserve">
+    <value>Закрити групу</value>
+  </data>
+  <data name="Close {0} for everyone? Its saved record, games and Discord role are deleted. This can't be undone." xml:space="preserve">
+    <value>Закрити {0} для всіх? Запис групи, ігри та роль Discord буде видалено. Скасувати це неможливо.</value>
+  </data>
+  <data name="Close {0}" xml:space="preserve">
+    <value>Закрити {0}</value>
+  </data>
+  <data name="Breadcrumb" xml:space="preserve">
+    <value>Навігація</value>
+  </data>
+  <data name="{0} games" xml:space="preserve">
+    <value>Ігор: {0}</value>
+  </data>
+  <data name="All groups" xml:space="preserve">
+    <value>Усі групи</value>
+  </data>
+  <data name="You're invited" xml:space="preserve">
+    <value>Вас запрошено</value>
+  </data>
+  <data name="{0} invited you to {1}. Accept to see the roster and games and get the group's Discord role." xml:space="preserve">
+    <value>{0} запрошує вас до {1}. Прийміть запрошення, щоб побачити склад та ігри й отримати роль групи в Discord.</value>
+  </data>
+  <data name="Accept invitation" xml:space="preserve">
+    <value>Прийняти запрошення</value>
+  </data>
+  <data name="Group sections" xml:space="preserve">
+    <value>Розділи групи</value>
+  </data>
+  <data name="Overview" xml:space="preserve">
+    <value>Огляд</value>
+  </data>
+  <data name="Members" xml:space="preserve">
+    <value>Учасники</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Опис</value>
+  </data>
+  <data name="Up to 200 characters. Shown in the directory and to invited members." xml:space="preserve">
+    <value>До 200 символів. Видно в каталозі та запрошеним учасникам.</value>
+  </data>
+  <data name="Save description" xml:space="preserve">
+    <value>Зберегти опис</value>
+  </data>
+  <data name="You can leave at any time. The organizer can invite you back." xml:space="preserve">
+    <value>Ви можете вийти будь-коли. Організатор може запросити вас знову.</value>
+  </data>
+  <data name="You organize this group. To leave it, close the group." xml:space="preserve">
+    <value>Ви організатор цієї групи. Щоб вийти, закрийте групу.</value>
+  </data>
+  <data name="Accept the invitation to see who's in this group." xml:space="preserve">
+    <value>Прийміть запрошення, щоб побачити учасників групи.</value>
+  </data>
+  <data name="Discord didn't return the member list, so names are shown as IDs. A server admin can turn on the Server Members Intent for the bot." xml:space="preserve">
+    <value>Discord не повернув список учасників, тому замість імен показано ID. Адміністратор може ввімкнути для бота Server Members Intent.</value>
+  </data>
+  <data name="Remove {0} from {1}? Their group role is removed too." xml:space="preserve">
+    <value>Видалити {0} з {1}? Роль групи теж буде знято.</value>
+  </data>
+  <data name="Remove {0}" xml:space="preserve">
+    <value>Видалити {0}</value>
+  </data>
+  <data name="Repair roles" xml:space="preserve">
+    <value>Відновити ролі</value>
+  </data>
+  <data name="Reapply group roles for {0} only? Nobody else is changed." xml:space="preserve">
+    <value>Повторно призначити ролі груп лише для {0}? Інших це не торкнеться.</value>
+  </data>
+  <data name="Repair {0}'s roles" xml:space="preserve">
+    <value>Відновити ролі: {0}</value>
+  </data>
+  <data name="Repair roles for {0}" xml:space="preserve">
+    <value>Відновити ролі для {0}</value>
+  </data>
+  <data name="You" xml:space="preserve">
+    <value>Ви</value>
+  </data>
+  <data name="No longer in this server" xml:space="preserve">
+    <value>Більше не на сервері</value>
+  </data>
+  <data name="Invite someone" xml:space="preserve">
+    <value>Запросити учасника</value>
+  </data>
+  <data name="Discord username" xml:space="preserve">
+    <value>Ім’я користувача Discord</value>
+  </data>
+  <data name="Start typing a name" xml:space="preserve">
+    <value>Почніть вводити ім’я</value>
+  </data>
+  <data name="Invite" xml:space="preserve">
+    <value>Запросити</value>
+  </data>
+  <data name="They get a Discord message with Accept and Decline buttons. Nobody joins until they accept." xml:space="preserve">
+    <value>Людина отримає повідомлення в Discord із кнопками «Прийняти» та «Відхилити». Ніхто не приєднується без згоди.</value>
+  </data>
+  <data name="No pending invitations." xml:space="preserve">
+    <value>Немає запрошень.</value>
+  </data>
+  <data name="Revoke" xml:space="preserve">
+    <value>Відкликати</value>
+  </data>
+  <data name="Revoke {0}'s invitation to {1}? Their Accept button will stop working." xml:space="preserve">
+    <value>Відкликати запрошення {0} до {1}? Кнопка «Прийняти» перестане працювати.</value>
+  </data>
+  <data name="Revoke invitation" xml:space="preserve">
+    <value>Відкликати запрошення</value>
+  </data>
+  <data name="Revoke {0}'s invitation" xml:space="preserve">
+    <value>Відкликати запрошення: {0}</value>
+  </data>
+  <data name="Invited" xml:space="preserve">
+    <value>Запрошено</value>
+  </data>
+  <data name="Accept the invitation to see the group's games." xml:space="preserve">
+    <value>Прийміть запрошення, щоб побачити ігри групи.</value>
+  </data>
+  <data name="No games yet. Add what the group plays below." xml:space="preserve">
+    <value>Ігор ще немає. Додайте, у що грає група.</value>
+  </data>
+  <data name="No games attached yet." xml:space="preserve">
+    <value>Ігор ще не додано.</value>
+  </data>
+  <data name="Attached games" xml:space="preserve">
+    <value>Ігри групи</value>
+  </data>
+  <data name="Remove {0} from {1}?" xml:space="preserve">
+    <value>Видалити {0} з {1}?</value>
+  </data>
+  <data name="View on Steam" xml:space="preserve">
+    <value>Відкрити в Steam</value>
+  </data>
+  <data name="opens in a new tab" xml:space="preserve">
+    <value>відкриється в новій вкладці</value>
+  </data>
+  <data name="No Steam link" xml:space="preserve">
+    <value>Без посилання на Steam</value>
+  </data>
+  <data name="Edit or link Steam" xml:space="preserve">
+    <value>Змінити або прив’язати Steam</value>
+  </data>
+  <data name="Game name" xml:space="preserve">
+    <value>Назва гри</value>
+  </data>
+  <data name="Steam App ID or link" xml:space="preserve">
+    <value>Steam App ID або посилання</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Зберегти</value>
+  </data>
+  <data name="Add a game" xml:space="preserve">
+    <value>Додати гру</value>
+  </data>
+  <data name="Add game" xml:space="preserve">
+    <value>Додати гру</value>
+  </data>
+  <data name="Paste a number like 730 or a store link like store.steampowered.com/app/730. Leave it empty for games that aren't on Steam." xml:space="preserve">
+    <value>Вставте число, наприклад 730, або посилання на магазин, як-от store.steampowered.com/app/730. Для ігор не зі Steam залиште поле порожнім.</value>
+  </data>
+  <data name="Deletes the group for everyone, including its Discord role. Members, invitations and games can't be recovered." xml:space="preserve">
+    <value>Видаляє групу для всіх, разом із роллю Discord. Учасників, запрошення та ігри не можна буде відновити.</value>
+  </data>
+  <data name="Group not created" xml:space="preserve">
+    <value>Групу не створено</value>
+  </data>
+  <data name="You'll be the organizer. The group is invite-only, and HappyMix creates a matching Discord role." xml:space="preserve">
+    <value>Ви станете організатором. Група доступна лише за запрошенням, а HappyMix створить відповідну роль у Discord.</value>
+  </data>
+  <data name="You can't create groups here" xml:space="preserve">
+    <value>Ви не можете створювати групи на цьому сервері</value>
+  </data>
+  <data name="This server lets only members with an organizer role create groups. Ask a server admin for the role." xml:space="preserve">
+    <value>На цьому сервері групи створюють лише учасники з роллю організатора. Попросіть цю роль в адміністратора.</value>
+  </data>
+  <data name="Back to groups" xml:space="preserve">
+    <value>До груп</value>
+  </data>
+  <data name="Group name" xml:space="preserve">
+    <value>Назва групи</value>
+  </data>
+  <data name="1–40 letters, digits, spaces, hyphens or underscores. It becomes the Discord role name." xml:space="preserve">
+    <value>1–40 літер, цифр, пробілів, дефісів або підкреслень. Стане назвою ролі в Discord.</value>
+  </data>
+  <data name="Steam is optional: paste a number like 730 or a store link. You can add more games and link Steam later." xml:space="preserve">
+    <value>Steam необов’язковий: вставте число, наприклад 730, або посилання на магазин. Інші ігри та Steam можна додати пізніше.</value>
+  </data>
+  <data name="Create group" xml:space="preserve">
+    <value>Створити групу</value>
+  </data>
+  <data name="Member" xml:space="preserve">
+    <value>Учасник</value>
+  </data>
+  <data name="Moderator" xml:space="preserve">
+    <value>Модератор</value>
+  </data>
+  <data name="Former member" xml:space="preserve">
+    <value>Колишній учасник</value>
+  </data>
+  <data name="Group created" xml:space="preserve">
+    <value>Групу створено</value>
+  </data>
+  <data name="You organize this group. Invite members when you're ready." xml:space="preserve">
+    <value>Ви організатор цієї групи. Запрошуйте учасників, коли будете готові.</value>
+  </data>
+  <data name="Choose a person from this server by their Discord username." xml:space="preserve">
+    <value>Виберіть людину з цього сервера за ім’ям користувача Discord.</value>
+  </data>
+  <data name="Invitation sent to {0}" xml:space="preserve">
+    <value>Запрошення надіслано: {0}</value>
+  </data>
+  <data name="They got a Discord message with Accept and Decline buttons, and can also answer here." xml:space="preserve">
+    <value>Людина отримала повідомлення в Discord із кнопками «Прийняти» та «Відхилити» і може відповісти також тут.</value>
+  </data>
+  <data name="Discord couldn't deliver the message. They can still accept from Groups or with /group join." xml:space="preserve">
+    <value>Discord не зміг доставити повідомлення. Людина все одно може прийняти запрошення в розділі «Групи» або командою /group join.</value>
+  </data>
+  <data name="{0} was closed" xml:space="preserve">
+    <value>Групу {0} закрито</value>
+  </data>
+  <data name="Its saved record and Discord role were deleted." xml:space="preserve">
+    <value>Запис групи та роль Discord видалено.</value>
+  </data>
+  <data name="Role repair failed" xml:space="preserve">
+    <value>Не вдалося відновити ролі</value>
+  </data>
+  <data name="Group roles repaired" xml:space="preserve">
+    <value>Ролі груп відновлено</value>
+  </data>
+  <data name="Every member's group roles now match the saved groups." xml:space="preserve">
+    <value>Ролі всіх учасників тепер відповідають збереженим групам.</value>
+  </data>
+  <data name="Saved, but the Discord role didn't update" xml:space="preserve">
+    <value>Збережено, але роль Discord не оновилася</value>
+  </data>
+  <data name="The group record is saved. A server moderator can fix the role from Groups → Repair roles, or with /group repair-roles." xml:space="preserve">
+    <value>Запис групи збережено. Модератор сервера може виправити роль у розділі «Групи» → «Відновлення ролей» або командою /group repair-roles.</value>
+  </data>
+  <data name="Group not available" xml:space="preserve">
+    <value>Група недоступна</value>
+  </data>
+  <data name="That group doesn't exist or you don't have access to it." xml:space="preserve">
+    <value>Такої групи немає або у вас немає до неї доступу.</value>
+  </data>
+  <data name="You joined the group" xml:space="preserve">
+    <value>Ви приєдналися до групи</value>
+  </data>
+  <data name="Invitation declined" xml:space="preserve">
+    <value>Запрошення відхилено</value>
+  </data>
+  <data name="You left the group" xml:space="preserve">
+    <value>Ви вийшли з групи</value>
+  </data>
+  <data name="Description saved" xml:space="preserve">
+    <value>Опис збережено</value>
+  </data>
+  <data name="Invitation revoked" xml:space="preserve">
+    <value>Запрошення відкликано</value>
+  </data>
+  <data name="Member removed" xml:space="preserve">
+    <value>Учасника видалено</value>
+  </data>
+  <data name="Roles repaired for this member" xml:space="preserve">
+    <value>Ролі цього учасника відновлено</value>
+  </data>
+  <data name="Game added" xml:space="preserve">
+    <value>Гру додано</value>
+  </data>
+  <data name="Game updated" xml:space="preserve">
+    <value>Гру оновлено</value>
+  </data>
+  <data name="Game removed" xml:space="preserve">
+    <value>Гру видалено</value>
+  </data>
+  <data name="You need a configured organizer role to create a group." xml:space="preserve">
+    <value>Щоб створити групу, потрібна роль організатора.</value>
+  </data>
+  <data name="A group with that name already exists." xml:space="preserve">
+    <value>Група з такою назвою вже існує.</value>
+  </data>
+  <data name="That member already belongs to the group." xml:space="preserve">
+    <value>Ця людина вже в групі.</value>
+  </data>
+  <data name="This invitation is no longer pending." xml:space="preserve">
+    <value>Це запрошення вже неактивне.</value>
+  </data>
+  <data name="You have no pending invitation to this group." xml:space="preserve">
+    <value>У вас немає запрошення до цієї групи.</value>
+  </data>
+  <data name="You organize this group. Use /group delete to close it." xml:space="preserve">
+    <value>Ви організатор цієї групи. Щоб вийти, закрийте її.</value>
+  </data>
+  <data name="You are not a member of this group." xml:space="preserve">
+    <value>Ви не учасник цієї групи.</value>
+  </data>
+  <data name="The organizer owns this group. Use /group delete to close it." xml:space="preserve">
+    <value>Організатора не можна видалити. Щоб завершити групу, закрийте її.</value>
+  </data>
+  <data name="Only server moderators can repair group roles." xml:space="preserve">
+    <value>Відновлювати ролі груп можуть лише модератори сервера.</value>
+  </data>
+  <data name="That group does not exist in this server." xml:space="preserve">
+    <value>Такої групи на цьому сервері немає.</value>
+  </data>
+  <data name="Only the group's organizer or a server moderator can manage it." xml:space="preserve">
+    <value>Керувати групою можуть лише її організатор або модератор сервера.</value>
+  </data>
+  <data name="Use a group name of 1 to 40 letters, digits, spaces, hyphens or underscores." xml:space="preserve">
+    <value>Назва групи: 1–40 літер, цифр, пробілів, дефісів або підкреслень.</value>
+  </data>
+  <data name="Use a description of up to 200 characters." xml:space="preserve">
+    <value>Опис має бути до 200 символів.</value>
+  </data>
+  <data name="A group can have up to 20 games." xml:space="preserve">
+    <value>У групі може бути до 20 ігор.</value>
+  </data>
+  <data name="This group already has that Steam game." xml:space="preserve">
+    <value>Ця гра зі Steam уже є в групі.</value>
+  </data>
+  <data name="That game is no longer attached to this group." xml:space="preserve">
+    <value>Цієї гри вже немає в групі.</value>
+  </data>
+  <data name="Enter a game name of 1 to 60 characters." xml:space="preserve">
+    <value>Назва гри має бути від 1 до 60 символів.</value>
+  </data>
+  <data name="Enter a Steam App ID like 730 or a Steam store link like https://store.steampowered.com/app/730/." xml:space="preserve">
+    <value>Введіть Steam App ID, наприклад 730, або посилання на магазин Steam, як-от https://store.steampowered.com/app/730/.</value>
+  </data>
 </root>

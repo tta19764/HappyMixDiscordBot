@@ -20,7 +20,9 @@ namespace HappyMix.Bot.Web;
 [AutoValidateAntiforgeryToken]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public sealed partial class DashboardController(ISender sender, DiscordSocketClient discord,
-    IOptions<PandaScoreOptions> options, IOptions<DiscordOptions> discordOptions, IClock clock)
+    IOptions<PandaScoreOptions> options, IOptions<DiscordOptions> discordOptions, IClock clock,
+    HappyMix.Bot.Services.IMemberDirectory memberDirectory,
+    Microsoft.Extensions.Localization.IStringLocalizer<DashboardResources> text)
     : Controller
 {
     private const string LastServerCookie = "hm_last_server";

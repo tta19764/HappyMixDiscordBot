@@ -27,6 +27,21 @@ internal sealed class HappyMixDbContext(DbContextOptions<HappyMixDbContext> opti
         groups.Property(item => item.GuildId).HasColumnType("TEXT");
         groups.Property(item => item.NameKey).HasColumnType("TEXT");
         groups.Property(item => item.Data).HasColumnType("TEXT");
+        groups.Property(item => item.GroupId).HasColumnType("TEXT");
+        groups.HasIndex(item => item.GroupId).IsUnique();
+
+        var games = modelBuilder.Entity<GuildGroupGameRecord>();
+        games.ToTable("GuildGroupGames");
+        games.HasKey(item => item.Id);
+        games.Property(item => item.Id).HasColumnType("TEXT");
+        games.Property(item => item.GuildId).HasColumnType("TEXT");
+        games.Property(item => item.GroupId).HasColumnType("TEXT");
+        games.Property(item => item.Name).HasColumnType("TEXT");
+        games.Property(item => item.Provider).HasColumnType("TEXT");
+        games.Property(item => item.ExternalId).HasColumnType("TEXT");
+        games.Property(item => item.AddedAtUtc).HasColumnType("TEXT");
+        games.HasIndex(item => new { item.GuildId, item.GroupId });
+        games.HasIndex(item => new { item.GroupId, item.Provider, item.ExternalId }).IsUnique();
 
         var settings = modelBuilder.Entity<GuildSettingsRecord>();
         settings.ToTable("GuildSettings");

@@ -1,0 +1,369 @@
+@using HappyMix.Application.Guilds
+@model GroupPage
+@{
+    Layout = "_DashboardLayout";
+    var group = Model.Group;
+    var detail = Model.Detail;
+    ViewData["Title"] = group.Name;
+    ViewData["NavGuildName"] = Model.GuildName;
+    string Localize(string key) => T[key];
+    BannerModel ErrorBanner(string message) => new("error", message, null, false);
+    var organizer = Model.Names.Get(group.OrganizerId);
+    string organizerName = Model.Names.Name(group.OrganizerId, Localize);
+    bool manage = group.CanManage;
+    bool invited = group.Relation == GroupRelation.Invited;
+    var leave = new ConfirmModel(T["Leave group"], T["Leave {0}? You'll lose its Discord role until someone invites you again.", group.Name],
+        $"{Model.Url}/leave", T["Leave {0}", group.Name], Icon: "logout");
+    var close = new ConfirmModel(T["Close group"],
+        T["Close {0} for everyone? Its saved record, games and Discord role are deleted. This can't be undone.", group.Name],
+        $"{Model.Url}/close", T["Close {0}", group.Name]);
+}
+
+<nav class="hm-crumbs" aria-label="@T["Breadcrumb"]">
+    <a href="/">@T["Servers"]</a><span aria-hidden="true">/</span>
+    <a href="@Model.BackUrl">@T["Groups"]</a><span aria-hidden="true">/</span>
+    <span>@group.Name</span>
+</nav>
+<div class="hm-page-head">
+    <div>
+        <div class="hm-row" style="gap: var(--hm-space-3)">
+            <h1>@group.Name</h1>
+            <partial name="_GroupBadge" model="(group.Relation, Model.Viewer.CanModerate)" />
+        </div>
+        <div class="hm-meta" style="margin-top: var(--hm-space-2)">
+            <span><partial name="_Avatar" model="new AvatarModel(organizer, organizerName, true)" />@T["Organizer"]: @organizerName</span>
+            <span>@DashboardIcons.Render("users")@T["{0} members", group.MemberCount]</span>
+            @if (detail.CanViewRoster)
+            {
+                <span>@DashboardIcons.Render("calendar")@T["{0} games", detail.Games.Length]</span>
+            }
+        </div>
+    </div>
+    <a class="hm-btn hm-btn--ghost" href="@Model.BackUrl">← @T["All groups"]</a>
+</div>
+
+@if (Model.Banner is { } banner)
+{
+    <div style="margin-bottom: var(--hm-space-4)"><partial name="_Banner" model="banner" /></div>
+}
+
+@if (invited)
+{
+    <section class="hm-card hm-stack" style="margin-bottom: var(--hm-space-5)" aria-labelledby="invite-title">
+        <div>
+            <h2 id="invite-title">@T["You're invited"]</h2>
+            <p class="hm-help">@T["{0} invited you to {1}. Accept to see the roster and games and get the group's Discord role.", organizerName, group.Name]</p>
+        </div>
+        @if (Model.ErrorFor("overview") is { } inviteError)
+        {
+            <partial name="_Banner" model="ErrorBanner(inviteError)" />
+        }
+        <form class="hm-row hm-sticky-action" method="post" action="@Model.Url/invitation" asp-antiforgery="false">
+            @Html.AntiForgeryToken()
+            <button class="hm-btn hm-btn--primary hm-btn--lg" name="decision" value="accept">@DashboardIcons.Render("check")@T["Accept invitation"]</button>
+            <button class="hm-btn hm-btn--lg" name="decision" value="decline">@T["Decline"]</button>
+        </form>
+    </section>
+}
+
+<nav class="hm-section-nav" aria-label="@T["Group sections"]">
+    <a class="hm-chip" href="#overview">@T["Overview"]</a>
+    <a class="hm-chip" href="#members">@T["Members"] <span class="hm-count">@group.MemberCount</span></a>
+    <a class="hm-chip" href="#games">@T["Games"]
+        @if (detail.CanViewRoster)
+        {
+            <span class="hm-count">@detail.Games.Length</span>
+        }
+    </a>
+</nav>
+
+<div class="hm-stack" style="gap: var(--hm-space-6)">
+    @* ---------- Overview ---------- *@
+    <section class="hm-card hm-section hm-stack" id="overview" aria-labelledby="overview-title">
+        <h2 id="overview-title">@T["Overview"]</h2>
+        @if (manage)
+        {
+            string? error = Model.ErrorFor("overview");
+            string value = Model.Form?.Section == "overview" ? Model.Form.Description ?? "" : group.Description ?? "";
+            <form class="hm-stack hm-stack--sm" method="post" action="@Model.Url/description" asp-antiforgery="false">
+                @Html.AntiForgeryToken()
+                <label class="hm-label" for="description">@T["Description"] <span class="hm-label__opt">@T["optional"]</span></label>
+                <textarea class="hm-textarea" id="description" name="description" rows="3" maxlength="200"
+                          style="font-family: var(--hm-font); font-size: var(--hm-fs-md)"
+                          aria-invalid="@(error is null ? null : "true")" aria-describedby="description-help @(error is null ? "" : "description-error")">@value</textarea>
+                <p class="hm-help" id="description-help">@T["Up to 200 characters. Shown in the directory and to invited members."]</p>
+                @if (error is not null)
+                {
+                    <p class="hm-error" id="description-error">@DashboardIcons.Render("alert")@error</p>
+                }
+                <div><button class="hm-btn">@DashboardIcons.Render("check")@T["Save description"]</button></div>
+            </form>
+        }
+        else
+        {
+            <p class="@(group.Description is null ? "hm-subtle" : "")">@(group.Description ?? T["No description"].Value)</p>
+        }
+
+        @if (detail.CanLeave || manage)
+        {
+            <hr class="hm-divider" style="margin: 0">
+            <div class="hm-row hm-row--between">
+                @if (detail.CanLeave)
+                {
+                    <p class="hm-help">@T["You can leave at any time. The organizer can invite you back."]</p>
+                    <partial name="_Confirm" model="leave" />
+                }
+                else if (group.Relation == GroupRelation.Organizer)
+                {
+                    <p class="hm-help">@T["You organize this group. To leave it, close the group."]</p>
+                }
+            </div>
+        }
+    </section>
+
+    @* ---------- Members ---------- *@
+    <section class="hm-card hm-section hm-stack" id="members" aria-labelledby="members-title">
+        <div class="hm-card__head" style="margin: 0">
+            <h2 id="members-title">@T["Members"]</h2>
+            <span class="hm-badge hm-tnum">@T["{0} members", group.MemberCount]</span>
+        </div>
+        @if (!detail.CanViewRoster)
+        {
+            <div class="hm-empty" style="padding: var(--hm-space-6) var(--hm-space-4)">
+                <span class="hm-empty__icon">@DashboardIcons.Render("shield")</span>
+                <p>@T["Accept the invitation to see who's in this group."]</p>
+            </div>
+        }
+        else
+        {
+            @if (Model.ErrorFor("members") is { } membersError)
+            {
+                <partial name="_Banner" model="ErrorBanner(membersError)" />
+            }
+            @if (!Model.Names.Available)
+            {
+                <p class="hm-help">@DashboardIcons.Render("info") @T["Discord didn't return the member list, so names are shown as IDs. A server admin can turn on the Server Members Intent for the bot."]</p>
+            }
+            <ul class="hm-roster" aria-label="@T["Roster"]">
+                @foreach (ulong id in detail.Members.OrderBy(id => id == group.OrganizerId ? 0 : 1).ThenBy(id => Model.Names.Name(id, Localize), StringComparer.CurrentCultureIgnoreCase))
+                {
+                    var profile = Model.Names.Get(id);
+                    string name = Model.Names.Name(id, Localize);
+                    bool isOrganizer = id == group.OrganizerId;
+                    var avatar = new AvatarModel(profile, name);
+                    var remove = new ConfirmModel(T["Remove"], T["Remove {0} from {1}? Their group role is removed too.", name, group.Name],
+                        $"{Model.Url}/members/{id}/remove", T["Remove {0}", name], TriggerLabel: T["Remove {0}", name]);
+                    var repair = new ConfirmModel(T["Repair roles"],
+                        T["Reapply group roles for {0} only? Nobody else is changed.", name],
+                        $"{Model.Url}/members/{id}/repair", T["Repair {0}'s roles", name], Icon: "refresh", Danger: false,
+                        TriggerLabel: T["Repair roles for {0}", name]);
+                    <li class="hm-roster__item">
+                        <partial name="_Avatar" model="avatar" />
+                        <div class="hm-roster__who">
+                            <span class="hm-roster__name">
+                                @name
+                                @if (isOrganizer)
+                                {
+                                    <span class="hm-badge hm-badge--custom">@T["Organizer"]</span>
+                                }
+                                @if (id == Model.Viewer.UserId)
+                                {
+                                    <span class="hm-badge">@T["You"]</span>
+                                }
+                            </span>
+                            <span class="hm-roster__sub">
+                                @if (profile.InServer && profile.Username is { } username)
+                                {
+                                    @("@" + username)
+                                }
+                                else if (!profile.InServer && Model.Names.Available)
+                                {
+                                    @T["No longer in this server"]
+                                }
+                            </span>
+                        </div>
+                        @if (manage && !isOrganizer || Model.Viewer.CanModerate)
+                        {
+                            <div class="hm-roster__actions">
+                                @if (Model.Viewer.CanModerate && (profile.InServer || !Model.Names.Available))
+                                {
+                                    <partial name="_Confirm" model="repair" />
+                                }
+                                @if (manage && !isOrganizer)
+                                {
+                                    <partial name="_Confirm" model="remove" />
+                                }
+                            </div>
+                        }
+                    </li>
+                }
+            </ul>
+
+            @if (manage)
+            {
+                string? memberValue = Model.Form?.Section == "members" ? Model.Form.Member : null;
+                <hr class="hm-divider" style="margin: 0">
+                <form class="hm-stack hm-stack--sm" method="post" action="@Model.Url/invite" asp-antiforgery="false" aria-labelledby="invite-form-title">
+                    @Html.AntiForgeryToken()
+                    <h3 id="invite-form-title">@T["Invite someone"]</h3>
+                    <label class="hm-label" for="invite-member">@T["Discord username"]</label>
+                    <div class="hm-search" style="max-width: none">
+                        <input class="hm-input" id="invite-member" name="member" list="invite-candidates" required autocomplete="off"
+                               spellcheck="false" value="@memberValue" placeholder="@T["Start typing a name"]" aria-describedby="invite-help">
+                        <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("plus")@T["Invite"]</button>
+                    </div>
+                    <p class="hm-help" id="invite-help">@T["They get a Discord message with Accept and Decline buttons. Nobody joins until they accept."]</p>
+                    <datalist id="invite-candidates">
+                        @foreach (var candidate in Model.InviteCandidates)
+                        {
+                            <option value="@candidate.Username">@candidate.DisplayName</option>
+                        }
+                    </datalist>
+                </form>
+
+                <div class="hm-stack hm-stack--sm">
+                    <h3>@T["Pending invitations"]</h3>
+                    @if (detail.Invites.Length == 0)
+                    {
+                        <p class="hm-help">@T["No pending invitations."]</p>
+                    }
+                    else
+                    {
+                        <ul class="hm-roster">
+                            @foreach (ulong id in detail.Invites)
+                            {
+                                var profile = Model.Names.Get(id);
+                                string name = Model.Names.Name(id, Localize);
+                                var avatar = new AvatarModel(profile, name);
+                                var revoke = new ConfirmModel(T["Revoke"], T["Revoke {0}'s invitation to {1}? Their Accept button will stop working.", name, group.Name],
+                                    $"{Model.Url}/members/{id}/remove?kind=invite", T["Revoke invitation"], Icon: "trash", TriggerLabel: T["Revoke {0}'s invitation", name]);
+                                <li class="hm-roster__item">
+                                    <partial name="_Avatar" model="avatar" />
+                                    <div class="hm-roster__who">
+                                        <span class="hm-roster__name">@name <span class="hm-badge hm-badge--warn">@T["Invited"]</span></span>
+                                        <span class="hm-roster__sub">@(profile.Username is { } u ? "@" + u : "")</span>
+                                    </div>
+                                    <div class="hm-roster__actions"><partial name="_Confirm" model="revoke" /></div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            }
+        }
+    </section>
+
+    @* ---------- Games ---------- *@
+    <section class="hm-card hm-section hm-stack" id="games" aria-labelledby="games-title">
+        <h2 id="games-title">@T["Games"]</h2>
+        @if (!detail.CanViewRoster)
+        {
+            <p class="hm-help">@T["Accept the invitation to see the group's games."]</p>
+        }
+        else
+        {
+            @if (Model.ErrorFor("games") is { } gamesError)
+            {
+                <partial name="_Banner" model="ErrorBanner(gamesError)" />
+            }
+            @if (detail.Games.Length == 0)
+            {
+                <div class="hm-empty" style="padding: var(--hm-space-6) var(--hm-space-4)">
+                    <span class="hm-empty__icon">@DashboardIcons.Render("calendar")</span>
+                    <p>@(manage ? T["No games yet. Add what the group plays below."] : T["No games attached yet."])</p>
+                </div>
+            }
+            else
+            {
+                <ul class="hm-roster" aria-label="@T["Attached games"]">
+                    @foreach (var game in detail.Games)
+                    {
+                        string formKey = "game-" + game.Id.ToString("N");
+                        bool editing = Model.Form?.Section == formKey;
+                        var removeGame = new ConfirmModel(T["Remove"], T["Remove {0} from {1}?", game.Name, group.Name],
+                            $"{Model.Url}/games/{game.Id}/remove", T["Remove {0}", game.Name], TriggerLabel: T["Remove {0}", game.Name]);
+                        <li class="hm-game-row" id="@formKey">
+                            <div class="hm-game-row__main">
+                                <span class="hm-game-row__name">@game.Name</span>
+                                <span class="hm-game-row__meta">
+                                    @if (game.SteamAppId is { } appId)
+                                    {
+                                        <span class="hm-badge">Steam · @appId</span>
+                                        <a href="@SteamApps.StoreUrl(appId)" target="_blank" rel="noopener noreferrer">@T["View on Steam"] ↗<span class="hm-sr-only"> (@T["opens in a new tab"])</span></a>
+                                    }
+                                    else
+                                    {
+                                        <span>@T["No Steam link"]</span>
+                                    }
+                                </span>
+                            </div>
+                            @if (manage)
+                            {
+                                <div class="hm-roster__actions">
+                                    <partial name="_Confirm" model="removeGame" />
+                                </div>
+                                <details class="hm-game-row__edit" open="@editing">
+                                    <summary class="hm-link-btn">@(game.SteamAppId is null ? T["Edit or link Steam"] : T["Edit"])</summary>
+                                    <form class="hm-inline-form" method="post" action="@Model.Url/games/@game.Id" asp-antiforgery="false" style="margin-top: var(--hm-space-2)">
+                                        @Html.AntiForgeryToken()
+                                        <div class="hm-field">
+                                            <label class="hm-label" for="@formKey-name">@T["Game name"]</label>
+                                            <input class="hm-input" id="@formKey-name" name="name" required maxlength="60" value="@(editing ? Model.Form!.Name : game.Name)">
+                                        </div>
+                                        <div class="hm-field">
+                                            <label class="hm-label" for="@formKey-steam">@T["Steam App ID or link"] <span class="hm-label__opt">@T["optional"]</span></label>
+                                            <input class="hm-input" id="@formKey-steam" name="steam" maxlength="200" inputmode="url" value="@(editing ? Model.Form!.Steam : game.SteamAppId)">
+                                        </div>
+                                        <button class="hm-btn">@DashboardIcons.Render("check")@T["Save"]</button>
+                                    </form>
+                                    @if (editing && Model.Form!.Error is { } editError)
+                                    {
+                                        <p class="hm-error" style="margin-top: var(--hm-space-2)">@DashboardIcons.Render("alert")@editError</p>
+                                    }
+                                </details>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+
+            @if (manage)
+            {
+                bool adding = Model.Form?.Section == "games";
+                <hr class="hm-divider" style="margin: 0">
+                <form class="hm-stack hm-stack--sm" method="post" action="@Model.Url/games" asp-antiforgery="false" aria-labelledby="add-game-title">
+                    @Html.AntiForgeryToken()
+                    <h3 id="add-game-title">@T["Add a game"]</h3>
+                    <div class="hm-inline-form">
+                        <div class="hm-field">
+                            <label class="hm-label" for="game-name">@T["Game name"]</label>
+                            <input class="hm-input" id="game-name" name="name" required maxlength="60" value="@(adding ? Model.Form!.Name : null)" placeholder="Counter-Strike 2">
+                        </div>
+                        <div class="hm-field">
+                            <label class="hm-label" for="game-steam">@T["Steam App ID or link"] <span class="hm-label__opt">@T["optional"]</span></label>
+                            <input class="hm-input" id="game-steam" name="steam" maxlength="200" inputmode="url" value="@(adding ? Model.Form!.Steam : null)"
+                                   placeholder="730" aria-describedby="game-steam-help">
+                        </div>
+                        <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("plus")@T["Add game"]</button>
+                    </div>
+                    <p class="hm-help" id="game-steam-help">@T["Paste a number like 730 or a store link like store.steampowered.com/app/730. Leave it empty for games that aren't on Steam."]</p>
+                </form>
+            }
+        }
+    </section>
+
+    @if (manage)
+    {
+        <section class="hm-card hm-danger-zone hm-stack" aria-labelledby="close-title">
+            <div>
+                <h2 id="close-title" style="font-size: var(--hm-fs-lg)">@T["Close group"]</h2>
+                <p class="hm-help">@T["Deletes the group for everyone, including its Discord role. Members, invitations and games can't be recovered."]</p>
+            </div>
+            @if (Model.ErrorFor("close") is { } closeError)
+            {
+                <partial name="_Banner" model="ErrorBanner(closeError)" />
+            }
+            <div><partial name="_Confirm" model="close" /></div>
+        </section>
+    }
+</div>

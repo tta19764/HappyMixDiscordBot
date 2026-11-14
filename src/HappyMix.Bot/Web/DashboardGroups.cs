@@ -1,0 +1,305 @@
+using System.Globalization;
+using HappyMix.Application.Guilds;
+using HappyMix.Bot.Services;
+using HappyMix.Domain.Abstractions;
+using Microsoft.AspNetCore.Mvc;
+
+namespace HappyMix.Bot.Web;
+
+/// <summary>
+/// Groups workspace. The controller only resolves who is acting (Discord session + live server membership),
+/// reads input and renders; every permission is enforced again in the Application handlers.
+/// </summary>
+public sealed partial class DashboardController
+{
+    private const int GroupPageSize = 12;
+
+    [HttpGet("/groups/{guildId}")]
+    public async Task<IActionResult> Groups(ulong guildId, string? filter, string? q, int page = 1)
+    {
+        if (await GetGroupActorAsync(guildId) is not ({ } actor, { } viewer, { } roles))
+            return NotMember();
+
+        RememberServer(guildId);
+        var chosen = ParseFilter(filter);
+        var cancellationToken = HttpContext.RequestAborted;
+        var directory = (await sender.Send(new GetGroupDirectoryQuery(actor, chosen, q, page, GroupPageSize), cancellationToken)).Value;
+        // First visit with nothing of your own: show what you can access instead of an empty "My groups".
+        if (filter is null && directory.MineCount == 0 && directory.InvitedCount > 0)
+        {
+            chosen = GroupDirectoryFilter.Invited;
+            directory = (await sender.Send(new GetGroupDirectoryQuery(actor, chosen, q, page, GroupPageSize), cancellationToken)).Value;
+        }
+
+        bool canCreate = (await sender.Send(new CanCreateGroupQuery(actor, roles), cancellationToken)).Value;
+        var (members, available) = await memberDirectory.GetMembersAsync(guildId, cancellationToken);
+        return View("Groups", new GroupsPage(guildId, GuildName(guildId), viewer, canCreate, chosen, q?.Trim(), directory,
+            new MemberNames(members, available), TakeBanner()));
+    }
+
+    [HttpGet("/groups/{guildId}/new")]
+    public async Task<IActionResult> NewGroup(ulong guildId)
+    {
+        if (await GetGroupActorAsync(guildId) is not ({ } actor, { } viewer, { } roles))
+            return NotMember();
+
+        bool canCreate = (await sender.Send(new CanCreateGroupQuery(actor, roles), HttpContext.RequestAborted)).Value;
+        return View("NewGroup", new CreateGroupPage(guildId, GuildName(guildId), viewer, canCreate, null, null, [], [], null, null));
+    }
+
+    [HttpPost("/groups/{guildId}/new")]
+    public async Task<IActionResult> CreateGroup(ulong guildId, string? name, string? description, string[]? gameName, string[]? gameSteam)
+    {
+        if (await GetGroupActorAsync(guildId) is not ({ } actor, { } viewer, { } roles))
+            return NotMember();
+
+        gameName ??= [];
+        gameSteam ??= [];
+        var inputs = gameName.Select((game, index) => new GroupGameInput(game ?? "", index < gameSteam.Length ? gameSteam[index] : null))
+            .Where(game => !string.IsNullOrWhiteSpace(game.Name) || !string.IsNullOrWhiteSpace(game.Steam))
+            .Take(CreateGroupPage.GameRows)
+            .ToArray();
+        var result = await sender.Send(new CreateGroupCommand(actor, name ?? "", description, roles, inputs), HttpContext.RequestAborted);
+        if (result.IsFailure)
+        {
+            string message = result.Error.Description;
+            string field = message.Contains("game", StringComparison.OrdinalIgnoreCase) || message.Contains("Steam", StringComparison.Ordinal)
+                ? "games" : message.Contains("description", StringComparison.OrdinalIgnoreCase) ? "description"
+                : message.Contains("name", StringComparison.OrdinalIgnoreCase) ? "name" : "";
+            bool canCreate = (await sender.Send(new CanCreateGroupQuery(actor, roles), HttpContext.RequestAborted)).Value;
+            var view = View("NewGroup", new CreateGroupPage(guildId, GuildName(guildId), viewer, canCreate, name, description,
+                gameName, gameSteam, text[message], field));
+            view.StatusCode = StatusCodes.Status422UnprocessableEntity;
+            return view;
+        }
+
+        SetSavedBanner(result.Value, text["Group created"], text["You organize this group. Invite members when you're ready."]);
+        return Redirect($"/groups/{guildId}/{result.Value.GroupId}");
+    }
+
+    [HttpGet("/groups/{guildId}/{groupId:guid}")]
+    public async Task<IActionResult> Group(ulong guildId, Guid groupId, string? back)
+    {
+        if (await GetGroupActorAsync(guildId) is not ({ } actor, { } viewer, _))
+            return NotMember();
+
+        RememberServer(guildId);
+        return await RenderGroupAsync(guildId, actor, viewer, groupId, back, TakeBanner(), null);
+    }
+
+    [HttpPost("/groups/{guildId}/{groupId:guid}/invitation")]
+    public Task<IActionResult> RespondToInvitation(ulong guildId, Guid groupId, string decision) =>
+        RunGroupActionAsync(guildId, groupId, (actor, group) => new ResolveGroupInviteCommand(actor, group.Name, null, decision == "accept"),
+            decision == "accept" ? "You joined the group" : "Invitation declined", afterDecline: decision != "accept");
+
+    [HttpPost("/groups/{guildId}/{groupId:guid}/leave")]
+    public Task<IActionResult> LeaveGroup(ulong guildId, Guid groupId) =>
+        RunGroupActionAsync(guildId, groupId, (actor, group) => new LeaveGroupCommand(actor, group.Name), "You left the group",
+            afterDecline: true);
+
+    [HttpPost("/groups/{guildId}/{groupId:guid}/description")]
+    public Task<IActionResult> EditGroupDescription(ulong guildId, Guid groupId, string? description) =>
+        RunGroupActionAsync(guildId, groupId, (actor, group) => new EditGroupDescriptionCommand(actor, group.Name, description),
+            "Description saved", section: "overview", form: new GroupFormState("overview", null, Description: description));
+
+    [HttpPost("/groups/{guildId}/{groupId:guid}/invite")]
+    public async Task<IActionResult> InviteToGroup(ulong guildId, Guid groupId, string? member)
+    {
+        if (await GetGroupActorAsync(guildId) is not ({ } actor, { } viewer, _))
+            return NotMember();
+
+        var detail = await sender.Send(new GetGroupDetailQuery(actor, groupId), HttpContext.RequestAborted);
+        if (detail.IsFailure)
+            return GroupNotFound(guildId);
+
+        var target = await ResolveInviteeAsync(guildId, member);
+        if (target is null)
+            return await RenderGroupAsync(guildId, actor, viewer, groupId, null, null, new GroupFormState("members",
+                text["Choose a person from this server by their Discord username."], Member: member));
+
+        Guid token = Guid.NewGuid();
+        var group = detail.Value.Summary;
+        var result = await sender.Send(new InviteGroupMemberCommand(actor, group.Name, target.Value.Id, token), HttpContext.RequestAborted);
+        if (result.IsFailure)
+            return await RenderGroupAsync(guildId, actor, viewer, groupId, null, null,
+                new GroupFormState("members", text[result.Error.Description], Member: member));
+
+        bool delivered = discord.GetGuild(guildId) is { } guild &&
+            await GroupInviteMessages.SendAsync(target.Value.User, guildId, guild.Name, group.Name, token);
+        TempData["GroupBannerTitle"] = text["Invitation sent to {0}", target.Value.Name].Value;
+        TempData["GroupBannerText"] = delivered
+            ? text["They got a Discord message with Accept and Decline buttons, and can also answer here."].Value
+            : text["Discord couldn't deliver the message. They can still accept from Groups or with /group join."].Value;
+        return Redirect($"/groups/{guildId}/{groupId}#members");
+    }
+
+    [HttpPost("/groups/{guildId}/{groupId:guid}/members/{memberId}/remove")]
+    public Task<IActionResult> RemoveGroupMember(ulong guildId, Guid groupId, ulong memberId, string? kind) =>
+        RunGroupActionAsync(guildId, groupId, (actor, group) => new RemoveGroupMemberCommand(actor, group.Name, memberId),
+            kind == "invite" ? "Invitation revoked" : "Member removed", section: "members");
+
+    [HttpPost("/groups/{guildId}/{groupId:guid}/members/{memberId}/repair")]
+    public Task<IActionResult> RepairMemberRoles(ulong guildId, Guid groupId, ulong memberId) =>
+        RunGroupActionAsync(guildId, groupId, (actor, _) => new RepairGroupRolesCommand(actor, memberId),
+            "Roles repaired for this member", section: "members");
+
+    [HttpPost("/groups/{guildId}/{groupId:guid}/games")]
+    public Task<IActionResult> AddGroupGame(ulong guildId, Guid groupId, string? name, string? steam) =>
+        RunGroupActionAsync(guildId, groupId, (actor, group) => new AddGroupGameCommand(actor, group.Id, name ?? "", steam),
+            "Game added", section: "games", form: new GroupFormState("games", null, name, steam));
+
+    [HttpPost("/groups/{guildId}/{groupId:guid}/games/{gameId:guid}")]
+    public Task<IActionResult> UpdateGroupGame(ulong guildId, Guid groupId, Guid gameId, string? name, string? steam) =>
+        RunGroupActionAsync(guildId, groupId, (actor, group) => new UpdateGroupGameCommand(actor, group.Id, gameId, name ?? "", steam),
+            "Game updated", section: "games", form: new GroupFormState("game-" + gameId.ToString("N"), null, name, steam));
+
+    [HttpPost("/groups/{guildId}/{groupId:guid}/games/{gameId:guid}/remove")]
+    public Task<IActionResult> RemoveGroupGame(ulong guildId, Guid groupId, Guid gameId) =>
+        RunGroupActionAsync(guildId, groupId, (actor, group) => new RemoveGroupGameCommand(actor, group.Id, gameId),
+            "Game removed", section: "games");
+
+    [HttpPost("/groups/{guildId}/{groupId:guid}/close")]
+    public async Task<IActionResult> CloseGroup(ulong guildId, Guid groupId)
+    {
+        if (await GetGroupActorAsync(guildId) is not ({ } actor, { } viewer, _))
+            return NotMember();
+
+        var detail = await sender.Send(new GetGroupDetailQuery(actor, groupId), HttpContext.RequestAborted);
+        if (detail.IsFailure)
+            return GroupNotFound(guildId);
+
+        var result = await sender.Send(new DeleteGroupCommand(actor, detail.Value.Summary.Name), HttpContext.RequestAborted);
+        if (result.IsFailure)
+            return await RenderGroupAsync(guildId, actor, viewer, groupId, null, null,
+                new GroupFormState("close", text[result.Error.Description]));
+
+        TempData["GroupBannerTitle"] = text["{0} was closed", detail.Value.Summary.Name].Value;
+        TempData["GroupBannerText"] = text["Its saved record and Discord role were deleted."].Value;
+        return Redirect($"/groups/{guildId}");
+    }
+
+    [HttpPost("/groups/{guildId}/repair-roles")]
+    public async Task<IActionResult> RepairAllGroupRoles(ulong guildId)
+    {
+        if (await GetGroupActorAsync(guildId) is not ({ } actor, _, _))
+            return NotMember();
+
+        var result = await sender.Send(new RepairGroupRolesCommand(actor, null), HttpContext.RequestAborted);
+        if (result.IsFailure)
+        {
+            TempData["GroupBannerKind"] = "error";
+            TempData["GroupBannerTitle"] = text["Role repair failed"].Value;
+            TempData["GroupBannerText"] = text[result.Error.Description].Value;
+        }
+        else
+        {
+            TempData["GroupBannerTitle"] = text["Group roles repaired"].Value;
+            TempData["GroupBannerText"] = text["Every member's group roles now match the saved groups."].Value;
+        }
+        return Redirect($"/groups/{guildId}?filter=all");
+    }
+
+    /// <summary>Looks the group up through the visibility-checked query, then runs one name-scoped command.</summary>
+    private async Task<IActionResult> RunGroupActionAsync(ulong guildId, Guid groupId,
+        Func<GroupActor, GroupSummary, GroupCommand> command, string success, string section = "overview",
+        GroupFormState? form = null, bool afterDecline = false)
+    {
+        if (await GetGroupActorAsync(guildId) is not ({ } actor, { } viewer, _))
+            return NotMember();
+
+        var detail = await sender.Send(new GetGroupDetailQuery(actor, groupId), HttpContext.RequestAborted);
+        if (detail.IsFailure)
+            return GroupNotFound(guildId);
+
+        var result = await sender.Send(command(actor, detail.Value.Summary), HttpContext.RequestAborted);
+        if (result.IsFailure)
+            return await RenderGroupAsync(guildId, actor, viewer, groupId, null, null,
+                (form ?? new GroupFormState(section, null)) with { Section = form?.Section ?? section, Error = text[result.Error.Description] });
+
+        SetSavedBanner(result.Value, text[success], null);
+        // After declining or leaving, the group may no longer be visible to this user.
+        return Redirect(afterDecline ? $"/groups/{guildId}" : $"/groups/{guildId}/{groupId}#{section}");
+    }
+
+    private async Task<IActionResult> RenderGroupAsync(ulong guildId, GroupActor actor, GroupViewer viewer, Guid groupId,
+        string? back, BannerModel? banner, GroupFormState? form)
+    {
+        var cancellationToken = HttpContext.RequestAborted;
+        var detail = await sender.Send(new GetGroupDetailQuery(actor, groupId), cancellationToken);
+        if (detail.IsFailure)
+            return GroupNotFound(guildId);
+
+        var (members, available) = await memberDirectory.GetMembersAsync(guildId, cancellationToken);
+        var group = detail.Value;
+        var taken = group.Members.Concat(group.Invites).ToHashSet();
+        var candidates = group.Summary.CanManage
+            ? members.Values.Where(profile => profile.InServer && !profile.IsBot && !taken.Contains(profile.Id))
+                .OrderBy(profile => profile.DisplayName, StringComparer.CurrentCultureIgnoreCase).Take(500).ToArray()
+            : [];
+        string backUrl = back is not null && back.StartsWith($"/groups/{guildId}", StringComparison.Ordinal) && Url.IsLocalUrl(back)
+            ? back : $"/groups/{guildId}";
+        var view = View("Group", new GroupPage(guildId, GuildName(guildId), viewer, group, new MemberNames(members, available),
+            candidates, banner, backUrl, form));
+        if (form?.Error is not null)
+            view.StatusCode = StatusCodes.Status422UnprocessableEntity;
+        return view;
+    }
+
+    private async Task<(ulong Id, string Name, Discord.IUser User)?> ResolveInviteeAsync(ulong guildId, string? input)
+    {
+        string value = input?.Trim().TrimStart('@') ?? "";
+        if (value.Length == 0 || discord.GetGuild(guildId) is null)
+            return null;
+
+        var (members, _) = await memberDirectory.GetMembersAsync(guildId, HttpContext.RequestAborted);
+        var profile = members.Values.FirstOrDefault(item => string.Equals(item.Username, value, StringComparison.OrdinalIgnoreCase));
+        ulong id = profile?.Id ?? (ulong.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out ulong parsed) ? parsed : 0);
+        if (id == 0)
+            return null;
+
+        // Confirm with Discord that the person is a human member of this server right now.
+        var guild = await discord.Rest.GetGuildAsync(guildId);
+        var user = await guild.GetUserAsync(id);
+        return user is null || user.IsBot ? null : (user.Id, user.DisplayName, user);
+    }
+
+    private async Task<(GroupActor Actor, GroupViewer Viewer, ulong[] Roles)?> GetGroupActorAsync(ulong guildId)
+    {
+        // Re-checked on every request: a session alone never grants access to a server's groups.
+        if (await GetDiscordMemberAsync(guildId) is not { } member)
+            return null;
+
+        var permissions = member.GuildPermissions;
+        bool moderate = permissions.ManageGuild || permissions.Administrator;
+        return (new GroupActor(guildId, member.Id, moderate), new GroupViewer(member.Id, moderate, permissions.Administrator),
+            member.RoleIds.ToArray());
+    }
+
+    private void SetSavedBanner(GroupChange change, string title, string? body)
+    {
+        TempData["GroupBannerTitle"] = title;
+        TempData["GroupBannerText"] = body;
+        if (change.RoleSyncFailed)
+        {
+            TempData["GroupBannerKind"] = "warn";
+            TempData["GroupBannerTitle"] = text["Saved, but the Discord role didn't update"].Value;
+            TempData["GroupBannerText"] = text["The group record is saved. A server moderator can fix the role from Groups → Repair roles, or with /group repair-roles."].Value;
+        }
+    }
+
+    private BannerModel? TakeBanner() => TempData["GroupBannerTitle"] is string title
+        ? new BannerModel(TempData["GroupBannerKind"] as string ?? "success", title, TempData["GroupBannerText"] as string)
+        : null;
+
+    private ViewResult GroupNotFound(ulong guildId) => Forbidden(new ForbiddenPage(text["Group not available"],
+        text["That group doesn't exist or you don't have access to it."], $"/groups/{guildId}", text["Back to groups"]));
+
+    private string GuildName(ulong guildId) => discord.GetGuild(guildId)?.Name ?? "HappyMix";
+
+    private static GroupDirectoryFilter ParseFilter(string? filter) => filter switch
+    {
+        "invited" => GroupDirectoryFilter.Invited,
+        "all" => GroupDirectoryFilter.All,
+        _ => GroupDirectoryFilter.Mine
+    };
+}

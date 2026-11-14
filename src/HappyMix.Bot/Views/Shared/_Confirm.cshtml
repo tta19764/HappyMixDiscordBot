@@ -1,0 +1,18 @@
+@model ConfirmModel
+<details class="hm-confirm @(Model.Danger ? "" : "hm-confirm--neutral") @(Model.Inline ? "hm-confirm--inline" : "")">
+    <summary class="hm-btn @(Model.Danger ? "hm-btn--danger" : "")" aria-label="@(Model.TriggerLabel ?? Model.Trigger)">
+        @if (Model.Icon is { } icon)
+        {
+            @DashboardIcons.Render(icon)
+        }
+        <span class="hm-btn__label">@Model.Trigger</span>
+    </summary>
+    <div class="hm-confirm__panel">
+        <p>@Model.Question</p>
+        <form method="post" action="@Model.Action" asp-antiforgery="false" class="hm-row">
+            @Html.AntiForgeryToken()
+            <button class="hm-btn hm-btn--ghost" type="button" data-close-details hidden>@T["Cancel"]</button>
+            <button class="hm-btn @(Model.Danger ? "hm-btn--danger" : "hm-btn--primary")">@Model.ConfirmLabel</button>
+        </form>
+    </div>
+</details>
