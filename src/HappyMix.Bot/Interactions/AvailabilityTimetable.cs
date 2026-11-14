@@ -56,6 +56,6 @@ public sealed partial class AvailabilityModule
     }
 
     private static string FormatWeekly(WeeklyAvailability window) =>
-        $"{window.Day}: {window.Start:HH\\:mm} to {window.End:HH\\:mm}" +
+        (window.IsFullDay ? $"{window.Day}: all day" : $"{window.Day}: {window.Start:HH\\:mm} to {window.End:HH\\:mm}") +
         (window.End < window.Start ? " (next day)" : "") + $" · {window.TimeZone}";
 }

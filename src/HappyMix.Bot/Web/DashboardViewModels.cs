@@ -33,12 +33,13 @@ public sealed record WeekRow(DayOfWeek Day, WeeklyAvailability? Window, bool IsT
     public string ShortName => AvailabilityFormat.ShortDay(Day);
     public string NextShortName => AvailabilityFormat.ShortDay((DayOfWeek)(((int)Day + 1) % 7));
     public bool Overnight => Window is { } window && window.End < window.Start;
-    public double Left => Window is { } window ? AvailabilityFormat.Percent(window.Start) : 0;
-    public double Width => Window is { } window ? (Overnight ? 100 : AvailabilityFormat.Percent(window.End)) - Left : 0;
+    public bool FullDay => Window?.IsFullDay == true;
+    public double Left => Window is { } window && !window.IsFullDay ? AvailabilityFormat.Percent(window.Start) : 0;
+    public double Width => Window is { } window ? (Overnight || window.IsFullDay ? 100 : AvailabilityFormat.Percent(window.End)) - Left : 0;
     public string Duration => Window is { } window ? AvailabilityFormat.Duration(window.Start, window.End) : "";
 }
 
-public sealed record AvailabilityForm(string? Start = null, string? End = null, string? Offset = null);
+public sealed record AvailabilityForm(string? Start = null, string? End = null, string? Offset = null, bool AllDay = false);
 
 public sealed record AvailabilityPage(
     ulong GuildId,
@@ -89,8 +90,14 @@ public static class AvailabilityFormat
     public static string Duration(TimeOnly start, TimeOnly end)
     {
         int span = ((int)(end - start).TotalMinutes % 1440 + 1440) % 1440;
+        if (span == 0)
+            span = 1440;
         return span % 60 == 0 ? $"{span / 60}h" : $"{span / 60}h {span % 60}m";
     }
+
+    /// <summary>True when a range runs from local midnight to the next local midnight.</summary>
+    public static bool IsFullDay(DateTime start, DateTime end) =>
+        start.TimeOfDay == TimeSpan.Zero && end == start.Date.AddDays(1);
 
     /// <summary>"Today 17:00 → Tomorrow 00:30", relative to <paramref name="today"/>.</summary>
     public static string Range(DateTime start, DateTime end, DateOnly today) =>
@@ -142,7 +149,16 @@ public static class DashboardIcons
 }
 
 public sealed record TimeRangeModel(string Id, string DayLabel, string? Start, string? End, string? Offset,
-    string Zone, string ZoneOffset);
+    string Zone, string ZoneOffset, bool AllDay = false)
+{
+    /// <summary>"18:30" → ("18", "30"); null for anything that isn't HH:mm.</summary>
+    public static (string Hour, string Minute)? Split(string? time) =>
+        time is { Length: 5 } && time[2] == ':' && TimeOnly.TryParseExact(time, "HH:mm", out _) ? (time[..2], time[3..]) : null;
+
+    /// <summary>Combines the hour and minute selects; an empty minute means 00. Returns null without an hour.</summary>
+    public static string? Join(string? hour, string? minute) =>
+        string.IsNullOrWhiteSpace(hour) ? null : $"{hour.Trim()}:{(string.IsNullOrWhiteSpace(minute) ? "00" : minute.Trim())}";
+}
 
 /// <summary>Field-level validation markup: errors render beside the control they belong to.</summary>
 public static class FormErrors

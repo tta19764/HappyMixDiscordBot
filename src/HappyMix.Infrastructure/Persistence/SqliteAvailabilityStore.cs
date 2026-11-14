@@ -95,6 +95,32 @@ internal sealed class SqliteAvailabilityStore(IDbContextFactory<HappyMixDbContex
         return await ForMember(context, guildId, userId).Where(row => row.Id == id).ExecuteDeleteAsync() > 0;
     }
 
+    public async Task<MemberAvailabilitySnapshot> ListForMembersAsync(ulong guildId, IReadOnlyCollection<ulong> userIds,
+        DateTimeOffset fromUtc, DateTimeOffset toUtc)
+    {
+        if (userIds.Count == 0)
+            return new MemberAvailabilitySnapshot([], []);
+
+        await using var context = await factory.CreateDbContextAsync();
+        string guild = guildId.ToString(CultureInfo.InvariantCulture);
+        var users = userIds.Select(id => id.ToString(CultureInfo.InvariantCulture)).ToArray();
+        long from = fromUtc.UtcTicks;
+        long to = toUtc.UtcTicks;
+        var windows = await context.Set<AvailabilityRecord>()
+            .Where(row => row.GuildId == guild && users.Contains(row.UserId) && row.StartUtc < to && from < row.EndUtc)
+            .ToListAsync();
+        var weekly = await context.Set<WeeklyAvailabilityRecord>()
+            .Where(row => row.GuildId == guild && users.Contains(row.UserId))
+            .ToListAsync();
+        return new MemberAvailabilitySnapshot(
+            windows.Select(row => new MemberWindow(ulong.Parse(row.UserId, CultureInfo.InvariantCulture),
+                new AvailabilityWindow(row.Id, new DateTimeOffset(row.StartUtc, TimeSpan.Zero), new DateTimeOffset(row.EndUtc, TimeSpan.Zero))))
+                .ToArray(),
+            weekly.Select(row => new MemberWeekly(ulong.Parse(row.UserId, CultureInfo.InvariantCulture),
+                new WeeklyAvailability((DayOfWeek)row.Day, new TimeOnly(row.StartTicks), new TimeOnly(row.EndTicks), row.TimeZone)))
+                .ToArray());
+    }
+
     private static IQueryable<AvailabilityRecord> ForMember(HappyMixDbContext context, ulong guildId, ulong userId)
     {
         string guild = guildId.ToString(CultureInfo.InvariantCulture);

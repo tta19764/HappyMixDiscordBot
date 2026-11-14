@@ -6,10 +6,12 @@ using HappyMix.Domain.Abstractions;
 
 namespace HappyMix.Application.Guilds;
 
+/// <summary>Today's window. <paramref name="FullDay"/> saves local midnight today through local midnight tomorrow.</summary>
 public sealed record SetTodayAvailabilityCommand(ulong GuildId, ulong UserId, string Start, string End,
-    string? Offset, string DefaultTimeZone) : ICommand<AvailabilityWindow>;
+    string? Offset, string DefaultTimeZone, bool FullDay = false) : ICommand<AvailabilityWindow>;
+/// <summary>A weekly window. <paramref name="FullDay"/> saves 00:00–00:00, the whole local day.</summary>
 public sealed record SetWeeklyAvailabilityCommand(ulong GuildId, ulong UserId, DayOfWeek Day, string Start, string End,
-    string? Offset, string DefaultTimeZone) : ICommand<WeeklyAvailability>;
+    string? Offset, string DefaultTimeZone, bool FullDay = false) : ICommand<WeeklyAvailability>;
 public sealed record GetWeeklyAvailabilityQuery(ulong GuildId, ulong UserId) : IQuery<IReadOnlyList<WeeklyAvailability>>;
 public sealed record ClearWeeklyAvailabilityCommand(ulong GuildId, ulong UserId, DayOfWeek Day) : ICommand;
 
@@ -23,9 +25,13 @@ internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGu
     {
         try
         {
-            var (start, end) = ParseTimes(command.Start, command.End);
             var zone = await GetZoneAsync(command.GuildId, command.Offset, command.DefaultTimeZone, cancellationToken);
             var date = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(clock.UtcNow, zone).DateTime);
+            if (command.FullDay)
+                return Result.Success(await store.SaveAsync(command.GuildId, command.UserId, null,
+                    LocalTimes.StartOfDay(date, zone), LocalTimes.StartOfDay(date.AddDays(1), zone)));
+
+            var (start, end) = ParseTimes(command.Start, command.End);
             var from = Resolve(date.ToDateTime(start), zone);
             var until = Resolve((end < start ? date.AddDays(1) : date).ToDateTime(end), zone);
             if (until <= clock.UtcNow)
@@ -46,7 +52,7 @@ internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGu
             if (!Enum.IsDefined(command.Day))
                 throw new AvailabilityException("Choose a valid day of the week.");
 
-            var (start, end) = ParseTimes(command.Start, command.End);
+            var (start, end) = command.FullDay ? (TimeOnly.MinValue, TimeOnly.MinValue) : ParseTimes(command.Start, command.End);
             var zone = await GetZoneAsync(command.GuildId, command.Offset, command.DefaultTimeZone, cancellationToken);
             var window = new WeeklyAvailability(command.Day, start, end, zone.Id);
             await store.SaveWeeklyAsync(command.GuildId, command.UserId, window);
@@ -104,5 +110,31 @@ internal sealed class AvailabilityScheduleHandlers(IAvailabilityStore store, IGu
         if (zone.IsInvalidTime(local) || zone.IsAmbiguousTime(local))
             throw new AvailabilityException("This time is skipped or repeated by daylight saving. Supply an explicit UTC offset.");
         return new DateTimeOffset(local, zone.GetUtcOffset(local));
+    }
+}
+
+/// <summary>Converts local calendar times to instants without failing on daylight-saving gaps or repeats.</summary>
+public static class LocalTimes
+{
+    /// <summary>The first instant of a local date. A skipped midnight moves forward to the first valid time.</summary>
+    public static DateTimeOffset StartOfDay(DateOnly date, TimeZoneInfo zone) => ToInstant(date.ToDateTime(TimeOnly.MinValue), zone);
+
+    /// <summary>
+    /// Resolves a local wall-clock time. Times inside a spring-forward gap move to the end of the gap;
+    /// repeated times during fall-back use the earlier instant.
+    /// </summary>
+    public static DateTimeOffset ToInstant(DateTime local, TimeZoneInfo zone)
+    {
+        local = DateTime.SpecifyKind(local, DateTimeKind.Unspecified);
+        if (zone.IsInvalidTime(local))
+        {
+            var probe = local;
+            while (zone.IsInvalidTime(probe))
+                probe = probe.AddMinutes(1);
+            return new DateTimeOffset(probe, zone.GetUtcOffset(probe));
+        }
+
+        var offset = zone.IsAmbiguousTime(local) ? zone.GetAmbiguousTimeOffsets(local).Max() : zone.GetUtcOffset(local);
+        return new DateTimeOffset(local, offset);
     }
 }

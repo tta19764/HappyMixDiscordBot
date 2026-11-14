@@ -644,4 +644,67 @@
   <data name="Enter a Steam App ID like 730 or a Steam store link like https://store.steampowered.com/app/730/." xml:space="preserve">
     <value>Введіть Steam App ID, наприклад 730, або посилання на магазин Steam, як-от https://store.steampowered.com/app/730/.</value>
   </data>
+  <data name="Times in {0}" xml:space="preserve">
+    <value>Час за {0}</value>
+  </data>
+  <data name="Manage members" xml:space="preserve">
+    <value>Керувати учасниками</value>
+  </data>
+  <data name="Choose a day" xml:space="preserve">
+    <value>Виберіть день</value>
+  </data>
+  <data name="Availability on {0} in {1}" xml:space="preserve">
+    <value>Доступність на {0}, час за {1}</value>
+  </data>
+  <data name="No data" xml:space="preserve">
+    <value>Немає даних</value>
+  </data>
+  <data name="All day" xml:space="preserve">
+    <value>Увесь день</value>
+  </data>
+  <data name="from the previous day" xml:space="preserve">
+    <value>з попереднього дня</value>
+  </data>
+  <data name="to" xml:space="preserve">
+    <value>до</value>
+  </data>
+  <data name="continues the next day" xml:space="preserve">
+    <value>триває наступного дня</value>
+  </data>
+  <data name="Weekly" xml:space="preserve">
+    <value>Щотижня</value>
+  </data>
+  <data name="saved for this date" xml:space="preserve">
+    <value>збережено на цю дату</value>
+  </data>
+  <data name="usual hours, not confirmed for this date" xml:space="preserve">
+    <value>звичні години, не підтверджено на цю дату</value>
+  </data>
+  <data name="continues from or into the next day" xml:space="preserve">
+    <value>продовження з попереднього або на наступний день</value>
+  </data>
+  <data name="hour" xml:space="preserve">
+    <value>година</value>
+  </data>
+  <data name="Free all day" xml:space="preserve">
+    <value>Вільний увесь день</value>
+  </data>
+  <data name="Couldn't save today" xml:space="preserve">
+    <value>Не вдалося зберегти сьогоднішній час</value>
+  </data>
+  <data name="Pick a start and end time, or choose Free all day." xml:space="preserve">
+    <value>Виберіть час початку й завершення або «Вільний увесь день».</value>
+  </data>
+  <data name="Couldn't save {0}" xml:space="preserve">
+    <value>Не вдалося зберегти: {0}</value>
+  </data>
+  <data name="You're available all day today." xml:space="preserve">
+    <value>Сьогодні ви вільні увесь день.</value>
+  </data>
+  <data name="All day, every {0}." xml:space="preserve">
+    <value>Увесь день, щотижня: {0}.</value>
+  </data>
+  <data name="Today · all day" xml:space="preserve">
+    <value>Сьогодні · увесь день</value>
+  </data>
 </root>

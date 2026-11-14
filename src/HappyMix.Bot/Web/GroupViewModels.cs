@@ -46,8 +46,11 @@ public sealed record GroupPage(
     MemberProfile[] InviteCandidates,
     BannerModel? Banner,
     string BackUrl,
-    GroupFormState? Form)
+    GroupFormState? Form,
+    GroupAvailabilityBoard? Board = null)
 {
+    public string DayUrl(DateOnly day) => $"{Url}?day={day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}#availability";
+
     public GroupSummary Group => Detail.Summary;
     public string Url => $"/groups/{GuildId}/{Group.Id}";
     public bool IsMember => Group.Relation is GroupRelation.Member or GroupRelation.Organizer;

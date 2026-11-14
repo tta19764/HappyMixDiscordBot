@@ -1,14 +1,51 @@
 @model TimeRangeModel
-@{ bool customZone = Model.Offset is not null; }
+@{
+    bool customZone = Model.Offset is not null;
+    // Empty editors start at 18:00; an empty end keeps no hour but defaults its minutes to 00.
+    var (startHour, startMinute) = TimeRangeModel.Split(Model.Start) ?? ("18", "00");
+    var (endHour, endMinute) = TimeRangeModel.Split(Model.End) ?? ("", "00");
+    var hours = Enumerable.Range(0, 24).Select(hour => hour.ToString("00")).ToArray();
+    string[] Minutes(string current) => Enumerable.Range(0, 12).Select(step => (step * 5).ToString("00"))
+        .Append(current).Where(value => value.Length == 2).Distinct().OrderBy(value => value).ToArray();
+}
 <div class="hm-range-row">
     <div class="hm-field">
-        <label class="hm-label" for="@(Model.Id)-start">@T["From"]</label>
-        <input class="hm-time" id="@(Model.Id)-start" name="start" type="time" required value="@Model.Start">
+        <span class="hm-label" id="@(Model.Id)-start-label">@T["From"]</span>
+        <div class="hm-time-pair" role="group" aria-labelledby="@(Model.Id)-start-label">
+            <select class="hm-time-select" id="@(Model.Id)-start" name="startHour" aria-label="@T["From"] · @T["hour"]" data-time-part="start-hour" disabled="@Model.AllDay">
+                @foreach (var hour in hours)
+                {
+                    <option value="@hour" selected="@(hour == startHour)">@hour</option>
+                }
+            </select>
+            <span aria-hidden="true">:</span>
+            <select class="hm-time-select" name="startMinute" aria-label="@T["From"] · @T["minutes"]" data-time-part="start-minute" disabled="@Model.AllDay">
+                @foreach (var minute in Minutes(startMinute))
+                {
+                    <option value="@minute" selected="@(minute == startMinute)">@minute</option>
+                }
+            </select>
+        </div>
     </div>
     <span class="hm-range__arrow" aria-hidden="true">@DashboardIcons.Render("arrow")</span>
     <div class="hm-field">
-        <label class="hm-label" for="@(Model.Id)-end">@T["Until"]</label>
-        <input class="hm-time" id="@(Model.Id)-end" name="end" type="time" required value="@Model.End">
+        <span class="hm-label" id="@(Model.Id)-end-label">@T["Until"]</span>
+        <div class="hm-time-pair" role="group" aria-labelledby="@(Model.Id)-end-label">
+            <select class="hm-time-select" id="@(Model.Id)-end" name="endHour" aria-label="@T["Until"] · @T["hour"]" data-time-part="end-hour" disabled="@Model.AllDay">
+                <option value="" selected="@(endHour == "")">--</option>
+                @foreach (var hour in hours)
+                {
+                    <option value="@hour" selected="@(hour == endHour)">@hour</option>
+                }
+            </select>
+            <span aria-hidden="true">:</span>
+            <select class="hm-time-select" name="endMinute" aria-label="@T["Until"] · @T["minutes"]" data-time-part="end-minute" disabled="@Model.AllDay">
+                @foreach (var minute in Minutes(endMinute))
+                {
+                    <option value="@minute" selected="@(minute == endMinute)">@minute</option>
+                }
+            </select>
+        </div>
     </div>
     <div class="hm-field hm-tz-field">
         <span class="hm-label" aria-hidden="true">@T["Time zone"]</span>
@@ -28,11 +65,17 @@
         </details>
     </div>
 </div>
+<label class="hm-chip hm-allday">
+    <input type="checkbox" name="allDay" value="true" checked="@Model.AllDay" data-all-day>
+    @DashboardIcons.Render("check")<span>@T["Free all day"]</span>
+    <small>00:00 → 00:00</small>
+</label>
 <div class="hm-preview" data-range-preview aria-live="polite">
     <span class="hm-muted" data-hint>@T["Pick both times. An Until time earlier than From means the next day."]</span>
     <span data-ok hidden style="display: contents">
         <span class="hm-preview__text">@Model.DayLabel <span data-from></span><span class="hm-preview__arrow">→</span><b data-until-day></b> <span data-until></span></span>
         <span class="hm-badge hm-badge--mint" data-overnight hidden>@DashboardIcons.Render("moon")Overnight</span>
+        <span class="hm-badge hm-badge--mint" data-all-day-badge hidden>@DashboardIcons.Render("check")@T["All day"]</span>
         <span class="hm-preview__dur" data-duration></span>
     </span>
     <p class="hm-error" data-invalid hidden>@DashboardIcons.Render("alert")From and Until are the same time. Pick a different end time.</p>

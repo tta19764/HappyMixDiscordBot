@@ -78,13 +78,15 @@ public sealed partial class DashboardController
     }
 
     [HttpGet("/groups/{guildId}/{groupId:guid}")]
-    public async Task<IActionResult> Group(ulong guildId, Guid groupId, string? back)
+    public async Task<IActionResult> Group(ulong guildId, Guid groupId, string? back, string? day)
     {
         if (await GetGroupActorAsync(guildId) is not ({ } actor, { } viewer, _))
             return NotMember();
 
         RememberServer(guildId);
-        return await RenderGroupAsync(guildId, actor, viewer, groupId, back, TakeBanner(), null);
+        DateOnly? date = DateOnly.TryParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed)
+            ? parsed : null;
+        return await RenderGroupAsync(guildId, actor, viewer, groupId, back, TakeBanner(), null, date);
     }
 
     [HttpPost("/groups/{guildId}/{groupId:guid}/invitation")]
@@ -222,12 +224,18 @@ public sealed partial class DashboardController
     }
 
     private async Task<IActionResult> RenderGroupAsync(ulong guildId, GroupActor actor, GroupViewer viewer, Guid groupId,
-        string? back, BannerModel? banner, GroupFormState? form)
+        string? back, BannerModel? banner, GroupFormState? form, DateOnly? day = null)
     {
         var cancellationToken = HttpContext.RequestAborted;
         var detail = await sender.Send(new GetGroupDetailQuery(actor, groupId), cancellationToken);
         if (detail.IsFailure)
             return GroupNotFound(guildId);
+
+        // The board query applies the roster rule again, so only people who may see members get it.
+        var board = detail.Value.CanViewRoster
+            ? (await sender.Send(new GetGroupAvailabilityBoardQuery(actor, groupId, day, options.Value.TimeZoneId), cancellationToken)) is { IsSuccess: true } loaded
+                ? loaded.Value : null
+            : null;
 
         var (members, available) = await memberDirectory.GetMembersAsync(guildId, cancellationToken);
         var group = detail.Value;
@@ -239,7 +247,7 @@ public sealed partial class DashboardController
         string backUrl = back is not null && back.StartsWith($"/groups/{guildId}", StringComparison.Ordinal) && Url.IsLocalUrl(back)
             ? back : $"/groups/{guildId}";
         var view = View("Group", new GroupPage(guildId, GuildName(guildId), viewer, group, new MemberNames(members, available),
-            candidates, banner, backUrl, form));
+            candidates, banner, backUrl, form, board));
         if (form?.Error is not null)
             view.StatusCode = StatusCodes.Status422UnprocessableEntity;
         return view;

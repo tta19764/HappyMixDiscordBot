@@ -1,0 +1,99 @@
+@using System.Globalization
+@using HappyMix.Application.Guilds
+@model GroupPage
+@{
+    var board = Model.Board!;
+    var culture = CultureInfo.CurrentCulture;
+    string Localize(string key) => T[key];
+    // Members with availability first; within each part, organizer first, then by name, so the order is stable.
+    var rows = board.Rows
+        .OrderByDescending(row => row.HasData)
+        .ThenBy(row => row.UserId == Model.Group.OrganizerId ? 0 : 1)
+        .ThenBy(row => Model.Names.Name(row.UserId, Localize), StringComparer.CurrentCultureIgnoreCase)
+        .ThenBy(row => row.UserId)
+        .ToArray();
+    string selectedLabel = board.Date == board.Today ? T["Today"] : board.Date.ToString("dddd", culture);
+}
+<div class="hm-board" id="availability">
+    <div class="hm-board__head">
+        <h3>@T["Availability"]</h3>
+        <p class="hm-help hm-board__zone">
+            @DashboardIcons.Render("globe")
+            <span>@T["Times in {0}", board.TimeZone]</span>
+            <a href="#roster">@T["Manage members"] ↓</a>
+        </p>
+    </div>
+
+    <nav class="hm-day-tabs" data-day-tabs aria-label="@T["Choose a day"]">
+        @foreach (var day in board.Days)
+        {
+            bool selected = day == board.Date;
+            <a class="hm-day-tab" href="@Model.DayUrl(day)" aria-current="@(selected ? "page" : null)"
+               aria-label="@(day == board.Today ? T["Today"] + ", " : "")@day.ToString("D", culture)">
+                <span class="hm-day-tab__name">@(day == board.Today ? T["Today"] : day.ToString("ddd", culture))</span>
+                <span class="hm-day-tab__date">@day.ToString("d MMM", culture)</span>
+            </a>
+        }
+    </nav>
+
+    <table class="hm-board__table">
+        <caption class="hm-sr-only">@T["Availability on {0} in {1}", board.Date.ToString("D", culture), board.TimeZone]</caption>
+        <thead>
+            <tr><th scope="col">@T["Member"]</th><th scope="col">@selectedLabel, @board.Date.ToString("d MMM", culture)</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var row in rows)
+            {
+                var profile = Model.Names.Get(row.UserId);
+                string name = Model.Names.Name(row.UserId, Localize);
+                var avatar = new AvatarModel(profile, name, true);
+                <tr class="@(row.HasData ? "" : "hm-board__row--empty")">
+                    <th scope="row">
+                        <span class="hm-board__who"><partial name="_Avatar" model="avatar" /><span>@name</span></span>
+                    </th>
+                    <td>
+                        @if (!row.HasData)
+                        {
+                            <span class="hm-board__none">@T["No data"]</span>
+                        }
+                        else
+                        {
+                            <ul class="hm-slots">
+                                @foreach (var range in row.Ranges)
+                                {
+                                    bool weekly = range.Source == AvailabilitySource.Weekly;
+                                    <li class="hm-slot @(weekly ? "hm-slot--weekly" : "hm-slot--oneoff")">
+                                        <span class="hm-slot__time">
+                                            @if (range.AllDay)
+                                            {
+                                                @T["All day"]
+                                            }
+                                            else
+                                            {
+                                                @if (range.FromPreviousDay)
+                                                {
+                                                    <span aria-hidden="true">↤ </span><span class="hm-sr-only">@T["from the previous day"] </span>
+                                                }
+                                                @AvailabilityFormat.Time(range.Start)<span aria-hidden="true">–</span><span class="hm-sr-only"> @T["to"] </span>@AvailabilityFormat.Time(range.End)
+                                                @if (range.IntoNextDay)
+                                                {
+                                                    <span aria-hidden="true"> ↦</span><span class="hm-sr-only"> @T["continues the next day"]</span>
+                                                }
+                                            }
+                                        </span>
+                                        <span class="hm-slot__kind">@(weekly ? T["Weekly"] : T["One-off"])</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p class="hm-help hm-board__legend">
+        <span><span class="hm-slot__kind hm-slot__kind--oneoff">@T["One-off"]</span> @T["saved for this date"]</span>
+        <span><span class="hm-slot__kind hm-slot__kind--weekly">@T["Weekly"]</span> @T["usual hours, not confirmed for this date"]</span>
+        <span>↤ ↦ @T["continues from or into the next day"]</span>
+    </p>
+</div>

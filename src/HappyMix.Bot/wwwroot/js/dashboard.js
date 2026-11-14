@@ -3,47 +3,78 @@
     const minutes = value => Number(value.slice(0, 2)) * 60 + Number(value.slice(3, 5));
     const duration = span => span % 60 ? `${Math.floor(span / 60)}h ${span % 60}m` : `${span / 60}h`;
 
-    // Time range preview: "Today 17:00 → Tomorrow 00:30", overnight badge, duration, same-time error.
+    // Time range preview: "Today 17:00 → Tomorrow 00:30", overnight and all-day badges, duration, same-time error.
     for (const form of document.querySelectorAll("[data-range]")) {
-        const { start, end } = form.elements;
+        const select = name => form.querySelector(`[data-time-part="${name}"]`);
+        const fields = ["start-hour", "start-minute", "end-hour", "end-minute"].map(select);
+        const [startHour, startMinute, endHour, endMinute] = fields;
+        const allDay = form.querySelector("[data-all-day]");
         const preview = form.querySelector("[data-range-preview]");
         const save = form.querySelector("[data-range-save]");
         const part = name => preview.querySelector(`[data-${name}]`);
+        const time = (hour, minute) => hour.value ? `${hour.value}:${minute.value || "00"}` : "";
+        const setTime = (hour, minute, value) => {
+            hour.value = value.slice(0, 2);
+            if (![...minute.options].some(option => option.value === value.slice(3, 5)))
+                minute.add(new Option(value.slice(3, 5), value.slice(3, 5)));
+            minute.value = value.slice(3, 5);
+        };
         const render = () => {
-            const ready = Boolean(start.value && end.value);
-            const span = ready ? (minutes(end.value) - minutes(start.value) + 1440) % 1440 : 0;
-            const overnight = ready && span > 0 && end.value < start.value;
+            const whole = Boolean(allDay?.checked);
+            for (const field of fields) field.disabled = whole;
+            const start = whole ? "00:00" : time(startHour, startMinute);
+            const end = whole ? "00:00" : time(endHour, endMinute);
+            const ready = Boolean(start && end);
+            const span = whole ? 1440 : ready ? (minutes(end) - minutes(start) + 1440) % 1440 : 0;
+            const overnight = whole || (ready && span > 0 && end < start);
             part("hint").hidden = ready;
             part("ok").hidden = !ready || span === 0;
             part("invalid").hidden = !ready || span > 0;
             preview.classList.toggle("hm-preview--invalid", ready && span === 0);
-            part("from").textContent = start.value;
-            part("until").textContent = end.value;
+            part("from").textContent = start;
+            part("until").textContent = end;
             part("until-day").textContent = overnight ? form.dataset.nextDay : "";
-            part("overnight").hidden = !overnight;
+            part("overnight").hidden = whole || !overnight;
+            part("all-day-badge").hidden = !whole;
             part("duration").textContent = span ? duration(span) : "";
             if (save) save.disabled = ready && span === 0;
         };
         form.addEventListener("input", render);
+        form.addEventListener("change", render);
         render();
 
-        // Quick-fill presets only fill the inputs; saving stays explicit.
+        // Quick-fill presets only fill the selects; saving stays explicit.
         const presets = form.querySelector("[data-presets]");
         if (!presets) continue;
         presets.hidden = false;
+        const unpress = () => { for (const chip of presets.querySelectorAll("[aria-pressed]")) chip.setAttribute("aria-pressed", "false"); };
         presets.addEventListener("click", event => {
             const preset = event.target.closest("[data-start]");
             if (!preset) return;
-            start.value = preset.dataset.start;
-            end.value = preset.dataset.end;
-            for (const chip of presets.querySelectorAll("[aria-pressed]"))
-                chip.setAttribute("aria-pressed", String(chip === preset));
+            if (allDay) allDay.checked = false;
+            setTime(startHour, startMinute, preset.dataset.start);
+            setTime(endHour, endMinute, preset.dataset.end);
+            unpress();
+            preset.setAttribute("aria-pressed", "true");
             render();
         });
-        form.addEventListener("input", event => {
-            if (event.target === start || event.target === end)
-                for (const chip of presets.querySelectorAll("[aria-pressed]")) chip.setAttribute("aria-pressed", "false");
+        form.addEventListener("change", event => { if (fields.includes(event.target) || event.target === allDay) unpress(); });
+    }
+
+    // Day tabs: arrow keys, Home and End move between tabs; the URL keeps the chosen date.
+    for (const tabs of document.querySelectorAll("[data-day-tabs]")) {
+        const links = [...tabs.querySelectorAll("a")];
+        tabs.addEventListener("keydown", event => {
+            const index = links.indexOf(document.activeElement);
+            if (index < 0) return;
+            const next = { ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: links.length - 1 }[event.key];
+            if (next === undefined) return;
+            event.preventDefault();
+            links[(next + links.length) % links.length].focus();
         });
+        // Keep the selected tab in view inside the horizontal strip without scrolling the page.
+        const current = tabs.querySelector("[aria-current]");
+        if (current) tabs.scrollLeft = current.offsetLeft - (tabs.clientWidth - current.offsetWidth) / 2;
     }
 
     // Settings: keep the Inherited / Custom / Off badge in sync with the control.

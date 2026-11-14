@@ -8,7 +8,7 @@
     var nav = new ServerNavModel(Model.GuildId, Model.GuildName, "availability", Model.CanConfigure, "Availability",
         "Tell the group when you can play. HappyMix uses this to plan sessions.");
     var todayRange = new TimeRangeModel("today", T["Today"], Model.Form.Start, Model.Form.End, Model.Form.Offset,
-        Model.TimeZone, Model.TimeZoneOffset);
+        Model.TimeZone, Model.TimeZoneOffset, Model.Form.AllDay);
 }
 
 <partial name="_ServerNav" model="nav" />
@@ -139,7 +139,7 @@ else
                               data-range data-day="@row.ShortName" data-next-day="@row.NextShortName" aria-label="Edit @row.Name hours">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="day" value="@row.Day">
-                            <partial name="_TimeRange" model="new TimeRangeModel(row.Anchor, row.ShortName, Model.Form.Start, Model.Form.End, Model.Form.Offset, Model.TimeZone, Model.TimeZoneOffset)" />
+                            <partial name="_TimeRange" model="new TimeRangeModel(row.Anchor, row.ShortName, Model.Form.Start, Model.Form.End, Model.Form.Offset, Model.TimeZone, Model.TimeZoneOffset, Model.Form.AllDay)" />
                             <div class="hm-row" style="justify-content: flex-end">
                                 <a class="hm-btn hm-btn--ghost" href="@weeklyUrl#@row.Anchor">@T["Cancel"]</a>
                                 <button class="hm-btn hm-btn--primary" name="action" value="weekly" data-range-save>@DashboardIcons.Render("check")Save @row.Name</button>
@@ -168,7 +168,7 @@ else
                         </span>
                         @if (row.Window is { } window)
                         {
-                            <span class="hm-day__time">@AvailabilityFormat.Time(window.Start) → @AvailabilityFormat.Time(window.End)<small style="@(row.Overnight ? "color: var(--hm-mint)" : null)">@(row.Overnight ? $"Overnight · into {row.NextShortName}" : row.Duration)@(row.ZoneNote is { } zone ? " · " + zone : "")</small></span>
+                            <span class="hm-day__time">@(row.FullDay ? T["All day"].Value : $"{AvailabilityFormat.Time(window.Start)} → {AvailabilityFormat.Time(window.End)}")<small style="@(row.Overnight ? "color: var(--hm-mint)" : null)">@(row.Overnight ? $"Overnight · into {row.NextShortName}" : row.Duration)@(row.ZoneNote is { } zone ? " · " + zone : "")</small></span>
                         }
                         else
                         {

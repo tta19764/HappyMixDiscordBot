@@ -3,7 +3,20 @@ namespace HappyMix.Application.Abstractions.Guilds;
 /// <summary>A member's one-off availability within a Discord server.</summary>
 public sealed record AvailabilityWindow(Guid Id, DateTimeOffset Start, DateTimeOffset End);
 
-public sealed record WeeklyAvailability(DayOfWeek Day, TimeOnly Start, TimeOnly End, string TimeZone);
+/// <summary>
+/// A recurring weekly window in its own time zone. Equal start and end (00:00–00:00) means the whole day,
+/// anchored to local midnight so it stays a full day across daylight-saving changes.
+/// </summary>
+public sealed record WeeklyAvailability(DayOfWeek Day, TimeOnly Start, TimeOnly End, string TimeZone)
+{
+    public bool IsFullDay => Start == End;
+}
+
+public sealed record MemberWindow(ulong UserId, AvailabilityWindow Window);
+public sealed record MemberWeekly(ulong UserId, WeeklyAvailability Weekly);
+
+/// <summary>Availability for several members, read in one pass.</summary>
+public sealed record MemberAvailabilitySnapshot(IReadOnlyList<MemberWindow> Windows, IReadOnlyList<MemberWeekly> Weekly);
 
 /// <summary>Stores availability independently for each member and server.</summary>
 public interface IAvailabilityStore
@@ -17,6 +30,10 @@ public interface IAvailabilityStore
     Task<IReadOnlyList<WeeklyAvailability>> ListWeeklyAsync(ulong guildId, ulong userId);
     Task SaveWeeklyAsync(ulong guildId, ulong userId, WeeklyAvailability window);
     Task<bool> RemoveWeeklyAsync(ulong guildId, ulong userId, DayOfWeek day);
+
+    /// <summary>One-off windows overlapping the UTC range, plus weekly windows, for the given members only.</summary>
+    Task<MemberAvailabilitySnapshot> ListForMembersAsync(ulong guildId, IReadOnlyCollection<ulong> userIds,
+        DateTimeOffset fromUtc, DateTimeOffset toUtc);
 }
 
 public sealed class AvailabilityException(string message) : Exception(message);

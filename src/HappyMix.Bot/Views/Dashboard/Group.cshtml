@@ -144,6 +144,12 @@
             {
                 <p class="hm-help">@DashboardIcons.Render("info") @T["Discord didn't return the member list, so names are shown as IDs. A server admin can turn on the Server Members Intent for the bot."]</p>
             }
+            @if (Model.Board is not null)
+            {
+                <partial name="_AvailabilityBoard" model="Model" />
+                <hr class="hm-divider" style="margin: 0">
+            }
+            <h3 id="roster">@T["Roster"]</h3>
             <ul class="hm-roster" aria-label="@T["Roster"]">
                 @foreach (ulong id in detail.Members.OrderBy(id => id == group.OrganizerId ? 0 : 1).ThenBy(id => Model.Names.Name(id, Localize), StringComparer.CurrentCultureIgnoreCase))
                 {
