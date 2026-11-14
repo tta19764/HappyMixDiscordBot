@@ -95,7 +95,6 @@ jobs:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:happymix-ci
-          targets: ${{ secrets.ORACLE_SSH_HOST }}
       - name: Configure verified SSH access
         env:
           PRIVATE_KEY: ${{ secrets.ORACLE_SSH_PRIVATE_KEY }}
@@ -109,6 +108,8 @@ jobs:
           printf '%s\n' "$KNOWN_HOSTS" | tr -d '\r' > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/happymix ~/.ssh/known_hosts
           printf 'Host happymix-production\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/happymix\n  IdentitiesOnly yes\n  BatchMode yes\n  StrictHostKeyChecking yes\n  ConnectTimeout 20\n' "$SSH_HOST" "$SSH_USER" > ~/.ssh/config
+      - name: Verify deployment SSH connectivity
+        run: ssh happymix-production true
       - name: Stage release and deploy with temporary GHCR access
         env:
           IMAGE: ${{ needs.image.outputs.image }}
