@@ -19,7 +19,7 @@
     <div class="hm-fields">
         <div class="hm-field @(Model.Channel is null ? "hm-field--inherited" : "")" data-source>
             <div class="hm-row hm-row--between">
-                <label class="hm-label" asp-for="Channel">Announcement channel</label>
+                <label class="hm-label" asp-for="Channel">@T["Announcement channel"]</label>
                 @FormErrors.SourceBadge(Model.Channel is null ? GameSettingsForm.Inherit : GameSettingsForm.Custom)
             </div>
             <select class="hm-select" asp-for="Channel" asp-items="settingsPage.Channels" data-source-control
@@ -30,17 +30,17 @@
         </div>
 
         <div class="hm-field">
-            <label class="hm-label" asp-for="PingRole">Reminder ping role</label>
+            <label class="hm-label" asp-for="PingRole">@T["Reminder ping role"]</label>
             <select class="hm-select" asp-for="PingRole" asp-items="roles"
                     aria-invalid="@FormErrors.Invalid(state, Key("PingRole"))" aria-describedby="@FormErrors.DescribedBy(state, Key("PingRole"))">
-                <option value="">No ping</option>
+                <option value="">@T["No ping"]</option>
             </select>
             @FormErrors.Render(state, Key("PingRole"))
         </div>
 
         <div class="hm-field hm-field--wide hm-mode-field" data-source>
             <div class="hm-row hm-row--between">
-                <span class="hm-label" id="@Id("Teams")-label">Followed teams</span>
+                <span class="hm-label" id="@Id("Teams")-label">@T["Followed teams"]</span>
                 @FormErrors.SourceBadge(Model.TeamsMode)
             </div>
             <div class="hm-mode" role="radiogroup" aria-labelledby="@Id("Teams")-label">
@@ -49,7 +49,7 @@
                     <label><input type="radio" name="@Key("TeamsMode")" value="@value" checked="@(Model.TeamsMode == value)">@label</label>
                 }
             </div>
-            <div class="hm-inherited hm-mode-inherit"><span class="hm-inherited__src">Default ·</span><span class="hm-inherited__value">@defaults.Teams</span></div>
+            <div class="hm-inherited hm-mode-inherit"><span class="hm-inherited__src">@T["Default ·"]</span><span class="hm-inherited__value">@defaults.Teams</span></div>
             <div class="hm-mode-custom">
                 <input class="hm-input" id="@Id("Teams")" name="@Key("Teams")" value="@Model.Teams" maxlength="500" placeholder="Team name or ID, separated by commas"
                        aria-labelledby="@Id("Teams")-label" aria-invalid="@FormErrors.Invalid(state, Key("Teams"))" aria-describedby="@FormErrors.DescribedBy(state, Key("Teams"), Id("Teams") + "-help")">
@@ -61,7 +61,7 @@
 
         <div class="hm-field hm-field--wide hm-mode-field" data-source>
             <div class="hm-row hm-row--between">
-                <span class="hm-label" id="@Id("Twitch")-label">Twitch channels</span>
+                <span class="hm-label" id="@Id("Twitch")-label">@T["Twitch channels"]</span>
                 @FormErrors.SourceBadge(Model.TwitchMode)
             </div>
             <div class="hm-mode" role="radiogroup" aria-labelledby="@Id("Twitch")-label">
@@ -70,7 +70,7 @@
                     <label><input type="radio" name="@Key("TwitchMode")" value="@value" checked="@(Model.TwitchMode == value)">@label</label>
                 }
             </div>
-            <div class="hm-inherited hm-mode-inherit"><span class="hm-inherited__src">Default ·</span><span class="hm-inherited__value">@defaults.Twitch</span></div>
+            <div class="hm-inherited hm-mode-inherit"><span class="hm-inherited__src">@T["Default ·"]</span><span class="hm-inherited__value">@defaults.Twitch</span></div>
             <div class="hm-mode-custom">
                 <input class="hm-input" id="@Id("Twitch")" name="@Key("Twitch")" value="@Model.Twitch" maxlength="500" placeholder="handle or twitch.tv link, separated by commas"
                        aria-labelledby="@Id("Twitch")-label" aria-invalid="@FormErrors.Invalid(state, Key("Twitch"))" aria-describedby="@FormErrors.DescribedBy(state, Key("Twitch"), Id("Twitch") + "-help")">
@@ -88,7 +88,7 @@
                     <label><input type="radio" name="@Key("CatalogMode")" value="@value" checked="@((Model.CatalogMode == GameSettingsForm.Custom ? GameSettingsForm.Custom : GameSettingsForm.Inherit) == value)">@label</label>
                 }
             </div>
-            <div class="hm-inherited hm-mode-inherit"><span class="hm-inherited__src">Default ·</span><span class="hm-inherited__value">@defaults.Catalog</span></div>
+            <div class="hm-inherited hm-mode-inherit"><span class="hm-inherited__src">@T["Default ·"]</span><span class="hm-inherited__value">@defaults.Catalog</span></div>
             <div class="hm-mode-custom">
                 <label class="hm-sr-only" for="@Id("Catalog")">@game team catalog</label>
                 <textarea class="hm-textarea" id="@Id("Catalog")" name="@Key("Catalog")" rows="5" maxlength="16000" placeholder="Team name=123"

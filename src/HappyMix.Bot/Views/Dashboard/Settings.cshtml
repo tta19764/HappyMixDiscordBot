@@ -1,7 +1,7 @@
 @model ServerSettingsForm
 @{
     Layout = "_DashboardLayout";
-    ViewData["Title"] = "Server settings";
+    ViewData["Title"] = T["Server settings"];
     var settingsPage = (SettingsPage)ViewData["Settings"]!;
     ViewData["NavGuildName"] = settingsPage.GuildName;
     var state = ViewData.ModelState;
@@ -94,11 +94,11 @@
             <section class="hm-card hm-section" id="defaults" aria-labelledby="defaults-title">
                 <div class="hm-section__head">
                     <span class="hm-game-mark" aria-hidden="true">@DashboardIcons.Render("sliders")</span>
-                    <div><h2 id="defaults-title">Server defaults</h2><p>Used by every game unless the game overrides it.</p></div>
+                    <div><h2 id="defaults-title">@T["Server defaults"]</h2><p>Used by every game unless the game overrides it.</p></div>
                 </div>
                 <div class="hm-fields">
                     <div class="hm-field">
-                        <label class="hm-label" asp-for="ChannelId">Announcement channel</label>
+                        <label class="hm-label" asp-for="ChannelId">@T["Announcement channel"]</label>
                         <select class="hm-select" asp-for="ChannelId" asp-items="settingsPage.Channels"
                                 aria-invalid="@FormErrors.Invalid(state, "ChannelId")" aria-describedby="@FormErrors.DescribedBy(state, "ChannelId", "ChannelId-help")">
                             <option value="0">Bot default · @settingsPage.DeploymentChannel</option>
@@ -107,25 +107,25 @@
                         @FormErrors.Render(state, "ChannelId")
                     </div>
                     <div class="hm-field">
-                        <label class="hm-label" asp-for="TimeZone">Time zone</label>
+                        <label class="hm-label" asp-for="TimeZone">@T["Time zone"]</label>
                         <input class="hm-input" asp-for="TimeZone" list="time-zones" autocomplete="off" spellcheck="false" placeholder="Europe/Kyiv"
                                aria-invalid="@FormErrors.Invalid(state, "TimeZone")" aria-describedby="@FormErrors.DescribedBy(state, "TimeZone", "TimeZone-help")">
                         <p class="hm-help" id="TimeZone-help">Used for schedules and availability. An IANA name such as Europe/Kyiv or UTC.</p>
                         @FormErrors.Render(state, "TimeZone")
                     </div>
                     <div class="hm-field">
-                        <label class="hm-label" asp-for="ReminderMinutes">Reminder lead time</label>
+                        <label class="hm-label" asp-for="ReminderMinutes">@T["Reminder lead time"]</label>
                         <div class="hm-affix" style="max-width: 14rem">
                             <input class="hm-input hm-tnum" asp-for="ReminderMinutes" min="1" max="1440" inputmode="numeric"
                                    aria-invalid="@FormErrors.Invalid(state, "ReminderMinutes")" aria-describedby="@FormErrors.DescribedBy(state, "ReminderMinutes", "ReminderMinutes-help")">
-                            <span class="hm-affix__text">minutes</span>
+                            <span class="hm-affix__text">@T["minutes"]</span>
                         </div>
                         <p class="hm-help" id="ReminderMinutes-help">Before a followed match. 1–1440.</p>
                         @FormErrors.Render(state, "ReminderMinutes")
                     </div>
                     <fieldset class="hm-field" id="OrganizerRoles" style="border: 0; padding: 0; margin: 0"
                               aria-describedby="@FormErrors.DescribedBy(state, "OrganizerRoles", "OrganizerRoles-help")">
-                        <legend class="hm-label" style="margin-bottom: var(--hm-space-2)">Organizer roles <span class="hm-label__opt">optional</span></legend>
+                        <legend class="hm-label" style="margin-bottom: var(--hm-space-2)">Organizer roles <span class="hm-label__opt">@T["optional"]</span></legend>
                         @if (settingsPage.Roles.Length == 0)
                         {
                             <p class="hm-help">This server has no roles yet.</p>
@@ -143,13 +143,13 @@
                         @FormErrors.Render(state, "OrganizerRoles")
                     </fieldset>
                     <fieldset class="hm-field hm-field--wide" style="border: 0; padding: 0; margin: 0">
-                        <legend class="hm-label" style="margin-bottom: var(--hm-space-2)">Post to the channel</legend>
+                        <legend class="hm-label" style="margin-bottom: var(--hm-space-2)">@T["Post to the channel"]</legend>
                         <div class="hm-checks">
-                            <label class="hm-check"><input asp-for="Schedule"><span>Daily schedule<small>Today's matches for followed teams</small></span></label>
-                            <label class="hm-check"><input asp-for="Reminders"><span>Reminders<small>Before a match, using the lead time</small></span></label>
-                            <label class="hm-check"><input asp-for="MatchStarts"><span>Match starts<small>When a followed match goes live</small></span></label>
-                            <label class="hm-check"><input asp-for="Maps"><span>Map results<small>After each map</small></span></label>
-                            <label class="hm-check"><input asp-for="Results"><span>Match results<small>Final score</small></span></label>
+                            <label class="hm-check"><input asp-for="Schedule"><span>@T["Daily schedule"]<small>Today's matches for followed teams</small></span></label>
+                            <label class="hm-check"><input asp-for="Reminders"><span>@T["Reminders"]<small>Before a match, using the lead time</small></span></label>
+                            <label class="hm-check"><input asp-for="MatchStarts"><span>@T["Match starts"]<small>When a followed match goes live</small></span></label>
+                            <label class="hm-check"><input asp-for="Maps"><span>@T["Map results"]<small>After each map</small></span></label>
+                            <label class="hm-check"><input asp-for="Results"><span>@T["Match results"]<small>Final score</small></span></label>
                         </div>
                     </fieldset>
                 </div>
@@ -165,16 +165,16 @@
             <span class="hm-savebar__status" aria-live="polite">
                 @if (failed)
                 {
-                    <span class="hm-savebar__dirty"><b aria-hidden="true">●</b>Unsaved changes<span aria-hidden="true">·</span><span style="color: var(--hm-danger); font-weight: 600">@(fieldErrors.Length > 0 ? $"{fieldErrors.Length} to fix" : "Not saved")</span></span>
+                    <span class="hm-savebar__dirty"><b aria-hidden="true">●</b>@T["Unsaved changes"]<span aria-hidden="true">·</span><span style="color: var(--hm-danger); font-weight: 600">@(fieldErrors.Length > 0 ? $"{fieldErrors.Length} to fix" : "Not saved")</span></span>
                 }
                 else
                 {
                     <span class="hm-savebar__clean">@DashboardIcons.Render("check", "color: var(--hm-mint)")No unsaved changes</span>
-                    <span class="hm-savebar__dirty"><b aria-hidden="true">●</b>Unsaved changes</span>
+                    <span class="hm-savebar__dirty"><b aria-hidden="true">●</b>@T["Unsaved changes"]</span>
                 }
             </span>
-            <a class="hm-btn hm-btn--ghost hm-savebar__dirty" href="/settings/@settingsPage.GuildId">Discard</a>
-            <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("check")Save settings</button>
+            <a class="hm-btn hm-btn--ghost hm-savebar__dirty" href="/settings/@settingsPage.GuildId">@T["Discard"]</a>
+            <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("check")@T["Save settings"]</button>
         </div>
     </div>
 </form>

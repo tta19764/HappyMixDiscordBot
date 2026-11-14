@@ -1,0 +1,200 @@
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <data name="Pick a server">
+    <value>Виберіть сервер</value>
+  </data>
+  <data name="Servers">
+    <value>Сервери</value>
+  </data>
+  <data name="Availability">
+    <value>Доступність</value>
+  </data>
+  <data name="Settings">
+    <value>Налаштування</value>
+  </data>
+  <data name="Server settings">
+    <value>Налаштування сервера</value>
+  </data>
+  <data name="Sign out">
+    <value>Вийти</value>
+  </data>
+  <data name="No servers yet">
+    <value>Поки немає серверів</value>
+  </data>
+  <data name="Last used">
+    <value>Останній сервер</value>
+  </data>
+  <data name="Admin">
+    <value>Адміністратор</value>
+  </data>
+  <data name="Today">
+    <value>Сьогодні</value>
+  </data>
+  <data name="Tomorrow">
+    <value>Завтра</value>
+  </data>
+  <data name="Weekly timetable">
+    <value>Тижневий розклад</value>
+  </data>
+  <data name="Availability today">
+    <value>Доступність сьогодні</value>
+  </data>
+  <data name="From">
+    <value>З</value>
+  </data>
+  <data name="Until">
+    <value>До</value>
+  </data>
+  <data name="Time zone">
+    <value>Часовий пояс</value>
+  </data>
+  <data name="Change">
+    <value>Змінити</value>
+  </data>
+  <data name="optional">
+    <value>необов’язково</value>
+  </data>
+  <data name="Quick fill">
+    <value>Швидке заповнення</value>
+  </data>
+  <data name="Coming up">
+    <value>Найближчі години</value>
+  </data>
+  <data name="One-off">
+    <value>Одноразово</value>
+  </data>
+  <data name="No weekly hours yet">
+    <value>Тижневий розклад ще порожній</value>
+  </data>
+  <data name="Your usual week">
+    <value>Ваш звичайний тиждень</value>
+  </data>
+  <data name="Cancel">
+    <value>Скасувати</value>
+  </data>
+  <data name="✓ Saved">
+    <value>✓ Збережено</value>
+  </data>
+  <data name="No hours">
+    <value>Немає годин</value>
+  </data>
+  <data name="Edit">
+    <value>Редагувати</value>
+  </data>
+  <data name="Clear">
+    <value>Очистити</value>
+  </data>
+  <data name="Add hours">
+    <value>Додати години</value>
+  </data>
+  <data name="Available">
+    <value>Доступний час</value>
+  </data>
+  <data name="Server defaults">
+    <value>Типові налаштування сервера</value>
+  </data>
+  <data name="Announcement channel">
+    <value>Канал оголошень</value>
+  </data>
+  <data name="Reminder ping role">
+    <value>Роль для згадок у нагадуваннях</value>
+  </data>
+  <data name="No ping">
+    <value>Без згадки</value>
+  </data>
+  <data name="Followed teams">
+    <value>Відстежувані команди</value>
+  </data>
+  <data name="Twitch channels">
+    <value>Канали Twitch</value>
+  </data>
+  <data name="Team catalog">
+    <value>Каталог команд</value>
+  </data>
+  <data name="Reminder lead time">
+    <value>Час нагадування</value>
+  </data>
+  <data name="minutes">
+    <value>хвилин</value>
+  </data>
+  <data name="Organizer roles">
+    <value>Ролі організаторів</value>
+  </data>
+  <data name="Post to the channel">
+    <value>Публікувати в каналі</value>
+  </data>
+  <data name="Daily schedule">
+    <value>Розклад на день</value>
+  </data>
+  <data name="Reminders">
+    <value>Нагадування</value>
+  </data>
+  <data name="Match starts">
+    <value>Початок матчу</value>
+  </data>
+  <data name="Map results">
+    <value>Результати мап</value>
+  </data>
+  <data name="Match results">
+    <value>Результати матчів</value>
+  </data>
+  <data name="Unsaved changes">
+    <value>Незбережені зміни</value>
+  </data>
+  <data name="Discard">
+    <value>Відхилити зміни</value>
+  </data>
+  <data name="Save settings">
+    <value>Зберегти налаштування</value>
+  </data>
+  <data name="Save today">
+    <value>Зберегти на сьогодні</value>
+  </data>
+  <data name="Save day">
+    <value>Зберегти день</value>
+  </data>
+  <data name="Remove">
+    <value>Видалити</value>
+  </data>
+  <data name="Default ·">
+    <value>Типове ·</value>
+  </data>
+  <data name="Inherit">
+    <value>Успадкувати</value>
+  </data>
+  <data name="Custom">
+    <value>Власне</value>
+  </data>
+  <data name="Off">
+    <value>Вимкнено</value>
+  </data>
+  <data name="Servers you share with HappyMix. Set when you can play, or manage announcements where you're an admin.">
+    <value>Ваші спільні сервери з HappyMix. Вкажіть, коли можете грати, або налаштуйте оголошення на серверах, де ви адміністратор.</value>
+  </data>
+  <data name="HappyMix shows servers where you and the bot are both members. Ask a server admin to add HappyMix, then refresh.">
+    <value>Тут показано сервери, де є ви й бот. Попросіть адміністратора додати HappyMix і оновіть сторінку.</value>
+  </data>
+  <data name="Nothing is shared until you save.">
+    <value>Зміни набудуть чинності після збереження.</value>
+  </data>
+  <data name="Repeats every week until you clear a day.">
+    <value>Повторюється щотижня, доки ви не очистите день.</value>
+  </data>
+  <data name="Time zone for this window">
+    <value>Часовий пояс цього проміжку</value>
+  </data>
+  <data name="Leave empty for the server default. A UTC offset like +02:00 also works.">
+    <value>Залиште порожнім для часового поясу сервера або введіть зсув UTC, наприклад +02:00.</value>
+  </data>
+  <data name="Pick both times. An Until time earlier than From means the next day.">
+    <value>Укажіть обидва значення. Якщо час завершення раніший, проміжок триває до наступного дня.</value>
+  </data>
+  <data name="Carried over from the night before">
+    <value>Продовження з попередньої ночі</value>
+  </data>
+</root>

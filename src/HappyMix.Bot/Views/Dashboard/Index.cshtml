@@ -1,10 +1,10 @@
 @model DashboardServer[]
-@{ Layout = "_DashboardLayout"; ViewData["Title"] = "Pick a server"; }
+@{ Layout = "_DashboardLayout"; ViewData["Title"] = T["Pick a server"]; }
 
 <div class="hm-page-head">
     <div>
-        <h1>Pick a server</h1>
-        <p>Servers you share with HappyMix. Set when you can play, or manage announcements where you're an admin.</p>
+        <h1>@T["Pick a server"]</h1>
+        <p>@T["Servers you share with HappyMix. Set when you can play, or manage announcements where you're an admin."]</p>
     </div>
 </div>
 
@@ -13,8 +13,8 @@
     <section class="hm-card">
         <div class="hm-empty">
             <span class="hm-empty__icon">@DashboardIcons.Render("users", "width: 1.5rem; height: 1.5rem")</span>
-            <h2>No servers yet</h2>
-            <p>HappyMix shows servers where you and the bot are both members. Ask a server admin to add HappyMix, then refresh.</p>
+            <h2>@T["No servers yet"]</h2>
+            <p>@T["HappyMix shows servers where you and the bot are both members. Ask a server admin to add HappyMix, then refresh."]</p>
             <a class="hm-btn" href="/">@DashboardIcons.Render("refresh")Refresh list</a>
         </div>
     </section>
@@ -40,7 +40,7 @@ else
                         <a class="hm-server__name" id="server-@server.Id" href="/availability/@server.Id">@server.Name</a>
                         @if (server.LastUsed)
                         {
-                            <span class="hm-badge">Last used</span>
+                            <span class="hm-badge">@T["Last used"]</span>
                         }
                     </div>
                     <p class="hm-server__status">
@@ -58,7 +58,7 @@ else
                     <a class="hm-btn hm-btn--primary" href="/availability/@server.Id">@DashboardIcons.Render("clock")Set availability</a>
                     @if (server.CanConfigure)
                     {
-                        <a class="hm-btn" href="/settings/@server.Id">@DashboardIcons.Render("sliders")Settings<span class="hm-badge">Admin</span></a>
+                        <a class="hm-btn" href="/settings/@server.Id">@DashboardIcons.Render("sliders")@T["Settings"]<span class="hm-badge">@T["Admin"]</span></a>
                     }
                 </div>
             </section>

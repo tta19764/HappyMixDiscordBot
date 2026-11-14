@@ -1,15 +1,15 @@
 @model ServerNavModel
-<nav class="hm-crumbs" aria-label="Breadcrumb"><a href="/">Servers</a><span aria-hidden="true">/</span><span>@Model.GuildName</span></nav>
+<nav class="hm-crumbs" aria-label="Breadcrumb"><a href="/">@T["Servers"]</a><span aria-hidden="true">/</span><span>@Model.GuildName</span></nav>
 <div class="hm-page-head" style="margin-bottom: var(--hm-space-4)">
     <div>
-        <h1>@Model.Title</h1>
+        <h1>@T[Model.Title]</h1>
         <p>@Model.Lead</p>
     </div>
 </div>
 <nav class="hm-tabs" aria-label="Server">
-    <a href="/availability/@Model.GuildId" aria-current="@(Model.Active == "availability" ? "page" : null)">Availability</a>
+    <a href="/availability/@Model.GuildId" aria-current="@(Model.Active == "availability" ? "page" : null)">@T["Availability"]</a>
     @if (Model.CanConfigure)
     {
-        <a href="/settings/@Model.GuildId" aria-current="@(Model.Active == "settings" ? "page" : null)">Settings</a>
+        <a href="/settings/@Model.GuildId" aria-current="@(Model.Active == "settings" ? "page" : null)">@T["Settings"]</a>
     }
 </nav>

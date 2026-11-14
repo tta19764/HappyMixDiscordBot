@@ -1,13 +1,13 @@
 @model AvailabilityPage
 @{
     Layout = "_DashboardLayout";
-    ViewData["Title"] = Model.IsWeekly ? "Weekly timetable" : "Availability today";
+    ViewData["Title"] = Model.IsWeekly ? T["Weekly timetable"] : T["Availability today"];
     ViewData["NavGuildName"] = Model.GuildName;
     string baseUrl = $"/availability/{Model.GuildId}";
     string weeklyUrl = baseUrl + "?view=weekly";
     var nav = new ServerNavModel(Model.GuildId, Model.GuildName, "availability", Model.CanConfigure, "Availability",
         "Tell the group when you can play. HappyMix uses this to plan sessions.");
-    var todayRange = new TimeRangeModel("today", "Today", Model.Form.Start, Model.Form.End, Model.Form.Offset,
+    var todayRange = new TimeRangeModel("today", T["Today"], Model.Form.Start, Model.Form.End, Model.Form.Offset,
         Model.TimeZone, Model.TimeZoneOffset);
 }
 
@@ -15,8 +15,8 @@
 
 <div class="hm-row hm-row--between" style="margin-bottom: var(--hm-space-5)">
     <nav class="hm-segment" aria-label="Availability view">
-        <a href="@baseUrl" aria-current="@(Model.IsWeekly ? null : "page")">@DashboardIcons.Render("clock")Today</a>
-        <a href="@weeklyUrl" aria-current="@(Model.IsWeekly ? "page" : null)">@DashboardIcons.Render("calendar")Weekly timetable</a>
+        <a href="@baseUrl" aria-current="@(Model.IsWeekly ? null : "page")">@DashboardIcons.Render("clock")@T["Today"]</a>
+        <a href="@weeklyUrl" aria-current="@(Model.IsWeekly ? "page" : null)">@DashboardIcons.Render("calendar")@T["Weekly timetable"]</a>
     </nav>
     @if (Model.IsWeekly)
     {
@@ -35,10 +35,10 @@
 {
     <div class="hm-split">
         <form class="hm-card hm-stack" style="gap: var(--hm-space-5)" method="post" action="@baseUrl" asp-antiforgery="false"
-              data-range data-day="Today" data-next-day="Tomorrow" aria-labelledby="today-title">
+              data-range data-day="@T["Today"]" data-next-day="@T["Tomorrow"]" aria-labelledby="today-title">
             @Html.AntiForgeryToken()
             <div>
-                <h2 id="today-title">Today</h2>
+                <h2 id="today-title">@T["Today"]</h2>
                 <p class="hm-help">@Model.TodayLabel</p>
             </div>
 
@@ -47,7 +47,7 @@
             @if (Model.Presets.Count > 0)
             {
                 <div class="hm-stack hm-stack--sm" data-presets hidden>
-                    <span class="hm-label" id="presets-label">Quick fill</span>
+                    <span class="hm-label" id="presets-label">@T["Quick fill"]</span>
                     <div class="hm-row" role="group" aria-labelledby="presets-label" style="gap: var(--hm-space-2)">
                         @foreach (var preset in Model.Presets)
                         {
@@ -58,17 +58,17 @@
             }
 
             <hr class="hm-divider" style="margin: 0">
-            <p class="hm-help">Nothing is shared until you save.</p>
+            <p class="hm-help">@T["Nothing is shared until you save."]</p>
             <div class="hm-sticky-action" style="display: flex; justify-content: flex-end; margin-top: calc(-1 * var(--hm-space-2))">
-                <button class="hm-btn hm-btn--primary hm-btn--lg" name="action" value="today" data-range-save>@DashboardIcons.Render("check")Save today</button>
+                <button class="hm-btn hm-btn--primary hm-btn--lg" name="action" value="today" data-range-save>@DashboardIcons.Render("check")@T["Save today"]</button>
             </div>
         </form>
 
         <aside class="hm-stack">
             <section class="hm-card" aria-labelledby="upcoming-title">
                 <div class="hm-card__head" style="margin-bottom: var(--hm-space-2)">
-                    <h2 id="upcoming-title" style="font-size: var(--hm-fs-lg)">Coming up</h2>
-                    <span class="hm-badge">One-off</span>
+                    <h2 id="upcoming-title" style="font-size: var(--hm-fs-lg)">@T["Coming up"]</h2>
+                    <span class="hm-badge">@T["One-off"]</span>
                 </div>
                 @if (Model.Upcoming.Count == 0)
                 {
@@ -97,7 +97,7 @@
                 }
             </section>
             <section class="hm-card hm-stack hm-stack--sm" aria-labelledby="weekly-link-title">
-                <h2 id="weekly-link-title" style="font-size: var(--hm-fs-lg)">Weekly timetable</h2>
+                <h2 id="weekly-link-title" style="font-size: var(--hm-fs-lg)">@T["Weekly timetable"]</h2>
                 <p class="hm-help">@Model.WeeklyCount of 7 days set. Weekly hours repeat every week.</p>
                 <a class="hm-link-btn" href="@weeklyUrl">Open weekly timetable @DashboardIcons.Render("arrow")</a>
             </section>
@@ -109,7 +109,7 @@ else if (Model.WeeklyCount == 0 && !Model.IsEditing)
     <section class="hm-card">
         <div class="hm-empty">
             <span class="hm-empty__icon">@DashboardIcons.Render("calendar", "width: 1.5rem; height: 1.5rem")</span>
-            <h2>No weekly hours yet</h2>
+            <h2>@T["No weekly hours yet"]</h2>
             <p>Add the evenings you usually play once. HappyMix repeats them every week.</p>
             <a class="hm-btn hm-btn--primary" href="@weeklyUrl&amp;edit=Monday#monday">@DashboardIcons.Render("plus")Add Monday hours</a>
         </div>
@@ -120,8 +120,8 @@ else
     <section class="hm-card hm-card--flush" aria-labelledby="week-title">
         <div class="hm-card__head" style="padding: var(--hm-space-5) var(--hm-space-5) 0">
             <div>
-                <h2 id="week-title">Your usual week</h2>
-                <p>Repeats every week until you clear a day.</p>
+                <h2 id="week-title">@T["Your usual week"]</h2>
+                <p>@T["Repeats every week until you clear a day."]</p>
             </div>
             <span class="hm-badge hm-tnum">@Model.WeeklyCount of 7 days</span>
         </div>
@@ -141,7 +141,7 @@ else
                             <input type="hidden" name="day" value="@row.Day">
                             <partial name="_TimeRange" model="new TimeRangeModel(row.Anchor, row.ShortName, Model.Form.Start, Model.Form.End, Model.Form.Offset, Model.TimeZone, Model.TimeZoneOffset)" />
                             <div class="hm-row" style="justify-content: flex-end">
-                                <a class="hm-btn hm-btn--ghost" href="@weeklyUrl#@row.Anchor">Cancel</a>
+                                <a class="hm-btn hm-btn--ghost" href="@weeklyUrl#@row.Anchor">@T["Cancel"]</a>
                                 <button class="hm-btn hm-btn--primary" name="action" value="weekly" data-range-save>@DashboardIcons.Render("check")Save @row.Name</button>
                             </div>
                         </form>
@@ -159,11 +159,11 @@ else
                         <span class="hm-day__name">@row.Name
                             @if (row.IsSaved)
                             {
-                                <small style="color: var(--hm-mint)">✓ Saved</small>
+                                <small style="color: var(--hm-mint)">@T["✓ Saved"]</small>
                             }
                             else if (row.IsToday)
                             {
-                                <small>Today</small>
+                                <small>@T["Today"]</small>
                             }
                         </span>
                         @if (row.Window is { } window)
@@ -172,7 +172,7 @@ else
                         }
                         else
                         {
-                            <span class="hm-day__none">No hours</span>
+                            <span class="hm-day__none">@T["No hours"]</span>
                         }
                     </div>
                     <div class="hm-dayline" role="img" aria-label="@row.Name: @label">
@@ -188,24 +188,24 @@ else
                     <div class="hm-day__actions">
                         @if (row.Window is not null)
                         {
-                            <a class="hm-btn" href="@editUrl" aria-label="Edit @row.Name hours">@DashboardIcons.Render("pencil")<span class="hm-btn__label">Edit</span></a>
+                            <a class="hm-btn" href="@editUrl" aria-label="Edit @row.Name hours">@DashboardIcons.Render("pencil")<span class="hm-btn__label">@T["Edit"]</span></a>
                             <form method="post" action="@baseUrl" asp-antiforgery="false">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="day" value="@row.Day">
-                                <button class="hm-btn hm-btn--danger" name="action" value="clear" aria-label="Clear @row.Name hours">@DashboardIcons.Render("trash")<span class="hm-btn__label">Clear</span></button>
+                                <button class="hm-btn hm-btn--danger" name="action" value="clear" aria-label="Clear @row.Name hours">@DashboardIcons.Render("trash")<span class="hm-btn__label">@T["Clear"]</span></button>
                             </form>
                         }
                         else
                         {
-                            <a class="hm-btn" href="@editUrl" aria-label="Add @row.Name hours">@DashboardIcons.Render("plus")<span class="hm-btn__label">Add hours</span></a>
+                            <a class="hm-btn" href="@editUrl" aria-label="Add @row.Name hours">@DashboardIcons.Render("plus")<span class="hm-btn__label">@T["Add hours"]</span></a>
                         }
                     </div>
                 </div>
             }
         </div>
         <div class="hm-row" style="gap: var(--hm-space-5); padding: var(--hm-space-3) var(--hm-space-5); border-top: 1px solid var(--hm-border); font-size: var(--hm-fs-xs); color: var(--hm-text-subtle)">
-            <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg" style="position: static; display: inline-block; width: 1.75rem; height: .625rem"></span>Available</span>
-            <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg hm-dayline__seg--carry" style="position: static; display: inline-block; width: 1.75rem; height: .625rem; border-radius: 999px"></span>Carried over from the night before</span>
+            <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg" style="position: static; display: inline-block; width: 1.75rem; height: .625rem"></span>@T["Available"]</span>
+            <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg hm-dayline__seg--carry" style="position: static; display: inline-block; width: 1.75rem; height: .625rem; border-radius: 999px"></span>@T["Carried over from the night before"]</span>
         </div>
     </section>
 }

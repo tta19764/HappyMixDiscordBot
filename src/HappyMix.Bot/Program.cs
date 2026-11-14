@@ -15,6 +15,7 @@ var web = builder.Configuration.GetSection("Dashboard");
 bool enabled = web.GetValue<bool>("Enabled");
 if (enabled)
 {
+    builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
     if (web["KeyDirectory"] is { Length: > 0 } keyDirectory)
         builder.Services.AddDataProtection()
             .SetApplicationName("HappyMix.Dashboard")
@@ -66,6 +67,10 @@ await using var app = builder.Build();
 if (enabled)
 {
     app.UseForwardedHeaders();
+    app.UseRequestLocalization(new RequestLocalizationOptions()
+        .SetDefaultCulture("en")
+        .AddSupportedCultures("en", "uk", "ru")
+        .AddSupportedUICultures("en", "uk", "ru"));
     app.UseStaticFiles();
     app.UseRouting();
     app.UseAuthentication();

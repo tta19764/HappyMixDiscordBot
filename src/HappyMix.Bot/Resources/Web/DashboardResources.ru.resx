@@ -1,0 +1,200 @@
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <data name="Pick a server">
+    <value>Выберите сервер</value>
+  </data>
+  <data name="Servers">
+    <value>Серверы</value>
+  </data>
+  <data name="Availability">
+    <value>Доступность</value>
+  </data>
+  <data name="Settings">
+    <value>Настройки</value>
+  </data>
+  <data name="Server settings">
+    <value>Настройки сервера</value>
+  </data>
+  <data name="Sign out">
+    <value>Выйти</value>
+  </data>
+  <data name="No servers yet">
+    <value>Пока нет серверов</value>
+  </data>
+  <data name="Last used">
+    <value>Последний сервер</value>
+  </data>
+  <data name="Admin">
+    <value>Администратор</value>
+  </data>
+  <data name="Today">
+    <value>Сегодня</value>
+  </data>
+  <data name="Tomorrow">
+    <value>Завтра</value>
+  </data>
+  <data name="Weekly timetable">
+    <value>Недельное расписание</value>
+  </data>
+  <data name="Availability today">
+    <value>Доступность сегодня</value>
+  </data>
+  <data name="From">
+    <value>С</value>
+  </data>
+  <data name="Until">
+    <value>До</value>
+  </data>
+  <data name="Time zone">
+    <value>Часовой пояс</value>
+  </data>
+  <data name="Change">
+    <value>Изменить</value>
+  </data>
+  <data name="optional">
+    <value>необязательно</value>
+  </data>
+  <data name="Quick fill">
+    <value>Быстрое заполнение</value>
+  </data>
+  <data name="Coming up">
+    <value>Ближайшие часы</value>
+  </data>
+  <data name="One-off">
+    <value>Однократно</value>
+  </data>
+  <data name="No weekly hours yet">
+    <value>Недельное расписание пока пусто</value>
+  </data>
+  <data name="Your usual week">
+    <value>Ваша обычная неделя</value>
+  </data>
+  <data name="Cancel">
+    <value>Отмена</value>
+  </data>
+  <data name="✓ Saved">
+    <value>✓ Сохранено</value>
+  </data>
+  <data name="No hours">
+    <value>Нет часов</value>
+  </data>
+  <data name="Edit">
+    <value>Редактировать</value>
+  </data>
+  <data name="Clear">
+    <value>Очистить</value>
+  </data>
+  <data name="Add hours">
+    <value>Добавить часы</value>
+  </data>
+  <data name="Available">
+    <value>Доступное время</value>
+  </data>
+  <data name="Server defaults">
+    <value>Настройки сервера по умолчанию</value>
+  </data>
+  <data name="Announcement channel">
+    <value>Канал объявлений</value>
+  </data>
+  <data name="Reminder ping role">
+    <value>Роль для упоминаний в напоминаниях</value>
+  </data>
+  <data name="No ping">
+    <value>Без упоминания</value>
+  </data>
+  <data name="Followed teams">
+    <value>Отслеживаемые команды</value>
+  </data>
+  <data name="Twitch channels">
+    <value>Каналы Twitch</value>
+  </data>
+  <data name="Team catalog">
+    <value>Каталог команд</value>
+  </data>
+  <data name="Reminder lead time">
+    <value>Время напоминания</value>
+  </data>
+  <data name="minutes">
+    <value>минут</value>
+  </data>
+  <data name="Organizer roles">
+    <value>Роли организаторов</value>
+  </data>
+  <data name="Post to the channel">
+    <value>Публиковать в канале</value>
+  </data>
+  <data name="Daily schedule">
+    <value>Расписание на день</value>
+  </data>
+  <data name="Reminders">
+    <value>Напоминания</value>
+  </data>
+  <data name="Match starts">
+    <value>Начало матча</value>
+  </data>
+  <data name="Map results">
+    <value>Результаты карт</value>
+  </data>
+  <data name="Match results">
+    <value>Результаты матчей</value>
+  </data>
+  <data name="Unsaved changes">
+    <value>Несохранённые изменения</value>
+  </data>
+  <data name="Discard">
+    <value>Сбросить изменения</value>
+  </data>
+  <data name="Save settings">
+    <value>Сохранить настройки</value>
+  </data>
+  <data name="Save today">
+    <value>Сохранить на сегодня</value>
+  </data>
+  <data name="Save day">
+    <value>Сохранить день</value>
+  </data>
+  <data name="Remove">
+    <value>Удалить</value>
+  </data>
+  <data name="Default ·">
+    <value>По умолчанию ·</value>
+  </data>
+  <data name="Inherit">
+    <value>Наследовать</value>
+  </data>
+  <data name="Custom">
+    <value>Своё</value>
+  </data>
+  <data name="Off">
+    <value>Выключено</value>
+  </data>
+  <data name="Servers you share with HappyMix. Set when you can play, or manage announcements where you're an admin.">
+    <value>Ваши общие серверы с HappyMix. Укажите, когда можете играть, или настройте объявления на серверах, где вы администратор.</value>
+  </data>
+  <data name="HappyMix shows servers where you and the bot are both members. Ask a server admin to add HappyMix, then refresh.">
+    <value>Здесь показаны серверы, где есть вы и бот. Попросите администратора добавить HappyMix и обновите страницу.</value>
+  </data>
+  <data name="Nothing is shared until you save.">
+    <value>Изменения вступят в силу после сохранения.</value>
+  </data>
+  <data name="Repeats every week until you clear a day.">
+    <value>Повторяется каждую неделю, пока вы не очистите день.</value>
+  </data>
+  <data name="Time zone for this window">
+    <value>Часовой пояс этого интервала</value>
+  </data>
+  <data name="Leave empty for the server default. A UTC offset like +02:00 also works.">
+    <value>Оставьте пустым для часового пояса сервера или введите смещение UTC, например +02:00.</value>
+  </data>
+  <data name="Pick both times. An Until time earlier than From means the next day.">
+    <value>Укажите оба значения. Если время окончания раньше, интервал продолжается до следующего дня.</value>
+  </data>
+  <data name="Carried over from the night before">
+    <value>Продолжение с предыдущей ночи</value>
+  </data>
+</root>

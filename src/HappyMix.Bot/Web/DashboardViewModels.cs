@@ -28,8 +28,8 @@ public sealed record UpcomingRow(Guid Id, string Title, string Meta);
 public sealed record WeekRow(DayOfWeek Day, WeeklyAvailability? Window, bool IsToday, bool IsEditing, bool IsSaved,
     double? CarryPercent, string? ZoneNote)
 {
-    public string Name => Day.ToString();
-    public string Anchor => Day.ToString().ToLowerInvariant();
+    public string Name => CultureInfo.CurrentUICulture.DateTimeFormat.GetDayName(Day);
+    public string Anchor => CultureInfo.CurrentUICulture.DateTimeFormat.GetDayName(Day).ToLowerInvariant();
     public string ShortName => AvailabilityFormat.ShortDay(Day);
     public string NextShortName => AvailabilityFormat.ShortDay((DayOfWeek)(((int)Day + 1) % 7));
     public bool Overnight => Window is { } window && window.End < window.Start;
@@ -78,7 +78,7 @@ public static class AvailabilityFormat
 {
     private static readonly CultureInfo Culture = CultureInfo.InvariantCulture;
 
-    public static string ShortDay(DayOfWeek day) => Culture.DateTimeFormat.GetAbbreviatedDayName(day);
+    public static string ShortDay(DayOfWeek day) => CultureInfo.CurrentUICulture.DateTimeFormat.GetAbbreviatedDayName(day);
 
     public static double Percent(TimeOnly time) => time.ToTimeSpan().TotalMinutes / 1440 * 100;
 

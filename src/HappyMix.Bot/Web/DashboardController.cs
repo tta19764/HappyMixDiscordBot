@@ -10,6 +10,7 @@ using HappyMix.Infrastructure.PandaScore;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -29,6 +30,19 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
     [HttpGet("/login")]
     public IActionResult Login(string? returnUrl) =>
         Challenge(new AuthenticationProperties { RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/" }, "Discord");
+
+    [HttpPost("/language")]
+    public IActionResult SetLanguage(string culture, string? returnUrl)
+    {
+        if (culture is not ("en" or "uk" or "ru"))
+            return BadRequest();
+
+        Response.Cookies.Append(CookieRequestCultureProvider.DefaultCookieName,
+            CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+            new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Secure = Request.IsHttps,
+                HttpOnly = true, SameSite = SameSiteMode.Lax, Path = "/" });
+        return LocalRedirect(Url.IsLocalUrl(returnUrl) ? returnUrl : "/");
+    }
 
     [HttpPost("/logout")]
     public IActionResult Logout() => SignOut(new AuthenticationProperties { RedirectUri = "/signed-out" });
@@ -157,7 +171,7 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
         {
             var start = TimeZoneInfo.ConvertTime(window.Start, zone).DateTime;
             var end = TimeZoneInfo.ConvertTime(window.End, zone).DateTime;
-            string meta = start.ToString("ddd d MMM", Culture) + (end.Date > start.Date ? " · Overnight" : "");
+            string meta = start.ToString("ddd d MMM", CultureInfo.CurrentCulture) + (end.Date > start.Date ? " · Overnight" : "");
             return new UpcomingRow(window.Id, AvailabilityFormat.Range(start, end, today), meta);
         }).ToArray();
 
@@ -180,7 +194,7 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
         return View("Availability", new AvailabilityPage(guildId, guild?.Name ?? "HappyMix",
             member.GuildPermissions.Administrator, view, zone.Id,
             AvailabilityFormat.Offset(zone.GetUtcOffset(clock.UtcNow)),
-            now.ToString("dddd d MMMM", Culture), rows, week,
+            now.ToString("dddd d MMMM", CultureInfo.CurrentCulture), rows, week,
             GetPresets(now, weekly.FirstOrDefault(item => item.Day == now.DayOfWeek)), banner, form));
     }
 
