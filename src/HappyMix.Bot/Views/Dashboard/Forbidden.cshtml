@@ -1,0 +1,10 @@
+@model ForbiddenPage
+@{ Layout = "_DashboardLayout"; ViewData["Title"] = Model.Title; }
+<section class="hm-card hm-forbidden">
+    <div class="hm-empty" style="border: 0">
+        <span class="hm-empty__icon">@DashboardIcons.Render("shield", "width: 1.5rem; height: 1.5rem")</span>
+        <h1 style="font-size: var(--hm-fs-xl)">@Model.Title</h1>
+        <p>@Model.Text</p>
+        <a class="hm-btn hm-btn--primary" href="@Model.ActionUrl">@Model.ActionLabel</a>
+    </div>
+</section>

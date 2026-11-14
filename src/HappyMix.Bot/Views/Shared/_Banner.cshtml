@@ -1,0 +1,24 @@
+@model BannerModel
+@{
+    string icon = Model.Kind == "success" ? "check" : "bang";
+}
+<div class="hm-banner hm-banner--@Model.Kind" role="@(Model.Kind == "success" ? "status" : "alert")"
+     tabindex="-1" data-focus-on-load="@(Model.Focus ? "" : null)">
+    <span class="hm-banner__icon">@DashboardIcons.Render(icon)</span>
+    <div class="hm-banner__body">
+        <p class="hm-banner__title">@Model.Title</p>
+        @if (Model.Text is not null)
+        {
+            <p class="hm-banner__text">@Model.Text</p>
+        }
+        @if (Model.Links is { Count: > 0 } links)
+        {
+            <ul>
+                @foreach (var (label, href) in links)
+                {
+                    <li><a href="@href">@label</a></li>
+                }
+            </ul>
+        }
+    </div>
+</div>

@@ -1,23 +1,42 @@
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@using System.Security.Claims
+@{
+    string userName = User.FindFirstValue(ClaimTypes.Name) ?? "Signed in";
+    string? guildName = ViewData["NavGuildName"] as string;
+}
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#0e0f1c">
     <title>@ViewData["Title"] · HappyMix</title>
+    <link rel="icon" type="image/svg+xml" href="~/happymix.svg" asp-append-version="true">
     <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true">
+    <script src="~/js/dashboard.js" asp-append-version="true" defer></script>
 </head>
 <body>
-    <header class="site-header">
-        <div class="shell header-inner">
-            <a class="brand" href="/"><span class="brand-icon" aria-hidden="true">H</span> HappyMix</a>
+    <header class="hm-header">
+        <div class="hm-shell hm-header__inner">
+            <a class="hm-brand" href="/" aria-label="HappyMix home"><img src="~/happymix.svg" asp-append-version="true" alt="" width="32" height="32"><span class="@(guildName is null ? "" : "hm-header__name")">HappyMix</span></a>
+            @if (guildName is not null)
+            {
+                <a class="hm-switcher" href="/" aria-label="Switch server, current: @guildName">
+                    <span>@guildName</span>@DashboardIcons.Render("chevron")
+                </a>
+            }
+            <span class="hm-header__spacer"></span>
+            <span class="hm-user hm-header__name">
+                <span class="hm-user__avatar" aria-hidden="true">@DashboardIcons.Initials(userName)[..1]</span>
+                <span class="hm-muted" style="font-size: var(--hm-fs-sm); font-weight: 600">@userName</span>
+            </span>
             <form action="/logout" method="post" asp-antiforgery="false">
                 @Html.AntiForgeryToken()
-                <button class="quiet">Sign out</button>
+                <button class="hm-btn hm-btn--ghost" aria-label="Sign out">@DashboardIcons.Render("logout")<span class="hm-signout__label">Sign out</span></button>
             </form>
         </div>
     </header>
-    <main class="shell">
+    <main class="hm-shell hm-main">
         @RenderBody()
     </main>
 </body>

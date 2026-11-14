@@ -1,0 +1,39 @@
+@model TimeRangeModel
+@{ bool customZone = Model.Offset is not null; }
+<div class="hm-range-row">
+    <div class="hm-field">
+        <label class="hm-label" for="@(Model.Id)-start">From</label>
+        <input class="hm-time" id="@(Model.Id)-start" name="start" type="time" required value="@Model.Start">
+    </div>
+    <span class="hm-range__arrow" aria-hidden="true">@DashboardIcons.Render("arrow")</span>
+    <div class="hm-field">
+        <label class="hm-label" for="@(Model.Id)-end">Until</label>
+        <input class="hm-time" id="@(Model.Id)-end" name="end" type="time" required value="@Model.End">
+    </div>
+    <div class="hm-field hm-tz-field">
+        <span class="hm-label" aria-hidden="true">Time zone</span>
+        <details class="hm-tz" open="@customZone">
+            <summary aria-label="Time zone: @(Model.Offset ?? Model.Zone). Change">
+                @DashboardIcons.Render("globe")
+                <span class="hm-tz__zone">@(Model.Offset ?? Model.Zone)</span>
+                <span class="hm-tz__offset">@(customZone ? "for this window" : Model.ZoneOffset + " · server default")</span>
+                <span class="hm-tz__change">Change</span>
+            </summary>
+            <div class="hm-tz__panel">
+                <label class="hm-label" for="@(Model.Id)-offset">Time zone for this window <span class="hm-label__opt">optional</span></label>
+                <input class="hm-input" id="@(Model.Id)-offset" name="offset" list="time-zones" value="@Model.Offset"
+                       placeholder="@Model.Zone" maxlength="100" autocomplete="off" spellcheck="false">
+                <p class="hm-help">Leave empty for the server default. A UTC offset like +02:00 also works.</p>
+            </div>
+        </details>
+    </div>
+</div>
+<div class="hm-preview" data-range-preview aria-live="polite">
+    <span class="hm-muted" data-hint>Pick both times. An Until time earlier than From means the next day.</span>
+    <span data-ok hidden style="display: contents">
+        <span class="hm-preview__text">@Model.DayLabel <span data-from></span><span class="hm-preview__arrow">→</span><b data-until-day></b> <span data-until></span></span>
+        <span class="hm-badge hm-badge--mint" data-overnight hidden>@DashboardIcons.Render("moon")Overnight</span>
+        <span class="hm-preview__dur" data-duration></span>
+    </span>
+    <p class="hm-error" data-invalid hidden>@DashboardIcons.Render("alert")From and Until are the same time. Pick a different end time.</p>
+</div>

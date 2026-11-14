@@ -1,31 +1,70 @@
-@model HappyMix.Bot.Web.DashboardServer[]
-@{ Layout = "_DashboardLayout"; ViewData["Title"] = "Your servers"; }
+@model DashboardServer[]
+@{ Layout = "_DashboardLayout"; ViewData["Title"] = "Pick a server"; }
 
-<h1>Your servers</h1>
-<p>Choose a Discord server to manage your availability.</p>
+<div class="hm-page-head">
+    <div>
+        <h1>Pick a server</h1>
+        <p>Servers you share with HappyMix. Set when you can play, or manage announcements where you're an admin.</p>
+    </div>
+</div>
 
 @if (Model.Length == 0)
 {
-    <section><p>No shared servers are available. Check that you and HappyMix are in the same Discord server.</p></section>
+    <section class="hm-card">
+        <div class="hm-empty">
+            <span class="hm-empty__icon">@DashboardIcons.Render("users", "width: 1.5rem; height: 1.5rem")</span>
+            <h2>No servers yet</h2>
+            <p>HappyMix shows servers where you and the bot are both members. Ask a server admin to add HappyMix, then refresh.</p>
+            <a class="hm-btn" href="/">@DashboardIcons.Render("refresh")Refresh list</a>
+        </div>
+    </section>
 }
 else
 {
-    <div class="server-grid">
-        @foreach (var guild in Model)
+    <div class="hm-grid" style="grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr))">
+        @foreach (var server in Model)
         {
-            <section class="server-card">
-                <div class="server-name">
-                    <span class="server-icon" aria-hidden="true">#</span>
-                    <h2>@guild.Name</h2>
-                </div>
-                <div class="actions">
-                    <a class="button" href="/availability/@guild.Id">Availability <span aria-hidden="true">→</span></a>
-                    @if (guild.CanConfigure)
+            <section class="hm-card hm-server @(server.LastUsed ? "hm-card--recent" : "")" aria-labelledby="server-@server.Id">
+                <span class="hm-server__avatar" aria-hidden="true">
+                    @if (server.IconUrl is { } icon)
                     {
-                        <a class="button quiet" href="/settings/@guild.Id">Server settings</a>
+                        <img src="@icon" alt="" width="48" height="48" loading="lazy">
+                    }
+                    else
+                    {
+                        @DashboardIcons.Initials(server.Name)
+                    }
+                </span>
+                <div>
+                    <div class="hm-row" style="gap: var(--hm-space-2)">
+                        <a class="hm-server__name" id="server-@server.Id" href="/availability/@server.Id">@server.Name</a>
+                        @if (server.LastUsed)
+                        {
+                            <span class="hm-badge">Last used</span>
+                        }
+                    </div>
+                    <p class="hm-server__status">
+                        @if (server.TodayStatus is { } status)
+                        {
+                            <span class="hm-dot"></span>@status
+                        }
+                        else
+                        {
+                            <span class="hm-dot hm-dot--off"></span>@("No hours set for today")
+                        }
+                    </p>
+                </div>
+                <div class="hm-server__actions">
+                    <a class="hm-btn hm-btn--primary" href="/availability/@server.Id">@DashboardIcons.Render("clock")Set availability</a>
+                    @if (server.CanConfigure)
+                    {
+                        <a class="hm-btn" href="/settings/@server.Id">@DashboardIcons.Render("sliders")Settings<span class="hm-badge">Admin</span></a>
                     }
                 </div>
             </section>
         }
     </div>
+    <p class="hm-help" style="margin-top: var(--hm-space-6); display: flex; align-items: center; gap: var(--hm-space-2)">
+        @DashboardIcons.Render("info")Missing a server? HappyMix lists only servers where both you and the bot are members.
+    </p>
 }

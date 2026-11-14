@@ -1,0 +1,175 @@
+using System.Globalization;
+using System.Text.Encodings.Web;
+using HappyMix.Application.Abstractions.Guilds;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
+
+namespace HappyMix.Bot.Web;
+
+public sealed record BannerModel(string Kind, string Title, string? Text = null, bool Focus = true,
+    IReadOnlyList<(string Label, string Href)>? Links = null);
+
+public sealed record ServerNavModel(ulong GuildId, string GuildName, string Active, bool CanConfigure,
+    string Title, string Lead);
+
+public sealed record ForbiddenPage(string Title, string Text, string ActionUrl, string ActionLabel);
+
+public sealed record DashboardServer(ulong Id, string Name, string? IconUrl, bool CanConfigure,
+    string? TodayStatus, bool LastUsed);
+
+public sealed record AvailabilityPreset(string Label, string Start, string End)
+{
+    public string Range => $"{Start}–{End}";
+}
+
+public sealed record UpcomingRow(Guid Id, string Title, string Meta);
+
+public sealed record WeekRow(DayOfWeek Day, WeeklyAvailability? Window, bool IsToday, bool IsEditing, bool IsSaved,
+    double? CarryPercent, string? ZoneNote)
+{
+    public string Name => Day.ToString();
+    public string Anchor => Day.ToString().ToLowerInvariant();
+    public string ShortName => AvailabilityFormat.ShortDay(Day);
+    public string NextShortName => AvailabilityFormat.ShortDay((DayOfWeek)(((int)Day + 1) % 7));
+    public bool Overnight => Window is { } window && window.End < window.Start;
+    public double Left => Window is { } window ? AvailabilityFormat.Percent(window.Start) : 0;
+    public double Width => Window is { } window ? (Overnight ? 100 : AvailabilityFormat.Percent(window.End)) - Left : 0;
+    public string Duration => Window is { } window ? AvailabilityFormat.Duration(window.Start, window.End) : "";
+}
+
+public sealed record AvailabilityForm(string? Start = null, string? End = null, string? Offset = null);
+
+public sealed record AvailabilityPage(
+    ulong GuildId,
+    string GuildName,
+    bool CanConfigure,
+    string View,
+    string TimeZone,
+    string TimeZoneOffset,
+    string TodayLabel,
+    IReadOnlyList<UpcomingRow> Upcoming,
+    IReadOnlyList<WeekRow> Week,
+    IReadOnlyList<AvailabilityPreset> Presets,
+    BannerModel? Banner,
+    AvailabilityForm Form)
+{
+    public bool IsWeekly => View == "weekly";
+    public int WeeklyCount => Week.Count(row => row.Window is not null);
+    public bool IsEditing => Week.Any(row => row.IsEditing);
+}
+
+public sealed record RoleOption(ulong Id, string Name, string Color);
+
+public sealed record SettingsPage(
+    ulong GuildId,
+    string GuildName,
+    SelectListItem[] Channels,
+    RoleOption[] Roles,
+    string DeploymentChannel,
+    string ServerChannel,
+    GameDefaults CounterStrike,
+    GameDefaults Dota,
+    BannerModel? Banner);
+
+public sealed record GameDefaults(string Teams, string Twitch, string Catalog);
+
+public static class AvailabilityFormat
+{
+    private static readonly CultureInfo Culture = CultureInfo.InvariantCulture;
+
+    public static string ShortDay(DayOfWeek day) => Culture.DateTimeFormat.GetAbbreviatedDayName(day);
+
+    public static double Percent(TimeOnly time) => time.ToTimeSpan().TotalMinutes / 1440 * 100;
+
+    public static string Css(double percent) => percent.ToString("0.##", Culture) + "%";
+
+    public static string Time(TimeOnly time) => time.ToString("HH:mm", Culture);
+
+    public static string Duration(TimeOnly start, TimeOnly end)
+    {
+        int span = ((int)(end - start).TotalMinutes % 1440 + 1440) % 1440;
+        return span % 60 == 0 ? $"{span / 60}h" : $"{span / 60}h {span % 60}m";
+    }
+
+    /// <summary>"Today 17:00 → Tomorrow 00:30", relative to <paramref name="today"/>.</summary>
+    public static string Range(DateTime start, DateTime end, DateOnly today) =>
+        $"{Day(DateOnly.FromDateTime(start), today)} {start.ToString("HH:mm", Culture)} → " +
+        $"{(DateOnly.FromDateTime(end) == DateOnly.FromDateTime(start)
+            ? "" : Day(DateOnly.FromDateTime(end), today) + " ")}{end.ToString("HH:mm", Culture)}";
+
+    public static string Day(DateOnly date, DateOnly today) =>
+        date == today ? "Today" : date == today.AddDays(1) ? "Tomorrow" : ShortDay(date.DayOfWeek);
+
+    public static string Offset(TimeSpan offset) =>
+        "UTC" + (offset < TimeSpan.Zero ? "−" : "+") + offset.Duration().ToString(@"hh\:mm", Culture);
+}
+
+public static class DashboardIcons
+{
+    private static readonly Dictionary<string, string> Paths = new(StringComparer.Ordinal)
+    {
+        ["chevron"] = "<path d=\"m6 9 6 6 6-6\"/>",
+        ["arrow"] = "<path d=\"M5 12h14M13 6l6 6-6 6\"/>",
+        ["globe"] = "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18\"/>",
+        ["moon"] = "<path d=\"M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z\"/>",
+        ["check"] = "<path d=\"m5 12 5 5 9-10\"/>",
+        ["alert"] = "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7.5v5.5M12 16.5h.01\"/>",
+        ["bang"] = "<path d=\"M12 7.5v5.5M12 16.5h.01\"/>",
+        ["trash"] = "<path d=\"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3\"/>",
+        ["pencil"] = "<path d=\"M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4\"/>",
+        ["sliders"] = "<path d=\"M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12\"/><circle cx=\"16\" cy=\"6\" r=\"2\"/><circle cx=\"10\" cy=\"12\" r=\"2\"/><circle cx=\"18\" cy=\"18\" r=\"2\"/>",
+        ["calendar"] = "<rect x=\"3.5\" y=\"5\" width=\"17\" height=\"15\" rx=\"2\"/><path d=\"M3.5 10h17M8 3v4M16 3v4\"/>",
+        ["clock"] = "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 2\"/>",
+        ["plus"] = "<path d=\"M12 5v14M5 12h14\"/>",
+        ["refresh"] = "<path d=\"M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5\"/>",
+        ["shield"] = "<path d=\"M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z\"/>",
+        ["info"] = "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 11v5M12 8h.01\"/>",
+        ["logout"] = "<path d=\"M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11\"/>",
+        ["users"] = "<circle cx=\"9\" cy=\"9\" r=\"3.5\"/><path d=\"M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6\"/>"
+    };
+
+    public static IHtmlContent Render(string name, string? style = null) => new HtmlString(
+        $"<svg class=\"hm-icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\" focusable=\"false\"{(style is null ? "" : $" style=\"{style}\"")}>{Paths[name]}</svg>");
+
+    public static string Initials(string name)
+    {
+        var words = name.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(word => char.IsLetterOrDigit(word[0])).ToArray();
+        string initials = string.Concat(words.Take(2).Select(word => char.ToUpperInvariant(word[0])));
+        return initials.Length > 0 ? initials : "#";
+    }
+}
+
+public sealed record TimeRangeModel(string Id, string DayLabel, string? Start, string? End, string? Offset,
+    string Zone, string ZoneOffset);
+
+/// <summary>Field-level validation markup: errors render beside the control they belong to.</summary>
+public static class FormErrors
+{
+    public static string? Message(ModelStateDictionary state, string key) =>
+        state.TryGetValue(key, out var entry) && entry.Errors.Count > 0 ? entry.Errors[0].ErrorMessage : null;
+
+    public static string Id(string key) => key.Replace('.', '_');
+
+    public static string? Invalid(ModelStateDictionary state, string key) => Message(state, key) is null ? null : "true";
+
+    public static string? DescribedBy(ModelStateDictionary state, string key, string? helpId = null)
+    {
+        string ids = string.Join(' ', new[] { helpId, Message(state, key) is null ? null : Id(key) + "-error" }.OfType<string>());
+        return ids.Length == 0 ? null : ids;
+    }
+
+    public static IHtmlContent Render(ModelStateDictionary state, string key, string? style = null) =>
+        Message(state, key) is { } message
+            ? new HtmlString($"<p class=\"hm-error\" id=\"{Id(key)}-error\"{(style is null ? "" : $" style=\"{style}\"")}>" +
+                $"{DashboardIcons.Render("alert")}{HtmlEncoder.Default.Encode(message)}</p>")
+            : HtmlString.Empty;
+
+    public static IHtmlContent SourceBadge(string mode) => new HtmlString(mode switch
+    {
+        GameSettingsForm.Custom => "<span class=\"hm-badge hm-badge--custom\" data-source-badge>Custom</span>",
+        GameSettingsForm.None => "<span class=\"hm-badge\" data-source-badge>Off</span>",
+        _ => "<span class=\"hm-badge hm-badge--inherit\" data-source-badge>Inherited</span>"
+    });
+}

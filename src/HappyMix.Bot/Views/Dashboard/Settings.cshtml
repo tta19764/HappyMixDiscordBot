@@ -1,64 +1,187 @@
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-@model HappyMix.Bot.Web.ServerSettingsForm
+@model ServerSettingsForm
 @{
-    var guild = (Discord.WebSocket.SocketGuild)ViewData["Guild"]!;
-    var channels = guild.TextChannels.OrderBy(channel => channel.Name)
-        .Select(channel => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem(channel.Name, channel.Id.ToString())).ToArray();
-    var roles = guild.Roles.Where(role => role.Id != guild.Id).OrderByDescending(role => role.Position)
-        .Select(role => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem(role.Name, role.Id.ToString())).ToArray();
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Server settings";
+    var settingsPage = (SettingsPage)ViewData["Settings"]!;
+    ViewData["NavGuildName"] = settingsPage.GuildName;
+    var state = ViewData.ModelState;
+    var nav = new ServerNavModel(settingsPage.GuildId, settingsPage.GuildName, "settings", true, "Server settings",
+        "Where and when HappyMix posts esports announcements. Only server administrators see this page.");
+
+    var labels = new Dictionary<string, string>
+    {
+        ["ChannelId"] = "Server defaults · Announcement channel",
+        ["TimeZone"] = "Server defaults · Time zone",
+        ["ReminderMinutes"] = "Server defaults · Reminder lead time",
+        ["OrganizerRoles"] = "Server defaults · Organizer roles",
+    };
+    foreach (var (prefix, game) in new[] { ("Cs", "Counter-Strike 2"), ("Dota", "Dota 2") })
+    {
+        labels[$"{prefix}.Channel"] = $"{game} · Announcement channel";
+        labels[$"{prefix}.PingRole"] = $"{game} · Reminder ping role";
+        labels[$"{prefix}.Teams"] = $"{game} · Followed teams";
+        labels[$"{prefix}.Twitch"] = $"{game} · Twitch channels";
+        labels[$"{prefix}.Catalog"] = $"{game} · Team catalog";
+    }
+
+    var fieldErrors = state.Where(entry => entry.Key.Length > 0 && entry.Value?.Errors.Count > 0).Select(entry => entry.Key).ToArray();
+    var generalErrors = state.TryGetValue("", out var general) ? general.Errors.Select(error => error.ErrorMessage).ToArray() : Array.Empty<string>();
+    int csErrors = fieldErrors.Count(key => key.StartsWith("Cs.", StringComparison.Ordinal));
+    int dotaErrors = fieldErrors.Count(key => key.StartsWith("Dota.", StringComparison.Ordinal));
+    int defaultErrors = fieldErrors.Length - csErrors - dotaErrors;
+    bool failed = fieldErrors.Length > 0 || generalErrors.Length > 0;
+
+    BannerModel? banner = settingsPage.Banner;
+    if (failed)
+    {
+        string title = fieldErrors.Length switch
+        {
+            0 => "Settings not saved",
+            1 => "Settings not saved: 1 field needs attention",
+            var count => $"Settings not saved: {count} fields need attention"
+        };
+        banner = new BannerModel("error", title, generalErrors.Length > 0 ? string.Join(" ", generalErrors) : null, true,
+            fieldErrors.Select(key => (labels.GetValueOrDefault(key, key), "#" + FormErrors.Id(key) + (key.EndsWith(".Catalog") ? "-details" : ""))).ToList());
+    }
+
+    var csData = new ViewDataDictionary(ViewData) { ["GameTitle"] = "Counter-Strike 2", ["GameMark"] = "CS2", ["GameDefaults"] = settingsPage.CounterStrike, ["SectionId"] = "cs2" };
+    var dotaData = new ViewDataDictionary(ViewData) { ["GameTitle"] = "Dota 2", ["GameMark"] = "D2", ["GameDefaults"] = settingsPage.Dota, ["SectionId"] = "dota2" };
 }
-@{ Layout = "_DashboardLayout"; ViewData["Title"] = "Server settings"; }
-<nav><a href="/">Servers</a> · <a href="/availability/@guild.Id">Availability</a></nav>
-<h1>Server settings</h1>
-<p>@guild.Name</p>
-@if (TempData["SettingsMessage"] is string message)
-{
-    <p role="status">@message</p>
-}
-<form method="post" action="/settings/@guild.Id" asp-antiforgery="false">
+
+<partial name="_ServerNav" model="nav" />
+
+<form method="post" action="/settings/@settingsPage.GuildId" asp-antiforgery="false" data-track-changes data-dirty="@(failed ? "true" : "false")">
     @Html.AntiForgeryToken()
-    <div asp-validation-summary="All" role="alert"></div>
-    <fieldset>
-        <legend>Server defaults</legend>
-        <div class="fields">
-            <label>Default announcement channel
-                <select asp-for="ChannelId" asp-items="channels"><option value="0">Deployment default</option></select>
-            </label>
-            <label>Time zone <input asp-for="TimeZone" placeholder="Europe/Kyiv" required></label>
-            <label>Organizer roles
-                <select asp-for="OrganizerRoles" asp-items="roles" multiple size="5"></select>
-                <small>With no roles selected, any server member can organize a group.</small>
-            </label>
-            <label>Reminder lead time (minutes) <input asp-for="ReminderMinutes" min="1" max="1440" required></label>
+    <div class="hm-split hm-split--nav">
+        <nav class="hm-sidenav" aria-label="Settings sections">
+            <a href="#defaults">Server defaults
+                @if (defaultErrors > 0)
+                {
+                    <span class="hm-badge hm-badge--danger" aria-label="@defaultErrors to fix">@defaultErrors</span>
+                }
+            </a>
+            <a href="#cs2">Counter-Strike 2
+                @if (csErrors > 0)
+                {
+                    <span class="hm-badge hm-badge--danger" aria-label="@csErrors to fix">@csErrors</span>
+                }
+            </a>
+            <a href="#dota2">Dota 2
+                @if (dotaErrors > 0)
+                {
+                    <span class="hm-badge hm-badge--danger" aria-label="@dotaErrors to fix">@dotaErrors</span>
+                }
+            </a>
+            <p class="hm-help" style="padding: var(--hm-space-3) var(--hm-space-3) 0; font-size: var(--hm-fs-xs)">Game sections inherit from Server defaults unless you override a value.</p>
+        </nav>
+
+        <div class="hm-stack" style="gap: var(--hm-space-6); min-width: 0">
+            @if (banner is not null)
+            {
+                <partial name="_Banner" model="banner" />
+            }
+            @if (settingsPage.Channels.Length == 0)
+            {
+                <div class="hm-banner hm-banner--warn">
+                    <span class="hm-banner__icon">@DashboardIcons.Render("bang")</span>
+                    <div class="hm-banner__body">
+                        <p class="hm-banner__title">HappyMix can't post in any text channel yet</p>
+                        <p class="hm-banner__text">In Discord, give the HappyMix role View Channel, Send Messages and Embed Links in at least one standard text channel, then reload this page.</p>
+                    </div>
+                </div>
+            }
+
+            <section class="hm-card hm-section" id="defaults" aria-labelledby="defaults-title">
+                <div class="hm-section__head">
+                    <span class="hm-game-mark" aria-hidden="true">@DashboardIcons.Render("sliders")</span>
+                    <div><h2 id="defaults-title">Server defaults</h2><p>Used by every game unless the game overrides it.</p></div>
+                </div>
+                <div class="hm-fields">
+                    <div class="hm-field">
+                        <label class="hm-label" asp-for="ChannelId">Announcement channel</label>
+                        <select class="hm-select" asp-for="ChannelId" asp-items="settingsPage.Channels"
+                                aria-invalid="@FormErrors.Invalid(state, "ChannelId")" aria-describedby="@FormErrors.DescribedBy(state, "ChannelId", "ChannelId-help")">
+                            <option value="0">Bot default · @settingsPage.DeploymentChannel</option>
+                        </select>
+                        <p class="hm-help" id="ChannelId-help">Text channels where HappyMix can view, send messages and embed links.</p>
+                        @FormErrors.Render(state, "ChannelId")
+                    </div>
+                    <div class="hm-field">
+                        <label class="hm-label" asp-for="TimeZone">Time zone</label>
+                        <input class="hm-input" asp-for="TimeZone" list="time-zones" autocomplete="off" spellcheck="false" placeholder="Europe/Kyiv"
+                               aria-invalid="@FormErrors.Invalid(state, "TimeZone")" aria-describedby="@FormErrors.DescribedBy(state, "TimeZone", "TimeZone-help")">
+                        <p class="hm-help" id="TimeZone-help">Used for schedules and availability. An IANA name such as Europe/Kyiv or UTC.</p>
+                        @FormErrors.Render(state, "TimeZone")
+                    </div>
+                    <div class="hm-field">
+                        <label class="hm-label" asp-for="ReminderMinutes">Reminder lead time</label>
+                        <div class="hm-affix" style="max-width: 14rem">
+                            <input class="hm-input hm-tnum" asp-for="ReminderMinutes" min="1" max="1440" inputmode="numeric"
+                                   aria-invalid="@FormErrors.Invalid(state, "ReminderMinutes")" aria-describedby="@FormErrors.DescribedBy(state, "ReminderMinutes", "ReminderMinutes-help")">
+                            <span class="hm-affix__text">minutes</span>
+                        </div>
+                        <p class="hm-help" id="ReminderMinutes-help">Before a followed match. 1–1440.</p>
+                        @FormErrors.Render(state, "ReminderMinutes")
+                    </div>
+                    <fieldset class="hm-field" id="OrganizerRoles" style="border: 0; padding: 0; margin: 0"
+                              aria-describedby="@FormErrors.DescribedBy(state, "OrganizerRoles", "OrganizerRoles-help")">
+                        <legend class="hm-label" style="margin-bottom: var(--hm-space-2)">Organizer roles <span class="hm-label__opt">optional</span></legend>
+                        @if (settingsPage.Roles.Length == 0)
+                        {
+                            <p class="hm-help">This server has no roles yet.</p>
+                        }
+                        else
+                        {
+                            <div class="hm-checkbox-box">
+                                @foreach (var role in settingsPage.Roles)
+                                {
+                                    <label class="hm-check"><input type="checkbox" name="OrganizerRoles" value="@role.Id" checked="@Model.OrganizerRoles.Contains(role.Id)"><span class="hm-role-dot" style="background: @role.Color"></span>@role.Name</label>
+                                }
+                            </div>
+                        }
+                        <p class="hm-help" id="OrganizerRoles-help" style="margin-top: var(--hm-space-2)">With none selected, any member can organize a group.</p>
+                        @FormErrors.Render(state, "OrganizerRoles")
+                    </fieldset>
+                    <fieldset class="hm-field hm-field--wide" style="border: 0; padding: 0; margin: 0">
+                        <legend class="hm-label" style="margin-bottom: var(--hm-space-2)">Post to the channel</legend>
+                        <div class="hm-checks">
+                            <label class="hm-check"><input asp-for="Schedule"><span>Daily schedule<small>Today's matches for followed teams</small></span></label>
+                            <label class="hm-check"><input asp-for="Reminders"><span>Reminders<small>Before a match, using the lead time</small></span></label>
+                            <label class="hm-check"><input asp-for="MatchStarts"><span>Match starts<small>When a followed match goes live</small></span></label>
+                            <label class="hm-check"><input asp-for="Maps"><span>Map results<small>After each map</small></span></label>
+                            <label class="hm-check"><input asp-for="Results"><span>Match results<small>Final score</small></span></label>
+                        </div>
+                    </fieldset>
+                </div>
+            </section>
+
+            <partial name="_GameSettings" for="Cs" view-data="csData" />
+            <partial name="_GameSettings" for="Dota" view-data="dotaData" />
         </div>
-        <div class="checks">
-            <label><input asp-for="Schedule"> Daily schedule</label>
-            <label><input asp-for="Reminders"> Reminders</label>
-            <label><input asp-for="MatchStarts"> Match starts</label>
-            <label><input asp-for="Maps"> Map results</label>
-            <label><input asp-for="Results"> Match results</label>
+    </div>
+
+    <div class="hm-savebar">
+        <div class="hm-savebar__inner">
+            <span class="hm-savebar__status" aria-live="polite">
+                @if (failed)
+                {
+                    <span class="hm-savebar__dirty"><b aria-hidden="true">●</b>Unsaved changes<span aria-hidden="true">·</span><span style="color: var(--hm-danger); font-weight: 600">@(fieldErrors.Length > 0 ? $"{fieldErrors.Length} to fix" : "Not saved")</span></span>
+                }
+                else
+                {
+                    <span class="hm-savebar__clean">@DashboardIcons.Render("check", "color: var(--hm-mint)")No unsaved changes</span>
+                    <span class="hm-savebar__dirty"><b aria-hidden="true">●</b>Unsaved changes</span>
+                }
+            </span>
+            <a class="hm-btn hm-btn--ghost hm-savebar__dirty" href="/settings/@settingsPage.GuildId">Discard</a>
+            <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("check")Save settings</button>
         </div>
-    </fieldset>
-    <p>For followed teams and Twitch channels, enter a comma-separated list, <code>default</code> to inherit, or <code>none</code> to disable.</p>
-    <fieldset>
-        <legend>Counter-Strike 2</legend>
-        <div class="fields">
-            <label>Announcement channel <select asp-for="Cs.Channel" asp-items="channels"><option value="">Server default</option></select></label>
-            <label>Reminder ping role <select asp-for="Cs.PingRole" asp-items="roles"><option value="">None</option></select></label>
-            <label>Followed teams (names or IDs) <input asp-for="Cs.Teams"></label>
-            <label>Twitch channels <input asp-for="Cs.Twitch"></label>
-            <label>Team catalog <textarea asp-for="Cs.Catalog" rows="4" placeholder="Team name=123"></textarea><small>One entry per line, or default.</small></label>
-        </div>
-    </fieldset>
-    <fieldset>
-        <legend>Dota 2</legend>
-        <div class="fields">
-            <label>Announcement channel <select asp-for="Dota.Channel" asp-items="channels"><option value="">Server default</option></select></label>
-            <label>Reminder ping role <select asp-for="Dota.PingRole" asp-items="roles"><option value="">None</option></select></label>
-            <label>Followed teams (names or IDs) <input asp-for="Dota.Teams"></label>
-            <label>Twitch channels <input asp-for="Dota.Twitch"></label>
-            <label>Team catalog <textarea asp-for="Dota.Catalog" rows="4" placeholder="Team name=123"></textarea><small>One entry per line, or default.</small></label>
-        </div>
-    </fieldset>
-    <button>Save settings</button>
+    </div>
 </form>
+
+<datalist id="time-zones">
+    @foreach (var zone in HappyMix.Bot.Interactions.AvailabilityTimeZoneAutocomplete.Names)
+    {
+        <option value="@zone"></option>
+    }
+</datalist>
