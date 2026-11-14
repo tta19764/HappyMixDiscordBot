@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HappyMix foundations</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./happymix.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#c9bfff}a:hover{color:#ddd7ff}
+.fx-h{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9aa1c4;margin:0 0 16px}
+.fx-sw{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.fx-sw div{border:1px solid #31375a;border-radius:10px;overflow:hidden;background:#171a2c}
+.fx-sw i{display:block;height:56px}
+.fx-sw p{padding:8px 10px;font-size:12px;line-height:1.4;color:#b7bcda}
+.fx-sw b{display:block;color:#f3f4ff;font-size:12px}
+.fx-code{margin:0;padding:16px;border-radius:10px;background:#0b0c17;border:1px solid #31375a;font:12px/1.6 "Cascadia Mono",ui-monospace,Consolas,monospace;color:#b7bcda;white-space:pre;overflow:auto}
+.fx-code em{font-style:normal;color:#8ef2cd}
+.fx-table{width:100%;border-collapse:collapse;font-size:13px}
+.fx-table th{text-align:left;color:#9aa1c4;font-weight:600;padding:8px 10px;border-bottom:1px solid #4c548a}
+.fx-table td{padding:9px 10px;border-bottom:1px solid #31375a;vertical-align:top;color:#b7bcda}
+.fx-table td:first-child{color:#f3f4ff;font-weight:600}
+.fx-table code{font:12px "Cascadia Mono",ui-monospace,Consolas,monospace;color:#c9bfff}
+.fx-spec{font-size:12px;color:#9aa1c4;margin-top:6px}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 3200px; box-sizing: border-box; padding: 64px; background: #0e0f1c; color: #f3f4ff; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; gap: 56px">
+
+  <header style="display: flex; align-items: center; gap: 28px">
+    <img src="./happymix.svg" alt="HappyMix icon" width="88" height="88" style="display: block">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <p style="font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #8ef2cd">Design system v2 · ASP.NET Core MVC</p>
+      <h1 style="font-size: 44px; letter-spacing: -.03em">HappyMix dashboard</h1>
+      <p style="font-size: 17px; color: #b7bcda; max-width: 760px">A compact, high-contrast dark theme for setting gaming availability and configuring server announcements. Plain Razor views, one stylesheet, about 40 lines of JavaScript.</p>
+    </div>
+  </header>
+
+  <div style="display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 48px">
+    <section>
+      <h2 class="fx-h">App icon</h2>
+      <div class="hm-card" style="display: flex; flex-direction: column; gap: 20px">
+        <div style="display: flex; align-items: end; gap: 24px">
+          <img src="./happymix.svg" alt="" width="96" height="96">
+          <img src="./happymix.svg" alt="" width="48" height="48">
+          <img src="./happymix.svg" alt="" width="32" height="32">
+          <img src="./happymix.svg" alt="" width="16" height="16">
+        </div>
+        <p class="hm-help">The lavender <b style="color: #f3f4ff">H</b> is the server; the mint presence dot means someone is free to play, like Discord's online indicator. Keep the dot inside the tile so it survives the 16px favicon size.</p>
+        <p class="fx-spec">wwwroot/happymix.svg · tile #262049 · glyph #c9bfff · dot #8ef2cd · radius 16/64</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="fx-h">Color tokens · contrast measured on --hm-surface</h2>
+      <div class="fx-sw">
+        <div><i style="background: #0e0f1c"></i><p><b>--hm-bg</b>#0e0f1c · page</p></div>
+        <div><i style="background: #171a2c"></i><p><b>--hm-surface</b>#171a2c · cards</p></div>
+        <div><i style="background: #1f2339"></i><p><b>--hm-surface-2</b>#1f2339 · raised, hover</p></div>
+        <div><i style="background: #0b0c17"></i><p><b>--hm-sunken</b>#0b0c17 · inputs</p></div>
+        <div><i style="background: #31375a"></i><p><b>--hm-border</b>#31375a · dividers</p></div>
+        <div><i style="background: #4c548a"></i><p><b>--hm-border-strong</b>#4c548a · controls</p></div>
+        <div><i style="background: #f3f4ff"></i><p><b>--hm-text</b>#f3f4ff · 15.7:1</p></div>
+        <div><i style="background: #b7bcda"></i><p><b>--hm-text-muted</b>#b7bcda · 9.2:1</p></div>
+        <div><i style="background: #9aa1c4"></i><p><b>--hm-text-subtle</b>#9aa1c4 · 6.8:1</p></div>
+        <div><i style="background: #c9bfff"></i><p><b>--hm-brand</b>#c9bfff · 10.2:1, ink 10.7:1</p></div>
+        <div><i style="background: #8ef2cd"></i><p><b>--hm-mint</b>#8ef2cd · available, saved · 12.9:1</p></div>
+        <div><i style="background: #94e7ff"></i><p><b>--hm-focus</b>#94e7ff · focus ring</p></div>
+        <div><i style="background: #aebcff"></i><p><b>--hm-inherit</b>#aebcff on #1c2348 · 8.3:1</p></div>
+        <div><i style="background: #ffa3ad"></i><p><b>--hm-danger</b>#ffa3ad on #3a1822 · 8.3:1</p></div>
+        <div><i style="background: #ffd27a"></i><p><b>--hm-warn</b>#ffd27a · unsaved · 12.1:1</p></div>
+        <div><i style="background: #262049"></i><p><b>--hm-brand-deep</b>#262049 · icon tile</p></div>
+        <div><i style="background: #2a2452"></i><p><b>--hm-brand-tint</b>#2a2452 · selected</p></div>
+        <div><i style="background: #12352e"></i><p><b>--hm-mint-tint</b>#12352e · success bg</p></div>
+      </div>
+    </section>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 48px">
+    <section>
+      <h2 class="fx-h">Type · Inter, tabular numerals for times</h2>
+      <div class="hm-card" style="display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px"><span style="font-size: 32px; font-weight: 700; letter-spacing: -.02em">Availability</span><span class="fx-spec">3xl 32 · 700</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px"><span style="font-size: 26px; font-weight: 700; letter-spacing: -.02em">Page title</span><span class="fx-spec">2xl 26 · 700</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px"><span style="font-size: 20px; font-weight: 650" class="hm-tnum">17:00 → 00:30</span><span class="fx-spec">xl 20 · 650 · tnum</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px"><span style="font-size: 17px; font-weight: 650">Card heading</span><span class="fx-spec">lg 17 · 650</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px"><span style="font-size: 15px">Body text for forms and lists</span><span class="fx-spec">md 15 · 400</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px"><span style="font-size: 13px; color: #b7bcda">Help text and labels</span><span class="fx-spec">sm 13</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px"><span style="font-size: 12px; font-weight: 700; color: #9aa1c4">BADGE · META</span><span class="fx-spec">xs 12 · 700</span></div>
+      </div>
+    </section>
+    <section>
+      <h2 class="fx-h">Space · radius · targets</h2>
+      <div class="hm-card" style="display: flex; flex-direction: column; gap: 18px">
+        <div style="display: flex; align-items: end; gap: 10px">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><i style="display: block; width: 4px; height: 4px; background: #c9bfff"></i><span class="fx-spec">1·4</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><i style="display: block; width: 8px; height: 8px; background: #c9bfff"></i><span class="fx-spec">2·8</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><i style="display: block; width: 12px; height: 12px; background: #c9bfff"></i><span class="fx-spec">3·12</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><i style="display: block; width: 16px; height: 16px; background: #c9bfff"></i><span class="fx-spec">4·16</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><i style="display: block; width: 20px; height: 20px; background: #c9bfff"></i><span class="fx-spec">5·20</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><i style="display: block; width: 24px; height: 24px; background: #c9bfff"></i><span class="fx-spec">6·24</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><i style="display: block; width: 32px; height: 32px; background: #c9bfff"></i><span class="fx-spec">8·32</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><i style="display: block; width: 40px; height: 40px; background: #c9bfff"></i><span class="fx-spec">10·40</span></div>
+        </div>
+        <div style="display: flex; gap: 12px">
+          <div style="width: 56px; height: 44px; border: 1px solid #4c548a; border-radius: 6px; display: grid; place-items: center" class="fx-spec">sm 6</div>
+          <div style="width: 56px; height: 44px; border: 1px solid #4c548a; border-radius: 10px; display: grid; place-items: center" class="fx-spec">md 10</div>
+          <div style="width: 56px; height: 44px; border: 1px solid #4c548a; border-radius: 14px; display: grid; place-items: center" class="fx-spec">lg 14</div>
+          <div style="width: 72px; height: 44px; border: 1px solid #4c548a; border-radius: 999px; display: grid; place-items: center" class="fx-spec">pill</div>
+        </div>
+        <p class="hm-help"><b style="color: #f3f4ff">44px</b> minimum for every control (--hm-target). <b style="color: #f3f4ff">52px</b> for time inputs, the range preview and mobile primary actions (--hm-target-lg). Dense layout comes from tight vertical rhythm, never from small targets.</p>
+      </div>
+    </section>
+    <section>
+      <h2 class="fx-h">Tokens excerpt · happymix.css</h2>
+      <pre class="fx-code">:root {
+  color-scheme: dark;
+  <em>--hm-bg</em>: #0e0f1c;
+  <em>--hm-surface</em>: #171a2c;
+  <em>--hm-text</em>: #f3f4ff;
+  <em>--hm-brand</em>: #c9bfff;
+  <em>--hm-mint</em>: #8ef2cd;
+  <em>--hm-inherit</em>: #aebcff;
+  <em>--hm-danger</em>: #ffa3ad;
+  <em>--hm-focus</em>: #94e7ff;
+  <em>--hm-fs-md</em>: .9375rem;
+  <em>--hm-space-4</em>: 1rem;
+  <em>--hm-radius-md</em>: .625rem;
+  <em>--hm-target</em>: 2.75rem;
+  <em>--hm-target-lg</em>: 3.25rem;
+}</pre>
+    </section>
+  </div>
+
+  <section>
+    <h2 class="fx-h">Components</h2>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px">
+
+      <div class="hm-card hm-stack">
+        <h3>Buttons</h3>
+        <div class="hm-row">
+          <button class="hm-btn hm-btn--primary" type="button">Save today</button>
+          <button class="hm-btn" type="button">Settings</button>
+          <button class="hm-btn hm-btn--ghost" type="button">Cancel</button>
+          <button class="hm-btn hm-btn--danger" type="button">Clear</button>
+          <button class="hm-btn hm-btn--icon" type="button" aria-label="Edit Monday hours"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"></path></svg></button>
+          <button class="hm-btn hm-btn--primary" type="button" disabled="">Disabled</button>
+        </div>
+        <p class="fx-spec">.hm-btn · --primary · --ghost · --danger · --icon · --lg · --block — one primary per view.</p>
+      </div>
+
+      <div class="hm-card hm-stack">
+        <h3>Navigation</h3>
+        <nav class="hm-tabs" aria-label="Server" style="margin: 0"><a href="#" aria-current="page">Availability</a><a href="#">Settings</a></nav>
+        <nav class="hm-segment" aria-label="Availability view"><a href="#" aria-current="page"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Today</a><a href="#"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"></rect><path d="M3.5 10h17M8 3v4M16 3v4"></path></svg>Weekly timetable</a></nav>
+        <p class="fx-spec">.hm-tabs (server scope) · .hm-segment (view switch) — both are links with aria-current.</p>
+      </div>
+
+      <div class="hm-card hm-stack">
+        <h3>Badges · chips · presence</h3>
+        <div class="hm-row">
+          <span class="hm-badge hm-badge--mint"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>Overnight</span>
+          <span class="hm-badge hm-badge--inherit">Inherited</span>
+          <span class="hm-badge hm-badge--custom">Custom</span>
+          <span class="hm-badge hm-badge--warn">Unsaved</span>
+          <span class="hm-badge hm-badge--danger">Can't post</span>
+          <span class="hm-badge"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path></svg>Admin</span>
+        </div>
+        <div class="hm-row">
+          <button class="hm-chip" type="button">Next 3 hours <small>18:20–21:20</small></button>
+          <button class="hm-chip" type="button" aria-current="true">Evening <small>19:00–23:00</small></button>
+          <span class="hm-row" style="gap: 8px; font-size: 13px; color: #b7bcda"><span class="hm-dot"></span>Set today</span>
+          <span class="hm-row" style="gap: 8px; font-size: 13px; color: #b7bcda"><span class="hm-dot hm-dot--off"></span>Not set</span>
+        </div>
+      </div>
+
+      <div class="hm-card hm-stack">
+        <h3>Fields · help · inline error</h3>
+        <div class="hm-fields" style="grid-template-columns: repeat(2, minmax(0, 1fr))">
+          <div class="hm-field">
+            <label class="hm-label" for="c-rem">Reminder lead time</label>
+            <div class="hm-affix"><input class="hm-input hm-tnum" id="c-rem" type="number" value="30"><span class="hm-affix__text">minutes</span></div>
+            <p class="hm-help">1–1440 minutes before a match.</p>
+          </div>
+          <div class="hm-field">
+            <label class="hm-label" for="c-tz">Time zone</label>
+            <input class="hm-input" id="c-tz" value="Kyiv" aria-invalid="true" aria-describedby="c-tz-err">
+            <p class="hm-error" id="c-tz-err"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5h.01"></path></svg>Enter an IANA time zone such as Europe/Kyiv or UTC.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="hm-card hm-stack">
+        <h3>Time range · time zone · overnight preview</h3>
+        <div class="hm-range">
+          <div class="hm-field"><label class="hm-label" for="c-s">Start</label><input class="hm-time" id="c-s" type="time" value="17:00"></div>
+          <span class="hm-range__arrow" aria-hidden="true"><svg class="hm-icon" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+          <div class="hm-field"><label class="hm-label" for="c-e">End</label><input class="hm-time" id="c-e" type="time" value="00:30"></div>
+        </div>
+        <details class="hm-tz"><summary><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path></svg><span class="hm-tz__zone">Europe/Kyiv</span><span class="hm-tz__offset">UTC+02:00 · server default</span><span class="hm-tz__change">Change</span></summary></details>
+        <div class="hm-preview" aria-live="polite"><span class="hm-preview__text">Today 17:00<span class="hm-preview__arrow">→</span><b>Tomorrow</b> 00:30</span><span class="hm-badge hm-badge--mint"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>Overnight</span><span class="hm-preview__dur">7h 30m</span></div>
+        <div class="hm-preview hm-preview--invalid"><span class="hm-error" style="margin: 0"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5h.01"></path></svg>Start and end are both 20:00. Pick a different end time.</span></div>
+      </div>
+
+      <div class="hm-card hm-stack">
+        <h3>Week row · 24-hour bar</h3>
+        <div class="hm-card hm-card--flush" style="background: #0e0f1c">
+          <div class="hm-day" style="grid-template-columns: 6rem 9rem minmax(0, 1fr)"><span class="hm-day__name">Fri</span><span class="hm-day__time">21:00 → 01:30<small>Overnight · into Sat</small></span><div class="hm-dayline" aria-hidden="true"><span class="hm-dayline__seg hm-dayline__seg--overnight" style="left: 87.5%; width: 12.5%"></span></div></div>
+          <div class="hm-day" style="grid-template-columns: 6rem 9rem minmax(0, 1fr)"><span class="hm-day__name">Sat</span><span class="hm-day__time">16:00 → 22:00<small>Europe/Kyiv</small></span><div class="hm-dayline" aria-hidden="true"><span class="hm-dayline__seg hm-dayline__seg--carry" style="left: 0%; width: 6.25%"></span><span class="hm-dayline__seg" style="left: 66.67%; width: 25%"></span></div></div>
+        </div>
+        <p class="fx-spec">Razor sets left/width as % of 24h. Overnight: square right edge, next day shows a hatched carry-over.</p>
+      </div>
+
+      <div class="hm-card hm-stack">
+        <h3>Inherited vs custom</h3>
+        <div class="hm-field hm-mode-field">
+          <div class="hm-row hm-row--between"><span class="hm-label">Followed teams</span><span class="hm-badge hm-badge--inherit">Inherited</span></div>
+          <div class="hm-mode" role="radiogroup" aria-label="Followed teams source"><label><input type="radio" name="c-m" value="default" checked="">Inherit</label><label><input type="radio" name="c-m" value="custom">Custom</label><label><input type="radio" name="c-m" value="none">None</label></div>
+          <div class="hm-inherited hm-mode-inherit"><span class="hm-inherited__src">Deployment default ·</span><span class="hm-inherited__value">Team Spirit, NAVI, FaZe</span></div>
+        </div>
+        <div class="hm-field hm-field--inherited">
+          <div class="hm-row hm-row--between"><label class="hm-label" for="c-ch">Announcement channel</label><span class="hm-badge hm-badge--inherit">Inherited</span></div>
+          <select class="hm-select" id="c-ch"><option>Server default · #announcements</option></select>
+        </div>
+      </div>
+
+      <div class="hm-card hm-stack">
+        <h3>Banners · save bar</h3>
+        <div class="hm-banner hm-banner--success" role="status"><span class="hm-banner__icon"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg></span><div class="hm-banner__body"><p class="hm-banner__title">Availability saved</p><p class="hm-banner__text">You're available Today 17:00 → Tomorrow 00:30.</p></div></div>
+        <div class="hm-banner hm-banner--error" role="alert"><span class="hm-banner__icon"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7.5v5.5M12 16.5h.01"></path></svg></span><div class="hm-banner__body"><p class="hm-banner__title">2 fields need attention</p><p class="hm-banner__text"><a href="#">Time zone</a> · <a href="#">Dota 2 Twitch channels</a></p></div></div>
+        <div class="hm-savebar" style="position: static; margin: 0; background: transparent"><div class="hm-savebar__inner"><span class="hm-savebar__status"><b>●</b> Unsaved changes</span><a class="hm-btn hm-btn--ghost" href="#">Discard</a><button class="hm-btn hm-btn--primary" type="button">Save settings</button></div></div>
+      </div>
+    </div>
+  </section>
+
+  <div style="display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 48px">
+    <section>
+      <h2 class="fx-h">Razor building blocks</h2>
+      <table class="fx-table">
+        <thead><tr><th>Component</th><th>Partial / tag</th><th>Model</th><th>JS</th></tr></thead>
+        <tbody>
+          <tr><td>App header</td><td><code>_DashboardLayout</code></td><td>User, current guild (optional)</td><td>none</td></tr>
+          <tr><td>Server tabs</td><td><code>_ServerTabs</code></td><td>GuildId, Active, CanConfigure</td><td>none</td></tr>
+          <tr><td>Today / Weekly switch</td><td><code>_AvailabilityViewSwitch</code></td><td>GuildId, View</td><td>none</td></tr>
+          <tr><td>Banner</td><td><code>_Banner</code></td><td>Kind, Title, Text, Links</td><td>none</td></tr>
+          <tr><td>Time range</td><td><code>_TimeRange</code></td><td>DayLabel, NextDayLabel, Start, End</td><td>range-preview</td></tr>
+          <tr><td>Time zone picker</td><td><code>_TimeZonePicker</code></td><td>Zone, Offset, IsServerDefault</td><td>none · details</td></tr>
+          <tr><td>Week row</td><td><code>_WeekDayRow</code></td><td>WeeklyAvailability?, IsEditing, CarryIn</td><td>none</td></tr>
+          <tr><td>Inherit field</td><td><code>_InheritField</code></td><td>Name, Mode, Value, InheritedText</td><td>none · :has()</td></tr>
+          <tr><td>Field error</td><td><code>asp-validation-for</code> → <code>.hm-error</code></td><td>ModelState key per field</td><td>none</td></tr>
+          <tr><td>Save bar</td><td><code>_SaveBar</code></td><td>Label</td><td>dirty-flag</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section>
+      <h2 class="fx-h">range-preview.js · the only real script</h2>
+      <pre class="fx-code">for (const form of document.querySelectorAll("[data-range]")) {
+  const { start, end } = form.elements;
+  const out = form.querySelector("[data-range-preview]");
+  const save = form.querySelector("[type=submit]");
+  const day = form.dataset.day ?? "Today";
+  const next = form.dataset.nextDay ?? "Tomorrow";
+  const mins = t => +t.slice(0, 2) * 60 + +t.slice(3);
+  const render = () => {
+    if (!start.value || !end.value) return;
+    const span = (mins(end.value) - mins(start.value) + 1440) % 1440;
+    const overnight = end.value &lt;= start.value;
+    out.querySelector("[data-text]").textContent =
+      `${day} ${start.value} → ${overnight ? next : day} ${end.value}`;
+    out.querySelector("[data-dur]").textContent =
+      `${Math.floor(span / 60)}h ${span % 60}m`;
+    out.querySelector("[data-overnight]").hidden = !overnight || !span;
+    out.classList.toggle("hm-preview--invalid", !span);
+    save.disabled = !span;
+  };
+  form.addEventListener("input", render);
+  render();
+}
+<em>// dirty-flag: show the save bar status once anything changes</em>
+form.addEventListener("input", () => bar.dataset.dirty = "", { once: true });</pre>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":3200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

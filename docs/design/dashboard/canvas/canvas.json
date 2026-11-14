@@ -1,0 +1,207 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Main.dc.html": {
+      "h": 3200,
+      "title": "Foundations — tokens, icon & components",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "ServerPicker-Desktop.dc.html": {
+      "expand": "fill",
+      "h": 860,
+      "title": "Server picker · desktop",
+      "w": 1280,
+      "x": 0,
+      "y": 3580
+    },
+    "ServerPicker-Mobile.dc.html": {
+      "h": 1040,
+      "title": "Server picker · mobile",
+      "w": 390,
+      "x": 1360,
+      "y": 3580
+    },
+    "Settings-Desktop.dc.html": {
+      "expand": "fill",
+      "h": 2440,
+      "title": "Server settings · desktop",
+      "w": 1280,
+      "x": 0,
+      "y": 8500
+    },
+    "Settings-Mobile.dc.html": {
+      "h": 2900,
+      "title": "Server settings · mobile",
+      "w": 390,
+      "x": 1360,
+      "y": 8500
+    },
+    "States.dc.html": {
+      "h": 1640,
+      "title": "States — empty, error, saved",
+      "w": 1440,
+      "x": 0,
+      "y": 11780
+    },
+    "Today-Desktop.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "Availability · Today · desktop",
+      "w": 1280,
+      "x": 0,
+      "y": 5000
+    },
+    "Today-Mobile.dc.html": {
+      "h": 1180,
+      "is_interactive": true,
+      "title": "Availability · Today · mobile",
+      "w": 390,
+      "x": 1360,
+      "y": 5000
+    },
+    "Weekly-Desktop.dc.html": {
+      "expand": "fill",
+      "h": 1160,
+      "title": "Availability · Weekly · desktop",
+      "w": 1280,
+      "x": 0,
+      "y": 6560
+    },
+    "Weekly-Mobile.dc.html": {
+      "h": 1560,
+      "title": "Availability · Weekly · mobile",
+      "w": 390,
+      "x": 1360,
+      "y": 6560
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-14T12:00:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "noteOrder": [
+    "mainNote",
+    "rowServers",
+    "rowToday",
+    "rowWeekly",
+    "rowSettings",
+    "rowStates",
+    "noteServers",
+    "noteToday",
+    "noteWeekly",
+    "noteSettings",
+    "noteStates"
+  ],
+  "notes": {
+    "mainNote": {
+      "fill": "purple",
+      "size": 24,
+      "text": "How to read this canvas\n\n• Every artboard links ONE shared stylesheet, project/happymix.css. It is the deliverable: tokens + components, ready to replace wwwroot/css/dashboard.css.\n• Class names (hm-*) map 1:1 to Razor partials listed on the Foundations board.\n• Numbered pins (1, 2, 3…) on desktop mockups match the sticky notes beside each row.\n• Today mockups are clickable: change the times or hit a preset to see the overnight preview update.\n• JavaScript budget: ~40 lines total (range preview, presets, unsaved-changes flag). Everything else is plain forms, links, <details> and CSS :has().",
+      "w": 460,
+      "x": 1520,
+      "y": 0
+    },
+    "noteServers": {
+      "fill": "blue",
+      "size": 24,
+      "text": "Server picker\n\n1  Last-used server sorts first. The card title is a link to Availability, so the most common task is a single tap.\n2  Today status line (from the user's saved windows) answers \"did I already set it?\" without opening the server. Mint dot = set, hollow ring = not set.\n3  Settings renders only when CanConfigure (Discord Administrator). Secondary button + Admin badge.\n4  Header: brand icon is the home link; Sign out stays a POST form.\n\nMobile: cards stack, both actions stay ≥44px tall, Sign out becomes an icon button with aria-label.",
+      "w": 460,
+      "x": 1830,
+      "y": 3580
+    },
+    "noteSettings": {
+      "fill": "blue",
+      "size": 24,
+      "text": "Server settings\n\n1  Three groups: Server defaults, Counter-Strike 2, Dota 2. Desktop: sticky section nav. Mobile: sticky chip row.\n2  Inherited values: dashed control border + \"Inherited\" badge + the effective value spelled out (\"Server default · #announcements\"). Overridden values get a solid border, \"Custom\" badge and a Reset link.\n3  The magic strings default / none become a 3-way radio (Inherit · Custom · None). CSS :has() reveals the text field only for Custom; the controller maps back to the same strings.\n4  Validation sits under the field it belongs to (aria-invalid + aria-describedby). A short summary at the top links to each error.\n5  Channel pickers list only standard Discord text channels HappyMix can post in, prefixed with #.\n6  Sticky save bar: \"Unsaved changes\" flag (tiny JS), Discard (link reload) and Save settings — always within reach.",
+      "w": 460,
+      "x": 1830,
+      "y": 8500
+    },
+    "noteStates": {
+      "fill": "blue",
+      "size": 24,
+      "text": "States\n\nEmpty → explain why and give exactly one next step.\nError → say what failed and where; keep the user's input; never clear the form.\nSaved → role=\"status\" banner, mint, names what was saved (\"You're available Today 17:00 → Tomorrow 00:30\"). Auto-focus it after redirect so screen readers hear it.\n\nBanners are tinted panels with an icon and a title — the colour is never the only signal.",
+      "w": 460,
+      "x": 1520,
+      "y": 11780
+    },
+    "noteToday": {
+      "fill": "blue",
+      "size": 24,
+      "text": "Today\n\n1  Today and Weekly are two views behind a segmented control — real links (?view=today / ?view=weekly) with aria-current=\"page\", no JS.\n2  Native <input type=time>, 52px tall, tabular numerals. Mobile gets the OS wheel/clock picker for free.\n3  Active time zone sits right beside the inputs. \"Change\" is a <details> with the existing IANA datalist; empty = server default.\n4  Live preview: ~15 lines of JS. End ≤ start ⇒ \"Tomorrow\" + Overnight badge + duration. Equal times show an inline error and disable Save.\n5  Presets only fill the inputs; nothing saves until the user presses Save today.\n6  One-off windows list with Remove (POST action=remove).\n\nMobile: Save today is pinned to the bottom, always in thumb reach.",
+      "w": 460,
+      "x": 1830,
+      "y": 5000
+    },
+    "noteWeekly": {
+      "fill": "blue",
+      "size": 24,
+      "text": "Weekly timetable\n\n1  One row per day, Monday first. Times are big tabular numerals; a 24-hour bar beside them makes the week scannable at a glance.\n2  Overnight windows run to the end of the bar with a square edge; the next day shows the spill-over as a hatched segment (pattern, not just colour).\n3  Edit opens the row in place: server-rendered via ?view=weekly&edit=Wednesday#wednesday. No modal, no JS.\n4  Clear is a per-day POST form (action=clear) with aria-label \"Clear Wednesday hours\".\n5  Empty days say \"No hours\" and offer + Add hours in the same spot Edit would be.\n\nMobile: each day is a card; Edit/Clear are 44×44 icon buttons with labels for screen readers.",
+      "w": 460,
+      "x": 1830,
+      "y": 6560
+    },
+    "rowServers": {
+      "kind": "title1",
+      "maxW": 1750,
+      "text": "1 · Server picker",
+      "w": 240,
+      "x": 0,
+      "y": 3320
+    },
+    "rowSettings": {
+      "kind": "title1",
+      "maxW": 1750,
+      "text": "4 · Server settings",
+      "w": 240,
+      "x": 0,
+      "y": 8240
+    },
+    "rowStates": {
+      "kind": "title1",
+      "maxW": 1750,
+      "text": "5 · Empty, error & saved states",
+      "w": 240,
+      "x": 0,
+      "y": 11520
+    },
+    "rowToday": {
+      "kind": "title1",
+      "maxW": 1750,
+      "text": "2 · Availability — Today",
+      "w": 240,
+      "x": 0,
+      "y": 4740
+    },
+    "rowWeekly": {
+      "kind": "title1",
+      "maxW": 1750,
+      "text": "3 · Availability — Weekly timetable",
+      "w": 240,
+      "x": 0,
+      "y": 6300
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "ServerPicker-Desktop.dc.html",
+    "ServerPicker-Mobile.dc.html",
+    "Today-Desktop.dc.html",
+    "Today-Mobile.dc.html",
+    "Weekly-Desktop.dc.html",
+    "Weekly-Mobile.dc.html",
+    "Settings-Desktop.dc.html",
+    "Settings-Mobile.dc.html",
+    "States.dc.html"
+  ],
+  "pages": [],
+  "title": "HappyMix Dashboard Redesign"
+}

@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Empty, error and saved states</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./happymix.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#c9bfff}a:hover{color:#ddd7ff}
+.st-tag{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9aa1c4;margin-bottom:12px}
+.st-tag b{font-weight:600;letter-spacing:0;text-transform:none;color:#f3f4ff;font-size:14px}
+.st-cell{display:flex;flex-direction:column}
+.st-cell > .hm-card{flex:1}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 1640px; box-sizing: border-box; padding: 56px 64px; background: #0e0f1c; color: #f3f4ff; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; gap: 48px">
+
+  <section>
+    <h2 style="font-size: 26px; margin-bottom: 20px">Empty</h2>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+      <div class="st-cell">
+        <p class="st-tag">Server picker <b>No shared servers</b></p>
+        <div class="hm-card">
+          <div class="hm-empty">
+            <span class="hm-empty__icon"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true" style="width: 24px; height: 24px"><circle cx="9" cy="9" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"></path></svg></span>
+            <h3>No servers yet</h3>
+            <p>HappyMix shows servers where you and the bot are both members. Ask a server admin to add HappyMix, then refresh.</p>
+            <a class="hm-btn" href="#"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"></path></svg>Refresh list</a>
+          </div>
+        </div>
+      </div>
+      <div class="st-cell">
+        <p class="st-tag">Weekly <b>No hours saved</b></p>
+        <div class="hm-card">
+          <div class="hm-empty">
+            <span class="hm-empty__icon"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true" style="width: 24px; height: 24px"><rect x="3.5" y="5" width="17" height="15" rx="2"></rect><path d="M3.5 10h17M8 3v4M16 3v4"></path></svg></span>
+            <h3>No weekly hours yet</h3>
+            <p>Add the evenings you usually play once. HappyMix repeats them every week.</p>
+            <a class="hm-btn hm-btn--primary" href="#"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add Monday hours</a>
+          </div>
+        </div>
+      </div>
+      <div class="st-cell">
+        <p class="st-tag">Today <b>Nothing coming up</b></p>
+        <div class="hm-card">
+          <div class="hm-card__head" style="margin-bottom: 12px"><h3>Coming up</h3><span class="hm-badge">One-off</span></div>
+          <div class="hm-empty" style="padding: 28px 16px">
+            <p>No one-off windows. Save today's hours and they show up here until they end.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 style="font-size: 26px; margin-bottom: 20px">Error</h2>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+      <div class="st-cell">
+        <p class="st-tag">Today <b>Save rejected</b></p>
+        <div class="hm-card hm-stack">
+          <div class="hm-banner hm-banner--error" role="alert">
+            <span class="hm-banner__icon"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7.5v5.5M12 16.5h.01"></path></svg></span>
+            <div class="hm-banner__body"><p class="hm-banner__title">Couldn't save today</p><p class="hm-banner__text">That window has already ended. Pick an Until time later than now.</p></div>
+          </div>
+          <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px">
+            <div class="hm-field"><label class="hm-label" for="e-s">From</label><input class="hm-time" id="e-s" type="time" value="09:00"></div>
+            <div class="hm-field"><label class="hm-label" for="e-e">Until</label><input class="hm-time" id="e-e" type="time" value="11:00" aria-invalid="true" aria-describedby="e-e-err"></div>
+          </div>
+          <p class="hm-error" id="e-e-err"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5h.01"></path></svg>Ends before now (18:20).</p>
+          <p class="hm-help">The banner text is the application's error message. The form keeps what the user typed.</p>
+        </div>
+      </div>
+      <div class="st-cell">
+        <p class="st-tag">Settings <b>No usable channel</b></p>
+        <div class="hm-card hm-stack">
+          <div class="hm-field">
+            <div class="hm-row hm-row--between"><label class="hm-label" for="e-ch">Announcement channel</label><span class="hm-badge hm-badge--warn">Can't post</span></div>
+            <select class="hm-select" id="e-ch" disabled="" aria-describedby="e-ch-warn"><option>No text channels available</option></select>
+          </div>
+          <div class="hm-banner hm-banner--warn" id="e-ch-warn">
+            <span class="hm-banner__icon"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7.5v5.5M12 16.5h.01"></path></svg></span>
+            <div class="hm-banner__body"><p class="hm-banner__title">HappyMix can't post anywhere yet</p><p class="hm-banner__text">In Discord, give the HappyMix role <b style="color: #f3f4ff">View Channel</b>, <b style="color: #f3f4ff">Send Messages</b> and <b style="color: #f3f4ff">Embed Links</b> in at least one standard text channel, then reload this page.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="st-cell">
+        <p class="st-tag">Settings <b>Not an administrator</b></p>
+        <div class="hm-card">
+          <div class="hm-empty">
+            <span class="hm-empty__icon"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true" style="width: 24px; height: 24px"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path></svg></span>
+            <h3>Admins only</h3>
+            <p>Only Discord administrators of Friday Night Frags can change server settings. You can still set your availability.</p>
+            <a class="hm-btn hm-btn--primary" href="#"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Go to availability</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 style="font-size: 26px; margin-bottom: 20px">Saved</h2>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+      <div class="st-cell">
+        <p class="st-tag">Today <b>Saved, after redirect</b></p>
+        <div class="hm-card hm-stack">
+          <div class="hm-banner hm-banner--success" role="status" tabindex="-1">
+            <span class="hm-banner__icon"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg></span>
+            <div class="hm-banner__body"><p class="hm-banner__title">Availability saved</p><p class="hm-banner__text">You're available Today 17:00 → Tomorrow 00:30.</p></div>
+          </div>
+          <ul class="hm-list">
+            <li class="hm-list__item">
+              <div class="hm-list__main"><p class="hm-list__title">Today 17:00 → Tomorrow 00:30</p><p class="hm-list__meta">Sat 14 Nov · Overnight</p></div>
+              <span class="hm-badge hm-badge--mint">New</span>
+              <button class="hm-btn hm-btn--ghost hm-btn--icon" type="button" aria-label="Remove today 17:00 to tomorrow 00:30"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="st-cell">
+        <p class="st-tag">Weekly <b>Day saved / cleared</b></p>
+        <div class="hm-card hm-card--flush">
+          <div class="hm-day" style="grid-template-columns: 5.5rem minmax(0, 1fr) auto; background: #12352e">
+            <span class="hm-day__name">Thursday</span>
+            <span class="hm-day__time">19:30 → 23:30</span>
+            <span class="hm-badge hm-badge--mint"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>Saved</span>
+          </div>
+          <div class="hm-day" style="grid-template-columns: 5.5rem minmax(0, 1fr) auto">
+            <span class="hm-day__name">Sunday</span>
+            <span class="hm-day__none">Cleared</span>
+            <a class="hm-btn" href="#"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add hours</a>
+          </div>
+          <p class="hm-help" style="padding: 12px 20px 16px">After a save the page redirects to <code>#thursday</code>; the row is tinted for one render and announced through the status banner.</p>
+        </div>
+      </div>
+      <div class="st-cell">
+        <p class="st-tag">Settings <b>Saved</b></p>
+        <div class="hm-card hm-stack">
+          <div class="hm-banner hm-banner--success" role="status" tabindex="-1">
+            <span class="hm-banner__icon"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg></span>
+            <div class="hm-banner__body"><p class="hm-banner__title">Server settings saved</p><p class="hm-banner__text">New announcements use these settings right away.</p></div>
+          </div>
+          <div class="hm-savebar" style="position: static; margin: 0; background: transparent">
+            <div class="hm-savebar__inner">
+              <span class="hm-savebar__status"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true" style="color: #8ef2cd"><path d="m5 12 5 5 9-10"></path></svg>All changes saved</span>
+              <button class="hm-btn hm-btn--primary" type="button">Save settings</button>
+            </div>
+          </div>
+          <div class="hm-savebar" style="position: static; margin: 0; background: transparent">
+            <div class="hm-savebar__inner">
+              <span class="hm-savebar__status"><b aria-hidden="true">●</b>Unsaved changes</span>
+              <a class="hm-btn hm-btn--ghost" href="#">Discard</a>
+              <button class="hm-btn hm-btn--primary" type="button">Save settings</button>
+            </div>
+          </div>
+          <p class="hm-help">Save bar states: clean (after save) and dirty (any input event).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1640}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

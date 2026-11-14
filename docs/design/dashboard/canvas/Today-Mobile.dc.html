@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Availability today, mobile</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./happymix.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#c9bfff}a:hover{color:#ddd7ff}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1180px; background: #0e0f1c; color: #f3f4ff; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column">
+  <header class="hm-header">
+    <div class="hm-header__inner" style="padding: 0 12px 0 16px; gap: 8px">
+      <a class="hm-brand" href="#" aria-label="HappyMix home"><img src="./happymix.svg" alt="" width="32" height="32"></a>
+      <a class="hm-switcher" href="#" style="flex: 1; max-width: none" aria-label="Switch server, current: Friday Night Frags"><span>Friday Night Frags</span><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true" style="margin-left: auto"><path d="m6 9 6 6 6-6"></path></svg></a>
+      <form><button class="hm-btn hm-btn--ghost hm-btn--icon" type="button" aria-label="Sign out"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"></path></svg></button></form>
+    </div>
+  </header>
+
+  <nav class="hm-tabs" aria-label="Server" style="padding: 0 8px; margin-bottom: 0"><a href="#" aria-current="page" style="flex: 1; justify-content: center">Availability</a><a href="#" style="flex: 1; justify-content: center">Settings</a></nav>
+
+  <form style="flex: 1; display: flex; flex-direction: column" aria-labelledby="mt-h">
+    <main style="flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 16px">
+      <nav class="hm-segment hm-segment--block" aria-label="Availability view"><a href="#" aria-current="page"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Today</a><a href="#"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"></rect><path d="M3.5 10h17M8 3v4M16 3v4"></path></svg>Weekly</a></nav>
+
+      <section class="hm-card hm-stack" style="gap: 16px">
+        <div>
+          <h1 id="mt-h" style="font-size: 22px">Today</h1>
+          <p class="hm-muted" style="font-size: 14px">Saturday 14 November</p>
+        </div>
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px">
+          <div class="hm-field"><label class="hm-label" for="mt-start">From</label><input class="hm-time" id="mt-start" name="start" type="time" required="" value="{{start}}" onChange="{{onStart}}"></div>
+          <div class="hm-field"><label class="hm-label" for="mt-end">Until</label><input class="hm-time" id="mt-end" name="end" type="time" required="" value="{{end}}" onChange="{{onEnd}}"></div>
+        </div>
+        <details class="hm-tz"><summary style="width: 100%"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path></svg><span class="hm-tz__zone">Europe/Kyiv</span><span class="hm-tz__offset">UTC+02:00</span><span class="hm-tz__change" style="margin-left: auto">Change</span></summary></details>
+
+        <sc-if value="{{showValid}}" hint-placeholder-val="{{ true }}">
+          <div class="hm-preview" aria-live="polite">
+            <span class="hm-preview__text" style="flex-basis: 100%">Today {{start}}<span class="hm-preview__arrow">→</span><b>{{endDay}}</b> {{end}}</span>
+            <sc-if value="{{overnight}}" hint-placeholder-val="{{ true }}"><span class="hm-badge hm-badge--mint"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>Overnight</span></sc-if>
+            <span class="hm-preview__dur">{{duration}}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{invalid}}" hint-placeholder-val="{{ false }}">
+          <div class="hm-preview hm-preview--invalid" aria-live="polite"><p class="hm-error"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5h.01"></path></svg>Both times are {{start}}. Pick a different end time.</p></div>
+        </sc-if>
+        <sc-if value="{{incomplete}}" hint-placeholder-val="{{ false }}">
+          <div class="hm-preview" aria-live="polite"><span class="hm-muted">Pick both times. An earlier Until means tomorrow.</span></div>
+        </sc-if>
+
+        <div class="hm-stack hm-stack--sm">
+          <span class="hm-label">Quick fill</span>
+          <div style="display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px; padding: 0 16px 4px">
+            <sc-for list="{{presets}}" as="p" hint-placeholder-count="4">
+              <button class="hm-chip" type="button" aria-current="{{p.current}}" onClick="{{p.pick}}">{{p.label}} <small>{{p.range}}</small></button>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+
+      <section class="hm-card" aria-labelledby="mup-h">
+        <div class="hm-card__head" style="margin-bottom: 4px"><h2 id="mup-h" style="font-size: 17px">Coming up</h2><span class="hm-badge">One-off</span></div>
+        <ul class="hm-list">
+          <li class="hm-list__item">
+            <div class="hm-list__main"><p class="hm-list__title">Today 19:00 → 23:30</p><p class="hm-list__meta">Sat 14 Nov</p></div>
+            <button class="hm-btn hm-btn--ghost hm-btn--icon" type="button" aria-label="Remove today 19:00 to 23:30"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button>
+          </li>
+          <li class="hm-list__item">
+            <div class="hm-list__main"><p class="hm-list__title">Sun 20:00 → Mon 00:30</p><p class="hm-list__meta">15–16 Nov · Overnight</p></div>
+            <button class="hm-btn hm-btn--ghost hm-btn--icon" type="button" aria-label="Remove Sunday 20:00 to Monday 00:30"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button>
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <div class="hm-dock">
+      <button class="hm-btn hm-btn--primary hm-btn--lg hm-btn--block" type="submit" disabled="{{invalid}}"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>Save today</button>
+    </div>
+  </form>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1180}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { start: '17:00', end: '00:30', preset: '' };
+  }
+  renderVals() {
+    const { start, end, preset } = this.state;
+    const mins = (t) => (t && t.length >= 5 ? Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5)) : null);
+    const s = mins(start);
+    const e = mins(end);
+    const complete = s !== null && e !== null;
+    const span = complete ? (e - s + 1440) % 1440 : 0;
+    const overnight = complete && span > 0 && e < s;
+    const h = Math.floor(span / 60);
+    const m = span % 60;
+    const presetDefs = [
+      { id: 'next3', label: 'Next 3 hours', range: '18:20–21:20', start: '18:20', end: '21:20' },
+      { id: 'evening', label: 'Evening', range: '19:00–23:00', start: '19:00', end: '23:00' },
+      { id: 'late', label: 'Late night', range: '21:00–02:00', start: '21:00', end: '02:00' },
+      { id: 'weekly', label: 'My Saturday hours', range: '16:00–22:00', start: '16:00', end: '22:00' }
+    ];
+    return {
+      start: start,
+      end: end,
+      endDay: overnight ? 'Tomorrow' : 'Today',
+      overnight: overnight,
+      showValid: complete && span > 0,
+      invalid: complete && span === 0,
+      incomplete: !complete,
+      duration: m ? h + 'h ' + m + 'm' : h + 'h',
+      onStart: (ev) => this.setState({ start: ev.target.value, preset: '' }),
+      onEnd: (ev) => this.setState({ end: ev.target.value, preset: '' }),
+      presets: presetDefs.map((p) => ({
+        label: p.label,
+        range: p.range,
+        current: preset === p.id ? 'true' : 'false',
+        pick: () => this.setState({ start: p.start, end: p.end, preset: p.id })
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

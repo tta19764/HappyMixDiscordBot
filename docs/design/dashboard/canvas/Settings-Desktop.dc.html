@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Server settings, desktop</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./happymix.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#c9bfff}a:hover{color:#ddd7ff}
+</style>
+</helmet>
+<div style="min-height: 2440px; background: #0e0f1c; color: #f3f4ff; font-family: Inter, system-ui, sans-serif">
+  <header class="hm-header">
+    <div class="hm-shell hm-header__inner">
+      <a class="hm-brand" href="#"><img src="./happymix.svg" alt="" width="32" height="32">HappyMix</a>
+      <a class="hm-switcher" href="#" aria-label="Switch server, current: Friday Night Frags"><span class="hm-server__avatar" style="width: 24px; height: 24px; border-radius: 6px; font-size: 10px; background: #3b2f6b; border-color: #574c9c" aria-hidden="true">FN</span><span>Friday Night Frags</span><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></a>
+      <span class="hm-header__spacer"></span>
+      <span class="hm-user"><span class="hm-user__avatar" aria-hidden="true">K</span><span style="font-size: 13px; font-weight: 600; color: #b7bcda">kestrel</span></span>
+      <form><button class="hm-btn hm-btn--ghost" type="button"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"></path></svg>Sign out</button></form>
+    </div>
+  </header>
+
+  <main class="hm-shell hm-main" style="padding-bottom: 0">
+    <nav class="hm-crumbs" aria-label="Breadcrumb"><a href="#">Servers</a><span aria-hidden="true">/</span><span>Friday Night Frags</span></nav>
+    <div class="hm-page-head" style="margin-bottom: 16px">
+      <div>
+        <h1>Server settings</h1>
+        <p>Where and when HappyMix posts esports announcements. Only server administrators see this page.</p>
+      </div>
+    </div>
+    <nav class="hm-tabs" aria-label="Server"><a href="#">Availability</a><a href="#" aria-current="page">Settings</a></nav>
+
+    <form>
+      <div class="hm-split hm-split--nav">
+        <nav class="hm-sidenav hm-rel" aria-label="Settings sections">
+          <span class="hm-pin" style="top: -10px; left: -12px">1</span>
+          <a href="#defaults" aria-current="true">Server defaults <span class="hm-badge hm-badge--danger" aria-label="1 error">1</span></a>
+          <a href="#cs2">Counter-Strike 2</a>
+          <a href="#dota2">Dota 2 <span class="hm-badge hm-badge--danger" aria-label="1 error">1</span></a>
+          <p class="hm-help" style="padding: 12px 12px 0; font-size: 12px">Game sections inherit from Server defaults unless you override a value.</p>
+        </nav>
+
+        <div class="hm-stack" style="gap: 24px; min-width: 0">
+          <div class="hm-banner hm-banner--error" role="alert" tabindex="-1">
+            <span class="hm-banner__icon"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7.5v5.5M12 16.5h.01"></path></svg></span>
+            <div class="hm-banner__body">
+              <p class="hm-banner__title">Settings not saved: 2 fields need attention</p>
+              <ul><li><a href="#tz">Server defaults · Time zone</a></li><li><a href="#dota-twitch">Dota 2 · Twitch channels</a></li></ul>
+            </div>
+          </div>
+
+          <section class="hm-card hm-section" id="defaults" aria-labelledby="defaults-h">
+            <div class="hm-section__head">
+              <span class="hm-game-mark" aria-hidden="true"><svg class="hm-icon" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"></path><circle cx="16" cy="6" r="2"></circle><circle cx="10" cy="12" r="2"></circle><circle cx="18" cy="18" r="2"></circle></svg></span>
+              <div><h2 id="defaults-h">Server defaults</h2><p>Used by every game unless the game overrides it.</p></div>
+            </div>
+            <div class="hm-fields">
+              <div class="hm-field hm-rel">
+                <span class="hm-pin" style="top: -10px; right: -8px">5</span>
+                <label class="hm-label" for="ch">Announcement channel</label>
+                <select class="hm-select" id="ch" aria-describedby="ch-help"><option>#announcements</option><option>#esports</option><option>#general</option><option>Deployment default</option></select>
+                <p class="hm-help" id="ch-help">Text channels where HappyMix can view, send messages and embed links.</p>
+              </div>
+              <div class="hm-field hm-rel">
+                <span class="hm-pin" style="top: -10px; right: -8px">4</span>
+                <label class="hm-label" for="tz">Time zone</label>
+                <input class="hm-input" id="tz" value="Kyiv" list="zones" aria-invalid="true" aria-describedby="tz-err">
+                <p class="hm-error" id="tz-err"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5h.01"></path></svg>Enter an IANA time zone such as Europe/Kyiv or UTC.</p>
+              </div>
+              <div class="hm-field">
+                <label class="hm-label" for="lead">Reminder lead time</label>
+                <div class="hm-affix" style="max-width: 14rem"><input class="hm-input hm-tnum" id="lead" type="number" min="1" max="1440" value="30" aria-describedby="lead-help"><span class="hm-affix__text">minutes</span></div>
+                <p class="hm-help" id="lead-help">Before a followed match. 1–1440.</p>
+              </div>
+              <fieldset class="hm-field" style="border: 0; padding: 0; margin: 0">
+                <legend class="hm-label" style="margin-bottom: 8px">Organizer roles <span class="hm-label__opt">optional</span></legend>
+                <div class="hm-checkbox-box">
+                  <label class="hm-check"><input type="checkbox" checked=""><span class="hm-role-dot" style="background: #f0a35e"></span>Organizers</label>
+                  <label class="hm-check"><input type="checkbox" checked=""><span class="hm-role-dot" style="background: #6cc4ff"></span>Mods</label>
+                  <label class="hm-check"><input type="checkbox"><span class="hm-role-dot" style="background: #9aa1c4"></span>Regulars</label>
+                </div>
+                <p class="hm-help" style="margin-top: 8px">With none selected, any member can organize a group.</p>
+              </fieldset>
+              <fieldset class="hm-field hm-field--wide" style="border: 0; padding: 0; margin: 0">
+                <legend class="hm-label" style="margin-bottom: 8px">Post to the channel</legend>
+                <div class="hm-checks">
+                  <label class="hm-check"><input type="checkbox" checked=""><span>Daily schedule<small>Today's matches for followed teams</small></span></label>
+                  <label class="hm-check"><input type="checkbox" checked=""><span>Reminders<small>Before a match, using the lead time</small></span></label>
+                  <label class="hm-check"><input type="checkbox" checked=""><span>Match starts<small>When a followed match goes live</small></span></label>
+                  <label class="hm-check"><input type="checkbox"><span>Map results<small>After each map</small></span></label>
+                  <label class="hm-check"><input type="checkbox" checked=""><span>Match results<small>Final score</small></span></label>
+                </div>
+              </fieldset>
+            </div>
+          </section>
+
+          <section class="hm-card hm-section" id="cs2" aria-labelledby="cs2-h">
+            <div class="hm-section__head">
+              <span class="hm-game-mark" aria-hidden="true">CS2</span>
+              <div><h2 id="cs2-h">Counter-Strike 2</h2><p>Leave a value on Inherit to follow Server defaults.</p></div>
+            </div>
+            <div class="hm-fields">
+              <div class="hm-field hm-field--inherited hm-rel">
+                <span class="hm-pin" style="top: -10px; right: -8px">2</span>
+                <div class="hm-row hm-row--between"><label class="hm-label" for="cs-ch">Announcement channel</label><span class="hm-badge hm-badge--inherit">Inherited</span></div>
+                <select class="hm-select" id="cs-ch"><option>Server default · #announcements</option><option>#cs2</option><option>#esports</option></select>
+              </div>
+              <div class="hm-field">
+                <label class="hm-label" for="cs-role">Reminder ping role</label>
+                <select class="hm-select" id="cs-role"><option>@CS squad</option><option>No ping</option></select>
+              </div>
+              <div class="hm-field hm-field--wide hm-mode-field hm-rel">
+                <span class="hm-pin" style="top: -10px; left: -12px">3</span>
+                <div class="hm-row hm-row--between"><span class="hm-label" id="cs-teams-l">Followed teams</span><span class="hm-row" style="gap: 8px"><span class="hm-badge hm-badge--custom">Custom</span><button class="hm-link-btn" type="button" style="min-height: 0">Reset to default</button></span></div>
+                <div class="hm-mode" role="radiogroup" aria-labelledby="cs-teams-l"><label><input type="radio" name="cs-teams" value="default">Inherit</label><label><input type="radio" name="cs-teams" value="custom" checked="">Custom</label><label><input type="radio" name="cs-teams" value="none">None</label></div>
+                <div class="hm-mode-custom"><input class="hm-input" aria-labelledby="cs-teams-l" value="Team Spirit, FaZe, Vitality" aria-describedby="cs-teams-help"><p class="hm-help" id="cs-teams-help" style="margin-top: 8px">Up to 20 team names or IDs, separated by commas.</p></div>
+                <div class="hm-inherited hm-mode-inherit"><span class="hm-inherited__src">Deployment default ·</span><span class="hm-inherited__value">NAVI, G2, MOUZ</span></div>
+                <div class="hm-inherited hm-mode-none" style="border-style: solid; background: #0b0c17; border-color: #31375a">No CS2 teams followed. Match posts are off for this game.</div>
+              </div>
+              <div class="hm-field hm-field--wide hm-mode-field">
+                <div class="hm-row hm-row--between"><span class="hm-label" id="cs-tw-l">Twitch channels</span><span class="hm-badge hm-badge--inherit">Inherited</span></div>
+                <div class="hm-mode" role="radiogroup" aria-labelledby="cs-tw-l"><label><input type="radio" name="cs-tw" value="default" checked="">Inherit</label><label><input type="radio" name="cs-tw" value="custom">Custom</label><label><input type="radio" name="cs-tw" value="none">None</label></div>
+                <div class="hm-inherited hm-mode-inherit"><span class="hm-inherited__src">Deployment default ·</span><span class="hm-inherited__value">2 channels: esl_csgo, pglqual</span></div>
+                <div class="hm-mode-custom"><input class="hm-input" aria-labelledby="cs-tw-l" placeholder="handle or twitch.tv link, up to 5"></div>
+              </div>
+              <details class="hm-field hm-field--wide">
+                <summary class="hm-row" style="min-height: 44px; cursor: pointer; font-weight: 600; font-size: 13px">Team catalog <span class="hm-badge hm-badge--inherit">Inherited</span><span class="hm-subtle" style="font-weight: 500">Name-to-ID aliases used by Followed teams</span></summary>
+              </details>
+            </div>
+          </section>
+
+          <section class="hm-card hm-section" id="dota2" aria-labelledby="dota-h">
+            <div class="hm-section__head">
+              <span class="hm-game-mark" aria-hidden="true">D2</span>
+              <div><h2 id="dota-h">Dota 2</h2><p>Leave a value on Inherit to follow Server defaults.</p></div>
+            </div>
+            <div class="hm-fields">
+              <div class="hm-field">
+                <div class="hm-row hm-row--between"><label class="hm-label" for="d-ch">Announcement channel</label><span class="hm-row" style="gap: 8px"><span class="hm-badge hm-badge--custom">Custom</span><button class="hm-link-btn" type="button" style="min-height: 0">Reset</button></span></div>
+                <select class="hm-select" id="d-ch"><option>#dota-news</option><option>Server default · #announcements</option></select>
+              </div>
+              <div class="hm-field">
+                <label class="hm-label" for="d-role">Reminder ping role</label>
+                <select class="hm-select" id="d-role"><option>No ping</option><option>@Dota stack</option></select>
+              </div>
+              <div class="hm-field hm-field--wide hm-mode-field">
+                <div class="hm-row hm-row--between"><span class="hm-label" id="d-teams-l">Followed teams</span><span class="hm-badge hm-badge--inherit">Inherited</span></div>
+                <div class="hm-mode" role="radiogroup" aria-labelledby="d-teams-l"><label><input type="radio" name="d-teams" value="default" checked="">Inherit</label><label><input type="radio" name="d-teams" value="custom">Custom</label><label><input type="radio" name="d-teams" value="none">None</label></div>
+                <div class="hm-inherited hm-mode-inherit"><span class="hm-inherited__src">Deployment default ·</span><span class="hm-inherited__value">Team Spirit, Tundra, Gaimin Gladiators</span></div>
+                <div class="hm-mode-custom"><input class="hm-input" aria-labelledby="d-teams-l"></div>
+              </div>
+              <div class="hm-field hm-field--wide hm-mode-field" id="dota-twitch">
+                <div class="hm-row hm-row--between"><span class="hm-label" id="d-tw-l">Twitch channels</span><span class="hm-badge hm-badge--custom">Custom</span></div>
+                <div class="hm-mode" role="radiogroup" aria-labelledby="d-tw-l"><label><input type="radio" name="d-tw" value="default">Inherit</label><label><input type="radio" name="d-tw" value="custom" checked="">Custom</label><label><input type="radio" name="d-tw" value="none">None</label></div>
+                <div class="hm-mode-custom">
+                  <input class="hm-input" aria-labelledby="d-tw-l" value="dota2ti, beyondthesummit, epicenter tv" aria-invalid="true" aria-describedby="d-tw-err">
+                  <p class="hm-error" id="d-tw-err" style="margin-top: 8px"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5h.01"></path></svg>"epicenter tv" isn't a Twitch handle. Use up to five handles or twitch.tv links, separated by commas.</p>
+                </div>
+              </div>
+              <details class="hm-field hm-field--wide">
+                <summary class="hm-row" style="min-height: 44px; cursor: pointer; font-weight: 600; font-size: 13px">Team catalog <span class="hm-badge hm-badge--inherit">Inherited</span><span class="hm-subtle" style="font-weight: 500">Name-to-ID aliases used by Followed teams</span></summary>
+              </details>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div class="hm-savebar hm-rel">
+        <span class="hm-pin" style="top: -12px; right: 300px">6</span>
+        <div class="hm-savebar__inner">
+          <span class="hm-savebar__status"><b aria-hidden="true">●</b>Unsaved changes<span aria-hidden="true">·</span><span style="color: #ffa3ad; font-weight: 600">2 fields need attention</span></span>
+          <a class="hm-btn hm-btn--ghost" href="#">Discard</a>
+          <button class="hm-btn hm-btn--primary" type="button"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>Save settings</button>
+        </div>
+      </div>
+    </form>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":2440}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

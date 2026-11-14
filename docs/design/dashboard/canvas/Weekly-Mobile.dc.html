@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Weekly timetable, mobile</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./happymix.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#c9bfff}a:hover{color:#ddd7ff}
+.mw-row{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-top:1px solid #31375a}
+.mw-row:first-child{border-top:0}
+.mw-top{display:flex;align-items:center;gap:8px}
+.mw-main{flex:1;min-width:0}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1560px; background: #0e0f1c; color: #f3f4ff; font-family: Inter, system-ui, sans-serif">
+  <header class="hm-header">
+    <div class="hm-header__inner" style="padding: 0 12px 0 16px; gap: 8px">
+      <a class="hm-brand" href="#" aria-label="HappyMix home"><img src="./happymix.svg" alt="" width="32" height="32"></a>
+      <a class="hm-switcher" href="#" style="flex: 1; max-width: none" aria-label="Switch server, current: Friday Night Frags"><span>Friday Night Frags</span><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true" style="margin-left: auto"><path d="m6 9 6 6 6-6"></path></svg></a>
+      <form><button class="hm-btn hm-btn--ghost hm-btn--icon" type="button" aria-label="Sign out"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"></path></svg></button></form>
+    </div>
+  </header>
+  <nav class="hm-tabs" aria-label="Server" style="padding: 0 8px; margin-bottom: 0"><a href="#" aria-current="page" style="flex: 1; justify-content: center">Availability</a><a href="#" style="flex: 1; justify-content: center">Settings</a></nav>
+
+  <main style="padding: 16px; display: flex; flex-direction: column; gap: 16px">
+    <nav class="hm-segment hm-segment--block" aria-label="Availability view"><a href="#"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Today</a><a href="#" aria-current="page"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"></rect><path d="M3.5 10h17M8 3v4M16 3v4"></path></svg>Weekly</a></nav>
+
+    <div>
+      <h1 style="font-size: 22px">Your usual week</h1>
+      <p class="hm-muted" style="font-size: 14px">Europe/Kyiv · repeats every week</p>
+    </div>
+
+    <section class="hm-card hm-card--flush" aria-label="Weekly hours">
+      <div class="mw-row">
+        <div class="mw-top">
+          <div class="mw-main"><p class="hm-day__name">Monday</p><p class="hm-day__time">19:00 → 23:00</p></div>
+          <a class="hm-btn hm-btn--icon" href="#" aria-label="Edit Monday hours"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"></path></svg></a>
+          <form><button class="hm-btn hm-btn--danger hm-btn--icon" type="button" aria-label="Clear Monday hours"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button></form>
+        </div>
+        <div class="hm-dayline" role="img" aria-label="19:00 to 23:00"><span class="hm-dayline__seg" style="left: 79.17%; width: 16.67%"></span></div>
+      </div>
+
+      <div class="mw-row">
+        <div class="mw-top">
+          <div class="mw-main"><p class="hm-day__name">Tuesday</p><p class="hm-day__none">No hours</p></div>
+          <a class="hm-btn" href="#"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add</a>
+        </div>
+      </div>
+
+      <form class="mw-row" style="background: #1f2339; gap: 14px" aria-label="Edit Wednesday hours">
+        <div class="mw-top"><div class="mw-main"><p class="hm-day__name">Wednesday</p><p class="hm-subtle" style="font-size: 12px; font-weight: 600">Editing</p></div></div>
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px">
+          <div class="hm-field"><label class="hm-label" for="mw-s">From</label><input class="hm-time" id="mw-s" type="time" value="21:00"></div>
+          <div class="hm-field"><label class="hm-label" for="mw-e">Until</label><input class="hm-time" id="mw-e" type="time" value="01:00"></div>
+        </div>
+        <details class="hm-tz"><summary style="width: 100%"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path></svg><span class="hm-tz__zone">Europe/Kyiv</span><span class="hm-tz__offset">UTC+02:00</span><span class="hm-tz__change" style="margin-left: auto">Change</span></summary></details>
+        <div class="hm-preview" aria-live="polite"><span class="hm-preview__text">Wed 21:00<span class="hm-preview__arrow">→</span><b>Thu</b> 01:00</span><span class="hm-badge hm-badge--mint"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>Overnight</span></div>
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 8px">
+          <a class="hm-btn" href="#">Cancel</a>
+          <button class="hm-btn hm-btn--primary" type="button">Save Wednesday</button>
+        </div>
+      </form>
+
+      <div class="mw-row">
+        <div class="mw-top">
+          <div class="mw-main"><p class="hm-day__name">Thursday</p><p class="hm-day__time">19:30 → 23:30</p></div>
+          <a class="hm-btn hm-btn--icon" href="#" aria-label="Edit Thursday hours"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"></path></svg></a>
+          <form><button class="hm-btn hm-btn--danger hm-btn--icon" type="button" aria-label="Clear Thursday hours"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button></form>
+        </div>
+        <div class="hm-dayline" role="img" aria-label="Carry-over until 01:00, then 19:30 to 23:30"><span class="hm-dayline__seg hm-dayline__seg--carry" style="left: 0%; width: 4.17%"></span><span class="hm-dayline__seg" style="left: 81.25%; width: 16.67%"></span></div>
+      </div>
+
+      <div class="mw-row">
+        <div class="mw-top">
+          <div class="mw-main"><p class="hm-day__name">Friday</p><p class="hm-day__time">21:00 → 01:30 <span class="hm-badge hm-badge--mint" style="vertical-align: 2px">Overnight</span></p></div>
+          <a class="hm-btn hm-btn--icon" href="#" aria-label="Edit Friday hours"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"></path></svg></a>
+          <form><button class="hm-btn hm-btn--danger hm-btn--icon" type="button" aria-label="Clear Friday hours"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button></form>
+        </div>
+        <div class="hm-dayline" role="img" aria-label="21:00 to 01:30 Saturday"><span class="hm-dayline__seg hm-dayline__seg--overnight" style="left: 87.5%; width: 12.5%"></span></div>
+      </div>
+
+      <div class="mw-row hm-day--today">
+        <div class="mw-top">
+          <div class="mw-main"><p class="hm-day__name">Saturday <span class="hm-subtle" style="font-size: 12px; font-weight: 600">· Today</span></p><p class="hm-day__time">16:00 → 22:00</p></div>
+          <a class="hm-btn hm-btn--icon" href="#" aria-label="Edit Saturday hours"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"></path></svg></a>
+          <form><button class="hm-btn hm-btn--danger hm-btn--icon" type="button" aria-label="Clear Saturday hours"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button></form>
+        </div>
+        <div class="hm-dayline" role="img" aria-label="Carry-over until 01:30, then 16:00 to 22:00"><span class="hm-dayline__seg hm-dayline__seg--carry" style="left: 0%; width: 6.25%"></span><span class="hm-dayline__seg" style="left: 66.67%; width: 25%"></span></div>
+      </div>
+
+      <div class="mw-row">
+        <div class="mw-top">
+          <div class="mw-main"><p class="hm-day__name">Sunday</p><p class="hm-day__none">No hours</p></div>
+          <a class="hm-btn" href="#"><svg class="hm-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="hm-row" style="gap: 16px; font-size: 12px; color: #9aa1c4">
+      <span class="hm-row" style="gap: 6px"><span style="display: inline-block; width: 22px; height: 10px; border-radius: 999px; background: #8ef2cd"></span>Available</span>
+      <span class="hm-row" style="gap: 6px"><span style="display: inline-block; width: 22px; height: 10px; border-radius: 999px; background: repeating-linear-gradient(135deg, #8ef2cd 0 3px, #12352e 3px 6px)"></span>From the night before</span>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1560}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
