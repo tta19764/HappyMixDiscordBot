@@ -10,6 +10,7 @@ namespace HappyMix.Application.Guilds;
 /// <summary>Checks live server membership through Discord. Implemented by the bot adapter.</summary>
 public interface IGuildMemberGateway
 {
+    Task<bool> IsAdministratorAsync(ulong guildId, ulong userId);
     Task<bool> IsMemberAsync(ulong guildId, ulong userId);
 }
 
@@ -60,6 +61,10 @@ public sealed record GetLinkedAccountsQuery(ulong GuildId, ulong UserId) : IQuer
 public sealed record PreviewAccountLinkQuery(ulong GuildId, ulong UserId, Guid RequestId, string Token) : IQuery<LinkPreview>;
 public sealed record ApproveAccountLinkCommand(ulong GuildId, ulong UserId, Guid RequestId, string Token, LinkResolutions Resolutions)
     : ICommand<LinkResult>;
+public sealed record PreviewAdminAccountLinkQuery(ulong GuildId, ulong AdministratorId, ulong PrimaryId, ulong AlternateId)
+    : IQuery<LinkPreview>;
+public sealed record AdminLinkAccountsCommand(ulong GuildId, ulong AdministratorId, ulong PrimaryId, ulong AlternateId,
+    LinkResolutions Resolutions) : ICommand<LinkResult>;
 public sealed record PreviewUnlinkQuery(ulong GuildId, ulong UserId, ulong AlternateId) : IQuery<UnlinkPreview>;
 public sealed record UnlinkAccountCommand(ulong GuildId, ulong UserId, ulong AlternateId) : ICommand<UnlinkResult>;
 
@@ -73,7 +78,8 @@ internal sealed class AccountLinkHandlers(IAccountLinkStore links, IGuildGroupSt
     ICommandHandler<CreateAccountLinkRequestCommand, CreatedLinkRequest>, ICommandHandler<RevokeAccountLinkRequestCommand>,
     IQueryHandler<GetLinkedAccountsQuery, LinkedAccountsView>, IQueryHandler<PreviewAccountLinkQuery, LinkPreview>,
     ICommandHandler<ApproveAccountLinkCommand, LinkResult>, IQueryHandler<PreviewUnlinkQuery, UnlinkPreview>,
-    ICommandHandler<UnlinkAccountCommand, UnlinkResult>
+    ICommandHandler<UnlinkAccountCommand, UnlinkResult>,
+    IQueryHandler<PreviewAdminAccountLinkQuery, LinkPreview>, ICommandHandler<AdminLinkAccountsCommand, LinkResult>
 {
     internal static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(15);
     internal const int MaxAlternates = 5;
@@ -120,28 +126,83 @@ internal sealed class AccountLinkHandlers(IAccountLinkStore links, IGuildGroupSt
             if (request!.ConsumedAt is not null)
                 return Result.Success(new LinkResult(request.PrimaryId, AlreadyLinked: true, RoleSyncFailed: false));
 
-            var preview = await PlanAsync(command.GuildId, request, command.UserId, map!);
-            var choices = command.Resolutions;
-            if (preview.WeeklyConflicts.Any(conflict => !choices.Weekly.ContainsKey(conflict.Day)) ||
-                preview.WindowConflicts.Any(conflict => !choices.Windows.ContainsKey(conflict.Alternate.Id)))
-                return Result.Failure<LinkResult>(new("Link.Conflict", "Choose which schedule to keep for each conflict."));
-            if (preview.OrganizedByAlternate.Length > 0 && !choices.AcknowledgeOrganizer)
-                return Result.Failure<LinkResult>(new("Link.Conflict", "Confirm that organizer rights will be shared."));
-
-            var plan = await BuildPlanAsync(command.GuildId, request, command.UserId, map!, choices);
-            switch (await links.LinkAsync(command.GuildId, plan))
-            {
-                case LinkOutcome.AlreadyLinked:
-                    return Result.Success(new LinkResult(request.PrimaryId, true, false));
-                case LinkOutcome.RequestUnavailable:
-                    return Result.Failure<LinkResult>(new("Link.Rule", Unavailable));
-                case LinkOutcome.AccountUnavailable:
-                    return Result.Failure<LinkResult>(new("Link.Rule", "One of these accounts was linked elsewhere meanwhile. Unlink it first."));
-            }
-
-            bool failed = !await TrySyncAsync(command.GuildId, [request.PrimaryId, command.UserId]);
-            return Result.Success(new LinkResult(request.PrimaryId, false, failed));
+            return await ApplyLinkAsync(command.GuildId, request, command.UserId, map!, command.Resolutions);
         }, cancellationToken);
+
+    public async Task<Result<LinkPreview>> Handle(PreviewAdminAccountLinkQuery query, CancellationToken cancellationToken)
+    {
+        var (map, error) = await ValidateAdminLinkAsync(query.GuildId, query.AdministratorId, query.PrimaryId, query.AlternateId);
+        if (error is not null)
+            return Result.Failure<LinkPreview>(new("Link.Rule", error));
+
+        var now = clock.UtcNow;
+        var request = new AccountLinkRequest(Guid.Empty, query.PrimaryId, [], now, now + Lifetime, null, null, false);
+        return Result.Success(await PlanAsync(query.GuildId, request, query.AlternateId, map));
+    }
+
+    public Task<Result<LinkResult>> Handle(AdminLinkAccountsCommand command, CancellationToken cancellationToken) =>
+        roles.RunAsync(async () =>
+        {
+            var (map, error) = await ValidateAdminLinkAsync(command.GuildId, command.AdministratorId, command.PrimaryId, command.AlternateId);
+            if (error is not null)
+                return Result.Failure<LinkResult>(new("Link.Rule", error));
+
+            var now = clock.UtcNow;
+            // This request has no owner-facing token and can only be consumed by the admin command.
+            var request = await links.CreateRequestAsync(command.GuildId, command.PrimaryId,
+                RandomNumberGenerator.GetBytes(32), now, now + Lifetime);
+            try
+            {
+                return await ApplyLinkAsync(command.GuildId, request, command.AlternateId, map, command.Resolutions);
+            }
+            finally
+            {
+                await links.RevokeRequestAsync(command.GuildId, command.PrimaryId, request.Id);
+            }
+        }, cancellationToken);
+
+    private async Task<(MemberLinks Map, string? Error)> ValidateAdminLinkAsync(ulong guildId, ulong administrator,
+        ulong primary, ulong alternate)
+    {
+        if (!await members.IsAdministratorAsync(guildId, administrator))
+            return (MemberLinks.None, "Only server administrators can link other accounts.");
+
+        var map = await links.LoadAsync(guildId);
+        if (primary == alternate)
+            return (map, "Choose two different accounts.");
+        if (map.Member(primary) != primary || map.IsLinked(alternate))
+            return (map, "This account is already part of another linked family. Unlink it first.");
+        if (map.Alternates(primary).Length >= MaxAlternates)
+            return (map, $"An account can have up to {MaxAlternates} linked alternates.");
+        if (!await members.IsMemberAsync(guildId, primary) || !await members.IsMemberAsync(guildId, alternate))
+            return (map, "Both accounts must be members of this server.");
+        return (map, null);
+    }
+
+    private async Task<Result<LinkResult>> ApplyLinkAsync(ulong guildId, AccountLinkRequest request, ulong alternate,
+        MemberLinks map, LinkResolutions choices)
+    {
+        var preview = await PlanAsync(guildId, request, alternate, map);
+        if (preview.WeeklyConflicts.Any(conflict => !choices.Weekly.ContainsKey(conflict.Day)) ||
+            preview.WindowConflicts.Any(conflict => !choices.Windows.ContainsKey(conflict.Alternate.Id)))
+            return Result.Failure<LinkResult>(new("Link.Conflict", "Choose which schedule to keep for each conflict."));
+        if (preview.OrganizedByAlternate.Length > 0 && !choices.AcknowledgeOrganizer)
+            return Result.Failure<LinkResult>(new("Link.Conflict", "Confirm that organizer rights will be shared."));
+
+        var plan = await BuildPlanAsync(guildId, request, alternate, map, choices);
+        switch (await links.LinkAsync(guildId, plan))
+        {
+            case LinkOutcome.AlreadyLinked:
+                return Result.Success(new LinkResult(request.PrimaryId, true, false));
+            case LinkOutcome.RequestUnavailable:
+                return Result.Failure<LinkResult>(new("Link.Rule", Unavailable));
+            case LinkOutcome.AccountUnavailable:
+                return Result.Failure<LinkResult>(new("Link.Rule", "One of these accounts was linked elsewhere meanwhile. Unlink it first."));
+        }
+
+        bool failed = !await TrySyncAsync(guildId, [request.PrimaryId, alternate]);
+        return Result.Success(new LinkResult(request.PrimaryId, false, failed));
+    }
 
     public async Task<Result<UnlinkPreview>> Handle(PreviewUnlinkQuery query, CancellationToken cancellationToken)
     {

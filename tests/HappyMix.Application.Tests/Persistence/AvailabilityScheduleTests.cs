@@ -60,6 +60,8 @@ public sealed class AvailabilityScheduleTests
         var module = await interactions.AddModuleAsync<AvailabilityModule>(services);
 
         var set = Assert.Single(module.SubModules);
+        Assert.Contains(CommandHelp.Read(interactions), command => command.Path == "availability set today" &&
+            command.Options.Any(option => option.Name == "all_day" && !option.IsRequired));
         Assert.Equal(["timetable", "today"], set.SlashCommands.Select(command => command.Name).Order());
     }
 

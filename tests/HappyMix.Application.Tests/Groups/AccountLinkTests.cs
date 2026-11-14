@@ -19,6 +19,21 @@ public sealed class AccountLinkTests
     private const string Kyiv = "Europe/Kyiv";
 
     [Fact]
+    public async Task OnlyAdministratorsCanPreviewAndLinkOtherAccounts()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var preview = new PreviewAdminAccountLinkQuery(Guild, Main, Main, Twink);
+        var command = new AdminLinkAccountsCommand(Guild, Main, Main, Twink, new LinkResolutions(
+            new Dictionary<DayOfWeek, ScheduleChoice>(), new Dictionary<Guid, ScheduleChoice>(), false));
+
+        Assert.True((await fixture.Sender.Send(preview)).IsFailure);
+        Assert.True((await fixture.Sender.Send(command)).IsFailure);
+        Assert.True((await fixture.Sender.Send(preview with { AdministratorId = Friend })).IsSuccess);
+        Assert.True((await fixture.Sender.Send(command with { AdministratorId = Friend })).IsSuccess);
+        Assert.Equal(Twink, Assert.Single(await fixture.Links.ListAsync(Guild)).AlternateId);
+    }
+
+    [Fact]
     public async Task LinkingNeedsTheSecretFromThePrimaryAndApprovalFromTheAlternate()
     {
         using var fixture = await Fixture.CreateAsync();
@@ -389,6 +404,8 @@ public sealed class AccountLinkTests
 
     private sealed class MemberCheck(HashSet<ulong> members) : IGuildMemberGateway
     {
+        public Task<bool> IsAdministratorAsync(ulong guildId, ulong userId) => Task.FromResult(userId == Friend && members.Contains(userId));
+
         public Task<bool> IsMemberAsync(ulong guildId, ulong userId) => Task.FromResult(guildId == Guild && members.Contains(userId));
     }
 

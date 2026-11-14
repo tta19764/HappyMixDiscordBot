@@ -1025,4 +1025,13 @@
   <data name="You're signed in with the account that created this request. Sign in with your alternate account (twink) to approve it." xml:space="preserve">
     <value>Вы вошли аккаунтом, создавшим этот запрос. Войдите альтернативным аккаунтом (твинком), чтобы подтвердить его.</value>
   </data>
+  <data name="My linked accounts" xml:space="preserve"><value>Мои связанные аккаунты</value></data>
+  <data name="Manage links" xml:space="preserve"><value>Управление связями</value></data>
+  <data name="Link server accounts" xml:space="preserve"><value>Связать аккаунты сервера</value></data>
+  <data name="Select a primary account and an alternate, then review the changes before linking." xml:space="preserve"><value>Выберите основной и дополнительный аккаунты и проверьте изменения перед подтверждением.</value></data>
+  <data name="Choose an account" xml:space="preserve"><value>Выберите аккаунт</value></data>
+  <data name="Review link" xml:space="preserve"><value>Проверить изменения</value></data>
+  <data name="This links both accounts in the selected server." xml:space="preserve"><value>Оба аккаунта будут связаны на выбранном сервере.</value></data>
+  <data name="Only server administrators can link other accounts." xml:space="preserve"><value>Только администраторы сервера могут связывать чужие аккаунты.</value></data>
+  <data name="Choose two different accounts." xml:space="preserve"><value>Выберите два разных аккаунта.</value></data>
 </root>

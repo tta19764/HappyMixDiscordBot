@@ -652,3 +652,38 @@ form[data-dirty="true"] .hm-savebar__clean { display: none; }
 .hm-link-pair__who { display: inline-flex; align-items: center; gap: var(--hm-space-2); }
 .hm-link-pair__who > span:last-child { display: grid; }
 .hm-link-pair__who small { color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); }
+
+/* ---------- Command guide and header utilities ---------- */
+.hm-guide { display: grid; grid-template-columns: 13rem minmax(0, 1fr); gap: var(--hm-space-6); align-items: start; }
+.hm-guide > *, .hm-guide section { min-width: 0; }
+.hm-guide__nav { padding: var(--hm-space-2); }
+.hm-guide__title, .hm-guide__nav a { text-transform: capitalize; }
+.hm-guide section { scroll-margin-top: calc(var(--hm-header-h) + var(--hm-space-6)); }
+.hm-guide__command { border-top: 1px solid var(--hm-border); }
+.hm-guide__command summary { min-height: var(--hm-target); padding: var(--hm-space-4) var(--hm-space-2); cursor: pointer; overflow-wrap: anywhere; border-radius: var(--hm-radius-sm); }
+.hm-guide__command summary:hover, .hm-guide__command[open] summary { background: var(--hm-surface-2); }
+.hm-guide__command summary::marker { color: var(--hm-brand); }
+.hm-guide__command code { font-family: var(--hm-font-mono); color: var(--hm-brand); font-size: var(--hm-fs-sm); overflow-wrap: anywhere; }
+.hm-guide__command summary span { display: block; margin-top: var(--hm-space-2); font-size: var(--hm-fs-sm); }
+.hm-guide__command > p, .hm-guide__options { margin: var(--hm-space-4) var(--hm-space-2); }
+.hm-guide__options { grid-template-columns: minmax(0, 1fr); }
+.hm-guide__options dt { display: flex; flex-wrap: wrap; align-items: center; gap: var(--hm-space-2); margin-top: var(--hm-space-2); }
+.hm-guide__options dd { overflow-wrap: anywhere; }
+.hm-language { flex-shrink: 0; }
+.hm-language select { width: 9.5rem; font-size: var(--hm-fs-sm); }
+.hm-header .hm-btn[aria-current="page"] { color: var(--hm-brand); background: var(--hm-brand-tint); }
+.hm-link-tabs { margin-bottom: var(--hm-space-6); max-width: 100%; }
+.hm-link-tabs a { min-width: 0; white-space: normal; text-align: center; }
+@media (max-width: 59.99rem) {
+    .hm-header__inner { flex-wrap: wrap; padding-block: var(--hm-space-1); }
+    .hm-header__name { display: none; }
+    .hm-guide { grid-template-columns: minmax(0, 1fr); }
+    .hm-guide__nav { position: static; display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); }
+    .hm-guide section { scroll-margin-top: 8rem; }
+}
+@media (max-width: 29.99rem) {
+    .hm-header__inner { gap: var(--hm-space-1); }
+    .hm-switcher { max-width: 9rem; }
+    .hm-header .hm-brand span { display: none; }
+    .hm-language select { width: 8.5rem; }
+}

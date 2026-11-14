@@ -125,3 +125,4 @@ for (const button of document.querySelectorAll("[data-copy]")) {
         button.textContent = button.dataset.copied || "✓";
     });
 }
+document.querySelector("[data-language-select]")?.addEventListener("change", event => event.currentTarget.form.requestSubmit());

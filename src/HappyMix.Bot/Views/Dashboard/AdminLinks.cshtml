@@ -1,0 +1,49 @@
+@model ApproveLinkPage
+@using HappyMix.Bot.Services
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = T["Manage links"];
+    ViewData["NavGuildName"] = Model.GuildName;
+    var candidates = (MemberProfile[])ViewData["Candidates"]!;
+}
+<partial name="_ServerNav" model='new ServerNavModel(Model.GuildId, Model.GuildName, "links", Model.Viewer.CanConfigure, "Linked accounts", T["Connect an alternate account (twink) so HappyMix treats both as one member in this server."])' />
+<partial name="_LinkTabs" model="(Model.GuildId, true)" />
+@if (ViewData["Banner"] is BannerModel banner)
+{
+    <partial name="_Banner" model="banner" />
+}
+@if (Model.Preview is null)
+{
+    <header class="hm-page-head"><div><h2>@T["Link server accounts"]</h2>
+    <p>@T["Select a primary account and an alternate, then review the changes before linking."]</p></div></header>
+    @if (Model.Error is { } error)
+    {
+        var errorBanner = new BannerModel("error", error, null, true);
+        <partial name="_Banner" model="errorBanner" />
+    }
+    <form method="get" class="hm-card hm-stack">
+        <label class="hm-field"><span class="hm-label">@T["Primary"]</span>
+            <select class="hm-select" name="primary" required>
+                <option value="">@T["Choose an account"]</option>
+                @foreach (var member in candidates)
+                {
+                    <option value="@member.Id">@member.DisplayName (@member.Username) · @member.Id</option>
+                }
+            </select>
+        </label>
+        <label class="hm-field"><span class="hm-label">@T["Alternate (twink)"]</span>
+            <select class="hm-select" name="alternate" required>
+                <option value="">@T["Choose an account"]</option>
+                @foreach (var member in candidates)
+                {
+                    <option value="@member.Id">@member.DisplayName (@member.Username) · @member.Id</option>
+                }
+            </select>
+        </label>
+        <div class="hm-row"><button class="hm-btn hm-btn--primary">@T["Review link"]</button></div>
+    </form>
+}
+else
+{
+    <partial name="ApproveLink" model="Model" />
+}

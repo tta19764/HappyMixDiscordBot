@@ -1,7 +1,8 @@
 @using HappyMix.Application.Guilds
 @model ApproveLinkPage
 @{
-    Layout = "_DashboardLayout";
+    bool admin = ViewData["AdminMode"] is true;
+    Layout = admin ? null : "_DashboardLayout";
     ViewData["Title"] = T["Approve linked account"];
     ViewData["NavGuildName"] = Model.GuildName;
     string Localize(string key) => T[key];
@@ -10,11 +11,14 @@
     string Day(DayOfWeek day) => System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(day);
 }
 
+@if (!admin)
+{
 <nav class="hm-crumbs" aria-label="@T["Breadcrumb"]">
     <a href="/">@T["Servers"]</a><span aria-hidden="true">/</span>
     <a href="/links/@Model.GuildId">@T["Linked accounts"]</a><span aria-hidden="true">/</span>
     <span>@T["Approve"]</span>
 </nav>
+}
 
 @if (preview is null)
 {
@@ -51,13 +55,21 @@ else
     <div class="hm-page-head">
         <div>
             <h1>@T["Link {0} to {1}?", alternateName, primaryName]</h1>
-            <p>@T["You're signed in as {0}. Approving makes this account an alternate (twink) of {1} in {2}.", alternateName, primaryName, Model.GuildName]</p>
+            <p>@if (admin) { @T["This links both accounts in the selected server."] } else { @T["You're signed in as {0}. Approving makes this account an alternate (twink) of {1} in {2}.", alternateName, primaryName, Model.GuildName] }</p>
         </div>
     </div>
 
-    <form class="hm-stack" style="gap: var(--hm-space-5); max-width: 52rem" method="post" action="/links/@Model.GuildId/approve/@Model.RequestId" asp-antiforgery="false">
+    <form class="hm-stack" style="gap: var(--hm-space-5); max-width: 52rem" method="post" action="@(admin ? $"/links/{Model.GuildId}/admin" : $"/links/{Model.GuildId}/approve/{Model.RequestId}")" asp-antiforgery="false">
         @Html.AntiForgeryToken()
-        <input type="hidden" name="token" value="@Model.Token">
+        @if (admin)
+        {
+            <input type="hidden" name="primary" value="@preview.PrimaryId">
+            <input type="hidden" name="alternate" value="@preview.AlternateId">
+        }
+        else
+        {
+            <input type="hidden" name="token" value="@Model.Token">
+        }
 
         @if (Model.Error is { } error)
         {
@@ -69,7 +81,7 @@ else
             <div class="hm-link-pair">
                 <span class="hm-link-pair__who"><partial name="_Avatar" model="new AvatarModel(primary, primaryName)" /><span><b>@primaryName</b><small>@T["Primary"]</small></span></span>
                 <span aria-hidden="true">@DashboardIcons.Render("arrow")</span>
-                <span class="hm-link-pair__who"><partial name="_Avatar" model="new AvatarModel(alternate, alternateName)" /><span><b>@alternateName</b><small>@T["Alternate (twink)"] · @T["You"]</small></span></span>
+                <span class="hm-link-pair__who"><partial name="_Avatar" model="new AvatarModel(alternate, alternateName)" /><span><b>@alternateName</b><small>@T["Alternate (twink)"] @if (!admin) { <text> · @T["You"]</text> }</small></span></span>
             </div>
             <p class="hm-help"><strong>@T["Discord permissions are never shared."]</strong> @T["Admin and moderator access still depends on the account you sign in with."]</p>
         </section>
@@ -104,7 +116,7 @@ else
                     <fieldset class="hm-choice">
                         <legend>@T["Every {0}", Day(conflict.Day)]</legend>
                         <label><input type="radio" name="weekly-@conflict.Day" value="primary" required> @T["Keep {0}'s", primaryName] <b>@MemberStacks.Weekly(conflict.Primary)</b></label>
-                        <label><input type="radio" name="weekly-@conflict.Day" value="alternate"> @T["Use this account's"] <b>@MemberStacks.Weekly(conflict.Alternate)</b></label>
+                        <label><input type="radio" name="weekly-@conflict.Day" value="alternate"> @T["Keep {0}'s", alternateName] <b>@MemberStacks.Weekly(conflict.Alternate)</b></label>
                     </fieldset>
                 }
                 @foreach (var conflict in preview.WindowConflicts)
@@ -112,7 +124,7 @@ else
                     <fieldset class="hm-choice">
                         <legend>@MemberStacks.Window(conflict.Alternate, Model.TimeZone)</legend>
                         <label><input type="radio" name="window-@conflict.Alternate.Id" value="primary" required> @T["Keep {0}'s", primaryName] <b>@string.Join(", ", conflict.Primary.Select(window => MemberStacks.Window(window, Model.TimeZone)))</b></label>
-                        <label><input type="radio" name="window-@conflict.Alternate.Id" value="alternate"> @T["Use this account's"] <b>@MemberStacks.Window(conflict.Alternate, Model.TimeZone)</b></label>
+                        <label><input type="radio" name="window-@conflict.Alternate.Id" value="alternate"> @T["Keep {0}'s", alternateName] <b>@MemberStacks.Window(conflict.Alternate, Model.TimeZone)</b></label>
                     </fieldset>
                 }
             }
@@ -120,7 +132,7 @@ else
         </section>
 
         <div class="hm-row hm-sticky-action" style="justify-content: flex-end">
-            <a class="hm-btn hm-btn--ghost" href="/links/@Model.GuildId">@T["Cancel"]</a>
+            <a class="hm-btn hm-btn--ghost" href="@(admin ? $"/links/{Model.GuildId}/admin" : $"/links/{Model.GuildId}")">@T["Cancel"]</a>
             <button class="hm-btn hm-btn--primary hm-btn--lg">@DashboardIcons.Render("check")@T["Approve link"]</button>
         </div>
     </form>

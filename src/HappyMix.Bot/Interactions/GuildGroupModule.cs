@@ -9,7 +9,7 @@ namespace HappyMix.Bot.Interactions;
 
 [Group("group", "Manage saved gaming groups in this server.")]
 [RequireContext(ContextType.Guild)]
-public sealed class GuildGroupModule(ISender sender)
+public sealed partial class GuildGroupModule(ISender sender, Microsoft.Extensions.Options.IOptions<HappyMix.Infrastructure.PandaScore.PandaScoreOptions> options)
     : InteractionModuleBase<SocketInteractionContext>
 {
     private const int DescriptionLimit = 200;
@@ -18,9 +18,10 @@ public sealed class GuildGroupModule(ISender sender)
         (user.GuildPermissions.ManageGuild || user.GuildPermissions.Administrator);
 
     [SlashCommand("create", "Create an invite-only gaming group.")]
-    public Task CreateAsync(string name, [MaxLength(DescriptionLimit)] string? description = null) =>
+    public Task CreateAsync(string name, [MaxLength(DescriptionLimit)] string? description = null,
+        string? game = null, string? steam = null) =>
         ExecuteAsync(new CreateGroupCommand(Actor, name, description,
-            (Context.User as IGuildUser)?.RoleIds.ToArray() ?? []), "Group created.");
+            (Context.User as IGuildUser)?.RoleIds.ToArray() ?? [], game is null && steam is null ? null : [new GroupGameInput(game ?? "", steam)]), "Group created.");
 
     private GroupActor Actor => new(Context.Guild.Id, Context.User.Id, CanModerate);
 

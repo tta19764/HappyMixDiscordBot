@@ -15,6 +15,11 @@
 }
 
 <partial name="_ServerNav" model="nav" />
+@if (Model.Viewer.CanConfigure)
+{
+    <partial name="_LinkTabs" model="(Model.GuildId, false)" />
+}
+
 
 @if (Model.Banner is { } banner)
 {

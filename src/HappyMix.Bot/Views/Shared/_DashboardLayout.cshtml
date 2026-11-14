@@ -30,14 +30,17 @@
                 <span class="hm-user__avatar" aria-hidden="true">@DashboardIcons.Initials(userName)[..1]</span>
                 <span class="hm-muted" style="font-size: var(--hm-fs-sm); font-weight: 600">@userName</span>
             </span>
-            <form method="post" action="/language" asp-antiforgery="false" aria-label="Language">
+            <a class="hm-btn hm-btn--ghost" href="/info" aria-current="@(Context.Request.Path == "/info" ? "page" : null)">@T["Info"]</a>
+            <form class="hm-language" method="post" action="/language" asp-antiforgery="false" aria-label="@T["Language"]">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)">
-                @foreach (var (code, label) in new[] { ("en", "English"), ("uk", "Українська"), ("ru", "Русский") })
-                {
-                    <button class="hm-btn hm-btn--ghost" name="culture" value="@code" lang="@code"
-                            aria-pressed="@(System.Globalization.CultureInfo.CurrentUICulture.Name == code ? "true" : "false")">@label</button>
-                }
+                <select class="hm-select" name="culture" aria-label="@T["Language"]" data-language-select>
+                    @foreach (var (code, label) in new[] { ("en", "English"), ("uk", "Українська"), ("ru", "Русский") })
+                    {
+                        <option value="@code" lang="@code" selected="@(System.Globalization.CultureInfo.CurrentUICulture.Name == code)">@label</option>
+                    }
+                </select>
+                <noscript><button class="hm-btn">@T["Apply"]</button></noscript>
             </form>
             <form action="/logout" method="post" asp-antiforgery="false">
                 @Html.AntiForgeryToken()

@@ -80,7 +80,9 @@ public sealed class SqliteGuildGroupTests
             database.Services.GetRequiredService<IGuildSettingsStore>());
         var module = await interactions.AddModuleAsync<GuildGroupModule>(services);
 
-        Assert.Equal(11, module.SlashCommands.Count);
+        var guide = CommandHelp.Read(interactions);
+        Assert.Contains(guide, command => command.Path == "group game-add" && command.Options.Any(option => option.Name == "steam"));
+        Assert.Equal(16, module.SlashCommands.Count);
         Assert.Contains(module.SlashCommands, command => command.Name == "repair-roles");
         Assert.Single(module.ComponentCommands);
         Assert.Contains(module.SlashCommands, command => command.Name == "me");
@@ -95,7 +97,7 @@ public sealed class SqliteGuildGroupTests
 
     private static ServiceProvider CreateApplicationServices(IGuildGroupStore store, IGuildSettingsStore settings) =>
         new ServiceCollection().AddLogging().AddSingleton(store).AddSingleton(settings).AddSingleton<IAccountLinkStore>(new NoLinks())
-            .AddSingleton<IGroupRoleGateway, TestGroupRoleGateway>().AddApplication().BuildServiceProvider();
+            .AddSingleton<IGroupRoleGateway, TestGroupRoleGateway>().AddSingleton(Microsoft.Extensions.Options.Options.Create(new HappyMix.Infrastructure.PandaScore.PandaScoreOptions())).AddApplication().BuildServiceProvider();
 
     private sealed class NoLinks : IAccountLinkStore
     {

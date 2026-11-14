@@ -4,33 +4,37 @@ using MediatR;
 
 namespace HappyMix.Bot.Interactions;
 
-public sealed class GeneralModule(ISender sender) : InteractionModuleBase<SocketInteractionContext>
+public sealed class GeneralModule(ISender sender, InteractionService interactions) : InteractionModuleBase<SocketInteractionContext>
 {
     /// <summary>Shows a private guide to the commands available in this server.</summary>
     [SlashCommand("help", "Show how to use HappyMix.")]
-    public Task HelpAsync()
+    public async Task HelpAsync(string? topic = null)
     {
-        const string guide = """
-            **HappyMix commands**
+        var catalog = CommandHelp.Read(interactions);
+        string key = string.Join(' ', (topic ?? "").Trim().TrimStart('/').Split(' ', StringSplitOptions.RemoveEmptyEntries));
+        var exact = catalog.FirstOrDefault(command => command.Path.Equals(key, StringComparison.OrdinalIgnoreCase));
+        if (exact is not null)
+        {
+            string options = string.Join("\n", exact.Options.Select(option =>
+                $"• `{option.Name}` ({(option.IsRequired ? "required" : "optional")}) — {option.Description}"));
+            await RespondAsync($"**/{exact.Path}**\n{exact.Description}\n{exact.Flow}\n{options}", ephemeral: true);
+            return;
+        }
 
-            **Gaming groups**
-            `/group create` saves a group. Organizers can use `/group invite` to send an invitation by DM.
-            Accept or decline in the DM, or use `/group list` to find the invitation and `/group join` or `/group decline` to respond.
-            Use `/group leave` to leave. Organizers can use `/group remove` to remove a member or revoke an invite, and `/group delete` to close the group.
+        var matches = catalog.Where(command => key.Length == 0 || command.Path.StartsWith(key + " ", StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (matches.Length == 0)
+        {
+            await RespondAsync("No matching command. Run /help to see all topics.", ephemeral: true);
+            return;
+        }
 
-            **Availability**
-            Use `/availability set today start:17 end:00:30` for tonight, or `/availability set timetable` to set a recurring day.
-            Times use the server time zone unless you supply an offset like `+02:00`. An earlier end time means tomorrow.
-            Use `/availability timetable` to view weekly availability and `/availability clear-day` to remove a day.
-            Use `/availability list` to find the window ID for `/availability edit` or `/availability remove`.
-
-            **Esports settings � Manage Server or Administrator**
-            Use `/settings show` to review settings. Set the destination with `/settings channel`, followed teams with `/settings teams`,
-            notification types with `/settings notifications`, and preferred stream channels with `/settings twitch`.
-
-            `/ping` checks whether the bot is online.
-            """;
-        return RespondAsync(guide, ephemeral: true);
+        await DeferAsync(ephemeral: true);
+        foreach (var module in matches.GroupBy(command => command.Path.Contains(' ') ? command.Path.Split(' ')[0] : "general"))
+        {
+            string heading = $"**{module.Key}**\n{CommandHelp.Flow(module.Key)}\n";
+            var lines = module.Select(command => key.Length == 0 ? $"`/{command.Path}`" : $"`/{command.Path}` — {command.Description}");
+            await FollowupAsync(heading + string.Join(key.Length == 0 ? " · " : "\n", lines), ephemeral: true);
+        }
     }
 
     [SlashCommand("ping", "Checks whether HappyMix is online.")]

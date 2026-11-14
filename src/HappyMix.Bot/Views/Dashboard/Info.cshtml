@@ -1,0 +1,44 @@
+@using HappyMix.Bot.Interactions
+@model CommandGuide[]
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = T["Command guide"];
+    var modules = Model.GroupBy(command => command.Path.Contains(' ') ? command.Path.Split(' ')[0] : "general");
+}
+<header class="hm-page-head"><div><h1>@T["Command guide"]</h1><p>@T["Browse Discord commands, workflows, and options."]</p></div></header>
+<div class="hm-guide">
+    <nav class="hm-card hm-sidenav hm-guide__nav" aria-label="@T["Command modules"]">
+        @foreach (var module in modules)
+        {
+            <a href="#commands-@module.Key">@module.Key <span class="hm-count">@module.Count()</span></a>
+        }
+    </nav>
+    <div class="hm-stack">
+        @foreach (var module in modules)
+        {
+            <section class="hm-card hm-stack" id="commands-@module.Key">
+                <header class="hm-stack hm-stack--sm"><h2 class="hm-guide__title">@module.Key</h2><p class="hm-muted">@T[CommandHelp.Flow(module.Key)]</p></header>
+                @foreach (var command in module)
+                {
+                    <details class="hm-guide__command">
+                        <summary><code>/@command.Path</code><span class="hm-muted">@T[command.Description]</span></summary>
+                        @if (command.Flow.Length > 0)
+                        {
+                            <p>@T[command.Flow]</p>
+                        }
+                        @if (command.Options.Length > 0)
+                        {
+                            <dl class="hm-impact hm-guide__options">
+                                @foreach (var option in command.Options)
+                                {
+                                    <dt><code>@option.Name</code> <small class="hm-badge">@T[option.IsRequired ? "Required" : "Optional"]</small></dt>
+                                    <dd>@T[option.Description]</dd>
+                                }
+                            </dl>
+                        }
+                    </details>
+                }
+            </section>
+        }
+    </div>
+</div>

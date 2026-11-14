@@ -48,13 +48,13 @@ public sealed class GuildSettingsModule(ISender sender, IOptions<PandaScoreOptio
 
     [SlashCommand("set", "Save the server channel and time zone together.")]
     public Task SetAsync(
-        [Summary(description: "Text channel for esports announcements")] ITextChannel channel,
+        [Summary(description: "Text channel for esports announcements"), ChannelTypes(ChannelType.Text)] ITextChannel channel,
         [Summary(description: "IANA time zone, for example Europe/Kyiv or UTC")] string timezone) =>
         SaveLocationAsync(channel, timezone);
 
     [SlashCommand("channel", "Set the default channel or a channel for one game.")]
     public async Task ChannelAsync(
-        [Summary(description: "Text channel. Omit it with a game to restore the default.")] ITextChannel? channel = null,
+        [Summary(description: "Text channel. Omit it with a game to restore the default."), ChannelTypes(ChannelType.Text)] ITextChannel? channel = null,
         [Summary(description: "Game to configure. Omit it to change the default channel.")] Esport? game = null)
     {
         if (channel is null && game is null)
@@ -241,9 +241,34 @@ public sealed class GuildSettingsModule(ISender sender, IOptions<PandaScoreOptio
     private static string FormatTwitchChannels(string[] channels) =>
         channels.Length == 0 ? "None" : string.Join(", ", channels.Take(5));
 
+    [SlashCommand("reset-channel", "Restore the deployment default announcement channel.")]
+    public Task ResetChannelAsync() =>
+        SaveAsync(saved => saved with { ChannelId = 0 }, "Restored the deployment default channel.");
+
+    [SlashCommand("remove-team", "Remove a team alias from this server's catalog.")]
+    public Task RemoveTeamAsync(Esport game, string name) =>
+        ChangeCatalogAsync(game, name.Trim());
+
+    [SlashCommand("reset-catalog", "Restore the deployment team catalog for a game.")]
+    public Task ResetCatalogAsync(Esport game) => ChangeCatalogAsync(game, null);
+
+    private Task ChangeCatalogAsync(Esport game, string? name) =>
+        SavePreferencesAsync(preferences =>
+        {
+            Dictionary<string, long>? catalog = null;
+            if (name is not null)
+            {
+                catalog = GetCatalog(preferences, game);
+                catalog.Remove(name);
+            }
+            return game == Esport.CounterStrike2
+                ? preferences with { CounterStrikeTeamAliases = catalog }
+                : preferences with { Dota2TeamAliases = catalog };
+        }, "Team catalog updated.");
+
     private async Task SaveLocationAsync(ITextChannel? channel, string? timezone, Esport? game = null)
     {
-        if (channel is not null && channel.GuildId != Context.Guild.Id)
+        if (channel is not null && (channel.GuildId != Context.Guild.Id || channel.GetChannelType() != ChannelType.Text))
         {
             await RespondAsync("Choose a text channel in this server.", ephemeral: true);
             return;

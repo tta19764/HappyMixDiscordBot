@@ -14,24 +14,24 @@ public sealed partial class AvailabilityModule
         : InteractionModuleBase<SocketInteractionContext>
     {
         [SlashCommand("today", "Set today's availability. An earlier end time means tomorrow.")]
-        public async Task TodayAsync(string start, string end,
-            [Autocomplete<AvailabilityTimeZoneAutocomplete>, Summary(description: "Time zone or UTC offset. Defaults to the server time zone.")] string? offset = null)
+        public async Task TodayAsync(string start = "", string end = "",
+            [Autocomplete<AvailabilityTimeZoneAutocomplete>, Summary(description: "Time zone or UTC offset. Defaults to the server time zone.")] string? offset = null, [Summary("all_day")] bool allDay = false)
         {
             await DeferAsync(ephemeral: true);
             var result = await sender.Send(new SetTodayAvailabilityCommand(Context.Guild.Id, Context.User.Id,
-                start, end, offset, options.Value.TimeZoneId));
+                start, end, offset, options.Value.TimeZoneId, allDay));
             await ModifyOriginalResponseAsync(message => message.Content = result.IsSuccess
                 ? $"Saved {Format(result.Value)}"
                 : result.Error.Description);
         }
 
         [SlashCommand("timetable", "Set or replace a recurring weekly window for one day.")]
-        public async Task TimetableAsync(DayOfWeek day, string start, string end,
-            [Autocomplete<AvailabilityTimeZoneAutocomplete>, Summary(description: "Time zone or UTC offset. Defaults to the server time zone.")] string? offset = null)
+        public async Task TimetableAsync(DayOfWeek day, string start = "", string end = "",
+            [Autocomplete<AvailabilityTimeZoneAutocomplete>, Summary(description: "Time zone or UTC offset. Defaults to the server time zone.")] string? offset = null, [Summary("all_day")] bool allDay = false)
         {
             await DeferAsync(ephemeral: true);
             var result = await sender.Send(new SetWeeklyAvailabilityCommand(Context.Guild.Id, Context.User.Id,
-                day, start, end, offset, options.Value.TimeZoneId));
+                day, start, end, offset, options.Value.TimeZoneId, allDay));
             await ModifyOriginalResponseAsync(message => message.Content = result.IsSuccess
                 ? $"Saved weekly availability: {FormatWeekly(result.Value)}"
                 : result.Error.Description);

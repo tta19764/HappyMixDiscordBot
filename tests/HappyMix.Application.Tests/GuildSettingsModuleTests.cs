@@ -14,7 +14,7 @@ namespace HappyMix.Application.Tests;
 public sealed class GuildSettingsModuleTests
 {
     private static readonly string[] SettingsCommands =
-        ["add-team", "channel", "notifications", "organizer-role", "ping-role", "reminder", "set", "show",
+        ["add-team", "channel", "notifications", "organizer-role", "ping-role", "reminder", "remove-team", "reset-catalog", "reset-channel", "set", "show",
             "team-catalog", "teams", "timezone", "twitch"];
 
     [Fact]

@@ -63,19 +63,8 @@ public sealed partial class DashboardController
         if (await GetGroupActorAsync(guildId) is not ({ } actor, { } viewer, _))
             return NotMember();
 
-        var weekly = new Dictionary<DayOfWeek, ScheduleChoice>();
-        var windows = new Dictionary<Guid, ScheduleChoice>();
-        foreach (var (key, value) in Request.Form)
-        {
-            var choice = value.ToString() == "alternate" ? ScheduleChoice.KeepAlternate : ScheduleChoice.KeepPrimary;
-            if (key.StartsWith("weekly-", StringComparison.Ordinal) && Enum.TryParse<DayOfWeek>(key[7..], out var day))
-                weekly[day] = choice;
-            else if (key.StartsWith("window-", StringComparison.Ordinal) && Guid.TryParse(key[7..], out var id))
-                windows[id] = choice;
-        }
-
         var result = await sender.Send(new ApproveAccountLinkCommand(guildId, actor.UserId, requestId, token ?? "",
-            new LinkResolutions(weekly, windows, acknowledge)), HttpContext.RequestAborted);
+            ReadLinkResolutions(acknowledge)), HttpContext.RequestAborted);
         if (result.IsFailure)
             return await RenderApproveAsync(guildId, actor.UserId, viewer, requestId, token ?? "", text[result.Error.Description]);
 
@@ -157,5 +146,73 @@ public sealed partial class DashboardController
         if (problem is not null)
             view.StatusCode = preview.IsSuccess ? StatusCodes.Status422UnprocessableEntity : StatusCodes.Status400BadRequest;
         return view;
+    }
+
+    private LinkResolutions ReadLinkResolutions(bool acknowledge)
+    {
+        var weekly = new Dictionary<DayOfWeek, ScheduleChoice>();
+        var windows = new Dictionary<Guid, ScheduleChoice>();
+        foreach (var (key, value) in Request.Form)
+        {
+            var choice = value.ToString() == "alternate" ? ScheduleChoice.KeepAlternate : ScheduleChoice.KeepPrimary;
+            if (key.StartsWith("weekly-", StringComparison.Ordinal) && Enum.TryParse<DayOfWeek>(key[7..], out var day))
+                weekly[day] = choice;
+            else if (key.StartsWith("window-", StringComparison.Ordinal) && Guid.TryParse(key[7..], out var id))
+                windows[id] = choice;
+        }
+
+        return new LinkResolutions(weekly, windows, acknowledge);
+    }
+
+    [HttpGet("/links/{guildId}/admin")]
+    public async Task<IActionResult> AdminLinks(ulong guildId, ulong primary = 0, ulong alternate = 0)
+    {
+        if (await GetGroupActorAsync(guildId) is not ({ } actor, { CanConfigure: true } viewer, _))
+            return StatusCode(StatusCodes.Status403Forbidden);
+
+        return await RenderAdminLinksAsync(guildId, actor.UserId, viewer, primary, alternate, null);
+    }
+
+    [HttpPost("/links/{guildId}/admin")]
+    public async Task<IActionResult> SaveAdminLink(ulong guildId, ulong primary, ulong alternate, bool acknowledge)
+    {
+        if (await GetGroupActorAsync(guildId) is not ({ } actor, { CanConfigure: true } viewer, _))
+            return StatusCode(StatusCodes.Status403Forbidden);
+
+        var result = await sender.Send(new AdminLinkAccountsCommand(guildId, actor.UserId, primary, alternate,
+            ReadLinkResolutions(acknowledge)), HttpContext.RequestAborted);
+        if (result.IsFailure)
+            return await RenderAdminLinksAsync(guildId, actor.UserId, viewer, primary, alternate, text[result.Error.Description]);
+
+        TempData["GroupBannerTitle"] = text["Accounts linked"].Value;
+        if (result.Value.RoleSyncFailed)
+        {
+            TempData["GroupBannerKind"] = "warn";
+            TempData["GroupBannerText"] = text["The link is saved, but Discord group roles didn't update. A server moderator can fix them from Groups → Repair roles, or with /group repair-roles."].Value;
+        }
+        return Redirect($"/links/{guildId}/admin");
+    }
+
+    private async Task<ViewResult> RenderAdminLinksAsync(ulong guildId, ulong administrator, GroupViewer viewer,
+        ulong primary, ulong alternate, string? error)
+    {
+        var ct = HttpContext.RequestAborted;
+        var (members, available) = await memberDirectory.GetMembersAsync(guildId, ct);
+        ViewData["Candidates"] = members.Values.Where(member => member.InServer && !member.IsBot)
+            .OrderBy(member => member.DisplayName, StringComparer.CurrentCultureIgnoreCase).ToArray();
+        ViewData["AdminMode"] = true;
+        ViewData["Banner"] = TakeBanner();
+        LinkPreview? preview = null;
+        if (primary != 0 && alternate != 0)
+        {
+            var result = await sender.Send(new PreviewAdminAccountLinkQuery(guildId, administrator, primary, alternate), ct);
+            if (result.IsSuccess)
+                preview = result.Value;
+            else
+                error ??= text[result.Error.Description];
+        }
+        var zone = await GetGuildZoneAsync(guildId, ct);
+        return View("AdminLinks", new ApproveLinkPage(guildId, GuildName(guildId), viewer, Guid.Empty, "",
+            preview, error, false, new MemberNames(members, available), zone.Id));
     }
 }
