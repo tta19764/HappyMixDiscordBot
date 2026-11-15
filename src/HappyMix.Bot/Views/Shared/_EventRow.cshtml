@@ -1,0 +1,72 @@
+@using HappyMix.Application.Abstractions.Events
+@model EventRow
+@{
+    // ViewData["Actions"]: "answer" shows Accept/Decline, "withdraw" shows Withdraw/Accept again, anything else shows none.
+    string actions = ViewData["Actions"] as string ?? "";
+    string returnUrl = ViewData["ReturnUrl"] as string ?? Model.Url;
+    string date = Model.Date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+    string statusLabel = Model.Status switch { OccurrenceStatus.Confirmed => T["Confirmed"], OccurrenceStatus.Canceled => T["Canceled"], _ => T["Pending"] };
+    string respond = $"/events/{ViewData["GuildId"]}/{Model.EventId}/respond";
+}
+<li class="hm-event hm-event--@Model.StatusKey">
+    <span class="hm-event__date" aria-hidden="true"><small>@Model.DayShort</small><b>@Model.DayNumber</b></span>
+    <div class="hm-event__main">
+        <p class="hm-event__title">
+            <a href="@Model.Url">@Model.Title</a>
+            <span class="hm-badge hm-event__status hm-event__status--@Model.StatusKey">@statusLabel</span>
+            @if (Model.Repeats)
+            {
+                <span class="hm-badge">@T["Repeats"]</span>
+            }
+        </p>
+        <p class="hm-event__meta">
+            <span>@Model.When</span>
+            <span>@Model.Zone</span>
+            @if (Model.GroupName is not null)
+            {
+                <span>@Model.GroupName</span>
+            }
+            @if (!Model.IsOrganizer)
+            {
+                <span>@T["By_Arg0", Model.Organizer]</span>
+            }
+        </p>
+        <p class="hm-event__counts">
+            <span class="hm-event__yes">@T["Arg0_going", Model.Counts.Accepted]</span>
+            <span class="hm-event__no">@T["Arg0_declined", Model.Counts.Declined]</span>
+            <span>@T["Arg0_no_reply", Model.Counts.Waiting]</span>
+            @if (Model.MyAnswer == true)
+            {
+                <span class="hm-event__you">@(Model.Status == OccurrenceStatus.Canceled ? T["You_had_accepted"] : T["You_re_going"])</span>
+            }
+            else if (Model.Withdrawn)
+            {
+                <span class="hm-event__you">@T["You_withdrew"]</span>
+            }
+        </p>
+    </div>
+    @if (Model.Status != OccurrenceStatus.Canceled && Model.IsInvitee && actions is "answer" or "withdraw")
+    {
+        <form class="hm-event__actions" method="post" action="@respond" asp-antiforgery="false">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="date" value="@date">
+            <input type="hidden" name="returnUrl" value="@returnUrl">
+            @if (Model.MyAnswer == true)
+            {
+                <button class="hm-btn hm-btn--sm" name="answer" value="decline" aria-label="@T["Withdraw_from_Arg0_on_Arg1", Model.Title, Model.When]">@T["Withdraw"]</button>
+            }
+            else
+            {
+                <button class="hm-btn hm-btn--primary hm-btn--sm" name="answer" value="accept" aria-label="@T["Accept_Arg0_on_Arg1", Model.Title, Model.When]">@T["Accept"]</button>
+                @if (Model.MyAnswer is null)
+                {
+                    <button class="hm-btn hm-btn--sm" name="answer" value="decline" aria-label="@T["Decline_Arg0_on_Arg1", Model.Title, Model.When]">@T["Decline"]</button>
+                }
+            }
+        </form>
+    }
+    else if (Model.IsOrganizer)
+    {
+        <a class="hm-btn hm-btn--sm hm-event__actions" href="@Model.Url">@T["Manage"]</a>
+    }
+</li>

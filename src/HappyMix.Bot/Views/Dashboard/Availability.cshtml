@@ -1,7 +1,7 @@
 @model AvailabilityPage
 @{
     Layout = "_DashboardLayout";
-    ViewData["Title"] = Model.IsWeekly ? T["Weekly timetable"] : T["Availability today"];
+    ViewData["Title"] = Model.IsWeekly ? T["Weekly_timetable"] : T["Availability_today"];
     ViewData["NavGuildName"] = Model.GuildName;
     string baseUrl = $"/availability/{Model.GuildId}";
     string weeklyUrl = baseUrl + "?view=weekly";
@@ -16,12 +16,12 @@
 <div class="hm-row hm-row--between" style="margin-bottom: var(--hm-space-5)">
     <nav class="hm-segment" aria-label="Availability view">
         <a href="@baseUrl" aria-current="@(Model.IsWeekly ? null : "page")">@DashboardIcons.Render("clock")@T["Today"]</a>
-        <a href="@weeklyUrl" aria-current="@(Model.IsWeekly ? "page" : null)">@DashboardIcons.Render("calendar")@T["Weekly timetable"]</a>
+        <a href="@weeklyUrl" aria-current="@(Model.IsWeekly ? "page" : null)">@DashboardIcons.Render("calendar")@T["Weekly_timetable"]</a>
     </nav>
     @if (Model.IsWeekly)
     {
         <p class="hm-help" style="display: flex; align-items: center; gap: var(--hm-space-2)">
-            @DashboardIcons.Render("globe")<span>@T["Times in {0}", Model.TimeZone]</span>
+            @DashboardIcons.Render("globe")<span>@T["Times_in_Arg0", Model.TimeZone]</span>
         </p>
     }
 </div>
@@ -29,6 +29,30 @@
 @if (Model.Banner is { } banner)
 {
     <div style="margin-bottom: var(--hm-space-4)"><partial name="_Banner" model="banner" /></div>
+}
+
+@if (Model.MyEvents.Count > 0 || Model.EventInvitations > 0)
+{
+    ViewData["GuildId"] = Model.GuildId;
+    <section class="hm-card hm-my-events" aria-labelledby="my-events-title">
+        <div class="hm-card__head">
+            <div><h2 id="my-events-title">@T["My_events"]</h2><p>@T["Dates_you_accepted_Pending_plans_may_still_change_confirmed_ones_are_on"]</p></div>
+            <a class="hm-btn hm-btn--sm" href="/events/@Model.GuildId">@(Model.EventInvitations > 0 ? T["Arg0_invitations_waiting", Model.EventInvitations] : T["All_events"])</a>
+        </div>
+        @if (Model.MyEvents.Count == 0)
+        {
+            <p class="hm-empty-note">@T["Nothing_accepted_yet"]</p>
+        }
+        else
+        {
+            <ul class="hm-events">
+                @foreach (var row in Model.MyEvents)
+                {
+                    <partial name="_EventRow" model="row" view-data='new ViewDataDictionary(ViewData) { ["Actions"] = "withdraw", ["ReturnUrl"] = Context.Request.Path + Context.Request.QueryString }' />
+                }
+            </ul>
+        }
+    </section>
 }
 
 @if (!Model.IsWeekly)
@@ -44,12 +68,12 @@
 
             <partial name="_TimeRange" model="todayRange" />
             <partial name="_Certainty" model="Model.Form.Tentative" />
-            <p class="hm-help">@T["Save a range, then add another. Each range has its own certainty."]</p>
+            <p class="hm-help">@T["Save_a_range_then_add_another_Each_range_has_its_own_certainty"]</p>
 
             @if (Model.Presets.Count > 0)
             {
                 <div class="hm-stack hm-stack--sm" data-presets hidden>
-                    <span class="hm-label" id="presets-label">@T["Quick fill"]</span>
+                    <span class="hm-label" id="presets-label">@T["Quick_fill"]</span>
                     <div class="hm-row" role="group" aria-labelledby="presets-label" style="gap: var(--hm-space-2)">
                         @foreach (var preset in Model.Presets)
                         {
@@ -60,17 +84,17 @@
             }
 
             <hr class="hm-divider" style="margin: 0">
-            <p class="hm-help">@T["Nothing is shared until you save."]</p>
+            <p class="hm-help">@T["Nothing_is_shared_until_you_save"]</p>
             <div class="hm-sticky-action" style="display: flex; justify-content: flex-end; margin-top: calc(-1 * var(--hm-space-2))">
-                <button class="hm-btn hm-btn--primary hm-btn--lg" name="action" value="today" data-range-save>@DashboardIcons.Render("check")@T["Add range"]</button>
+                <button class="hm-btn hm-btn--primary hm-btn--lg" name="action" value="today" data-range-save>@DashboardIcons.Render("check")@T["Add_range"]</button>
             </div>
         </form>
 
         <aside class="hm-stack">
             <section class="hm-card" aria-labelledby="upcoming-title">
                 <div class="hm-card__head" style="margin-bottom: var(--hm-space-2)">
-                    <h2 id="upcoming-title" style="font-size: var(--hm-fs-lg)">@T["Coming up"]</h2>
-                    <span class="hm-badge">@T["One-off"]</span>
+                    <h2 id="upcoming-title" style="font-size: var(--hm-fs-lg)">@T["Coming_up"]</h2>
+                    <span class="hm-badge">@T["One_off"]</span>
                 </div>
                 @if (Model.Upcoming.Count == 0)
                 {
@@ -87,7 +111,7 @@
                                 <div class="hm-list__main">
                                     <p class="hm-list__title">@window.Title</p>
                                     <p class="hm-list__meta">@window.Meta</p>
-                                    <span class="hm-badge @(window.Tentative ? "hm-certainty--tentative" : "hm-certainty--definite")">@T[window.Tentative ? "Tentative" : "Definite"]</span>
+                                    <span class="hm-badge @(window.Tentative ? "hm-certainty--tentative" : "hm-certainty--definite")">@T.Message(window.Tentative ? "Tentative" : "Definite")</span>
                                 </div>
                                 <form method="post" action="@baseUrl" asp-antiforgery="false">
                                     @Html.AntiForgeryToken()
@@ -100,7 +124,7 @@
                 }
             </section>
             <section class="hm-card hm-stack hm-stack--sm" aria-labelledby="weekly-link-title">
-                <h2 id="weekly-link-title" style="font-size: var(--hm-fs-lg)">@T["Weekly timetable"]</h2>
+                <h2 id="weekly-link-title" style="font-size: var(--hm-fs-lg)">@T["Weekly_timetable"]</h2>
                 <p class="hm-help">@Model.WeeklyCount of 7 days set. Weekly hours repeat every week.</p>
                 <a class="hm-link-btn" href="@weeklyUrl">Open weekly timetable @DashboardIcons.Render("arrow")</a>
             </section>
@@ -112,10 +136,10 @@ else
     <section class="hm-card hm-card--flush" aria-labelledby="week-title">
         <div class="hm-card__head" style="padding: var(--hm-space-5) var(--hm-space-5) 0">
             <div>
-                <h2 id="week-title">@T["Your usual week"]</h2>
-                <p>@T["Repeats every week. A day can have several ranges, each definite or tentative."]</p>
+                <h2 id="week-title">@T["Your_usual_week"]</h2>
+                <p>@T["Repeats_every_week_A_day_can_have_several_ranges_each_definite_or"]</p>
             </div>
-            <span class="hm-badge hm-tnum">@T["{0} of 7 days", Model.WeeklyCount]</span>
+            <span class="hm-badge hm-tnum">@T["Arg0_of_7_days", Model.WeeklyCount]</span>
         </div>
 
         <div class="hm-week">
@@ -147,7 +171,7 @@ else
                         <span class="hm-day__name">@row.Name
                             @if (row.IsSaved)
                             {
-                                <small style="color: var(--hm-mint)">@T["✓ Saved"]</small>
+                                <small style="color: var(--hm-mint)">@T["Saved"]</small>
                             }
                             else if (row.IsToday)
                             {
@@ -156,7 +180,7 @@ else
                         </span>
                         @if (row.Windows.Count == 0)
                         {
-                            <span class="hm-day__none">@T["No hours"]</span>
+                            <span class="hm-day__none">@T["No_hours"]</span>
                         }
                         else
                         {
@@ -164,12 +188,12 @@ else
                                 @foreach (var window in row.Windows)
                                 {
                                     <span class="hm-day__range">
-                                        <b>@(window.IsFullDay ? T["All day"].Value : $"{AvailabilityFormat.Time(window.Start)}–{AvailabilityFormat.Time(window.End)}")</b>
+                                        <b>@(window.IsFullDay ? T["All_day"].Value : $"{AvailabilityFormat.Time(window.Start)}–{AvailabilityFormat.Time(window.End)}")</b>
                                         @if (window.End < window.Start)
                                         {
                                             <small>↦ @row.NextShortName</small>
                                         }
-                                        <span class="hm-kind @(window.Tentative ? "hm-kind--tentative" : "")">@T[window.Tentative ? "Tentative" : "Definite"]</span>
+                                        <span class="hm-kind @(window.Tentative ? "hm-kind--tentative" : "")">@T.Message(window.Tentative ? "Tentative" : "Definite")</span>
                                         @if (window.TimeZone != Model.TimeZone)
                                         {
                                             <small>@window.TimeZone</small>
@@ -179,7 +203,7 @@ else
                             </span>
                         }
                     </div>
-                    <a class="hm-dayline hm-dayline--link" href="@editUrl" aria-label="@T["Edit {0}", row.Name]">
+                    <a class="hm-dayline hm-dayline--link" href="@editUrl" aria-label="@T["Edit_Arg0", row.Name]">
                         @foreach (var carry in carries)
                         {
                             <span class="hm-dayline__seg hm-dayline__seg--carry @(carry.Tentative ? "hm-dayline__seg--tentative" : "")" style="left: 0; width: @AvailabilityFormat.Css(AvailabilityFormat.Percent(carry.End))"></span>
@@ -193,11 +217,11 @@ else
                         }
                     </a>
                     <div class="hm-day__actions">
-                        <a class="hm-btn" href="@editUrl" aria-label="@T["Edit {0}", row.Name]">@DashboardIcons.Render(row.Windows.Count == 0 ? "plus" : "pencil")<span class="hm-btn__label">@T[row.Windows.Count == 0 ? "Add hours" : "Edit"]</span></a>
+                        <a class="hm-btn" href="@editUrl" aria-label="@T["Edit_Arg0", row.Name]">@DashboardIcons.Render(row.Windows.Count == 0 ? "plus" : "pencil")<span class="hm-btn__label">@T.Message(row.Windows.Count == 0 ? "Add hours" : "Edit")</span></a>
                         @if (row.Windows.Count > 0)
                         {
-                            var clear = new ConfirmModel(T["Clear"], T["Remove every weekly range on {0}?", row.Name], baseUrl, T["Clear {0}", row.Name],
-                                Fields: new Dictionary<string, string> { ["action"] = "clear", ["day"] = row.Day.ToString() }, TriggerLabel: T["Clear {0}", row.Name]);
+                            var clear = new ConfirmModel(T["Clear"], T["Remove_every_weekly_range_on_Arg0", row.Name], baseUrl, T["Clear_Arg0", row.Name],
+                                Fields: new Dictionary<string, string> { ["action"] = "clear", ["day"] = row.Day.ToString() }, TriggerLabel: T["Clear_Arg0", row.Name]);
                             <partial name="_Confirm" model="clear" />
                         }
                     </div>
@@ -207,7 +231,7 @@ else
         <div class="hm-row hm-week__legend">
             <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg hm-legend-swatch"></span>@T["Definite"]</span>
             <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg hm-dayline__seg--tentative hm-legend-swatch"></span>@T["Tentative"]</span>
-            <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg hm-dayline__seg--carry hm-legend-swatch"></span>@T["Carried over from the night before"]</span>
+            <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg hm-dayline__seg--carry hm-legend-swatch"></span>@T["Carried_over_from_the_night_before"]</span>
         </div>
     </section>
 }

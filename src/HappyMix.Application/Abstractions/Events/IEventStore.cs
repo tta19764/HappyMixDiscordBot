@@ -1,0 +1,69 @@
+namespace HappyMix.Application.Abstractions.Events;
+
+public enum EventRecurrence { Once = 0, Daily = 1, Weekly = 2 }
+
+public enum OccurrenceStatus { Pending = 0, Confirmed = 1, Canceled = 2 }
+
+public enum EventNotificationKind { Invite = 0, Confirmed = 1, Canceled = 2 }
+
+/// <summary>
+/// An event a member organizes. <see cref="StartTime"/> is local to <see cref="TimeZone"/> and is kept on every date,
+/// so a weekly 20:00 stays 20:00 across daylight-saving changes. A recurring event always has an <see cref="Until"/> date.
+/// </summary>
+public sealed record GuildEvent(
+    Guid Id, ulong GuildId, ulong OrganizerId, Guid? GroupId, string Title, string? Description, string TimeZone,
+    DateOnly StartDate, TimeOnly StartTime, int DurationMinutes, EventRecurrence Recurrence, IReadOnlyList<DayOfWeek> Weekdays,
+    DateOnly? Until, DateTimeOffset CreatedAt, DateTimeOffset? CanceledAt);
+
+/// <summary>One date of an event. Responses, confirmation and cancellation are tracked per occurrence.</summary>
+public sealed record EventOccurrence(Guid EventId, DateOnly Date, DateTimeOffset Start, DateTimeOffset End,
+    OccurrenceStatus Status, DateTimeOffset? ConfirmedAt, DateTimeOffset? CanceledAt);
+
+/// <summary>An invitee's answer for one occurrence. <see cref="Withdrawn"/> marks a decline that replaced an acceptance.</summary>
+public sealed record EventResponse(Guid EventId, DateOnly Date, ulong UserId, bool Accepted, bool Withdrawn, DateTimeOffset At);
+
+/// <summary>The delivery state of one Discord message for one person and occurrence.</summary>
+public sealed record EventDelivery(Guid EventId, DateOnly Date, ulong UserId, EventNotificationKind Kind, bool Sent, bool Failed, string? Error);
+
+/// <summary>An event with everything the dashboard and the permission checks need.</summary>
+public sealed record EventDetails(GuildEvent Event, IReadOnlyList<ulong> Invitees, IReadOnlyList<EventOccurrence> Occurrences,
+    IReadOnlyList<EventResponse> Responses, IReadOnlyList<EventDelivery> Deliveries);
+
+/// <summary>A message waiting to be sent, with the event it belongs to.</summary>
+public sealed record EventOutboxItem(GuildEvent Event, EventOccurrence Occurrence, ulong UserId, EventNotificationKind Kind, int Attempts);
+
+/// <summary>What changed when someone answered.</summary>
+public sealed record EventResponseChange(bool? PreviouslyAccepted, bool Accepted, bool Withdrawn);
+
+public interface IEventStore
+{
+    /// <summary>Stores a new event. Returns false (and stores nothing) when an event with the same ID already exists.</summary>
+    Task<bool> CreateAsync(GuildEvent guildEvent, IReadOnlyCollection<ulong> invitees, IReadOnlyCollection<EventOccurrence> occurrences);
+
+    Task<EventDetails?> GetAsync(ulong guildId, Guid eventId);
+
+    /// <summary>Events the user organizes or is invited to, with occurrences ending at or after <paramref name="from"/>.</summary>
+    Task<IReadOnlyList<EventDetails>> ListForUserAsync(ulong guildId, ulong userId, DateTimeOffset from);
+
+    Task<IReadOnlyList<EventDetails>> ListForGroupAsync(ulong guildId, Guid groupId, DateTimeOffset from);
+
+    /// <summary>Records an answer. Answering the same way twice changes nothing.</summary>
+    Task<EventResponseChange> RespondAsync(Guid eventId, DateOnly day, ulong userId, bool accepted, DateTimeOffset now);
+
+    /// <summary>Moves an occurrence from <paramref name="from"/> to <paramref name="target"/>; false when it wasn't in an allowed state.</summary>
+    Task<bool> SetStatusAsync(Guid eventId, DateOnly day, IReadOnlyCollection<OccurrenceStatus> from, OccurrenceStatus target, DateTimeOffset now);
+
+    /// <summary>Cancels the series and every occurrence that hasn't started yet. Returns the dates canceled now.</summary>
+    Task<IReadOnlyList<DateOnly>> CancelSeriesAsync(Guid eventId, DateTimeOffset now);
+
+    /// <summary>Queues messages; one already queued for the same person, date and kind is left alone.</summary>
+    Task EnqueueAsync(IEnumerable<(Guid EventId, DateOnly Date, ulong UserId, EventNotificationKind Kind)> messages, DateTimeOffset now);
+
+    /// <summary>Queues invitations for occurrences that start before <paramref name="windowEnd"/>, once per person and date.</summary>
+    Task<int> EnqueueDueInvitesAsync(DateTimeOffset now, DateTimeOffset windowEnd);
+
+    Task<IReadOnlyList<EventOutboxItem>> DueMessagesAsync(DateTimeOffset now, int limit);
+
+    /// <summary>Marks a message sent, or failed: retried at <paramref name="retryAt"/>, or never again when it is null.</summary>
+    Task MarkAsync(Guid eventId, DateOnly day, ulong userId, EventNotificationKind kind, bool sent, string? failure, DateTimeOffset? retryAt);
+}

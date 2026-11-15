@@ -3,12 +3,12 @@
    row and an "add" box. The textarea stays the field that is posted, so both views always save the same thing. *@
 <div class="hm-listedit" data-list-editor data-kind="@Model.Kind" data-max="@Model.Max" data-search-url="@Model.SearchUrl"
      data-known="@Model.KnownJson" data-defaults="@string.Join("\n", Model.DefaultLines)"
-     data-label-remove="@T["Remove {0}"]" data-label-text="@T["Edit as text"]" data-label-list="@T["Show as list"]"
-     data-label-none="@T["No matches. Press Enter to add it as typed; it's checked when you save."]"
-     data-label-unavailable="@T["Search isn't available right now. Press Enter to add it as typed."]"
-     data-label-searching="@T["Searching…"]" data-label-invalid="@T["That isn't a Twitch handle or twitch.tv link."]"
-     data-label-duplicate="@T["Already in the list."]" data-label-full="@T["The list is full."]"
-     data-label-unresolved="@T["Checked when you save"]" data-label-removed="@T["Removed {0}"]" data-label-count="@T["{0} of {1}"]">
+     data-label-remove="@T["Remove_Arg0"]" data-label-text="@T["Edit_as_text"]" data-label-list="@T["Show_as_list"]"
+     data-label-none="@T["No_matches_Press_Enter_to_add_it_as_typed_it_s_checked"]"
+     data-label-unavailable="@T["Search_isn_t_available_right_now_Press_Enter_to_add_it_as"]"
+     data-label-searching="@T["Searching"]" data-label-invalid="@T["That_isn_t_a_Twitch_handle_or_twitch_tv_link"]"
+     data-label-duplicate="@T["Already_in_the_list"]" data-label-full="@T["The_list_is_full"]"
+     data-label-unresolved="@T["Checked_when_you_save"]" data-label-removed="@T["Removed_Arg0"]" data-label-count="@T["Arg0_of_Arg1"]">
     <ul class="hm-listedit__items" data-list-items hidden aria-label="@Model.Label"></ul>
     <p class="hm-listedit__empty" data-list-empty hidden>@Model.EmptyText</p>
 
@@ -35,6 +35,6 @@
 
     <div class="hm-listedit__foot" data-list-foot hidden>
         <span class="hm-subtle" data-list-count></span>
-        <button class="hm-btn hm-btn--ghost hm-btn--sm" type="button" data-list-toggle aria-pressed="false">@DashboardIcons.Render("pencil")<span>@T["Edit as text"]</span></button>
+        <button class="hm-btn hm-btn--ghost hm-btn--sm" type="button" data-list-toggle aria-pressed="false">@DashboardIcons.Render("pencil")<span>@T["Edit_as_text"]</span></button>
     </div>
 </div>

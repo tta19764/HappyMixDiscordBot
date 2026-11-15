@@ -68,12 +68,12 @@ public sealed partial class DashboardController
                 : message.Contains("name", StringComparison.OrdinalIgnoreCase) ? "name" : "";
             bool canCreate = (await sender.Send(new CanCreateGroupQuery(actor, roles), HttpContext.RequestAborted)).Value;
             var view = View("NewGroup", new CreateGroupPage(guildId, GuildName(guildId), viewer, canCreate, name, description,
-                gameName, gameSteam, text[message], field));
+                gameName, gameSteam, text.Message(message), field));
             view.StatusCode = StatusCodes.Status422UnprocessableEntity;
             return view;
         }
 
-        SetSavedBanner(result.Value, text["Group created"], text["You organize this group. Invite members when you're ready."]);
+        SetSavedBanner(result.Value, text["Group_created"], text["You_organize_this_group_Invite_members_when_you_re_ready"]);
         return Redirect($"/groups/{guildId}/{result.Value.GroupId}");
     }
 
@@ -118,21 +118,21 @@ public sealed partial class DashboardController
         var target = await ResolveInviteeAsync(guildId, member);
         if (target is null)
             return await RenderGroupAsync(guildId, actor, viewer, groupId, null, null, new GroupFormState("members",
-                text["Choose a person from this server by their Discord username."], Member: member));
+                text["Choose_a_person_from_this_server_by_their_Discord_username"], Member: member));
 
         Guid token = Guid.NewGuid();
         var group = detail.Value.Summary;
         var result = await sender.Send(new InviteGroupMemberCommand(actor, group.Name, target.Value.Id, token), HttpContext.RequestAborted);
         if (result.IsFailure)
             return await RenderGroupAsync(guildId, actor, viewer, groupId, null, null,
-                new GroupFormState("members", text[result.Error.Description], Member: member));
+                new GroupFormState("members", text.Message(result.Error.Description), Member: member));
 
         bool delivered = discord.GetGuild(guildId) is { } guild &&
             await GroupInviteMessages.SendAsync(target.Value.User, guildId, guild.Name, group.Name, token);
-        TempData["GroupBannerTitle"] = text["Invitation sent to {0}", target.Value.Name].Value;
+        TempData["GroupBannerTitle"] = text["Invitation_sent_to_Arg0", target.Value.Name].Value;
         TempData["GroupBannerText"] = delivered
-            ? text["They got a Discord message with Accept and Decline buttons, and can also answer here."].Value
-            : text["Discord couldn't deliver the message. They can still accept from Groups or with /group join."].Value;
+            ? text["They_got_a_Discord_message_with_Accept_and_Decline_buttons_and_can"].Value
+            : text["Discord_couldn_t_deliver_the_message_They_can_still_accept_from_Groups"].Value;
         return Redirect($"/groups/{guildId}/{groupId}?tab=roster#members");
     }
 
@@ -174,10 +174,10 @@ public sealed partial class DashboardController
         var result = await sender.Send(new DeleteGroupCommand(actor, detail.Value.Summary.Name), HttpContext.RequestAborted);
         if (result.IsFailure)
             return await RenderGroupAsync(guildId, actor, viewer, groupId, null, null,
-                new GroupFormState("close", text[result.Error.Description]));
+                new GroupFormState("close", text.Message(result.Error.Description)));
 
-        TempData["GroupBannerTitle"] = text["{0} was closed", detail.Value.Summary.Name].Value;
-        TempData["GroupBannerText"] = text["Its saved record and Discord role were deleted."].Value;
+        TempData["GroupBannerTitle"] = text["Arg0_was_closed", detail.Value.Summary.Name].Value;
+        TempData["GroupBannerText"] = text["Its_saved_record_and_Discord_role_were_deleted"].Value;
         return Redirect($"/groups/{guildId}");
     }
 
@@ -191,13 +191,13 @@ public sealed partial class DashboardController
         if (result.IsFailure)
         {
             TempData["GroupBannerKind"] = "error";
-            TempData["GroupBannerTitle"] = text["Role repair failed"].Value;
-            TempData["GroupBannerText"] = text[result.Error.Description].Value;
+            TempData["GroupBannerTitle"] = text["Role_repair_failed"].Value;
+            TempData["GroupBannerText"] = text.Message(result.Error.Description).Value;
         }
         else
         {
-            TempData["GroupBannerTitle"] = text["Group roles repaired"].Value;
-            TempData["GroupBannerText"] = text["Every member's group roles now match the saved groups."].Value;
+            TempData["GroupBannerTitle"] = text["Group_roles_repaired"].Value;
+            TempData["GroupBannerText"] = text["Every_member_s_group_roles_now_match_the_saved_groups"].Value;
         }
         return Redirect($"/groups/{guildId}?filter=all");
     }
@@ -217,9 +217,9 @@ public sealed partial class DashboardController
         var result = await sender.Send(command(actor, detail.Value.Summary), HttpContext.RequestAborted);
         if (result.IsFailure)
             return await RenderGroupAsync(guildId, actor, viewer, groupId, null, null,
-                (form ?? new GroupFormState(section, null)) with { Section = form?.Section ?? section, Error = text[result.Error.Description] });
+                (form ?? new GroupFormState(section, null)) with { Section = form?.Section ?? section, Error = text.Message(result.Error.Description) });
 
-        SetSavedBanner(result.Value, text[success], null);
+        SetSavedBanner(result.Value, text.Message(success), null);
         // After declining or leaving, the group may no longer be visible to this user.
         return Redirect(afterDecline ? $"/groups/{guildId}"
             : $"/groups/{guildId}/{groupId}{(section == "members" ? "?tab=roster" : "")}#{section}");
@@ -250,8 +250,20 @@ public sealed partial class DashboardController
             : [];
         string backUrl = back is not null && back.StartsWith($"/groups/{guildId}", StringComparison.Ordinal) && Url.IsLocalUrl(back)
             ? back : $"/groups/{guildId}";
-        var view = View("Group", new GroupPage(guildId, GuildName(guildId), viewer, group, new MemberNames(members, available),
-            candidates, banner, backUrl, form, board, evening, tab));
+        var names = new MemberNames(members, available);
+        var events = Array.Empty<EventRow>();
+        if (detail.Value.CanViewRoster)
+        {
+            // Every upcoming date of the group's events, so pending plans, confirmed sessions and cancellations show here.
+            var now = clock.UtcNow;
+            var viewerId = (await sender.Send(new HappyMix.Application.Events.GetMemberEventsQuery(guildId, actor.UserId), cancellationToken)).Value.ViewerId;
+            events = (await sender.Send(new HappyMix.Application.Events.GetGroupEventsQuery(guildId, groupId), cancellationToken)).Value
+                .SelectMany(details => details.Occurrences.Where(item => item.End > now)
+                    .Select(item => EventText.Row(details, item, viewerId, EventText.Zone(details.Event), null, id => names.Name(id, key => text.Message(key)), guildId)))
+                .OrderBy(row => row.Date).Take(10).ToArray();
+        }
+        var view = View("Group", new GroupPage(guildId, GuildName(guildId), viewer, group, names,
+            candidates, banner, backUrl, form, board, evening, tab) { Events = events });
         if (form?.Error is not null)
             view.StatusCode = StatusCodes.Status422UnprocessableEntity;
         return view;
@@ -294,8 +306,8 @@ public sealed partial class DashboardController
         if (change.RoleSyncFailed)
         {
             TempData["GroupBannerKind"] = "warn";
-            TempData["GroupBannerTitle"] = text["Saved, but the Discord role didn't update"].Value;
-            TempData["GroupBannerText"] = text["The group record is saved. A server moderator can fix the role from Groups → Repair roles, or with /group repair-roles."].Value;
+            TempData["GroupBannerTitle"] = text["Saved_but_the_Discord_role_didn_t_update"].Value;
+            TempData["GroupBannerText"] = text["The_group_record_is_saved_A_server_moderator_can_fix_the_role"].Value;
         }
     }
 
@@ -303,8 +315,8 @@ public sealed partial class DashboardController
         ? new BannerModel(TempData["GroupBannerKind"] as string ?? "success", title, TempData["GroupBannerText"] as string)
         : null;
 
-    private ViewResult GroupNotFound(ulong guildId) => Forbidden(new ForbiddenPage(text["Group not available"],
-        text["That group doesn't exist or you don't have access to it."], $"/groups/{guildId}", text["Back to groups"]));
+    private ViewResult GroupNotFound(ulong guildId) => Forbidden(new ForbiddenPage(text["Group_not_available"],
+        text["That_group_doesn_t_exist_or_you_don_t_have_access_to"], $"/groups/{guildId}", text["Back_to_groups"]));
 
     private string GuildName(ulong guildId) => discord.GetGuild(guildId)?.Name ?? "HappyMix";
 

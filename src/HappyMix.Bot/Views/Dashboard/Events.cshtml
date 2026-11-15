@@ -1,0 +1,85 @@
+@model EventsPage
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = T["Events"];
+    ViewData["NavGuildName"] = Model.GuildName;
+    var nav = new ServerNavModel(Model.GuildId, Model.GuildName, "events", Model.CanConfigure, "Events",
+        T["Plan_a_session_invite_people_then_confirm_when_enough_say_yes"]);
+    string back = $"/events/{Model.GuildId}";
+    ViewData["GuildId"] = Model.GuildId;
+    ViewData["ReturnUrl"] = back;
+}
+
+<partial name="_ServerNav" model="nav" />
+
+@if (Model.Banner is { } banner)
+{
+    <div style="margin-bottom: var(--hm-space-4)"><partial name="_Banner" model="banner" /></div>
+}
+
+<div class="hm-toolbar" style="margin-bottom: var(--hm-space-5)">
+    <a class="hm-btn hm-btn--primary" href="/events/@Model.GuildId/new">@DashboardIcons.Render("plus")@T["New_event"]</a>
+</div>
+
+<div class="hm-stack hm-stack--lg">
+    <section class="hm-card" aria-labelledby="ev-invites">
+        <div class="hm-card__head">
+            <div><h2 id="ev-invites">@T["Invitations"]</h2><p>@T["Dates_waiting_for_your_answer_Each_date_of_a_repeating_event_is"]</p></div>
+            @if (Model.Invitations.Count > 0)
+            {
+                <span class="hm-badge hm-badge--custom">@T["Arg0_waiting", Model.Invitations.Count]</span>
+            }
+        </div>
+        @if (Model.Invitations.Count == 0)
+        {
+            <p class="hm-empty-note">@T["No_invitations_right_now"]</p>
+        }
+        else
+        {
+            <ul class="hm-events">
+                @foreach (var row in Model.Invitations)
+                {
+                    <partial name="_EventRow" model="row" view-data='new ViewDataDictionary(ViewData) { ["Actions"] = "answer" }' />
+                }
+            </ul>
+        }
+    </section>
+
+    <section class="hm-card" aria-labelledby="ev-mine">
+        <div class="hm-card__head">
+            <div><h2 id="ev-mine">@T["My_events"]</h2><p>@T["Dates_you_accepted_Pending_plans_may_still_change_confirmed_ones_are_on"]</p></div>
+        </div>
+        @if (Model.Accepted.Count == 0)
+        {
+            <p class="hm-empty-note">@T["Nothing_planned_yet_Accept_an_invitation_and_it_shows_up_here_and"]</p>
+        }
+        else
+        {
+            <ul class="hm-events">
+                @foreach (var row in Model.Accepted)
+                {
+                    <partial name="_EventRow" model="row" view-data='new ViewDataDictionary(ViewData) { ["Actions"] = "withdraw" }' />
+                }
+            </ul>
+        }
+    </section>
+
+    <section class="hm-card" aria-labelledby="ev-organizing">
+        <div class="hm-card__head">
+            <div><h2 id="ev-organizing">@T["Organized_by_you"]</h2><p>@T["The_next_date_of_each_event_you_organize_with_who_s_coming"]</p></div>
+        </div>
+        @if (Model.Organizing.Count == 0)
+        {
+            <p class="hm-empty-note">@T["You_haven_t_planned_any_events_Start_one_for_a_group_or"]</p>
+        }
+        else
+        {
+            <ul class="hm-events">
+                @foreach (var row in Model.Organizing)
+                {
+                    <partial name="_EventRow" model="row" />
+                }
+            </ul>
+        }
+    </section>
+</div>

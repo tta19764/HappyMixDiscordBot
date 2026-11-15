@@ -124,10 +124,10 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
         {
             case "today" when !hasTimes:
                 return await RenderAvailabilityAsync(guildId, member, "today", null, null,
-                    Error(text["Couldn't save today"], text["Pick a start and end time, or choose Free all day."]), form);
+                    Error(text["Couldn_t_save_today"], text["Pick_a_start_and_end_time_or_choose_Free_all_day"]), form);
             case "weekly" when day is { } missingDay && !hasTimes:
                 return await RenderAvailabilityAsync(guildId, member, "weekly", missingDay, null,
-                    Error(text["Couldn't save {0}", missingDay], text["Pick a start and end time, or choose Free all day."]), form);
+                    Error(text["Couldn_t_save_Arg0", missingDay], text["Pick_a_start_and_end_time_or_choose_Free_all_day"]), form);
             case "today":
             {
                 var result = await sender.Send(new SetTodayAvailabilityCommand(guildId, userId, start ?? "", end ?? "",
@@ -136,7 +136,7 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
                     return await RenderAvailabilityAsync(guildId, member, "today", null, null,
                         Error("Couldn't save today", result.Error.Description), form);
 
-                return Saved("Availability saved", text[tentative ? "Tentative" : "Definite"], guildId, "today");
+                return Saved("Availability saved", text.Message(tentative ? "Tentative" : "Definite"), guildId, "today");
             }
             case "weekly" when day is { } weekday:
             {
@@ -146,7 +146,7 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
                     return await RenderAvailabilityAsync(guildId, member, "weekly", weekday, null,
                         Error($"Couldn't save {weekday}", result.Error.Description), form);
 
-                return Saved("Availability saved", text[tentative ? "Tentative" : "Definite"], guildId, "weekly", weekday);
+                return Saved("Availability saved", text.Message(tentative ? "Tentative" : "Definite"), guildId, "weekly", weekday);
             }
             case "remove-weekly" when day is { } rangeDay && TimeOnly.TryParse(start, CultureInfo.InvariantCulture, out var removeStart) && offset is not null:
             {
@@ -191,7 +191,7 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
 
     /// <summary>A range in the server zone, shown as "Today · All day" when it covers a whole local day.</summary>
     private string RangeText(DateTime start, DateTime end, DateOnly today) => AvailabilityFormat.IsFullDay(start, end)
-        ? $"{AvailabilityFormat.Day(DateOnly.FromDateTime(start), today)} · {text["All day"]}"
+        ? $"{AvailabilityFormat.Day(DateOnly.FromDateTime(start), today)} · {text["All_day"]}"
         : AvailabilityFormat.Range(start, end, today);
 
     private static BannerModel Error(string title, string text) => new("error", title, text);
@@ -222,11 +222,15 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
         }).ToArray();
 
         var guild = discord.GetGuild(guildId);
+        var (invitations, accepted, _) = await LoadEventRowsAsync(guildId, member.Id);
         return View("Availability", new AvailabilityPage(guildId, guild?.Name ?? "HappyMix",
             member.GuildPermissions.Administrator, view, zone.Id,
             AvailabilityFormat.Offset(zone.GetUtcOffset(clock.UtcNow)),
             now.ToString("dddd d MMMM", CultureInfo.CurrentCulture), rows, week,
-            GetPresets(now, weekly.FirstOrDefault(item => item.Day == now.DayOfWeek)), banner, form));
+            GetPresets(now, weekly.FirstOrDefault(item => item.Day == now.DayOfWeek)), banner, form)
+        {
+            MyEvents = accepted.Take(6).ToArray(), EventInvitations = invitations.Count
+        });
     }
 
     /// <summary>
@@ -257,13 +261,13 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
             HttpContext.RequestAborted);
         if (result.IsFailure)
             return await RenderAvailabilityAsync(guildId, member, "weekly", day, null,
-                Error(text["Couldn't save {0}", CultureInfo.CurrentUICulture.DateTimeFormat.GetDayName(day)], text[result.Error.Description]),
+                Error(text["Couldn_t_save_Arg0", CultureInfo.CurrentUICulture.DateTimeFormat.GetDayName(day)], text.Message(result.Error.Description)),
                 new AvailabilityForm(Offset: offset) { Ranges = ranges });
 
         string name = CultureInfo.CurrentUICulture.DateTimeFormat.GetDayName(day);
         return ranges.Count == 0
-            ? Saved(text["{0} cleared", name], null, guildId, "weekly", day, false)
-            : Saved(text["{0} saved", name], text["{0} ranges", ranges.Count], guildId, "weekly", day);
+            ? Saved(text["Arg0_cleared", name], null, guildId, "weekly", day, false)
+            : Saved(text["Arg0_saved", name], text["Arg0_ranges", ranges.Count], guildId, "weekly", day);
     }
 
     private static AvailabilityPreset[] GetPresets(DateTimeOffset now, WeeklyAvailability? todayWeekly)
@@ -295,13 +299,13 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
             .OrderBy(window => window.Start)
             .ToArray();
         var status = upcoming.Select(window => RangeText(window.Start, window.End, today) + " · " +
-            text[window.Tentative ? "Tentative" : "Definite"]).ToList();
+            text.Message(window.Tentative ? "Tentative" : "Definite")).ToList();
 
         var weekly = (await sender.Send(new GetWeeklyAvailabilityQuery(guildId, userId), cancellationToken)).Value;
         var ranges = weekly.SelectMany(window => WeeklyStatusRanges(window, today, zone))
             .Where(window => window.End > now && DateOnly.FromDateTime(window.Start.DateTime) <= today).ToArray();
         status.AddRange(ranges.Select(window =>
-            RangeText(window.Start.DateTime, window.End.DateTime, today) + " · " + text[window.Tentative ? "Tentative" : "Definite"] + " · " + text["Weekly"]));
+            RangeText(window.Start.DateTime, window.End.DateTime, today) + " · " + text.Message(window.Tentative ? "Tentative" : "Definite") + " · " + text["Weekly"]));
         return status.Count == 0 ? null : string.Join(" · ", status);
     }
 

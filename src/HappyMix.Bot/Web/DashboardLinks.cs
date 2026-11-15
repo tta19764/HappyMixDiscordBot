@@ -27,7 +27,7 @@ public sealed partial class DashboardController
 
         var result = await sender.Send(new CreateAccountLinkRequestCommand(guildId, actor.UserId), HttpContext.RequestAborted);
         if (result.IsFailure)
-            return await RenderLinksAsync(guildId, actor.UserId, viewer, new BannerModel("error", text["Link request not created"], text[result.Error.Description]));
+            return await RenderLinksAsync(guildId, actor.UserId, viewer, new BannerModel("error", text["Link_request_not_created"], text.Message(result.Error.Description)));
 
         // Shown once. Only a hash of the secret is stored.
         TempData["LinkUrl"] = $"{Request.Scheme}://{Request.Host}/links/{guildId}/approve/{result.Value.RequestId}?t={Uri.EscapeDataString(result.Value.Token)}";
@@ -43,7 +43,7 @@ public sealed partial class DashboardController
 
         var result = await sender.Send(new RevokeAccountLinkRequestCommand(guildId, actor.UserId, requestId), HttpContext.RequestAborted);
         TempData["GroupBannerKind"] = result.IsSuccess ? "success" : "error";
-        TempData["GroupBannerTitle"] = result.IsSuccess ? text["Link request revoked"].Value : text[result.Error.Description].Value;
+        TempData["GroupBannerTitle"] = result.IsSuccess ? text["Link_request_revoked"].Value : text.Message(result.Error.Description).Value;
         return Redirect($"/links/{guildId}");
     }
 
@@ -66,14 +66,14 @@ public sealed partial class DashboardController
         var result = await sender.Send(new ApproveAccountLinkCommand(guildId, actor.UserId, requestId, token ?? "",
             ReadLinkResolutions(acknowledge)), HttpContext.RequestAborted);
         if (result.IsFailure)
-            return await RenderApproveAsync(guildId, actor.UserId, viewer, requestId, token ?? "", text[result.Error.Description]);
+            return await RenderApproveAsync(guildId, actor.UserId, viewer, requestId, token ?? "", text.Message(result.Error.Description));
 
-        TempData["GroupBannerTitle"] = result.Value.AlreadyLinked ? text["These accounts were already linked"].Value : text["Accounts linked"].Value;
-        TempData["GroupBannerText"] = text["HappyMix now treats both accounts as one member in this server."].Value;
+        TempData["GroupBannerTitle"] = result.Value.AlreadyLinked ? text["These_accounts_were_already_linked"].Value : text["Accounts_linked"].Value;
+        TempData["GroupBannerText"] = text["HappyMix_now_treats_both_accounts_as_one_member_in_this_server"].Value;
         if (result.Value.RoleSyncFailed)
         {
             TempData["GroupBannerKind"] = "warn";
-            TempData["GroupBannerText"] = text["The link is saved, but Discord group roles didn't update. A server moderator can fix them from Groups → Repair roles, or with /group repair-roles."].Value;
+            TempData["GroupBannerText"] = text["The_link_is_saved_but_Discord_group_roles_didn_t_update_A"].Value;
         }
         return Redirect($"/links/{guildId}");
     }
@@ -88,7 +88,7 @@ public sealed partial class DashboardController
         if (preview.IsFailure)
         {
             TempData["GroupBannerKind"] = "error";
-            TempData["GroupBannerTitle"] = text[preview.Error.Description].Value;
+            TempData["GroupBannerTitle"] = text.Message(preview.Error.Description).Value;
             return Redirect($"/links/{guildId}");
         }
 
@@ -106,16 +106,16 @@ public sealed partial class DashboardController
         if (result.IsFailure)
         {
             TempData["GroupBannerKind"] = "error";
-            TempData["GroupBannerTitle"] = text[result.Error.Description].Value;
+            TempData["GroupBannerTitle"] = text.Message(result.Error.Description).Value;
         }
         else
         {
-            TempData["GroupBannerTitle"] = text["Accounts unlinked"].Value;
-            TempData["GroupBannerText"] = text["The alternate keeps its own memberships and gets its saved schedule back."].Value;
+            TempData["GroupBannerTitle"] = text["Accounts_unlinked"].Value;
+            TempData["GroupBannerText"] = text["The_alternate_keeps_its_own_memberships_and_gets_its_saved_schedule_back"].Value;
             if (result.Value.RoleSyncFailed)
             {
                 TempData["GroupBannerKind"] = "warn";
-                TempData["GroupBannerText"] = text["The accounts are unlinked, but Discord group roles didn't update. A server moderator can fix them from Groups → Repair roles."].Value;
+                TempData["GroupBannerText"] = text["The_accounts_are_unlinked_but_Discord_group_roles_didn_t_update_A"].Value;
             }
         }
         return Redirect($"/links/{guildId}");
@@ -139,7 +139,7 @@ public sealed partial class DashboardController
         var (members, available) = await memberDirectory.GetMembersAsync(guildId, cancellationToken);
         var zone = await GetGuildZoneAsync(guildId, cancellationToken);
         var preview = await sender.Send(new PreviewAccountLinkQuery(guildId, userId, requestId, token), cancellationToken);
-        string? problem = error ?? (preview.IsFailure ? text[preview.Error.Description].Value : null);
+        string? problem = error ?? (preview.IsFailure ? text.Message(preview.Error.Description).Value : null);
         bool sameAccount = preview.IsFailure && preview.Error.Description.StartsWith("You're signed in with the account that created", StringComparison.Ordinal);
         var view = View("ApproveLink", new ApproveLinkPage(guildId, GuildName(guildId), viewer, requestId, token,
             preview.IsSuccess ? preview.Value : null, problem, sameAccount, new MemberNames(members, available), zone.Id));
@@ -182,13 +182,13 @@ public sealed partial class DashboardController
         var result = await sender.Send(new AdminLinkAccountsCommand(guildId, actor.UserId, primary, alternate,
             ReadLinkResolutions(acknowledge)), HttpContext.RequestAborted);
         if (result.IsFailure)
-            return await RenderAdminLinksAsync(guildId, actor.UserId, viewer, primary, alternate, text[result.Error.Description]);
+            return await RenderAdminLinksAsync(guildId, actor.UserId, viewer, primary, alternate, text.Message(result.Error.Description));
 
-        TempData["GroupBannerTitle"] = text["Accounts linked"].Value;
+        TempData["GroupBannerTitle"] = text["Accounts_linked"].Value;
         if (result.Value.RoleSyncFailed)
         {
             TempData["GroupBannerKind"] = "warn";
-            TempData["GroupBannerText"] = text["The link is saved, but Discord group roles didn't update. A server moderator can fix them from Groups → Repair roles, or with /group repair-roles."].Value;
+            TempData["GroupBannerText"] = text["The_link_is_saved_but_Discord_group_roles_didn_t_update_A"].Value;
         }
         return Redirect($"/links/{guildId}/admin");
     }
@@ -212,7 +212,7 @@ public sealed partial class DashboardController
             if (result.IsSuccess)
                 preview = result.Value;
             else
-                error ??= text[result.Error.Description];
+                error ??= text.Message(result.Error.Description);
         }
         var zone = await GetGuildZoneAsync(guildId, ct);
         return View("AdminLinks", new AdminLinksPage(new ApproveLinkPage(guildId, GuildName(guildId), viewer, Guid.Empty, "",

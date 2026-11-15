@@ -23,7 +23,7 @@
             <div class="hm-field">
                 <span class="hm-label" id="@id-@part.Which-label">@part.Label</span>
                 <div class="hm-time-pair" role="group" aria-labelledby="@id-@part.Which-label" data-range-@part.Which>
-                    <select class="hm-time-select" id="@id-@part.Which" name="@(name)Hour" aria-label="@part.Label · @T["hour"]" data-time-hour>
+                    <select class="hm-time-select" id="@id-@part.Which" name="@(name)Hour" aria-label="@part.Label · @T["Hour"]" data-time-hour>
                         <option value="" selected="@(part.Hour == "")">--</option>
                         @foreach (var hour in hours)
                         {
@@ -31,7 +31,7 @@
                         }
                     </select>
                     <span aria-hidden="true">:</span>
-                    <select class="hm-time-select" name="@(name)Minute" aria-label="@part.Label · @T["minutes"]" data-time-minute>
+                    <select class="hm-time-select" name="@(name)Minute" aria-label="@part.Label · @T["Minutes"]" data-time-minute>
                         @foreach (var minute in Minutes(part.Minute))
                         {
                             <option value="@minute" selected="@(minute == part.Minute)">@minute</option>
@@ -48,14 +48,14 @@
             </select>
         </div>
         <div class="hm-wrange__actions">
-            <button class="hm-btn" type="button" data-all-day hidden>@T["All day"]</button>
-            <button class="hm-btn hm-btn--danger" type="button" data-remove-range hidden>@DashboardIcons.Render("trash")<span class="hm-btn__label">@T["Remove range"]</span></button>
+            <button class="hm-btn" type="button" data-all-day hidden>@T["All_day"]</button>
+            <button class="hm-btn hm-btn--danger" type="button" data-remove-range hidden>@DashboardIcons.Render("trash")<span class="hm-btn__label">@T["Remove_range"]</span></button>
         </div>
     </div>
     <p class="hm-help hm-wrange__preview" id="@id-preview" data-range-preview-line aria-live="polite">
         @if (Model.Blank)
         {
-            @T["Add a range: pick From and Until. 00:00 to 00:00 means all day. Set the hour to -- to remove a range."]
+            @T["Add_a_range_pick_From_and_Until_00_00_to_00_00_2"]
         }
     </p>
 </li>

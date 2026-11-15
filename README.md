@@ -266,3 +266,17 @@ After signing in, choose **Server settings** next to your server. The same
 Discord Administrator permission required by /settings is checked for both
 viewing and saving. Changes affect that server's saved settings immediately.
 Bot credentials and deployment defaults remain in the host configuration.
+
+### Dashboard localization
+
+The dashboard uses matching stable resource keys in `DashboardResources.en.resx`,
+`DashboardResources.uk.resx`, and `DashboardResources.ru.resx` under
+`src/HappyMix.Bot/Resources/Web`. English is the neutral fallback language, stored
+in its satellite resource assembly. Keep keys stable when editing visible wording,
+and preserve format placeholders such as `{0}` across languages.
+
+Use `T["Resource_Key"]` in views and `text["Resource_Key"]` in controllers.
+`DashboardLocalization.Message` adapts English messages supplied by application
+errors, Discord command metadata, and existing view models to the resource keys.
+Unknown messages retain their original text. New dashboard copy should use direct
+stable-key lookups and an entry in each language file.

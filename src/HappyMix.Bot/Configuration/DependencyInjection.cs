@@ -57,6 +57,7 @@ public static class DependencyInjection
         services.AddSingleton<IGroupRoleGateway, DiscordGroupRoleGateway>();
         services.AddSingleton<IMemberDirectory, DiscordMemberDirectory>();
         services.AddSingleton<IGuildMemberGateway, DiscordGuildMemberGateway>();
+        services.AddSingleton<HappyMix.Application.Abstractions.Events.IEventNotifier, DiscordEventNotifier>();
         services.AddSingleton(static provider =>
             new InteractionService(provider.GetRequiredService<DiscordSocketClient>().Rest));
         services.AddHttpClient("Twitch", client => client.Timeout = TimeSpan.FromSeconds(5));
@@ -83,6 +84,16 @@ public static class DependencyInjection
             scheduler.AddTrigger(trigger => trigger
                 .ForJob(jobKey)
                 .WithIdentity("synchronize-esports-matches-trigger")
+                .StartNow()
+                .WithSimpleSchedule(schedule => schedule
+                    .WithInterval(TimeSpan.FromMinutes(1))
+                    .RepeatForever()));
+
+            JobKey eventsKey = new("dispatch-event-messages");
+            scheduler.AddJob<DispatchEventMessagesJob>(job => job.WithIdentity(eventsKey));
+            scheduler.AddTrigger(trigger => trigger
+                .ForJob(eventsKey)
+                .WithIdentity("dispatch-event-messages-trigger")
                 .StartNow()
                 .WithSimpleSchedule(schedule => schedule
                     .WithInterval(TimeSpan.FromMinutes(1))

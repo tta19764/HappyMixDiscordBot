@@ -8,7 +8,7 @@
     <partial name="_Avatar" model="new AvatarModel(Model.Primary, Model.Name, Model.Small)" />
     @if (Model.Linked.Count > 0)
     {
-        <span class="hm-avstack__linked" tabindex="0" role="note" data-tip="@T["Linked: {0}", list]" aria-label="@T["Linked accounts: {0}", list]">
+        <span class="hm-avstack__linked" tabindex="0" role="note" data-tip="@T["Linked_Arg0_2", list]" aria-label="@T["Linked_accounts_Arg0", list]">
             @foreach (var (profile, name) in shown)
             {
                 <span class="hm-avatar hm-avatar--mini @(profile.InServer ? "" : "hm-avatar--gone")" aria-hidden="true">

@@ -51,6 +51,9 @@ public sealed record GroupPage(
     bool Evening = false,
     string? Tab = null)
 {
+    /// <summary>Upcoming dates of this group's events; empty for people who can't see the roster.</summary>
+    public IReadOnlyList<EventRow> Events { get; init; } = [];
+
     /// <summary>Availability is the default Members tab when the board is visible; invite errors open the roster.</summary>
     public bool ShowRoster => Board is null || Tab == "roster" || Form?.Section == "members";
 
@@ -138,6 +141,6 @@ public sealed class MemberNames(IReadOnlyDictionary<ulong, MemberProfile> member
 /// <summary>A destructive action behind a disclosure that names the group or member affected.</summary>
 public sealed record ConfirmModel(string Trigger, string Question, string Action, string ConfirmLabel,
     string? Icon = "trash", bool Danger = true, bool Inline = false, string? TriggerLabel = null,
-    IReadOnlyDictionary<string, string>? Fields = null);
+    IReadOnlyDictionary<string, string>? Fields = null, string? DismissLabel = null);
 
 public sealed record AvatarModel(MemberProfile Profile, string Name, bool Small = false);

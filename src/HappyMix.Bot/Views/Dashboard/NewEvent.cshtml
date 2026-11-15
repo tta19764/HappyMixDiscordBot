@@ -1,0 +1,175 @@
+@model EventFormPage
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = T["New_event"];
+    ViewData["NavGuildName"] = Model.GuildName;
+    var form = Model.Form;
+    var hours = Enumerable.Range(0, 24).Select(hour => hour.ToString("00")).ToArray();
+    var minutes = Enumerable.Range(0, 12).Select(step => (step * 5).ToString("00")).ToArray();
+    var culture = System.Globalization.CultureInfo.CurrentUICulture;
+    var week = Enumerable.Range(1, 7).Select(index => (DayOfWeek)(index % 7)).ToArray();
+    var repeats = new[] { ("once", T["Once"].Value), ("daily", T["Daily"].Value), ("weekly", T["Weekly"].Value) };
+}
+
+<nav class="hm-crumbs" aria-label="@T["Breadcrumb"]">
+    <a href="/">@T["Servers"]</a><span aria-hidden="true">/</span>
+    <a href="/events/@Model.GuildId">@T["Events"]</a><span aria-hidden="true">/</span>
+    <span>@T["New_event"]</span>
+</nav>
+<div class="hm-page-head">
+    <div>
+        <h1>@T["New_event"]</h1>
+        <p>@T["Nothing_is_sent_until_you_create_it_Invited_people_can_accept_or"]</p>
+    </div>
+</div>
+
+@if (Model.Error is not null)
+{
+    <div style="margin-bottom: var(--hm-space-4)"><partial name="_Banner" model='new BannerModel("error", T["Event_not_created"], Model.Error, true)' /></div>
+}
+
+<form class="hm-card hm-stack hm-event-form" style="gap: var(--hm-space-5); max-width: 46rem" method="post" action="/events/@Model.GuildId/new"
+      asp-antiforgery="false" data-event-form
+      data-label-once="@T["Once_Arg0_Arg1"]" data-label-daily="@T["Every_day_Arg0_until_Arg1"]" data-label-weekly="@T["Every_Arg0_Arg1_until_Arg2"]"
+      data-label-and="@T["Arg0_and_Arg1"]" data-label-dates="@T["Arg0_dates_each_date_is_answered_and_confirmed_on_its_own"]"
+      data-label-pick-days="@T["Pick_at_least_one_weekday"]" data-label-pick-until="@T["Pick_the_last_date_of_the_series"]"
+      data-label-next-day="@T["Ends_the_next_day"]" data-label-invite="@T["Create_and_invite_Arg0"]" data-label-create="@T["Create_event"]">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="RequestId" value="@form.RequestId">
+
+    <fieldset class="hm-field" style="border: 0; padding: 0; margin: 0">
+        <legend class="hm-label" style="margin-bottom: var(--hm-space-2)">@T["Who_is_invited"]</legend>
+        <div class="hm-mode" role="radiogroup">
+            <label><input type="radio" name="Audience" value="group" checked="@(form.Audience == "group")" disabled="@(Model.Groups.Count == 0)">@T["A_group"]</label>
+            <label><input type="radio" name="Audience" value="people" checked="@(form.Audience == "people")">@T["People_I_pick"]</label>
+        </div>
+    </fieldset>
+
+    <div class="hm-field" data-audience="group">
+        <label class="hm-label" for="ev-group">@T["Group"]</label>
+        @if (Model.Groups.Count == 0)
+        {
+            <p class="hm-help">@T["You_aren_t_in_any_group_yet_Pick_people_instead"]</p>
+        }
+        else
+        {
+            <select class="hm-select" id="ev-group" name="GroupId" data-picker data-picker-search="@T["Find_a_group"]" data-picker-empty="@T["No_groups_match"]">
+                @foreach (var group in Model.Groups)
+                {
+                    <option value="@group.Id" selected="@(form.GroupId == group.Id)" data-count="@(group.Members - 1)">@group.Name · @T["Arg0_members", group.Members]</option>
+                }
+            </select>
+            <p class="hm-help">@T["Every_other_member_of_the_group_is_invited_People_who_join_later"]</p>
+        }
+    </div>
+
+    <fieldset class="hm-field" data-audience="people" style="border: 0; padding: 0; margin: 0">
+        <legend class="hm-label" style="margin-bottom: var(--hm-space-2)">@T["People"] <span class="hm-label__opt" data-people-count></span></legend>
+        @if (Model.People.Count == 0)
+        {
+            <p class="hm-help">@T["Discord_didn_t_return_the_member_list_Try_again_in_a_moment"]</p>
+        }
+        else
+        {
+            <input class="hm-input" type="search" placeholder="@T["Find_a_member"]" aria-label="@T["Find_a_member"]" data-people-filter hidden style="margin-bottom: var(--hm-space-2)">
+            <div class="hm-checkbox-box hm-people">
+                @foreach (var person in Model.People)
+                {
+                    <label class="hm-check" data-person="@person.Name.ToLowerInvariant() @((person.Profile.Username ?? "").ToLowerInvariant())">
+                        <input type="checkbox" name="Invitees" value="@person.Id" checked="@form.Invitees.Contains(person.Id)">
+                        <partial name="_Avatar" model="new AvatarModel(person.Profile, person.Name, true)" />
+                        <span>@person.Name <small class="hm-subtle">@person.Profile.Username</small></span>
+                    </label>
+                }
+            </div>
+            <p class="hm-help" style="margin-top: var(--hm-space-2)">@T["Invite_exactly_who_you_want_up_to_50_people"]</p>
+        }
+    </fieldset>
+
+    <div class="hm-field">
+        <label class="hm-label" for="ev-title">@T["Title"]</label>
+        <input class="hm-input" id="ev-title" name="Title" value="@form.Title" required maxlength="80" placeholder="@T["Thursday_scrims"]">
+    </div>
+
+    <div class="hm-event-when">
+        <div class="hm-field">
+            <label class="hm-label" for="ev-date">@T["Date"]</label>
+            <input class="hm-input" id="ev-date" name="StartDate" type="date" value="@form.StartDate" required data-event-date>
+        </div>
+        @foreach (var (which, label, hour, minute) in new[] { ("Start", T["From"].Value, form.StartHour, form.StartMinute), ("End", T["Until"].Value, form.EndHour, form.EndMinute) })
+        {
+            <div class="hm-field">
+                <span class="hm-label" id="ev-@which-label">@label</span>
+                <div class="hm-time-pair" role="group" aria-labelledby="ev-@which-label">
+                    <select class="hm-time-select" name="@(which)Hour" aria-label="@label · @T["Hour"]" data-event-@which.ToLowerInvariant()-hour>
+                        @foreach (var value in hours)
+                        {
+                            <option value="@value" selected="@(value == hour)">@value</option>
+                        }
+                    </select>
+                    <span aria-hidden="true">:</span>
+                    <select class="hm-time-select" name="@(which)Minute" aria-label="@label · @T["Minutes"]" data-event-@which.ToLowerInvariant()-minute>
+                        @foreach (var value in minutes)
+                        {
+                            <option value="@value" selected="@(value == minute)">@value</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="hm-field">
+        <label class="hm-label" for="ev-zone">@T["Time_zone"] <span class="hm-label__opt">@T["Optional"]</span></label>
+        <input class="hm-input" id="ev-zone" name="TimeZone" value="@form.TimeZone" list="time-zones" placeholder="@Model.ServerZone" autocomplete="off" spellcheck="false" data-event-zone>
+        <p class="hm-help">@T["Leave_empty_for_the_server_time_zone_The_start_time_stays_the"]</p>
+    </div>
+
+    <fieldset class="hm-field" style="border: 0; padding: 0; margin: 0">
+        <legend class="hm-label" style="margin-bottom: var(--hm-space-2)">@T["Repeat"]</legend>
+        <div class="hm-mode" role="radiogroup">
+            @foreach (var (value, label) in repeats)
+            {
+                <label><input type="radio" name="Repeat" value="@value" checked="@(form.Repeat == value)">@label</label>
+            }
+        </div>
+    </fieldset>
+
+    <fieldset class="hm-field" data-repeat="weekly" style="border: 0; padding: 0; margin: 0">
+        <legend class="hm-label" style="margin-bottom: var(--hm-space-2)">@T["On_these_days"]</legend>
+        <div class="hm-days">
+            @foreach (var day in week)
+            {
+                <label class="hm-day-chip"><input type="checkbox" name="Weekdays" value="@day" checked="@form.Weekdays.Contains(day)" data-day-name="@culture.DateTimeFormat.GetDayName(day)">@culture.DateTimeFormat.GetAbbreviatedDayName(day)</label>
+            }
+        </div>
+    </fieldset>
+
+    <div class="hm-field" data-repeat="daily weekly" style="max-width: 16rem">
+        <label class="hm-label" for="ev-until">@T["Last_date"]</label>
+        <input class="hm-input" id="ev-until" name="Until" type="date" value="@form.Until" data-event-until>
+        <p class="hm-help">@T["Up_to_26_weeks_after_the_first_date"]</p>
+    </div>
+
+    <div class="hm-banner hm-banner--info hm-event-summary" data-event-summary-box hidden aria-live="polite">
+        <span class="hm-banner__icon">@DashboardIcons.Render("calendar")</span>
+        <div class="hm-banner__body"><p class="hm-banner__title" data-event-summary></p><p class="hm-banner__text" data-event-summary-detail></p></div>
+    </div>
+
+    <div class="hm-field">
+        <label class="hm-label" for="ev-desc">@T["Description"] <span class="hm-label__opt">@T["Optional"]</span></label>
+        <textarea class="hm-textarea hm-textarea--prose" id="ev-desc" name="Description" rows="3" maxlength="1000">@form.Description</textarea>
+    </div>
+
+    <div class="hm-row" style="justify-content: flex-end">
+        <a class="hm-btn hm-btn--ghost" href="/events/@Model.GuildId">@T["Cancel"]</a>
+        <button class="hm-btn hm-btn--primary" data-event-submit>@DashboardIcons.Render("check")@T["Create_event"]</button>
+    </div>
+</form>
+
+<datalist id="time-zones">
+    @foreach (var zone in HappyMix.Bot.Interactions.AvailabilityTimeZoneAutocomplete.Names)
+    {
+        <option value="@zone"></option>
+    }
+</datalist>

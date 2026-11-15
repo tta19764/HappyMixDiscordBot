@@ -76,6 +76,44 @@ internal sealed class HappyMixDbContext(DbContextOptions<HappyMixDbContext> opti
         settings.Property(item => item.TimeZoneId).HasColumnType("TEXT");
         settings.Property(item => item.Preferences).HasColumnType("TEXT");
 
+        var events = modelBuilder.Entity<EventRecord>();
+        events.ToTable("Events");
+        events.HasKey(item => item.Id);
+        foreach (var name in new[] { "Id", "GuildId", "OrganizerId", "GroupId", "Title", "Description", "TimeZone", "StartDate", "UntilDate" })
+            events.Property(name).HasColumnType("TEXT");
+        events.HasIndex(item => new { item.GuildId, item.OrganizerId });
+        events.HasIndex(item => new { item.GuildId, item.GroupId });
+
+        var invitees = modelBuilder.Entity<EventInviteeRecord>();
+        invitees.ToTable("EventInvitees");
+        invitees.HasKey(item => new { item.EventId, item.UserId });
+        invitees.Property(item => item.EventId).HasColumnType("TEXT");
+        invitees.Property(item => item.UserId).HasColumnType("TEXT");
+        invitees.HasIndex(item => item.UserId);
+
+        var occurrences = modelBuilder.Entity<EventOccurrenceRecord>();
+        occurrences.ToTable("EventOccurrences");
+        occurrences.HasKey(item => new { item.EventId, item.Date });
+        occurrences.Property(item => item.EventId).HasColumnType("TEXT");
+        occurrences.Property(item => item.Date).HasColumnType("TEXT");
+        occurrences.HasIndex(item => item.StartUtc);
+
+        var responses = modelBuilder.Entity<EventResponseRecord>();
+        responses.ToTable("EventResponses");
+        responses.HasKey(item => new { item.EventId, item.Date, item.UserId });
+        responses.Property(item => item.EventId).HasColumnType("TEXT");
+        responses.Property(item => item.Date).HasColumnType("TEXT");
+        responses.Property(item => item.UserId).HasColumnType("TEXT");
+
+        var notifications = modelBuilder.Entity<EventNotificationRecord>();
+        notifications.ToTable("EventNotifications");
+        notifications.HasKey(item => new { item.EventId, item.Date, item.UserId, item.Kind });
+        notifications.Property(item => item.EventId).HasColumnType("TEXT");
+        notifications.Property(item => item.Date).HasColumnType("TEXT");
+        notifications.Property(item => item.UserId).HasColumnType("TEXT");
+        notifications.Property(item => item.Error).HasColumnType("TEXT");
+        notifications.HasIndex(item => new { item.Sent, item.Failed, item.NextAttemptUtc });
+
         var record = modelBuilder.Entity<AnnouncementRecord>();
         record.ToTable("AnnouncementRecords");
         record.HasKey(item => new { item.Scope, item.Key });

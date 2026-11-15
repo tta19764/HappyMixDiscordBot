@@ -4,7 +4,7 @@
 @{
     var board = Model.Board!;
     var culture = CultureInfo.CurrentCulture;
-    string Localize(string key) => T[key];
+    string Localize(string key) => T.Message(key);
     int first = Model.FirstHour;
     int span = Model.HourSpan;
     int total = board.Rows.Length;
@@ -20,16 +20,16 @@
     string dayTitle = board.Date == board.Today ? T["Today"] : board.Date.ToString("dddd", culture);
     string Hour(int hour) => hour.ToString("00", CultureInfo.InvariantCulture);
     string Css(double value) => value.ToString("0.###", CultureInfo.InvariantCulture) + "%";
-    string RangeText(BoardRange range) => range.AllDay ? T["All day"]
+    string RangeText(BoardRange range) => range.AllDay ? T["All_day"]
         : (range.FromPreviousDay ? "↤ " : "") + AvailabilityFormat.Time(range.Start) +
           (range.IntoNextDay ? " ↦" : "–" + AvailabilityFormat.Time(range.End));
-    string Kind(BoardRange range) => T[range.Tentative ? "Tentative" : "Definite"] + " · " + T[range.Source == AvailabilitySource.Weekly ? "Weekly" : "One-off"];
+    string Kind(BoardRange range) => T.Message(range.Tentative ? "Tentative" : "Definite") + " · " + T.Message(range.Source == AvailabilitySource.Weekly ? "Weekly" : "One-off");
     int Level(int count) => count == 0 || total == 0 ? 0 : Math.Clamp((int)Math.Ceiling(count * 4.0 / total), 1, 4);
     double? nowLeft = board.Now is { } now && now.ToTimeSpan().TotalHours >= first && now.ToTimeSpan().TotalHours < first + span
         ? (now.ToTimeSpan().TotalHours - first) / span * 100 : null;
 }
 <div class="hm-board" id="availability">
-    <nav class="hm-day-tabs" data-day-tabs aria-label="@T["Choose a day"]">
+    <nav class="hm-day-tabs" data-day-tabs aria-label="@T["Choose_a_day"]">
         @foreach (var day in board.Days)
         {
             <a class="hm-day-tab" href="@Model.DayUrl(day)" aria-current="@(day == board.Date ? "page" : null)"
@@ -43,22 +43,22 @@
     <div class="hm-board__head">
         <p class="hm-help hm-board__zone">
             @DashboardIcons.Render("globe")
-            <span>@T["Times in {0}", board.TimeZone]</span>
+            <span>@T["Times_in_Arg0", board.TimeZone]</span>
             <span class="hm-subtle">· @dayTitle, @board.Date.ToString("d MMMM", culture)</span>
         </p>
-        <nav class="hm-segment hm-segment--compact" aria-label="@T["Hours shown"]">
+        <nav class="hm-segment hm-segment--compact" aria-label="@T["Hours_shown"]">
             <a href="@Model.HoursUrl(false)" aria-current="@(Model.Evening ? null : "page")">00–24</a>
             <a href="@Model.HoursUrl(true)" aria-current="@(Model.Evening ? "page" : null)">12–24</a>
         </nav>
     </div>
 
     <div class="hm-tgrid @(Model.Evening ? "hm-tgrid--evening" : "")" role="table"
-         aria-label="@T["Availability on {0} in {1}", board.Date.ToString("D", culture), board.TimeZone]"
+         aria-label="@T["Availability_on_Arg0_in_Arg1", board.Date.ToString("D", culture), board.TimeZone]"
          style="--hm-tgrid-hours: @span">
         <div class="hm-tgrid__row hm-tgrid__row--head" role="row">
             <span class="hm-tgrid__name" role="columnheader">@T["Member"]</span>
             <span class="hm-tgrid__hours" role="columnheader">
-                <span class="hm-sr-only">@T["Free time from {0}:00 to {1}:00", Hour(first), Hour(first + span)]</span>
+                <span class="hm-sr-only">@T["Free_time_from_Arg0_00_to_Arg1_00", Hour(first), Hour(first + span)]</span>
                 @for (int hour = first; hour < first + span; hour++)
                 {
                     <span class="hm-tgrid__hour @(hour % 3 == 0 ? "hm-tgrid__hour--major" : "")" aria-hidden="true"
@@ -66,23 +66,23 @@
                 }
                 @if (nowLeft is { } nowTag)
                 {
-                    <span class="hm-tgrid__now-tag @(nowTag > 80 ? "hm-tgrid__now-tag--end" : "")" style="left: @Css(nowTag)" aria-hidden="true">@T["Now {0}", AvailabilityFormat.Time(board.Now!.Value)]</span>
+                    <span class="hm-tgrid__now-tag @(nowTag > 80 ? "hm-tgrid__now-tag--end" : "")" style="left: @Css(nowTag)" aria-hidden="true">@T["Now_Arg0", AvailabilityFormat.Time(board.Now!.Value)]</span>
                 }
             </span>
         </div>
 
         <div class="hm-tgrid__row hm-tgrid__row--together" role="row">
             <span class="hm-tgrid__name" role="rowheader">
-                @DashboardIcons.Render("users")<span>@T["Free together"]</span>
+                @DashboardIcons.Render("users")<span>@T["Free_together"]</span>
             </span>
             <span class="hm-tgrid__heat" role="cell">
                 @if (best is { } overlap)
                 {
-                    <span class="hm-tgrid__best-text">@T["Best: {0}:00–{1}:00 · {2} of {3} free", Hour(overlap.From), Hour(overlap.To), overlap.Count, total]</span>
+                    <span class="hm-tgrid__best-text">@T["Best_Arg0_00_Arg1_00_Arg2_of_Arg3_free", Hour(overlap.From), Hour(overlap.To), overlap.Count, total]</span>
                 }
                 else
                 {
-                    <span class="hm-tgrid__best-text hm-subtle">@T["No hour with two or more members free"]</span>
+                    <span class="hm-tgrid__best-text hm-subtle">@T["No_hour_with_two_or_more_members_free"]</span>
                 }
                 <span class="hm-tgrid__cells" aria-hidden="true">
                     @for (int hour = first; hour < first + span; hour++)
@@ -90,7 +90,7 @@
                         int count = board.FreeByHour[hour];
                         bool inBest = best is { } b && hour >= b.From && hour < b.To;
                         <span class="hm-tgrid__cell hm-tgrid__cell--@Level(count) @(inBest ? "hm-tgrid__cell--best" : "")"
-                              title="@T["{0} definite, {1} tentative at {2}:00", count, tentativeByHour[hour], Hour(hour)]">@count</span>
+                              title="@T["Arg0_definite_Arg1_tentative_at_Arg2_00", count, tentativeByHour[hour], Hour(hour)]">@count</span>
                     }
                 </span>
             </span>
@@ -111,12 +111,12 @@
                 </span>
                 <span class="hm-tgrid__cellwrap" role="cell">
                     <span class="hm-sr-only">
-                        @(row.HasData ? T["Free: {0}", string.Join(", ", row.Ranges.Select(range => RangeText(range) + " (" + Kind(range) + ")"))] : T["No data"])
+                        @(row.HasData ? T["Free_Arg0", string.Join(", ", row.Ranges.Select(range => RangeText(range) + " (" + Kind(range) + ")"))] : T["No_data"])
                     </span>
                     <span class="hm-tgrid__track" aria-hidden="@(row.HasData ? null : "true")">
                         @if (!row.HasData)
                         {
-                            <span class="hm-tgrid__nodata">@T["No data"]</span>
+                            <span class="hm-tgrid__nodata">@T["No_data"]</span>
                         }
                         @foreach (var range in row.Ranges)
                         {
@@ -154,13 +154,13 @@
         }
     </div>
 
-    <p class="hm-help">@T["Free together counts definite availability only."]</p>
+    <p class="hm-help">@T["Free_together_counts_definite_availability_only"]</p>
     <p class="hm-help hm-board__legend">
-        <span><i class="hm-swatch hm-swatch--oneoff"></i>@T["Free · one-off for this date"]</span>
+        <span><i class="hm-swatch hm-swatch--oneoff"></i>@T["Free_one_off_for_this_date"]</span>
         <span><i class="hm-swatch hm-swatch--weekly"></i>@T["Weekly"]</span>
         <span><i class="hm-swatch hm-swatch--tentative"></i>@T["Tentative"]</span>
-        <span><i class="hm-swatch hm-swatch--busy"></i>@T["Busy · has times that day, not this hour"]</span>
-        <span><i class="hm-swatch hm-swatch--nodata"></i>@T["No data"]</span>
-        <span>↤ ↦ @T["continues from or into the next day"]</span>
+        <span><i class="hm-swatch hm-swatch--busy"></i>@T["Busy_has_times_that_day_not_this_hour"]</span>
+        <span><i class="hm-swatch hm-swatch--nodata"></i>@T["No_data"]</span>
+        <span>↤ ↦ @T["Continues_from_or_into_the_next_day"]</span>
     </p>
 </div>

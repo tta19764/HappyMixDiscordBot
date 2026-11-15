@@ -1,0 +1,1878 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <data name="Pick_a_server" xml:space="preserve">
+    <value>Pick a server</value>
+  </data>
+  <data name="Servers" xml:space="preserve">
+    <value>Servers</value>
+  </data>
+  <data name="Availability" xml:space="preserve">
+    <value>Availability</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Server_settings" xml:space="preserve">
+    <value>Server settings</value>
+  </data>
+  <data name="Sign_out" xml:space="preserve">
+    <value>Sign out</value>
+  </data>
+  <data name="No_servers_yet" xml:space="preserve">
+    <value>No servers yet</value>
+  </data>
+  <data name="Last_used" xml:space="preserve">
+    <value>Last used</value>
+  </data>
+  <data name="Admin" xml:space="preserve">
+    <value>Admin</value>
+  </data>
+  <data name="Today" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="Tomorrow" xml:space="preserve">
+    <value>Tomorrow</value>
+  </data>
+  <data name="Weekly_timetable" xml:space="preserve">
+    <value>Weekly timetable</value>
+  </data>
+  <data name="Availability_today" xml:space="preserve">
+    <value>Availability today</value>
+  </data>
+  <data name="From" xml:space="preserve">
+    <value>From</value>
+  </data>
+  <data name="Until" xml:space="preserve">
+    <value>Until</value>
+  </data>
+  <data name="Time_zone" xml:space="preserve">
+    <value>Time zone</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>Change</value>
+  </data>
+  <data name="Optional" xml:space="preserve">
+    <value>optional</value>
+  </data>
+  <data name="Quick_fill" xml:space="preserve">
+    <value>Quick fill</value>
+  </data>
+  <data name="Coming_up" xml:space="preserve">
+    <value>Coming up</value>
+  </data>
+  <data name="One_off" xml:space="preserve">
+    <value>One-off</value>
+  </data>
+  <data name="No_weekly_hours_yet" xml:space="preserve">
+    <value>No weekly hours yet</value>
+  </data>
+  <data name="Your_usual_week" xml:space="preserve">
+    <value>Your usual week</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>✓ Saved</value>
+  </data>
+  <data name="No_hours" xml:space="preserve">
+    <value>No hours</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Add_hours" xml:space="preserve">
+    <value>Add hours</value>
+  </data>
+  <data name="Available" xml:space="preserve">
+    <value>Available</value>
+  </data>
+  <data name="Server_defaults" xml:space="preserve">
+    <value>Server defaults</value>
+  </data>
+  <data name="Announcement_channel" xml:space="preserve">
+    <value>Announcement channel</value>
+  </data>
+  <data name="Reminder_ping_role" xml:space="preserve">
+    <value>Reminder ping role</value>
+  </data>
+  <data name="No_ping" xml:space="preserve">
+    <value>No ping</value>
+  </data>
+  <data name="Followed_teams" xml:space="preserve">
+    <value>Followed teams</value>
+  </data>
+  <data name="Twitch_channels" xml:space="preserve">
+    <value>Twitch channels</value>
+  </data>
+  <data name="Team_catalog" xml:space="preserve">
+    <value>Team catalog</value>
+  </data>
+  <data name="Reminder_lead_time" xml:space="preserve">
+    <value>Reminder lead time</value>
+  </data>
+  <data name="Minutes" xml:space="preserve">
+    <value>minutes</value>
+  </data>
+  <data name="Organizer_roles" xml:space="preserve">
+    <value>Organizer roles</value>
+  </data>
+  <data name="Post_to_the_channel" xml:space="preserve">
+    <value>Post to the channel</value>
+  </data>
+  <data name="Daily_schedule" xml:space="preserve">
+    <value>Daily schedule</value>
+  </data>
+  <data name="Reminders" xml:space="preserve">
+    <value>Reminders</value>
+  </data>
+  <data name="Match_starts" xml:space="preserve">
+    <value>Match starts</value>
+  </data>
+  <data name="Map_results" xml:space="preserve">
+    <value>Map results</value>
+  </data>
+  <data name="Match_results" xml:space="preserve">
+    <value>Match results</value>
+  </data>
+  <data name="Unsaved_changes" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="Discard" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="Save_settings" xml:space="preserve">
+    <value>Save settings</value>
+  </data>
+  <data name="Save_today" xml:space="preserve">
+    <value>Save today</value>
+  </data>
+  <data name="Save_day" xml:space="preserve">
+    <value>Save day</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="Default" xml:space="preserve">
+    <value>Default ·</value>
+  </data>
+  <data name="Inherit" xml:space="preserve">
+    <value>Inherit</value>
+  </data>
+  <data name="Custom" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="Off" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="Servers_you_share_with_HappyMix_Set_when_you_can_play_or_manage" xml:space="preserve">
+    <value>Servers you share with HappyMix. Set when you can play, or manage announcements where you're an admin.</value>
+  </data>
+  <data name="HappyMix_shows_servers_where_you_and_the_bot_are_both_members_Ask" xml:space="preserve">
+    <value>HappyMix shows servers where you and the bot are both members. Ask a server admin to add HappyMix, then refresh.</value>
+  </data>
+  <data name="Nothing_is_shared_until_you_save" xml:space="preserve">
+    <value>Nothing is shared until you save.</value>
+  </data>
+  <data name="Repeats_every_week_until_you_clear_a_day" xml:space="preserve">
+    <value>Repeats every week until you clear a day.</value>
+  </data>
+  <data name="Time_zone_for_this_window" xml:space="preserve">
+    <value>Time zone for this window</value>
+  </data>
+  <data name="Leave_empty_for_the_server_default_A_UTC_offset_like_02_00" xml:space="preserve">
+    <value>Leave empty for the server default. A UTC offset like +02:00 also works.</value>
+  </data>
+  <data name="Pick_both_times_An_Until_time_earlier_than_From_means_the_next" xml:space="preserve">
+    <value>Pick both times. An Until time earlier than From means the next day.</value>
+  </data>
+  <data name="Carried_over_from_the_night_before" xml:space="preserve">
+    <value>Carried over from the night before</value>
+  </data>
+  <data name="Groups" xml:space="preserve">
+    <value>Groups</value>
+  </data>
+  <data name="Invite_only_gaming_groups_in_this_server_Members_get_a_matching_Discord" xml:space="preserve">
+    <value>Invite-only gaming groups in this server. Members get a matching Discord role.</value>
+  </data>
+  <data name="My_groups" xml:space="preserve">
+    <value>My groups</value>
+  </data>
+  <data name="Pending_invitations" xml:space="preserve">
+    <value>Pending invitations</value>
+  </data>
+  <data name="All_groups_in_this_server" xml:space="preserve">
+    <value>All groups in this server</value>
+  </data>
+  <data name="All_groups_I_can_access" xml:space="preserve">
+    <value>All groups I can access</value>
+  </data>
+  <data name="Repair_roles_for_everyone" xml:space="preserve">
+    <value>Repair roles for everyone</value>
+  </data>
+  <data name="Reapply_group_roles_for_every_member_of_Arg0_This_lists_the_whole" xml:space="preserve">
+    <value>Reapply group roles for every member of {0}? This lists the whole server and can take a while.</value>
+  </data>
+  <data name="Repair_all_members" xml:space="preserve">
+    <value>Repair all members</value>
+  </data>
+  <data name="Filter_groups" xml:space="preserve">
+    <value>Filter groups</value>
+  </data>
+  <data name="New_group" xml:space="preserve">
+    <value>New group</value>
+  </data>
+  <data name="Search_groups" xml:space="preserve">
+    <value>Search groups</value>
+  </data>
+  <data name="Search_by_name_description_or_game" xml:space="preserve">
+    <value>Search by name, description or game</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="No_groups_match_Arg0" xml:space="preserve">
+    <value>No groups match "{0}"</value>
+  </data>
+  <data name="Try_another_name_or_game_or_clear_the_search" xml:space="preserve">
+    <value>Try another name or game, or clear the search.</value>
+  </data>
+  <data name="No_pending_invitations" xml:space="preserve">
+    <value>No pending invitations</value>
+  </data>
+  <data name="When_an_organizer_invites_you_the_invitation_shows_up_here_and_in" xml:space="preserve">
+    <value>When an organizer invites you, the invitation shows up here and in your Discord messages.</value>
+  </data>
+  <data name="You_re_not_in_any_groups_yet" xml:space="preserve">
+    <value>You're not in any groups yet</value>
+  </data>
+  <data name="Groups_are_invite_only_Ask_an_organizer_to_invite_you_or_start" xml:space="preserve">
+    <value>Groups are invite-only. Ask an organizer to invite you, or start your own.</value>
+  </data>
+  <data name="Arg0_groups" xml:space="preserve">
+    <value>{0} groups</value>
+  </data>
+  <data name="No_description" xml:space="preserve">
+    <value>No description</value>
+  </data>
+  <data name="Organizer" xml:space="preserve">
+    <value>Organizer</value>
+  </data>
+  <data name="Arg0_members" xml:space="preserve">
+    <value>{0} members</value>
+  </data>
+  <data name="Games" xml:space="preserve">
+    <value>Games</value>
+  </data>
+  <data name="Accept" xml:space="preserve">
+    <value>Accept</value>
+  </data>
+  <data name="Decline" xml:space="preserve">
+    <value>Decline</value>
+  </data>
+  <data name="Roster" xml:space="preserve">
+    <value>Roster</value>
+  </data>
+  <data name="Open" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="Pages" xml:space="preserve">
+    <value>Pages</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Previous</value>
+  </data>
+  <data name="Page_Arg0_of_Arg1" xml:space="preserve">
+    <value>Page {0} of {1}</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="Discord_role_repair" xml:space="preserve">
+    <value>Discord role repair</value>
+  </data>
+  <data name="Moderators" xml:space="preserve">
+    <value>Moderators</value>
+  </data>
+  <data name="Saved_group_membership_is_the_source_of_truth_Repair_reapplies_the_matching" xml:space="preserve">
+    <value>Saved group membership is the source of truth. Repair reapplies the matching Discord roles.</value>
+  </data>
+  <data name="To_repair_one_person_open_a_group_and_use_Repair_roles_next" xml:space="preserve">
+    <value>To repair one person, open a group and use Repair roles next to their name.</value>
+  </data>
+  <data name="Leave_group" xml:space="preserve">
+    <value>Leave group</value>
+  </data>
+  <data name="Leave_Arg0_You_ll_lose_its_Discord_role_until_someone_invites_you" xml:space="preserve">
+    <value>Leave {0}? You'll lose its Discord role until someone invites you again.</value>
+  </data>
+  <data name="Leave_Arg0" xml:space="preserve">
+    <value>Leave {0}</value>
+  </data>
+  <data name="Close_group" xml:space="preserve">
+    <value>Close group</value>
+  </data>
+  <data name="Close_Arg0_for_everyone_Its_saved_record_games_and_Discord_role_are" xml:space="preserve">
+    <value>Close {0} for everyone? Its saved record, games and Discord role are deleted. This can't be undone.</value>
+  </data>
+  <data name="Close_Arg0" xml:space="preserve">
+    <value>Close {0}</value>
+  </data>
+  <data name="Breadcrumb" xml:space="preserve">
+    <value>Breadcrumb</value>
+  </data>
+  <data name="Arg0_games" xml:space="preserve">
+    <value>{0} games</value>
+  </data>
+  <data name="All_groups" xml:space="preserve">
+    <value>All groups</value>
+  </data>
+  <data name="You_re_invited" xml:space="preserve">
+    <value>You're invited</value>
+  </data>
+  <data name="Arg0_invited_you_to_Arg1_Accept_to_see_the_roster_and_games" xml:space="preserve">
+    <value>{0} invited you to {1}. Accept to see the roster and games and get the group's Discord role.</value>
+  </data>
+  <data name="Accept_invitation" xml:space="preserve">
+    <value>Accept invitation</value>
+  </data>
+  <data name="Group_sections" xml:space="preserve">
+    <value>Group sections</value>
+  </data>
+  <data name="Overview" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="Members" xml:space="preserve">
+    <value>Members</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Up_to_200_characters_Shown_in_the_directory_and_to_invited_members" xml:space="preserve">
+    <value>Up to 200 characters. Shown in the directory and to invited members.</value>
+  </data>
+  <data name="Save_description" xml:space="preserve">
+    <value>Save description</value>
+  </data>
+  <data name="You_can_leave_at_any_time_The_organizer_can_invite_you_back" xml:space="preserve">
+    <value>You can leave at any time. The organizer can invite you back.</value>
+  </data>
+  <data name="You_organize_this_group_To_leave_it_close_the_group" xml:space="preserve">
+    <value>You organize this group. To leave it, close the group.</value>
+  </data>
+  <data name="Accept_the_invitation_to_see_who_s_in_this_group" xml:space="preserve">
+    <value>Accept the invitation to see who's in this group.</value>
+  </data>
+  <data name="Discord_didn_t_return_the_member_list_so_names_are_shown_as" xml:space="preserve">
+    <value>Discord didn't return the member list, so names are shown as IDs. A server admin can turn on the Server Members Intent for the bot.</value>
+  </data>
+  <data name="Remove_Arg0_from_Arg1_Their_group_role_is_removed_too" xml:space="preserve">
+    <value>Remove {0} from {1}? Their group role is removed too.</value>
+  </data>
+  <data name="Remove_Arg0" xml:space="preserve">
+    <value>Remove {0}</value>
+  </data>
+  <data name="Repair_roles" xml:space="preserve">
+    <value>Repair roles</value>
+  </data>
+  <data name="Reapply_group_roles_for_Arg0_only_Nobody_else_is_changed" xml:space="preserve">
+    <value>Reapply group roles for {0} only? Nobody else is changed.</value>
+  </data>
+  <data name="Repair_Arg0_s_roles" xml:space="preserve">
+    <value>Repair {0}'s roles</value>
+  </data>
+  <data name="Repair_roles_for_Arg0" xml:space="preserve">
+    <value>Repair roles for {0}</value>
+  </data>
+  <data name="You" xml:space="preserve">
+    <value>You</value>
+  </data>
+  <data name="No_longer_in_this_server" xml:space="preserve">
+    <value>No longer in this server</value>
+  </data>
+  <data name="Invite_someone" xml:space="preserve">
+    <value>Invite someone</value>
+  </data>
+  <data name="Discord_username" xml:space="preserve">
+    <value>Discord username</value>
+  </data>
+  <data name="Start_typing_a_name" xml:space="preserve">
+    <value>Start typing a name</value>
+  </data>
+  <data name="Invite" xml:space="preserve">
+    <value>Invite</value>
+  </data>
+  <data name="They_get_a_Discord_message_with_Accept_and_Decline_buttons_Nobody_joins" xml:space="preserve">
+    <value>They get a Discord message with Accept and Decline buttons. Nobody joins until they accept.</value>
+  </data>
+  <data name="No_pending_invitations_2" xml:space="preserve">
+    <value>No pending invitations.</value>
+  </data>
+  <data name="Revoke" xml:space="preserve">
+    <value>Revoke</value>
+  </data>
+  <data name="Revoke_Arg0_s_invitation_to_Arg1_Their_Accept_button_will_stop_working" xml:space="preserve">
+    <value>Revoke {0}'s invitation to {1}? Their Accept button will stop working.</value>
+  </data>
+  <data name="Revoke_invitation" xml:space="preserve">
+    <value>Revoke invitation</value>
+  </data>
+  <data name="Revoke_Arg0_s_invitation" xml:space="preserve">
+    <value>Revoke {0}'s invitation</value>
+  </data>
+  <data name="Invited" xml:space="preserve">
+    <value>Invited</value>
+  </data>
+  <data name="Accept_the_invitation_to_see_the_group_s_games" xml:space="preserve">
+    <value>Accept the invitation to see the group's games.</value>
+  </data>
+  <data name="No_games_yet_Add_what_the_group_plays_below" xml:space="preserve">
+    <value>No games yet. Add what the group plays below.</value>
+  </data>
+  <data name="No_games_attached_yet" xml:space="preserve">
+    <value>No games attached yet.</value>
+  </data>
+  <data name="Attached_games" xml:space="preserve">
+    <value>Attached games</value>
+  </data>
+  <data name="Remove_Arg0_from_Arg1" xml:space="preserve">
+    <value>Remove {0} from {1}?</value>
+  </data>
+  <data name="View_on_Steam" xml:space="preserve">
+    <value>View on Steam</value>
+  </data>
+  <data name="Opens_in_a_new_tab" xml:space="preserve">
+    <value>opens in a new tab</value>
+  </data>
+  <data name="No_Steam_link" xml:space="preserve">
+    <value>No Steam link</value>
+  </data>
+  <data name="Edit_or_link_Steam" xml:space="preserve">
+    <value>Edit or link Steam</value>
+  </data>
+  <data name="Game_name" xml:space="preserve">
+    <value>Game name</value>
+  </data>
+  <data name="Steam_App_ID_or_link" xml:space="preserve">
+    <value>Steam App ID or link</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Add_a_game" xml:space="preserve">
+    <value>Add a game</value>
+  </data>
+  <data name="Add_game" xml:space="preserve">
+    <value>Add game</value>
+  </data>
+  <data name="Paste_a_number_like_730_or_a_store_link_like_store_steampowered" xml:space="preserve">
+    <value>Paste a number like 730 or a store link like store.steampowered.com/app/730. Leave it empty for games that aren't on Steam.</value>
+  </data>
+  <data name="Deletes_the_group_for_everyone_including_its_Discord_role_Members_invitations_and" xml:space="preserve">
+    <value>Deletes the group for everyone, including its Discord role. Members, invitations and games can't be recovered.</value>
+  </data>
+  <data name="Group_not_created" xml:space="preserve">
+    <value>Group not created</value>
+  </data>
+  <data name="You_ll_be_the_organizer_The_group_is_invite_only_and_HappyMix" xml:space="preserve">
+    <value>You'll be the organizer. The group is invite-only, and HappyMix creates a matching Discord role.</value>
+  </data>
+  <data name="You_can_t_create_groups_here" xml:space="preserve">
+    <value>You can't create groups here</value>
+  </data>
+  <data name="This_server_lets_only_members_with_an_organizer_role_create_groups_Ask" xml:space="preserve">
+    <value>This server lets only members with an organizer role create groups. Ask a server admin for the role.</value>
+  </data>
+  <data name="Back_to_groups" xml:space="preserve">
+    <value>Back to groups</value>
+  </data>
+  <data name="Group_name" xml:space="preserve">
+    <value>Group name</value>
+  </data>
+  <data name="Text_1_40_letters_digits_spaces_hyphens_or_underscores_It_becomes_the_Discord" xml:space="preserve">
+    <value>1–40 letters, digits, spaces, hyphens or underscores. It becomes the Discord role name.</value>
+  </data>
+  <data name="Steam_is_optional_paste_a_number_like_730_or_a_store_link" xml:space="preserve">
+    <value>Steam is optional: paste a number like 730 or a store link. You can add more games and link Steam later.</value>
+  </data>
+  <data name="Create_group" xml:space="preserve">
+    <value>Create group</value>
+  </data>
+  <data name="Member" xml:space="preserve">
+    <value>Member</value>
+  </data>
+  <data name="Moderator" xml:space="preserve">
+    <value>Moderator</value>
+  </data>
+  <data name="Former_member" xml:space="preserve">
+    <value>Former member</value>
+  </data>
+  <data name="Group_created" xml:space="preserve">
+    <value>Group created</value>
+  </data>
+  <data name="You_organize_this_group_Invite_members_when_you_re_ready" xml:space="preserve">
+    <value>You organize this group. Invite members when you're ready.</value>
+  </data>
+  <data name="Choose_a_person_from_this_server_by_their_Discord_username" xml:space="preserve">
+    <value>Choose a person from this server by their Discord username.</value>
+  </data>
+  <data name="Invitation_sent_to_Arg0" xml:space="preserve">
+    <value>Invitation sent to {0}</value>
+  </data>
+  <data name="They_got_a_Discord_message_with_Accept_and_Decline_buttons_and_can" xml:space="preserve">
+    <value>They got a Discord message with Accept and Decline buttons, and can also answer here.</value>
+  </data>
+  <data name="Discord_couldn_t_deliver_the_message_They_can_still_accept_from_Groups" xml:space="preserve">
+    <value>Discord couldn't deliver the message. They can still accept from Groups or with /group join.</value>
+  </data>
+  <data name="Arg0_was_closed" xml:space="preserve">
+    <value>{0} was closed</value>
+  </data>
+  <data name="Its_saved_record_and_Discord_role_were_deleted" xml:space="preserve">
+    <value>Its saved record and Discord role were deleted.</value>
+  </data>
+  <data name="Role_repair_failed" xml:space="preserve">
+    <value>Role repair failed</value>
+  </data>
+  <data name="Group_roles_repaired" xml:space="preserve">
+    <value>Group roles repaired</value>
+  </data>
+  <data name="Every_member_s_group_roles_now_match_the_saved_groups" xml:space="preserve">
+    <value>Every member's group roles now match the saved groups.</value>
+  </data>
+  <data name="Saved_but_the_Discord_role_didn_t_update" xml:space="preserve">
+    <value>Saved, but the Discord role didn't update</value>
+  </data>
+  <data name="The_group_record_is_saved_A_server_moderator_can_fix_the_role" xml:space="preserve">
+    <value>The group record is saved. A server moderator can fix the role from Groups → Repair roles, or with /group repair-roles.</value>
+  </data>
+  <data name="Group_not_available" xml:space="preserve">
+    <value>Group not available</value>
+  </data>
+  <data name="That_group_doesn_t_exist_or_you_don_t_have_access_to" xml:space="preserve">
+    <value>That group doesn't exist or you don't have access to it.</value>
+  </data>
+  <data name="You_joined_the_group" xml:space="preserve">
+    <value>You joined the group</value>
+  </data>
+  <data name="Invitation_declined" xml:space="preserve">
+    <value>Invitation declined</value>
+  </data>
+  <data name="You_left_the_group" xml:space="preserve">
+    <value>You left the group</value>
+  </data>
+  <data name="Description_saved" xml:space="preserve">
+    <value>Description saved</value>
+  </data>
+  <data name="Invitation_revoked" xml:space="preserve">
+    <value>Invitation revoked</value>
+  </data>
+  <data name="Member_removed" xml:space="preserve">
+    <value>Member removed</value>
+  </data>
+  <data name="Roles_repaired_for_this_member" xml:space="preserve">
+    <value>Roles repaired for this member</value>
+  </data>
+  <data name="Game_added" xml:space="preserve">
+    <value>Game added</value>
+  </data>
+  <data name="Game_updated" xml:space="preserve">
+    <value>Game updated</value>
+  </data>
+  <data name="Game_removed" xml:space="preserve">
+    <value>Game removed</value>
+  </data>
+  <data name="You_need_a_configured_organizer_role_to_create_a_group" xml:space="preserve">
+    <value>You need a configured organizer role to create a group.</value>
+  </data>
+  <data name="A_group_with_that_name_already_exists" xml:space="preserve">
+    <value>A group with that name already exists.</value>
+  </data>
+  <data name="That_member_already_belongs_to_the_group" xml:space="preserve">
+    <value>That member already belongs to the group.</value>
+  </data>
+  <data name="This_invitation_is_no_longer_pending" xml:space="preserve">
+    <value>This invitation is no longer pending.</value>
+  </data>
+  <data name="You_have_no_pending_invitation_to_this_group" xml:space="preserve">
+    <value>You have no pending invitation to this group.</value>
+  </data>
+  <data name="You_organize_this_group_Use_group_delete_to_close_it" xml:space="preserve">
+    <value>You organize this group. Use /group delete to close it.</value>
+  </data>
+  <data name="You_are_not_a_member_of_this_group" xml:space="preserve">
+    <value>You are not a member of this group.</value>
+  </data>
+  <data name="The_organizer_owns_this_group_Use_group_delete_to_close_it" xml:space="preserve">
+    <value>The organizer owns this group. Use /group delete to close it.</value>
+  </data>
+  <data name="Only_server_moderators_can_repair_group_roles" xml:space="preserve">
+    <value>Only server moderators can repair group roles.</value>
+  </data>
+  <data name="That_group_does_not_exist_in_this_server" xml:space="preserve">
+    <value>That group does not exist in this server.</value>
+  </data>
+  <data name="Only_the_group_s_organizer_or_a_server_moderator_can_manage_it" xml:space="preserve">
+    <value>Only the group's organizer or a server moderator can manage it.</value>
+  </data>
+  <data name="Use_a_group_name_of_1_to_40_letters_digits_spaces_hyphens" xml:space="preserve">
+    <value>Use a group name of 1 to 40 letters, digits, spaces, hyphens or underscores.</value>
+  </data>
+  <data name="Use_a_description_of_up_to_200_characters" xml:space="preserve">
+    <value>Use a description of up to 200 characters.</value>
+  </data>
+  <data name="A_group_can_have_up_to_20_games" xml:space="preserve">
+    <value>A group can have up to 20 games.</value>
+  </data>
+  <data name="This_group_already_has_that_Steam_game" xml:space="preserve">
+    <value>This group already has that Steam game.</value>
+  </data>
+  <data name="That_game_is_no_longer_attached_to_this_group" xml:space="preserve">
+    <value>That game is no longer attached to this group.</value>
+  </data>
+  <data name="Enter_a_game_name_of_1_to_60_characters" xml:space="preserve">
+    <value>Enter a game name of 1 to 60 characters.</value>
+  </data>
+  <data name="Enter_a_Steam_App_ID_like_730_or_a_Steam_store_link" xml:space="preserve">
+    <value>Enter a Steam App ID like 730 or a Steam store link like https://store.steampowered.com/app/730/.</value>
+  </data>
+  <data name="Times_in_Arg0" xml:space="preserve">
+    <value>Times in {0}</value>
+  </data>
+  <data name="Manage_members" xml:space="preserve">
+    <value>Manage members</value>
+  </data>
+  <data name="Choose_a_day" xml:space="preserve">
+    <value>Choose a day</value>
+  </data>
+  <data name="Availability_on_Arg0_in_Arg1" xml:space="preserve">
+    <value>Availability on {0} in {1}</value>
+  </data>
+  <data name="No_data" xml:space="preserve">
+    <value>No data</value>
+  </data>
+  <data name="All_day" xml:space="preserve">
+    <value>All day</value>
+  </data>
+  <data name="From_the_previous_day" xml:space="preserve">
+    <value>from the previous day</value>
+  </data>
+  <data name="To" xml:space="preserve">
+    <value>to</value>
+  </data>
+  <data name="Continues_the_next_day" xml:space="preserve">
+    <value>continues the next day</value>
+  </data>
+  <data name="Weekly" xml:space="preserve">
+    <value>Weekly</value>
+  </data>
+  <data name="Saved_for_this_date" xml:space="preserve">
+    <value>saved for this date</value>
+  </data>
+  <data name="Usual_hours_not_confirmed_for_this_date" xml:space="preserve">
+    <value>usual hours, not confirmed for this date</value>
+  </data>
+  <data name="Continues_from_or_into_the_next_day" xml:space="preserve">
+    <value>continues from or into the next day</value>
+  </data>
+  <data name="Hour" xml:space="preserve">
+    <value>hour</value>
+  </data>
+  <data name="Free_all_day" xml:space="preserve">
+    <value>Free all day</value>
+  </data>
+  <data name="Couldn_t_save_today" xml:space="preserve">
+    <value>Couldn't save today</value>
+  </data>
+  <data name="Pick_a_start_and_end_time_or_choose_Free_all_day" xml:space="preserve">
+    <value>Pick a start and end time, or choose Free all day.</value>
+  </data>
+  <data name="Couldn_t_save_Arg0" xml:space="preserve">
+    <value>Couldn't save {0}</value>
+  </data>
+  <data name="You_re_available_all_day_today" xml:space="preserve">
+    <value>You're available all day today.</value>
+  </data>
+  <data name="All_day_every_Arg0" xml:space="preserve">
+    <value>All day, every {0}.</value>
+  </data>
+  <data name="Today_all_day" xml:space="preserve">
+    <value>Today · all day</value>
+  </data>
+  <data name="Members_view" xml:space="preserve">
+    <value>Members view</value>
+  </data>
+  <data name="Roster_invites" xml:space="preserve">
+    <value>Roster &amp; invites</value>
+  </data>
+  <data name="Usual_weekly_hours_not_confirmed" xml:space="preserve">
+    <value>usual weekly hours, not confirmed</value>
+  </data>
+  <data name="One_off_for_this_date" xml:space="preserve">
+    <value>one-off for this date</value>
+  </data>
+  <data name="Hours_shown" xml:space="preserve">
+    <value>Hours shown</value>
+  </data>
+  <data name="Free_time_from_Arg0_00_to_Arg1_00" xml:space="preserve">
+    <value>Free time from {0}:00 to {1}:00</value>
+  </data>
+  <data name="Now_Arg0" xml:space="preserve">
+    <value>Now {0}</value>
+  </data>
+  <data name="Free_together" xml:space="preserve">
+    <value>Free together</value>
+  </data>
+  <data name="Best_Arg0_00_Arg1_00_Arg2_of_Arg3_free" xml:space="preserve">
+    <value>Best: {0}:00–{1}:00 · {2} of {3} free</value>
+  </data>
+  <data name="No_hour_with_two_or_more_members_free" xml:space="preserve">
+    <value>No hour with two or more members free</value>
+  </data>
+  <data name="Arg0_of_Arg1_free_at_Arg2_00" xml:space="preserve">
+    <value>{0} of {1} free at {2}:00</value>
+  </data>
+  <data name="Free_Arg0" xml:space="preserve">
+    <value>Free: {0}</value>
+  </data>
+  <data name="Free_one_off_for_this_date" xml:space="preserve">
+    <value>Free · one-off for this date</value>
+  </data>
+  <data name="Free_usual_weekly_hours_not_confirmed" xml:space="preserve">
+    <value>Free · usual weekly hours, not confirmed</value>
+  </data>
+  <data name="Busy_has_times_that_day_not_this_hour" xml:space="preserve">
+    <value>Busy · has times that day, not this hour</value>
+  </data>
+  <data name="Arg0_linked" xml:space="preserve">
+    <value>{0} linked</value>
+  </data>
+  <data name="Linked_accounts" xml:space="preserve">
+    <value>Linked accounts</value>
+  </data>
+  <data name="Connect_an_alternate_account_twink_so_HappyMix_treats_both_as_one_member" xml:space="preserve">
+    <value>Connect an alternate account (twink) so HappyMix treats both as one member in this server.</value>
+  </data>
+  <data name="Your_accounts" xml:space="preserve">
+    <value>Your accounts</value>
+  </data>
+  <data name="All_accounts_below_act_as_one_member_the_same_groups_invitations_and" xml:space="preserve">
+    <value>All accounts below act as one member: the same groups, invitations and schedule.</value>
+  </data>
+  <data name="Primary" xml:space="preserve">
+    <value>Primary</value>
+  </data>
+  <data name="Alternate_twink" xml:space="preserve">
+    <value>Alternate (twink)</value>
+  </data>
+  <data name="Linked_Arg0" xml:space="preserve">
+    <value>Linked {0}</value>
+  </data>
+  <data name="Unlink_Arg0" xml:space="preserve">
+    <value>Unlink {0}</value>
+  </data>
+  <data name="Unlink" xml:space="preserve">
+    <value>Unlink</value>
+  </data>
+  <data name="No_alternate_accounts_are_linked_yet" xml:space="preserve">
+    <value>No alternate accounts are linked yet.</value>
+  </data>
+  <data name="Link_an_alternate_account" xml:space="preserve">
+    <value>Link an alternate account</value>
+  </data>
+  <data name="Link_created" xml:space="preserve">
+    <value>Link created</value>
+  </data>
+  <data name="Open_it_while_signed_in_to_Discord_as_your_alternate_account_twink" xml:space="preserve">
+    <value>Open it while signed in to Discord as your alternate account (twink), for example in a private window. It works once and expires at {0}.</value>
+  </data>
+  <data name="Link_for_your_alternate_account" xml:space="preserve">
+    <value>Link for your alternate account</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="This_page_shows_the_link_only_once_Don_t_share_it_with" xml:space="preserve">
+    <value>This page shows the link only once. Don't share it with anyone else: whoever approves it with their own Discord account becomes your alternate.</value>
+  </data>
+  <data name="Create_a_link_here_signed_in_as_your_main_account" xml:space="preserve">
+    <value>Create a link here, signed in as your main account.</value>
+  </data>
+  <data name="Open_the_link_signed_in_to_Discord_as_your_alternate_account_twink" xml:space="preserve">
+    <value>Open the link signed in to Discord as your alternate account (twink). A private window or another browser works best.</value>
+  </data>
+  <data name="Review_what_will_be_shared_and_approve_it_from_the_alternate_account" xml:space="preserve">
+    <value>Review what will be shared and approve it from the alternate account.</value>
+  </data>
+  <data name="Create_link" xml:space="preserve">
+    <value>Create link</value>
+  </data>
+  <data name="Open_link_requests" xml:space="preserve">
+    <value>Open link requests</value>
+  </data>
+  <data name="Created_Arg0" xml:space="preserve">
+    <value>Created {0}</value>
+  </data>
+  <data name="Expires_Arg0_works_once" xml:space="preserve">
+    <value>Expires {0} · works once</value>
+  </data>
+  <data name="This_account_is_the_alternate_twink_of_Arg0_New_links_are_created" xml:space="preserve">
+    <value>This account is the alternate (twink) of {0}. New links are created from the primary account.</value>
+  </data>
+  <data name="What_linking_does" xml:space="preserve">
+    <value>What linking does</value>
+  </data>
+  <data name="Groups_invitations_and_organizer_rights_are_shared_and_counted_once" xml:space="preserve">
+    <value>Groups, invitations and organizer rights are shared and counted once.</value>
+  </data>
+  <data name="Today_weekly_and_all_day_availability_is_one_schedule_Editing_from_either" xml:space="preserve">
+    <value>Today, weekly and all-day availability is one schedule. Editing from either account changes it.</value>
+  </data>
+  <data name="Group_roles_in_Discord_are_given_to_every_linked_account" xml:space="preserve">
+    <value>Group roles in Discord are given to every linked account.</value>
+  </data>
+  <data name="Discord_permissions_are_never_shared" xml:space="preserve">
+    <value>Discord permissions are never shared.</value>
+  </data>
+  <data name="Admin_and_moderator_access_still_depends_on_the_account_you_sign_in" xml:space="preserve">
+    <value>Admin and moderator access still depends on the account you sign in with.</value>
+  </data>
+  <data name="Links_only_apply_in_this_server" xml:space="preserve">
+    <value>Links only apply in this server.</value>
+  </data>
+  <data name="Approve_linked_account" xml:space="preserve">
+    <value>Approve linked account</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
+    <value>Approve</value>
+  </data>
+  <data name="Switch_to_your_alternate_account" xml:space="preserve">
+    <value>Switch to your alternate account</value>
+  </data>
+  <data name="Copy_this_page_s_address_sign_out_sign_in_to_Discord_as" xml:space="preserve">
+    <value>Copy this page's address, sign out, sign in to Discord as your alternate account (twink), and open the address again. A private window makes this easier.</value>
+  </data>
+  <data name="Can_t_use_this_link" xml:space="preserve">
+    <value>Can't use this link</value>
+  </data>
+  <data name="Back_to_linked_accounts" xml:space="preserve">
+    <value>Back to linked accounts</value>
+  </data>
+  <data name="Link_Arg0_to_Arg1" xml:space="preserve">
+    <value>Link {0} to {1}?</value>
+  </data>
+  <data name="You_re_signed_in_as_Arg0_Approving_makes_this_account_an_alternate" xml:space="preserve">
+    <value>You're signed in as {0}. Approving makes this account an alternate (twink) of {1} in {2}.</value>
+  </data>
+  <data name="Accounts" xml:space="preserve">
+    <value>Accounts</value>
+  </data>
+  <data name="Shared_from_now_on" xml:space="preserve">
+    <value>Shared from now on</value>
+  </data>
+  <data name="None" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="Already_in_with_both_accounts_counted_once" xml:space="preserve">
+    <value>Already in with both accounts (counted once)</value>
+  </data>
+  <data name="Duplicate_invitations_merged" xml:space="preserve">
+    <value>Duplicate invitations merged</value>
+  </data>
+  <data name="I_understand_Arg0_will_share_organizer_rights_for_Arg1" xml:space="preserve">
+    <value>I understand {0} will share organizer rights for: {1}.</value>
+  </data>
+  <data name="The_groups_stay_saved_under_this_account_and_remain_yours_if_you" xml:space="preserve">
+    <value>The groups stay saved under this account and remain yours if you unlink.</value>
+  </data>
+  <data name="Schedule" xml:space="preserve">
+    <value>Schedule</value>
+  </data>
+  <data name="Both_accounts_will_use_one_schedule_Moving_Arg0_one_off_windows_and" xml:space="preserve">
+    <value>Both accounts will use one schedule. Moving {0} one-off windows and {1} weekly days from this account; {2} identical entries merged.</value>
+  </data>
+  <data name="These_entries_overlap_Choose_which_to_keep_for_each_one" xml:space="preserve">
+    <value>These entries overlap. Choose which to keep for each one:</value>
+  </data>
+  <data name="Every_Arg0" xml:space="preserve">
+    <value>Every {0}</value>
+  </data>
+  <data name="Keep_Arg0_s" xml:space="preserve">
+    <value>Keep {0}'s</value>
+  </data>
+  <data name="Use_this_account_s" xml:space="preserve">
+    <value>Use this account's</value>
+  </data>
+  <data name="Nothing_is_thrown_away_this_account_s_current_schedule_is_saved_and" xml:space="preserve">
+    <value>Nothing is thrown away: this account's current schedule is saved and comes back if you unlink.</value>
+  </data>
+  <data name="Approve_link" xml:space="preserve">
+    <value>Approve link</value>
+  </data>
+  <data name="Unlink_account" xml:space="preserve">
+    <value>Unlink account</value>
+  </data>
+  <data name="Unlink_Arg0_from_Arg1" xml:space="preserve">
+    <value>Unlink {0} from {1}?</value>
+  </data>
+  <data name="Here_s_what_changes_Nothing_happens_until_you_confirm" xml:space="preserve">
+    <value>Here's what changes. Nothing happens until you confirm.</value>
+  </data>
+  <data name="Arg0_keeps_these_groups_its_own_memberships" xml:space="preserve">
+    <value>{0} keeps these groups (its own memberships)</value>
+  </data>
+  <data name="Arg0_loses_access_to_these_groups_and_their_Discord_roles" xml:space="preserve">
+    <value>{0} loses access to these groups and their Discord roles</value>
+  </data>
+  <data name="Arg0_still_organizes" xml:space="preserve">
+    <value>{0} still organizes</value>
+  </data>
+  <data name="Arg0_keeps_the_shared_schedule_Arg1_gets_back_its_pre_link_schedule" xml:space="preserve">
+    <value>{0} keeps the shared schedule. {1} gets back its pre-link schedule: {2} upcoming windows and {3} weekly days.</value>
+  </data>
+  <data name="Memberships_and_invitations_accepted_while_linked_stay_with_Arg0_Unrelated_Discord_roles" xml:space="preserve">
+    <value>Memberships and invitations accepted while linked stay with {0}. Unrelated Discord roles are not touched.</value>
+  </data>
+  <data name="Linked_Arg0_2" xml:space="preserve">
+    <value>Linked: {0}</value>
+  </data>
+  <data name="Linked_accounts_Arg0" xml:space="preserve">
+    <value>Linked accounts: {0}</value>
+  </data>
+  <data name="Link_request_not_created" xml:space="preserve">
+    <value>Link request not created</value>
+  </data>
+  <data name="Link_request_revoked" xml:space="preserve">
+    <value>Link request revoked</value>
+  </data>
+  <data name="These_accounts_were_already_linked" xml:space="preserve">
+    <value>These accounts were already linked</value>
+  </data>
+  <data name="Accounts_linked" xml:space="preserve">
+    <value>Accounts linked</value>
+  </data>
+  <data name="HappyMix_now_treats_both_accounts_as_one_member_in_this_server" xml:space="preserve">
+    <value>HappyMix now treats both accounts as one member in this server.</value>
+  </data>
+  <data name="The_link_is_saved_but_Discord_group_roles_didn_t_update_A" xml:space="preserve">
+    <value>The link is saved, but Discord group roles didn't update. A server moderator can fix them from Groups → Repair roles, or with /group repair-roles.</value>
+  </data>
+  <data name="Accounts_unlinked" xml:space="preserve">
+    <value>Accounts unlinked</value>
+  </data>
+  <data name="The_alternate_keeps_its_own_memberships_and_gets_its_saved_schedule_back" xml:space="preserve">
+    <value>The alternate keeps its own memberships and gets its saved schedule back.</value>
+  </data>
+  <data name="The_accounts_are_unlinked_but_Discord_group_roles_didn_t_update_A" xml:space="preserve">
+    <value>The accounts are unlinked, but Discord group roles didn't update. A server moderator can fix them from Groups → Repair roles.</value>
+  </data>
+  <data name="An_account_can_have_up_to_5_linked_alternates" xml:space="preserve">
+    <value>An account can have up to 5 linked alternates.</value>
+  </data>
+  <data name="Both_accounts_must_be_members_of_this_server" xml:space="preserve">
+    <value>Both accounts must be members of this server.</value>
+  </data>
+  <data name="Choose_which_schedule_to_keep_for_each_conflict" xml:space="preserve">
+    <value>Choose which schedule to keep for each conflict.</value>
+  </data>
+  <data name="Confirm_that_organizer_rights_will_be_shared" xml:space="preserve">
+    <value>Confirm that organizer rights will be shared.</value>
+  </data>
+  <data name="One_of_these_accounts_was_linked_elsewhere_meanwhile_Unlink_it_first" xml:space="preserve">
+    <value>One of these accounts was linked elsewhere meanwhile. Unlink it first.</value>
+  </data>
+  <data name="Only_the_primary_account_or_that_alternate_can_unlink_it" xml:space="preserve">
+    <value>Only the primary account or that alternate can unlink it.</value>
+  </data>
+  <data name="That_account_isn_t_linked" xml:space="preserve">
+    <value>That account isn't linked.</value>
+  </data>
+  <data name="That_request_is_no_longer_open" xml:space="preserve">
+    <value>That request is no longer open.</value>
+  </data>
+  <data name="The_account_that_created_this_request_is_now_linked_as_an_alternate" xml:space="preserve">
+    <value>The account that created this request is now linked as an alternate itself.</value>
+  </data>
+  <data name="These_accounts_are_already_linked" xml:space="preserve">
+    <value>These accounts are already linked.</value>
+  </data>
+  <data name="This_account_is_already_part_of_another_linked_family_Unlink_it_first" xml:space="preserve">
+    <value>This account is already part of another linked family. Unlink it first.</value>
+  </data>
+  <data name="This_account_is_linked_as_an_alternate_Create_requests_from_your_primary" xml:space="preserve">
+    <value>This account is linked as an alternate. Create requests from your primary account.</value>
+  </data>
+  <data name="This_link_request_has_expired_was_revoked_or_was_already_used_Ask" xml:space="preserve">
+    <value>This link request has expired, was revoked or was already used. Ask for a new one.</value>
+  </data>
+  <data name="You_already_have_3_open_requests_Revoke_one_or_wait_for_it" xml:space="preserve">
+    <value>You already have 3 open requests. Revoke one or wait for it to expire.</value>
+  </data>
+  <data name="You_can_link_up_to_5_alternate_accounts" xml:space="preserve">
+    <value>You can link up to 5 alternate accounts.</value>
+  </data>
+  <data name="You_need_to_be_a_member_of_this_server" xml:space="preserve">
+    <value>You need to be a member of this server.</value>
+  </data>
+  <data name="You_re_signed_in_with_the_account_that_created_this_request_Sign" xml:space="preserve">
+    <value>You're signed in with the account that created this request. Sign in with your alternate account (twink) to approve it.</value>
+  </data>
+  <data name="My_linked_accounts" xml:space="preserve">
+    <value>My linked accounts</value>
+  </data>
+  <data name="Manage_links" xml:space="preserve">
+    <value>Manage links</value>
+  </data>
+  <data name="Link_server_accounts" xml:space="preserve">
+    <value>Link server accounts</value>
+  </data>
+  <data name="Select_a_primary_account_and_an_alternate_then_review_the_changes_before" xml:space="preserve">
+    <value>Select a primary account and an alternate, then review the changes before linking.</value>
+  </data>
+  <data name="Choose_an_account" xml:space="preserve">
+    <value>Choose an account</value>
+  </data>
+  <data name="Review_link" xml:space="preserve">
+    <value>Review link</value>
+  </data>
+  <data name="This_links_both_accounts_in_the_selected_server" xml:space="preserve">
+    <value>This links both accounts in the selected server.</value>
+  </data>
+  <data name="Only_server_administrators_can_link_other_accounts" xml:space="preserve">
+    <value>Only server administrators can link other accounts.</value>
+  </data>
+  <data name="Choose_two_different_accounts" xml:space="preserve">
+    <value>Choose two different accounts.</value>
+  </data>
+  <data name="Certainty" xml:space="preserve">
+    <value>Certainty</value>
+  </data>
+  <data name="Definite" xml:space="preserve">
+    <value>Definite</value>
+  </data>
+  <data name="Tentative" xml:space="preserve">
+    <value>Tentative</value>
+  </data>
+  <data name="Definite_I_can_play_Tentative_I_might_be_able_to_play" xml:space="preserve">
+    <value>Definite: I can play. Tentative: I might be able to play.</value>
+  </data>
+  <data name="Save_a_range_then_add_another_Each_range_has_its_own_certainty" xml:space="preserve">
+    <value>Save a range, then add another. Each range has its own certainty.</value>
+  </data>
+  <data name="The_same_start_time_and_time_zone_updates_an_existing_weekly_range" xml:space="preserve">
+    <value>The same start time and time zone updates an existing weekly range.</value>
+  </data>
+  <data name="Add_range" xml:space="preserve">
+    <value>Add range</value>
+  </data>
+  <data name="Save_range" xml:space="preserve">
+    <value>Save range</value>
+  </data>
+  <data name="Remove_range" xml:space="preserve">
+    <value>Remove range</value>
+  </data>
+  <data name="Clear_day" xml:space="preserve">
+    <value>Clear day</value>
+  </data>
+  <data name="Free_together_counts_definite_availability_only" xml:space="preserve">
+    <value>Free together counts definite availability only.</value>
+  </data>
+  <data name="Arg0_definite_Arg1_tentative_at_Arg2_00" xml:space="preserve">
+    <value>{0} definite, {1} tentative at {2}:00</value>
+  </data>
+  <data name="Clear_existing_ranges_before_saving_a_full_day" xml:space="preserve">
+    <value>Clear existing ranges before saving a full day.</value>
+  </data>
+  <data name="All_linked_accounts" xml:space="preserve">
+    <value>All linked accounts</value>
+  </data>
+  <data name="Each_card_is_one_member_a_primary_account_and_its_linked_alternates" xml:space="preserve">
+    <value>Each card is one member: a primary account and its linked alternates.</value>
+  </data>
+  <data name="Arg0_linked_members_Arg1_accounts" xml:space="preserve">
+    <value>{0} linked members · {1} accounts</value>
+  </data>
+  <data name="No_linked_accounts_yet" xml:space="preserve">
+    <value>No linked accounts yet</value>
+  </data>
+  <data name="Link_accounts_above_or_let_members_link_their_own_accounts" xml:space="preserve">
+    <value>Link accounts above, or let members link their own accounts.</value>
+  </data>
+  <data name="Arg0_cleared" xml:space="preserve">
+    <value>{0} cleared</value>
+  </data>
+  <data name="Arg0_saved" xml:space="preserve">
+    <value>{0} saved</value>
+  </data>
+  <data name="Arg0_ranges" xml:space="preserve">
+    <value>{0} ranges</value>
+  </data>
+  <data name="Repeats_every_week_A_day_can_have_several_ranges_each_definite_or" xml:space="preserve">
+    <value>Repeats every week. A day can have several ranges, each definite or tentative.</value>
+  </data>
+  <data name="Arg0_of_7_days" xml:space="preserve">
+    <value>{0} of 7 days</value>
+  </data>
+  <data name="Editing" xml:space="preserve">
+    <value>Editing</value>
+  </data>
+  <data name="Edit_Arg0" xml:space="preserve">
+    <value>Edit {0}</value>
+  </data>
+  <data name="Remove_every_weekly_range_on_Arg0" xml:space="preserve">
+    <value>Remove every weekly range on {0}?</value>
+  </data>
+  <data name="Clear_Arg0" xml:space="preserve">
+    <value>Clear {0}</value>
+  </data>
+  <data name="Start" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="End" xml:space="preserve">
+    <value>End</value>
+  </data>
+  <data name="Ranges_on_Arg0" xml:space="preserve">
+    <value>Ranges on {0}</value>
+  </data>
+  <data name="No_ranges_yet" xml:space="preserve">
+    <value>No ranges yet.</value>
+  </data>
+  <data name="Click_a_range_to_select_it_Drag_its_ends_or_the_whole" xml:space="preserve">
+    <value>Click a range to select it. Drag its ends or the whole range, or type exact times below.</value>
+  </data>
+  <data name="Add_time_range" xml:space="preserve">
+    <value>Add time range</value>
+  </data>
+  <data name="Time_zone_for_this_day" xml:space="preserve">
+    <value>Time zone for this day</value>
+  </data>
+  <data name="Ranges_saved_in_another_time_zone_stay_as_they_are_Arg0" xml:space="preserve">
+    <value>Ranges saved in another time zone stay as they are: {0}</value>
+  </data>
+  <data name="Save_Arg0" xml:space="preserve">
+    <value>Save {0}</value>
+  </data>
+  <data name="Add_a_range_pick_From_and_Until_00_00_to_00_00" xml:space="preserve">
+    <value>Add a range: pick From and Until. 00:00 to 00:00 means all day. Clear both to remove a range.</value>
+  </data>
+  <data name="Choose_a_valid_day_of_the_week" xml:space="preserve">
+    <value>Choose a valid day of the week.</value>
+  </data>
+  <data name="Use_up_to_8_ranges_per_day" xml:space="preserve">
+    <value>Use up to 8 ranges per day.</value>
+  </data>
+  <data name="A_full_day_can_t_be_combined_with_other_ranges_on_the" xml:space="preserve">
+    <value>A full day can't be combined with other ranges on the same day.</value>
+  </data>
+  <data name="These_ranges_overlap_Adjust_them_so_each_one_starts_after_the_previous" xml:space="preserve">
+    <value>These ranges overlap. Adjust them so each one starts after the previous one ends.</value>
+  </data>
+  <data name="This_overlaps_a_range_on_another_day" xml:space="preserve">
+    <value>This overlaps a range on another day.</value>
+  </data>
+  <data name="System" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="Light" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Dark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Info" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  <data name="Theme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Command_guide" xml:space="preserve">
+    <value>Command guide</value>
+  </data>
+  <data name="Browse_Discord_commands_workflows_and_options" xml:space="preserve">
+    <value>Browse Discord commands, workflows, and options.</value>
+  </data>
+  <data name="Back_to_Arg0" xml:space="preserve">
+    <value>Back to {0}</value>
+  </data>
+  <data name="Choose_a_server" xml:space="preserve">
+    <value>Choose a server</value>
+  </data>
+  <data name="Command_modules" xml:space="preserve">
+    <value>Command modules</value>
+  </data>
+  <data name="Where_and_when_HappyMix_posts_esports_announcements_Only_server_administrators_see_this" xml:space="preserve">
+    <value>Where and when HappyMix posts esports announcements. Only server administrators see this page.</value>
+  </data>
+  <data name="Team_aliases" xml:space="preserve">
+    <value>Team aliases</value>
+  </data>
+  <data name="Settings_not_saved" xml:space="preserve">
+    <value>Settings not saved</value>
+  </data>
+  <data name="Settings_not_saved_1_field_needs_attention" xml:space="preserve">
+    <value>Settings not saved: 1 field needs attention</value>
+  </data>
+  <data name="Settings_not_saved_Arg0_fields_need_attention" xml:space="preserve">
+    <value>Settings not saved: {0} fields need attention</value>
+  </data>
+  <data name="Settings_sections" xml:space="preserve">
+    <value>Settings sections</value>
+  </data>
+  <data name="Arg0_to_fix" xml:space="preserve">
+    <value>{0} to fix</value>
+  </data>
+  <data name="Game_sections_inherit_from_Server_defaults_unless_you_override_a_value" xml:space="preserve">
+    <value>Game sections inherit from Server defaults unless you override a value.</value>
+  </data>
+  <data name="HappyMix_can_t_post_in_any_text_channel_yet" xml:space="preserve">
+    <value>HappyMix can't post in any text channel yet</value>
+  </data>
+  <data name="In_Discord_give_the_HappyMix_role_View_Channel_Send_Messages_and_Embed" xml:space="preserve">
+    <value>In Discord, give the HappyMix role View Channel, Send Messages and Embed Links in at least one standard text channel, then reload this page.</value>
+  </data>
+  <data name="Used_by_every_game_unless_the_game_overrides_it" xml:space="preserve">
+    <value>Used by every game unless the game overrides it.</value>
+  </data>
+  <data name="Find_a_channel" xml:space="preserve">
+    <value>Find a channel</value>
+  </data>
+  <data name="No_channels_match" xml:space="preserve">
+    <value>No channels match.</value>
+  </data>
+  <data name="Bot_default_Arg0" xml:space="preserve">
+    <value>Bot default · {0}</value>
+  </data>
+  <data name="Text_channels_where_HappyMix_can_view_send_messages_and_embed_links" xml:space="preserve">
+    <value>Text channels where HappyMix can view, send messages and embed links.</value>
+  </data>
+  <data name="Used_for_schedules_and_availability_Start_typing_a_city_like_Kyiv_or" xml:space="preserve">
+    <value>Used for schedules and availability. Start typing a city, like Kyiv, or enter UTC.</value>
+  </data>
+  <data name="Before_a_followed_match_1_1440" xml:space="preserve">
+    <value>Before a followed match. 1–1440.</value>
+  </data>
+  <data name="This_server_has_no_roles_yet" xml:space="preserve">
+    <value>This server has no roles yet.</value>
+  </data>
+  <data name="With_none_selected_any_member_can_organize_a_group" xml:space="preserve">
+    <value>With none selected, any member can organize a group.</value>
+  </data>
+  <data name="Today_s_matches_for_followed_teams" xml:space="preserve">
+    <value>Today's matches for followed teams</value>
+  </data>
+  <data name="Before_a_match_using_the_lead_time" xml:space="preserve">
+    <value>Before a match, using the lead time</value>
+  </data>
+  <data name="When_a_followed_match_goes_live" xml:space="preserve">
+    <value>When a followed match goes live</value>
+  </data>
+  <data name="After_each_map" xml:space="preserve">
+    <value>After each map</value>
+  </data>
+  <data name="Final_score" xml:space="preserve">
+    <value>Final score</value>
+  </data>
+  <data name="Not_saved" xml:space="preserve">
+    <value>Not saved</value>
+  </data>
+  <data name="No_unsaved_changes" xml:space="preserve">
+    <value>No unsaved changes</value>
+  </data>
+  <data name="Arg0_followed_teams" xml:space="preserve">
+    <value>{0} followed teams</value>
+  </data>
+  <data name="No_teams_yet_Search_for_a_team_by_name_to_add_it" xml:space="preserve">
+    <value>No teams yet. Search for a team by name to add it.</value>
+  </data>
+  <data name="Search_for_a_team_by_name" xml:space="preserve">
+    <value>Search for a team by name</value>
+  </data>
+  <data name="One_team_per_line_A_name_is_enough_if_several_teams_share" xml:space="preserve">
+    <value>One team per line. A name is enough; if several teams share it, add the number shown in search, like "Vitality #3455".</value>
+  </data>
+  <data name="Arg0_Twitch_channels" xml:space="preserve">
+    <value>{0} Twitch channels</value>
+  </data>
+  <data name="No_channels_yet" xml:space="preserve">
+    <value>No channels yet.</value>
+  </data>
+  <data name="Twitch_handle_or_twitch_tv_link" xml:space="preserve">
+    <value>Twitch handle or twitch.tv link</value>
+  </data>
+  <data name="One_Twitch_handle_or_twitch_tv_link_per_line_up_to_five" xml:space="preserve">
+    <value>One Twitch handle or twitch.tv link per line, up to five.</value>
+  </data>
+  <data name="Leave_a_value_on_Inherit_to_follow_Server_defaults" xml:space="preserve">
+    <value>Leave a value on Inherit to follow Server defaults.</value>
+  </data>
+  <data name="Server_default_Arg0" xml:space="preserve">
+    <value>Server default · {0}</value>
+  </data>
+  <data name="Find_a_role" xml:space="preserve">
+    <value>Find a role</value>
+  </data>
+  <data name="No_roles_match" xml:space="preserve">
+    <value>No roles match.</value>
+  </data>
+  <data name="No_Arg0_teams_followed_so_match_posts_for_this_game_stop" xml:space="preserve">
+    <value>No {0} teams followed, so match posts for this game stop.</value>
+  </data>
+  <data name="No_Twitch_links_in_Arg0_announcements" xml:space="preserve">
+    <value>No Twitch links in {0} announcements.</value>
+  </data>
+  <data name="Optional_short_names_for_teams_checked_before_team_search" xml:space="preserve">
+    <value>Optional short names for teams, checked before team search</value>
+  </data>
+  <data name="Team_aliases_source" xml:space="preserve">
+    <value>Team aliases source</value>
+  </data>
+  <data name="Arg0_team_aliases" xml:space="preserve">
+    <value>{0} team aliases</value>
+  </data>
+  <data name="One_alias_team_number_per_line_for_example_NAVI_3216_Usually_not" xml:space="preserve">
+    <value>One alias=team number per line, for example NAVI=3216. Usually not needed: team names are found automatically.</value>
+  </data>
+  <data name="Edit_as_text" xml:space="preserve">
+    <value>Edit as text</value>
+  </data>
+  <data name="Show_as_list" xml:space="preserve">
+    <value>Show as list</value>
+  </data>
+  <data name="No_matches_Press_Enter_to_add_it_as_typed_it_s_checked" xml:space="preserve">
+    <value>No matches. Press Enter to add it as typed; it's checked when you save.</value>
+  </data>
+  <data name="Search_isn_t_available_right_now_Press_Enter_to_add_it_as" xml:space="preserve">
+    <value>Search isn't available right now. Press Enter to add it as typed.</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>Searching…</value>
+  </data>
+  <data name="That_isn_t_a_Twitch_handle_or_twitch_tv_link" xml:space="preserve">
+    <value>That isn't a Twitch handle or twitch.tv link.</value>
+  </data>
+  <data name="Already_in_the_list" xml:space="preserve">
+    <value>Already in the list.</value>
+  </data>
+  <data name="The_list_is_full" xml:space="preserve">
+    <value>The list is full.</value>
+  </data>
+  <data name="Checked_when_you_save" xml:space="preserve">
+    <value>Checked when you save</value>
+  </data>
+  <data name="Removed_Arg0" xml:space="preserve">
+    <value>Removed {0}</value>
+  </data>
+  <data name="Arg0_of_Arg1" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="New_announcements_use_these_settings_right_away" xml:space="preserve">
+    <value>New announcements use these settings right away.</value>
+  </data>
+  <data name="Enter_an_IANA_time_zone_such_as_Europe_Kyiv_or_UTC" xml:space="preserve">
+    <value>Enter an IANA time zone such as Europe/Kyiv or UTC.</value>
+  </data>
+  <data name="HappyMix_can_t_post_there_Choose_a_text_channel_where_it_can" xml:space="preserve">
+    <value>HappyMix can't post there. Choose a text channel where it can view, send messages and embed links.</value>
+  </data>
+  <data name="Choose_roles_from_this_server_other_than_everyone" xml:space="preserve">
+    <value>Choose roles from this server other than @everyone.</value>
+  </data>
+  <data name="Choose_a_role_from_this_server_other_than_everyone" xml:space="preserve">
+    <value>Choose a role from this server other than @everyone.</value>
+  </data>
+  <data name="Server_settings_saved" xml:space="preserve">
+    <value>Server settings saved</value>
+  </data>
+  <data name="Bot_default_channel" xml:space="preserve">
+    <value>Bot default channel</value>
+  </data>
+  <data name="A_channel_HappyMix_can_t_post_in" xml:space="preserve">
+    <value>a channel HappyMix can't post in</value>
+  </data>
+  <data name="No_teams" xml:space="preserve">
+    <value>No teams</value>
+  </data>
+  <data name="No_channels" xml:space="preserve">
+    <value>No channels</value>
+  </data>
+  <data name="Built_in_team_list" xml:space="preserve">
+    <value>Built-in team list</value>
+  </data>
+  <data name="Arg0_teams" xml:space="preserve">
+    <value>{0} teams</value>
+  </data>
+  <data name="Arg0_more" xml:space="preserve">
+    <value>+{0} more</value>
+  </data>
+  <data name="Arg0_isn_t_a_Twitch_channel_Use_a_handle_like_shroud_or" xml:space="preserve">
+    <value>"{0}" isn't a Twitch channel. Use a handle like shroud or a twitch.tv link.</value>
+  </data>
+  <data name="Add_one_to_five_Twitch_channels_or_choose_None" xml:space="preserve">
+    <value>Add one to five Twitch channels, or choose None.</value>
+  </data>
+  <data name="Check_Arg0_Use_one_unique_alias_123_entry_per_line" xml:space="preserve">
+    <value>Check "{0}". Use one unique alias=123 entry per line.</value>
+  </data>
+  <data name="Add_1_to_20_teams_or_choose_None" xml:space="preserve">
+    <value>Add 1 to 20 teams, or choose None.</value>
+  </data>
+  <data name="Inherited" xml:space="preserve">
+    <value>Inherited</value>
+  </data>
+  <data name="Team_search_isn_t_available_right_now_Add_the_team_s_number" xml:space="preserve">
+    <value>Team search isn't available right now. Add the team's number like "Team name #123", or try again later.</value>
+  </data>
+  <data name="No_Arg0_team_called_Arg1_was_found_Check_the_spelling_or_add" xml:space="preserve">
+    <value>No {0} team called "{1}" was found. Check the spelling, or add the team's number like "{1} #123".</value>
+  </data>
+  <data name="Several_Arg0_teams_match_Arg1_Arg2_Pick_one_from_the_search_or" xml:space="preserve">
+    <value>Several {0} teams match "{1}": {2}. Pick one from the search, or add its number like "{1} #123".</value>
+  </data>
+  <data name="Find_a_member" xml:space="preserve">
+    <value>Find a member</value>
+  </data>
+  <data name="No_members_match" xml:space="preserve">
+    <value>No members match.</value>
+  </data>
+  <data name="Add_a_range_pick_From_and_Until_00_00_to_00_00_2" xml:space="preserve">
+    <value>Add a range: pick From and Until. 00:00 to 00:00 means all day. Set the hour to -- to remove a range.</value>
+  </data>
+  <data name="Events" xml:space="preserve">
+    <value>Events</value>
+  </data>
+  <data name="Sessions_planned_for_this_group_pending_until_the_organizer_confirms" xml:space="preserve">
+    <value>Sessions planned for this group: pending until the organizer confirms.</value>
+  </data>
+  <data name="Plan_an_event" xml:space="preserve">
+    <value>Plan an event</value>
+  </data>
+  <data name="No_events_planned_for_this_group_yet" xml:space="preserve">
+    <value>No events planned for this group yet.</value>
+  </data>
+  <data name="My_events" xml:space="preserve">
+    <value>My events</value>
+  </data>
+  <data name="Dates_you_accepted_Pending_plans_may_still_change_confirmed_ones_are_on" xml:space="preserve">
+    <value>Dates you accepted. Pending plans may still change; confirmed ones are on.</value>
+  </data>
+  <data name="Arg0_invitations_waiting" xml:space="preserve">
+    <value>{0} invitations waiting</value>
+  </data>
+  <data name="All_events" xml:space="preserve">
+    <value>All events</value>
+  </data>
+  <data name="Nothing_accepted_yet" xml:space="preserve">
+    <value>Nothing accepted yet.</value>
+  </data>
+  <data name="Plan_a_session_invite_people_then_confirm_when_enough_say_yes" xml:space="preserve">
+    <value>Plan a session, invite people, then confirm when enough say yes.</value>
+  </data>
+  <data name="New_event" xml:space="preserve">
+    <value>New event</value>
+  </data>
+  <data name="Invitations" xml:space="preserve">
+    <value>Invitations</value>
+  </data>
+  <data name="Dates_waiting_for_your_answer_Each_date_of_a_repeating_event_is" xml:space="preserve">
+    <value>Dates waiting for your answer. Each date of a repeating event is answered on its own.</value>
+  </data>
+  <data name="Arg0_waiting" xml:space="preserve">
+    <value>{0} waiting</value>
+  </data>
+  <data name="No_invitations_right_now" xml:space="preserve">
+    <value>No invitations right now.</value>
+  </data>
+  <data name="Nothing_planned_yet_Accept_an_invitation_and_it_shows_up_here_and" xml:space="preserve">
+    <value>Nothing planned yet. Accept an invitation and it shows up here and on your availability.</value>
+  </data>
+  <data name="Organized_by_you" xml:space="preserve">
+    <value>Organized by you</value>
+  </data>
+  <data name="The_next_date_of_each_event_you_organize_with_who_s_coming" xml:space="preserve">
+    <value>The next date of each event you organize, with who's coming.</value>
+  </data>
+  <data name="You_haven_t_planned_any_events_Start_one_for_a_group_or" xml:space="preserve">
+    <value>You haven't planned any events. Start one for a group, or pick people yourself.</value>
+  </data>
+  <data name="Once" xml:space="preserve">
+    <value>Once</value>
+  </data>
+  <data name="Daily" xml:space="preserve">
+    <value>Daily</value>
+  </data>
+  <data name="Nothing_is_sent_until_you_create_it_Invited_people_can_accept_or" xml:space="preserve">
+    <value>Nothing is sent until you create it. Invited people can accept or decline in Discord or here.</value>
+  </data>
+  <data name="Event_not_created" xml:space="preserve">
+    <value>Event not created</value>
+  </data>
+  <data name="Once_Arg0_Arg1" xml:space="preserve">
+    <value>Once, {0}, {1}</value>
+  </data>
+  <data name="Every_day_Arg0_until_Arg1" xml:space="preserve">
+    <value>Every day, {0}, until {1}</value>
+  </data>
+  <data name="Every_Arg0_Arg1_until_Arg2" xml:space="preserve">
+    <value>Every {0}, {1}, until {2}</value>
+  </data>
+  <data name="Arg0_and_Arg1" xml:space="preserve">
+    <value>{0} and {1}</value>
+  </data>
+  <data name="Arg0_dates_each_date_is_answered_and_confirmed_on_its_own" xml:space="preserve">
+    <value>{0} dates · each date is answered and confirmed on its own</value>
+  </data>
+  <data name="Pick_at_least_one_weekday" xml:space="preserve">
+    <value>Pick at least one weekday.</value>
+  </data>
+  <data name="Pick_the_last_date_of_the_series" xml:space="preserve">
+    <value>Pick the last date of the series.</value>
+  </data>
+  <data name="Ends_the_next_day" xml:space="preserve">
+    <value>ends the next day</value>
+  </data>
+  <data name="Create_and_invite_Arg0" xml:space="preserve">
+    <value>Create and invite {0}</value>
+  </data>
+  <data name="Create_event" xml:space="preserve">
+    <value>Create event</value>
+  </data>
+  <data name="Who_is_invited" xml:space="preserve">
+    <value>Who is invited</value>
+  </data>
+  <data name="A_group" xml:space="preserve">
+    <value>A group</value>
+  </data>
+  <data name="People_I_pick" xml:space="preserve">
+    <value>People I pick</value>
+  </data>
+  <data name="Group" xml:space="preserve">
+    <value>Group</value>
+  </data>
+  <data name="You_aren_t_in_any_group_yet_Pick_people_instead" xml:space="preserve">
+    <value>You aren't in any group yet. Pick people instead.</value>
+  </data>
+  <data name="Find_a_group" xml:space="preserve">
+    <value>Find a group</value>
+  </data>
+  <data name="No_groups_match" xml:space="preserve">
+    <value>No groups match.</value>
+  </data>
+  <data name="Every_other_member_of_the_group_is_invited_People_who_join_later" xml:space="preserve">
+    <value>Every other member of the group is invited. People who join later aren't added.</value>
+  </data>
+  <data name="People" xml:space="preserve">
+    <value>People</value>
+  </data>
+  <data name="Discord_didn_t_return_the_member_list_Try_again_in_a_moment" xml:space="preserve">
+    <value>Discord didn't return the member list. Try again in a moment.</value>
+  </data>
+  <data name="Invite_exactly_who_you_want_up_to_50_people" xml:space="preserve">
+    <value>Invite exactly who you want, up to 50 people.</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="Thursday_scrims" xml:space="preserve">
+    <value>Thursday scrims</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Leave_empty_for_the_server_time_zone_The_start_time_stays_the" xml:space="preserve">
+    <value>Leave empty for the server time zone. The start time stays the same local time when clocks change.</value>
+  </data>
+  <data name="Repeat" xml:space="preserve">
+    <value>Repeat</value>
+  </data>
+  <data name="On_these_days" xml:space="preserve">
+    <value>On these days</value>
+  </data>
+  <data name="Last_date" xml:space="preserve">
+    <value>Last date</value>
+  </data>
+  <data name="Up_to_26_weeks_after_the_first_date" xml:space="preserve">
+    <value>Up to 26 weeks after the first date.</value>
+  </data>
+  <data name="Confirmed" xml:space="preserve">
+    <value>Confirmed</value>
+  </data>
+  <data name="Canceled" xml:space="preserve">
+    <value>Canceled</value>
+  </data>
+  <data name="Pending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="Cancel_this_date" xml:space="preserve">
+    <value>Cancel this date</value>
+  </data>
+  <data name="Cancel_event" xml:space="preserve">
+    <value>Cancel event</value>
+  </data>
+  <data name="Cancel_Arg0_on_Arg1_only_The_other_dates_stay_as_they_are" xml:space="preserve">
+    <value>Cancel {0} on {1} only? The other dates stay as they are. People who were expecting it get a Discord message.</value>
+  </data>
+  <data name="Cancel_Arg0_People_who_were_expecting_it_get_a_Discord_message" xml:space="preserve">
+    <value>Cancel {0}? People who were expecting it get a Discord message.</value>
+  </data>
+  <data name="Keep_it" xml:space="preserve">
+    <value>Keep it</value>
+  </data>
+  <data name="Cancel_the_whole_series" xml:space="preserve">
+    <value>Cancel the whole series</value>
+  </data>
+  <data name="Cancel_every_remaining_date_of_Arg0_Past_dates_stay_in_history_Invitees" xml:space="preserve">
+    <value>Cancel every remaining date of {0}? Past dates stay in history. Invitees who were expecting a date get one Discord message.</value>
+  </data>
+  <data name="Cancel_series" xml:space="preserve">
+    <value>Cancel series</value>
+  </data>
+  <data name="Arg0_withdrew_after_you_confirmed" xml:space="preserve">
+    <value>{0} withdrew after you confirmed</value>
+  </data>
+  <data name="The_date_is_still_confirmed_You_decide_whether_it_goes_ahead_or" xml:space="preserve">
+    <value>The date is still confirmed. You decide whether it goes ahead or gets canceled.</value>
+  </data>
+  <data name="Invitations_not_delivered_Arg0" xml:space="preserve">
+    <value>Invitations not delivered: {0}</value>
+  </data>
+  <data name="Their_Discord_direct_messages_are_closed_They_can_still_answer_here_on" xml:space="preserve">
+    <value>Their Discord direct messages are closed. They can still answer here on the dashboard.</value>
+  </data>
+  <data name="Arg0_organized_by_Arg1" xml:space="preserve">
+    <value>{0} · organized by {1}</value>
+  </data>
+  <data name="Organized_by_Arg0" xml:space="preserve">
+    <value>Organized by {0}</value>
+  </data>
+  <data name="Your_answer" xml:space="preserve">
+    <value>Your answer</value>
+  </data>
+  <data name="You_re_going_This_date_is_confirmed" xml:space="preserve">
+    <value>You're going. This date is confirmed.</value>
+  </data>
+  <data name="You_accepted_The_organizer_hasn_t_confirmed_this_date_yet" xml:space="preserve">
+    <value>You accepted. The organizer hasn't confirmed this date yet.</value>
+  </data>
+  <data name="You_withdrew_The_organizer_can_see_that_you_can_t_make_it" xml:space="preserve">
+    <value>You withdrew. The organizer can see that you can't make it.</value>
+  </data>
+  <data name="You_declined_this_date" xml:space="preserve">
+    <value>You declined this date.</value>
+  </data>
+  <data name="You_haven_t_answered_yet" xml:space="preserve">
+    <value>You haven't answered yet.</value>
+  </data>
+  <data name="Withdraw" xml:space="preserve">
+    <value>Withdraw</value>
+  </data>
+  <data name="Responses" xml:space="preserve">
+    <value>Responses</value>
+  </data>
+  <data name="Arg0_invited" xml:space="preserve">
+    <value>{0} invited</value>
+  </data>
+  <data name="Accepted" xml:space="preserve">
+    <value>Accepted</value>
+  </data>
+  <data name="Declined" xml:space="preserve">
+    <value>Declined</value>
+  </data>
+  <data name="No_reply_yet" xml:space="preserve">
+    <value>No reply yet</value>
+  </data>
+  <data name="Withdrew_after_accepting" xml:space="preserve">
+    <value>Withdrew after accepting</value>
+  </data>
+  <data name="Discord_message_couldn_t_be_sent_can_answer_here" xml:space="preserve">
+    <value>Discord message couldn't be sent; can answer here</value>
+  </data>
+  <data name="No_reply" xml:space="preserve">
+    <value>No reply</value>
+  </data>
+  <data name="Confirm_when_enough_people_have_accepted_Everyone_who_accepted_gets_a_Discord" xml:space="preserve">
+    <value>Confirm when enough people have accepted. Everyone who accepted gets a Discord message, and the date shows on their availability.</value>
+  </data>
+  <data name="Confirm_with_Arg0_of_Arg1_going" xml:space="preserve">
+    <value>Confirm with {0} of {1} going</value>
+  </data>
+  <data name="Confirmed_Arg0_of_Arg1_going_right_now" xml:space="preserve">
+    <value>Confirmed. {0} of {1} going right now.</value>
+  </data>
+  <data name="Dates_in_this_series" xml:space="preserve">
+    <value>Dates in this series</value>
+  </data>
+  <data name="Answers_and_confirmation_are_per_date" xml:space="preserve">
+    <value>Answers and confirmation are per date.</value>
+  </data>
+  <data name="Arg0_going" xml:space="preserve">
+    <value>{0} going</value>
+  </data>
+  <data name="Repeats" xml:space="preserve">
+    <value>Repeats</value>
+  </data>
+  <data name="By_Arg0" xml:space="preserve">
+    <value>by {0}</value>
+  </data>
+  <data name="Arg0_declined" xml:space="preserve">
+    <value>{0} declined</value>
+  </data>
+  <data name="Arg0_no_reply" xml:space="preserve">
+    <value>{0} no reply</value>
+  </data>
+  <data name="You_had_accepted" xml:space="preserve">
+    <value>You had accepted</value>
+  </data>
+  <data name="You_re_going" xml:space="preserve">
+    <value>You're going</value>
+  </data>
+  <data name="You_withdrew" xml:space="preserve">
+    <value>You withdrew</value>
+  </data>
+  <data name="Withdraw_from_Arg0_on_Arg1" xml:space="preserve">
+    <value>Withdraw from {0} on {1}</value>
+  </data>
+  <data name="Accept_Arg0_on_Arg1" xml:space="preserve">
+    <value>Accept {0} on {1}</value>
+  </data>
+  <data name="Decline_Arg0_on_Arg1" xml:space="preserve">
+    <value>Decline {0} on {1}</value>
+  </data>
+  <data name="Manage" xml:space="preserve">
+    <value>Manage</value>
+  </data>
+  <data name="Pick_the_date_of_the_first_event" xml:space="preserve">
+    <value>Pick the date of the first event.</value>
+  </data>
+  <data name="Choose_a_group_or_pick_people_instead" xml:space="preserve">
+    <value>Choose a group, or pick people instead.</value>
+  </data>
+  <data name="Event_created" xml:space="preserve">
+    <value>Event created</value>
+  </data>
+  <data name="Arg0_invited_Invitations_go_out_by_Discord_message_a_few_days_before" xml:space="preserve">
+    <value>{0} invited. Invitations go out by Discord message a few days before each date, and are here on the dashboard right away.</value>
+  </data>
+  <data name="You_declined" xml:space="preserve">
+    <value>You declined</value>
+  </data>
+  <data name="The_organizer_can_see_that_you_can_t_make_it" xml:space="preserve">
+    <value>The organizer can see that you can't make it.</value>
+  </data>
+  <data name="Date_confirmed" xml:space="preserve">
+    <value>Date confirmed</value>
+  </data>
+  <data name="Arg0_going_Everyone_who_accepted_gets_a_Discord_message" xml:space="preserve">
+    <value>{0} going. Everyone who accepted gets a Discord message.</value>
+  </data>
+  <data name="Series_canceled" xml:space="preserve">
+    <value>Series canceled</value>
+  </data>
+  <data name="Date_canceled" xml:space="preserve">
+    <value>Date canceled</value>
+  </data>
+  <data name="Arg0_dates_canceled_People_who_were_expecting_them_get_a_Discord_message" xml:space="preserve">
+    <value>{0} dates canceled. People who were expecting them get a Discord message.</value>
+  </data>
+  <data name="That_didn_t_work" xml:space="preserve">
+    <value>That didn't work</value>
+  </data>
+  <data name="A_group_2" xml:space="preserve">
+    <value>a group</value>
+  </data>
+  <data name="Event_not_available" xml:space="preserve">
+    <value>Event not available</value>
+  </data>
+  <data name="That_event_doesn_t_exist_or_you_aren_t_invited_to_it" xml:space="preserve">
+    <value>That event doesn't exist or you aren't invited to it.</value>
+  </data>
+  <data name="Back_to_events" xml:space="preserve">
+    <value>Back to events</value>
+  </data>
+  <data name="A_repeating_event_can_run_for_up_to_26_weeks" xml:space="preserve">
+    <value>A repeating event can run for up to 26 weeks.</value>
+  </data>
+  <data name="Choose_a_time_zone_like_Europe_Kyiv" xml:space="preserve">
+    <value>Choose a time zone like Europe/Kyiv.</value>
+  </data>
+  <data name="Choose_an_end_date_on_or_after_the_first_date" xml:space="preserve">
+    <value>Choose an end date on or after the first date.</value>
+  </data>
+  <data name="Give_the_event_a_title_of_up_to_80_characters" xml:space="preserve">
+    <value>Give the event a title of up to 80 characters.</value>
+  </data>
+  <data name="Invite_up_to_50_people" xml:space="preserve">
+    <value>Invite up to 50 people.</value>
+  </data>
+  <data name="Keep_the_description_under_1000_characters" xml:space="preserve">
+    <value>Keep the description under 1000 characters.</value>
+  </data>
+  <data name="Only_members_of_the_group_can_plan_an_event_for_it" xml:space="preserve">
+    <value>Only members of the group can plan an event for it.</value>
+  </data>
+  <data name="Only_the_organizer_can_do_that" xml:space="preserve">
+    <value>Only the organizer can do that.</value>
+  </data>
+  <data name="Pick_at_least_one_weekday_for_a_weekly_event" xml:space="preserve">
+    <value>Pick at least one weekday for a weekly event.</value>
+  </data>
+  <data name="That_date_isn_t_part_of_this_event" xml:space="preserve">
+    <value>That date isn't part of this event.</value>
+  </data>
+  <data name="That_event_doesn_t_exist" xml:space="preserve">
+    <value>That event doesn't exist.</value>
+  </data>
+  <data name="That_group_no_longer_exists" xml:space="preserve">
+    <value>That group no longer exists.</value>
+  </data>
+  <data name="That_schedule_has_too_many_dates_Use_fewer_weekdays_or_an_earlier" xml:space="preserve">
+    <value>That schedule has too many dates. Use fewer weekdays or an earlier end date.</value>
+  </data>
+  <data name="The_end_time_must_differ_from_the_start_time" xml:space="preserve">
+    <value>The end time must differ from the start time.</value>
+  </data>
+  <data name="This_date_has_already_started" xml:space="preserve">
+    <value>This date has already started.</value>
+  </data>
+  <data name="This_date_is_over" xml:space="preserve">
+    <value>This date is over.</value>
+  </data>
+  <data name="This_date_was_canceled" xml:space="preserve">
+    <value>This date was canceled.</value>
+  </data>
+  <data name="This_event_isn_t_available_to_you" xml:space="preserve">
+    <value>This event isn't available to you.</value>
+  </data>
+  <data name="Use_times_like_19_30" xml:space="preserve">
+    <value>Use times like 19:30.</value>
+  </data>
+  <data name="You_aren_t_invited_to_this_event" xml:space="preserve">
+    <value>You aren't invited to this event.</value>
+  </data>
+  <data name="Invite_at_least_one_person" xml:space="preserve">
+    <value>Invite at least one person.</value>
+  </data>
+  <data name="The_group_has_no_other_members_to_invite_yet" xml:space="preserve">
+    <value>The group has no other members to invite yet.</value>
+  </data>
+  <data name="That_time_has_already_passed_Pick_a_time_in_the_future" xml:space="preserve">
+    <value>That time has already passed. Pick a time in the future.</value>
+  </data>
+  <data name="No_date_of_this_schedule_is_in_the_future_Check_the_days" xml:space="preserve">
+    <value>No date of this schedule is in the future. Check the days and dates.</value>
+  </data>
+</root>

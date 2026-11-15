@@ -54,6 +54,9 @@ public sealed record AvailabilityPage(
     AvailabilityForm Form)
 {
     public bool IsWeekly => View == "weekly";
+    /// <summary>Dates the member accepted (pending and confirmed, plus canceled ones they expected) and invitations waiting.</summary>
+    public IReadOnlyList<EventRow> MyEvents { get; init; } = [];
+    public int EventInvitations { get; init; }
     public int WeeklyCount => Week.Count(row => row.Windows.Count > 0);
     public bool IsEditing => Week.Any(row => row.IsEditing);
 }

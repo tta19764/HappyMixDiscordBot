@@ -2,14 +2,14 @@
 @using HappyMix.Bot.Services
 @{
     Layout = "_DashboardLayout";
-    ViewData["Title"] = T["Manage links"];
+    ViewData["Title"] = T["Manage_links"];
     ViewData["NavGuildName"] = Model.Link.GuildName;
     var candidates = Model.Candidates;
-    string Localize(string key) => T[key];
+    string Localize(string key) => T.Message(key);
     var zone = TimeZoneInfo.TryFindSystemTimeZoneById(Model.Link.TimeZone, out var found) ? found : TimeZoneInfo.Utc;
     string LinkedTime(DateTimeOffset value) => TimeZoneInfo.ConvertTime(value, zone).ToString("g", System.Globalization.CultureInfo.CurrentCulture);
 }
-<partial name="_ServerNav" model='new ServerNavModel(Model.Link.GuildId, Model.Link.GuildName, "links", Model.Link.Viewer.CanConfigure, "Linked accounts", T["Connect an alternate account (twink) so HappyMix treats both as one member in this server."])' />
+<partial name="_ServerNav" model='new ServerNavModel(Model.Link.GuildId, Model.Link.GuildName, "links", Model.Link.Viewer.CanConfigure, "Linked accounts", T["Connect_an_alternate_account_twink_so_HappyMix_treats_both_as_one_member"])' />
 <partial name="_LinkTabs" model="(Model.Link.GuildId, true)" />
 @if (ViewData["Banner"] is BannerModel banner)
 {
@@ -17,8 +17,8 @@
 }
 @if (Model.Link.Preview is null)
 {
-    <header class="hm-page-head"><div><h2>@T["Link server accounts"]</h2>
-    <p>@T["Select a primary account and an alternate, then review the changes before linking."]</p></div></header>
+    <header class="hm-page-head"><div><h2>@T["Link_server_accounts"]</h2>
+    <p>@T["Select_a_primary_account_and_an_alternate_then_review_the_changes_before"]</p></div></header>
     @if (Model.Link.Error is { } error)
     {
         var errorBanner = new BannerModel("error", error, null, true);
@@ -27,25 +27,25 @@
     <form method="get" class="hm-card hm-stack">
         <div class="hm-field"><label class="hm-label" for="link-primary">@T["Primary"]</label>
             <select class="hm-select" id="link-primary" name="primary" required data-picker
-                    data-picker-search="@T["Find a member"]" data-picker-empty="@T["No members match."]">
-                <option value="">@T["Choose an account"]</option>
+                    data-picker-search="@T["Find_a_member"]" data-picker-empty="@T["No_members_match"]">
+                <option value="">@T["Choose_an_account"]</option>
                 @foreach (var member in candidates)
                 {
                     <option value="@member.Id">@member.DisplayName (@member.Username) · @member.Id</option>
                 }
             </select>
         </div>
-        <div class="hm-field"><label class="hm-label" for="link-alternate">@T["Alternate (twink)"]</label>
+        <div class="hm-field"><label class="hm-label" for="link-alternate">@T["Alternate_twink"]</label>
             <select class="hm-select" id="link-alternate" name="alternate" required data-picker
-                    data-picker-search="@T["Find a member"]" data-picker-empty="@T["No members match."]">
-                <option value="">@T["Choose an account"]</option>
+                    data-picker-search="@T["Find_a_member"]" data-picker-empty="@T["No_members_match"]">
+                <option value="">@T["Choose_an_account"]</option>
                 @foreach (var member in candidates)
                 {
                     <option value="@member.Id">@member.DisplayName (@member.Username) · @member.Id</option>
                 }
             </select>
         </div>
-        <div class="hm-row"><button class="hm-btn hm-btn--primary">@T["Review link"]</button></div>
+        <div class="hm-row"><button class="hm-btn hm-btn--primary">@T["Review_link"]</button></div>
     </form>
 }
 else
@@ -56,17 +56,17 @@ else
 <section class="hm-stack hm-server-links" aria-labelledby="server-links-title">
     <header class="hm-page-head">
         <div>
-            <h2 id="server-links-title">@T["All linked accounts"]</h2>
-            <p>@T["Each card is one member: a primary account and its linked alternates."]</p>
+            <h2 id="server-links-title">@T["All_linked_accounts"]</h2>
+            <p>@T["Each_card_is_one_member_a_primary_account_and_its_linked_alternates"]</p>
         </div>
-        <span class="hm-badge">@T["{0} linked members · {1} accounts", Model.Families.Length, Model.Families.Sum(family => family.Alternates.Length + 1)]</span>
+        <span class="hm-badge">@T["Arg0_linked_members_Arg1_accounts", Model.Families.Length, Model.Families.Sum(family => family.Alternates.Length + 1)]</span>
     </header>
     @if (Model.Families.Length == 0)
     {
         <div class="hm-card hm-empty">
             <span class="hm-empty__icon">@DashboardIcons.Render("users")</span>
-            <h3>@T["No linked accounts yet"]</h3>
-            <p>@T["Link accounts above, or let members link their own accounts."]</p>
+            <h3>@T["No_linked_accounts_yet"]</h3>
+            <p>@T["Link_accounts_above_or_let_members_link_their_own_accounts"]</p>
         </div>
     }
     else
@@ -76,7 +76,7 @@ else
             {
                 var primary = Model.Link.Names.Get(family.PrimaryId);
                 string primaryName = Model.Link.Names.Name(family.PrimaryId, Localize);
-                <section class="hm-card hm-stack" aria-label="@T["Linked accounts"] · @primaryName">
+                <section class="hm-card hm-stack" aria-label="@T["Linked_accounts"] · @primaryName">
                     <div class="hm-roster__item">
                         <partial name="_Avatar" model="new AvatarModel(primary, primaryName)" />
                         <div class="hm-roster__who">
@@ -95,9 +95,9 @@ else
                                 <div class="hm-roster__who">
                                     <span class="hm-roster__name">@name</span>
                                     <span class="hm-roster__sub">@(account.Username is { } alias ? "@" + alias + " · " : "")@link.AlternateId</span>
-                                    <span class="hm-roster__sub">@T["Linked {0}", LinkedTime(link.LinkedAt)] · @Model.Link.TimeZone</span>
+                                    <span class="hm-roster__sub">@T["Linked_Arg0", LinkedTime(link.LinkedAt)] · @Model.Link.TimeZone</span>
                                 </div>
-                                <span class="hm-badge hm-badge--inherit">@T["Alternate (twink)"]</span>
+                                <span class="hm-badge hm-badge--inherit">@T["Alternate_twink"]</span>
                             </li>
                         }
                     </ul>

@@ -15,7 +15,7 @@
             {
                 <input type="hidden" name="@name" value="@value">
             }
-            <button class="hm-btn hm-btn--ghost" type="button" data-close-details hidden>@T["Cancel"]</button>
+            <button class="hm-btn hm-btn--ghost" type="button" data-close-details hidden>@(Model.DismissLabel ?? T["Cancel"])</button>
             <button class="hm-btn @(Model.Danger ? "hm-btn--danger" : "hm-btn--primary")">@Model.ConfirmLabel</button>
         </form>
     </div>

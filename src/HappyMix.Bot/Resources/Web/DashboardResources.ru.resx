@@ -1,3 +1,4 @@
+<?xml version='1.0' encoding='utf-8'?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -5,268 +6,268 @@
   <resheader name="version">
     <value>2.0</value>
   </resheader>
-  <data name="Pick a server">
+  <data name="Pick_a_server" xml:space="preserve">
     <value>Выберите сервер</value>
   </data>
-  <data name="Servers">
+  <data name="Servers" xml:space="preserve">
     <value>Серверы</value>
   </data>
-  <data name="Availability">
+  <data name="Availability" xml:space="preserve">
     <value>Когда могу играть</value>
   </data>
-  <data name="Settings">
+  <data name="Settings" xml:space="preserve">
     <value>Настройки</value>
   </data>
-  <data name="Server settings">
+  <data name="Server_settings" xml:space="preserve">
     <value>Настройки сервера</value>
   </data>
-  <data name="Sign out">
+  <data name="Sign_out" xml:space="preserve">
     <value>Выйти</value>
   </data>
-  <data name="No servers yet">
+  <data name="No_servers_yet" xml:space="preserve">
     <value>Пока нет серверов</value>
   </data>
-  <data name="Last used">
+  <data name="Last_used" xml:space="preserve">
     <value>Последний сервер</value>
   </data>
-  <data name="Admin">
+  <data name="Admin" xml:space="preserve">
     <value>Администратор</value>
   </data>
-  <data name="Today">
+  <data name="Today" xml:space="preserve">
     <value>Сегодня</value>
   </data>
-  <data name="Tomorrow">
+  <data name="Tomorrow" xml:space="preserve">
     <value>Завтра</value>
   </data>
-  <data name="Weekly timetable">
+  <data name="Weekly_timetable" xml:space="preserve">
     <value>Недельное расписание</value>
   </data>
-  <data name="Availability today">
+  <data name="Availability_today" xml:space="preserve">
     <value>Когда могу играть сегодня</value>
   </data>
-  <data name="From">
+  <data name="From" xml:space="preserve">
     <value>С</value>
   </data>
-  <data name="Until">
+  <data name="Until" xml:space="preserve">
     <value>До</value>
   </data>
-  <data name="Time zone">
+  <data name="Time_zone" xml:space="preserve">
     <value>Часовой пояс</value>
   </data>
-  <data name="Change">
+  <data name="Change" xml:space="preserve">
     <value>Изменить</value>
   </data>
-  <data name="optional">
+  <data name="Optional" xml:space="preserve">
     <value>необязательно</value>
   </data>
-  <data name="Quick fill">
+  <data name="Quick_fill" xml:space="preserve">
     <value>Быстрое заполнение</value>
   </data>
-  <data name="Coming up">
+  <data name="Coming_up" xml:space="preserve">
     <value>Ближайшие часы</value>
   </data>
-  <data name="One-off">
+  <data name="One_off" xml:space="preserve">
     <value>Однократно</value>
   </data>
-  <data name="No weekly hours yet">
+  <data name="No_weekly_hours_yet" xml:space="preserve">
     <value>Недельное расписание пока пусто</value>
   </data>
-  <data name="Your usual week">
+  <data name="Your_usual_week" xml:space="preserve">
     <value>Ваше расписание на неделю</value>
   </data>
-  <data name="Cancel">
+  <data name="Cancel" xml:space="preserve">
     <value>Отмена</value>
   </data>
-  <data name="✓ Saved">
+  <data name="Saved" xml:space="preserve">
     <value>✓ Сохранено</value>
   </data>
-  <data name="No hours">
+  <data name="No_hours" xml:space="preserve">
     <value>Время не указано</value>
   </data>
-  <data name="Edit">
+  <data name="Edit" xml:space="preserve">
     <value>Редактировать</value>
   </data>
-  <data name="Clear">
+  <data name="Clear" xml:space="preserve">
     <value>Очистить</value>
   </data>
-  <data name="Add hours">
+  <data name="Add_hours" xml:space="preserve">
     <value>Указать время</value>
   </data>
-  <data name="Available">
+  <data name="Available" xml:space="preserve">
     <value>Доступное время</value>
   </data>
-  <data name="Server defaults">
+  <data name="Server_defaults" xml:space="preserve">
     <value>Настройки сервера по умолчанию</value>
   </data>
-  <data name="Announcement channel">
+  <data name="Announcement_channel" xml:space="preserve">
     <value>Канал объявлений</value>
   </data>
-  <data name="Reminder ping role">
+  <data name="Reminder_ping_role" xml:space="preserve">
     <value>Роль для упоминаний в напоминаниях</value>
   </data>
-  <data name="No ping">
+  <data name="No_ping" xml:space="preserve">
     <value>Без упоминания</value>
   </data>
-  <data name="Followed teams">
+  <data name="Followed_teams" xml:space="preserve">
     <value>Отслеживаемые команды</value>
   </data>
-  <data name="Twitch channels">
+  <data name="Twitch_channels" xml:space="preserve">
     <value>Каналы Twitch</value>
   </data>
-  <data name="Team catalog">
+  <data name="Team_catalog" xml:space="preserve">
     <value>Каталог команд</value>
   </data>
-  <data name="Reminder lead time">
+  <data name="Reminder_lead_time" xml:space="preserve">
     <value>За сколько минут напомнить</value>
   </data>
-  <data name="minutes">
+  <data name="Minutes" xml:space="preserve">
     <value>минут</value>
   </data>
-  <data name="Organizer roles">
+  <data name="Organizer_roles" xml:space="preserve">
     <value>Роли организаторов</value>
   </data>
-  <data name="Post to the channel">
+  <data name="Post_to_the_channel" xml:space="preserve">
     <value>Публиковать в канале</value>
   </data>
-  <data name="Daily schedule">
+  <data name="Daily_schedule" xml:space="preserve">
     <value>Расписание на день</value>
   </data>
-  <data name="Reminders">
+  <data name="Reminders" xml:space="preserve">
     <value>Напоминания</value>
   </data>
-  <data name="Match starts">
+  <data name="Match_starts" xml:space="preserve">
     <value>Начало матча</value>
   </data>
-  <data name="Map results">
+  <data name="Map_results" xml:space="preserve">
     <value>Результаты карт</value>
   </data>
-  <data name="Match results">
+  <data name="Match_results" xml:space="preserve">
     <value>Результаты матчей</value>
   </data>
-  <data name="Unsaved changes">
+  <data name="Unsaved_changes" xml:space="preserve">
     <value>Несохранённые изменения</value>
   </data>
-  <data name="Discard">
+  <data name="Discard" xml:space="preserve">
     <value>Отменить изменения</value>
   </data>
-  <data name="Save settings">
+  <data name="Save_settings" xml:space="preserve">
     <value>Сохранить настройки</value>
   </data>
-  <data name="Save today">
+  <data name="Save_today" xml:space="preserve">
     <value>Сохранить на сегодня</value>
   </data>
-  <data name="Save day">
+  <data name="Save_day" xml:space="preserve">
     <value>Сохранить день</value>
   </data>
-  <data name="Remove">
+  <data name="Remove" xml:space="preserve">
     <value>Удалить</value>
   </data>
-  <data name="Default ·">
+  <data name="Default" xml:space="preserve">
     <value>По умолчанию ·</value>
   </data>
-  <data name="Inherit">
+  <data name="Inherit" xml:space="preserve">
     <value>По умолчанию</value>
   </data>
-  <data name="Custom">
+  <data name="Custom" xml:space="preserve">
     <value>Свои настройки</value>
   </data>
-  <data name="Off">
+  <data name="Off" xml:space="preserve">
     <value>Выключено</value>
   </data>
-  <data name="Servers you share with HappyMix. Set when you can play, or manage announcements where you're an admin.">
+  <data name="Servers_you_share_with_HappyMix_Set_when_you_can_play_or_manage" xml:space="preserve">
     <value>Ваши общие серверы с HappyMix. Укажите, когда можете играть, или настройте объявления на серверах, где вы администратор.</value>
   </data>
-  <data name="HappyMix shows servers where you and the bot are both members. Ask a server admin to add HappyMix, then refresh.">
+  <data name="HappyMix_shows_servers_where_you_and_the_bot_are_both_members_Ask" xml:space="preserve">
     <value>Здесь показаны серверы, где есть вы и бот. Попросите администратора добавить HappyMix и обновите страницу.</value>
   </data>
-  <data name="Nothing is shared until you save.">
+  <data name="Nothing_is_shared_until_you_save" xml:space="preserve">
     <value>Изменения вступят в силу после сохранения.</value>
   </data>
-  <data name="Repeats every week until you clear a day.">
+  <data name="Repeats_every_week_until_you_clear_a_day" xml:space="preserve">
     <value>Повторяется каждую неделю, пока вы не очистите день.</value>
   </data>
-  <data name="Time zone for this window">
+  <data name="Time_zone_for_this_window" xml:space="preserve">
     <value>Часовой пояс этого интервала</value>
   </data>
-  <data name="Leave empty for the server default. A UTC offset like +02:00 also works.">
+  <data name="Leave_empty_for_the_server_default_A_UTC_offset_like_02_00" xml:space="preserve">
     <value>Оставьте пустым для часового пояса сервера или введите смещение UTC, например +02:00.</value>
   </data>
-  <data name="Pick both times. An Until time earlier than From means the next day.">
+  <data name="Pick_both_times_An_Until_time_earlier_than_From_means_the_next" xml:space="preserve">
     <value>Укажите оба значения. Если время окончания раньше, интервал продолжается до следующего дня.</value>
   </data>
-  <data name="Carried over from the night before">
+  <data name="Carried_over_from_the_night_before" xml:space="preserve">
     <value>Продолжение с предыдущей ночи</value>
   </data>
   <data name="Groups" xml:space="preserve">
     <value>Группы</value>
   </data>
-  <data name="Invite-only gaming groups in this server. Members get a matching Discord role." xml:space="preserve">
+  <data name="Invite_only_gaming_groups_in_this_server_Members_get_a_matching_Discord" xml:space="preserve">
     <value>Игровые группы этого сервера, только по приглашению. Участники получают соответствующую роль в Discord.</value>
   </data>
-  <data name="My groups" xml:space="preserve">
+  <data name="My_groups" xml:space="preserve">
     <value>Мои группы</value>
   </data>
-  <data name="Pending invitations" xml:space="preserve">
+  <data name="Pending_invitations" xml:space="preserve">
     <value>Приглашения</value>
   </data>
-  <data name="All groups in this server" xml:space="preserve">
+  <data name="All_groups_in_this_server" xml:space="preserve">
     <value>Все группы сервера</value>
   </data>
-  <data name="All groups I can access" xml:space="preserve">
+  <data name="All_groups_I_can_access" xml:space="preserve">
     <value>Все доступные мне группы</value>
   </data>
-  <data name="Repair roles for everyone" xml:space="preserve">
+  <data name="Repair_roles_for_everyone" xml:space="preserve">
     <value>Восстановить роли для всех</value>
   </data>
-  <data name="Reapply group roles for every member of {0}? This lists the whole server and can take a while." xml:space="preserve">
+  <data name="Reapply_group_roles_for_every_member_of_Arg0_This_lists_the_whole" xml:space="preserve">
     <value>Повторно назначить роли групп всем участникам {0}? Это проверяет весь сервер и может занять время.</value>
   </data>
-  <data name="Repair all members" xml:space="preserve">
+  <data name="Repair_all_members" xml:space="preserve">
     <value>Восстановить для всех участников</value>
   </data>
-  <data name="Filter groups" xml:space="preserve">
+  <data name="Filter_groups" xml:space="preserve">
     <value>Фильтр групп</value>
   </data>
-  <data name="New group" xml:space="preserve">
+  <data name="New_group" xml:space="preserve">
     <value>Новая группа</value>
   </data>
-  <data name="Search groups" xml:space="preserve">
+  <data name="Search_groups" xml:space="preserve">
     <value>Поиск групп</value>
   </data>
-  <data name="Search by name, description or game" xml:space="preserve">
+  <data name="Search_by_name_description_or_game" xml:space="preserve">
     <value>Поиск по названию, описанию или игре</value>
   </data>
   <data name="Search" xml:space="preserve">
     <value>Найти</value>
   </data>
-  <data name="No groups match &quot;{0}&quot;" xml:space="preserve">
+  <data name="No_groups_match_Arg0" xml:space="preserve">
     <value>Нет групп по запросу «{0}»</value>
   </data>
-  <data name="Try another name or game, or clear the search." xml:space="preserve">
+  <data name="Try_another_name_or_game_or_clear_the_search" xml:space="preserve">
     <value>Попробуйте другое название или игру либо очистите поиск.</value>
   </data>
-  <data name="No pending invitations" xml:space="preserve">
+  <data name="No_pending_invitations" xml:space="preserve">
     <value>Нет приглашений</value>
   </data>
-  <data name="When an organizer invites you, the invitation shows up here and in your Discord messages." xml:space="preserve">
+  <data name="When_an_organizer_invites_you_the_invitation_shows_up_here_and_in" xml:space="preserve">
     <value>Когда организатор вас пригласит, приглашение появится здесь и в сообщениях Discord.</value>
   </data>
-  <data name="You're not in any groups yet" xml:space="preserve">
+  <data name="You_re_not_in_any_groups_yet" xml:space="preserve">
     <value>Вы пока не состоите ни в одной группе</value>
   </data>
-  <data name="Groups are invite-only. Ask an organizer to invite you, or start your own." xml:space="preserve">
+  <data name="Groups_are_invite_only_Ask_an_organizer_to_invite_you_or_start" xml:space="preserve">
     <value>Группы доступны только по приглашению. Попросите организатора пригласить вас или создайте свою.</value>
   </data>
-  <data name="{0} groups" xml:space="preserve">
+  <data name="Arg0_groups" xml:space="preserve">
     <value>Групп: {0}</value>
   </data>
-  <data name="No description" xml:space="preserve">
+  <data name="No_description" xml:space="preserve">
     <value>Без описания</value>
   </data>
   <data name="Organizer" xml:space="preserve">
     <value>Организатор</value>
   </data>
-  <data name="{0} members" xml:space="preserve">
+  <data name="Arg0_members" xml:space="preserve">
     <value>Участников: {0}</value>
   </data>
   <data name="Games" xml:space="preserve">
@@ -290,61 +291,61 @@
   <data name="Previous" xml:space="preserve">
     <value>Назад</value>
   </data>
-  <data name="Page {0} of {1}" xml:space="preserve">
+  <data name="Page_Arg0_of_Arg1" xml:space="preserve">
     <value>Страница {0} из {1}</value>
   </data>
   <data name="Next" xml:space="preserve">
     <value>Далее</value>
   </data>
-  <data name="Discord role repair" xml:space="preserve">
+  <data name="Discord_role_repair" xml:space="preserve">
     <value>Восстановление ролей Discord</value>
   </data>
   <data name="Moderators" xml:space="preserve">
     <value>Модераторы</value>
   </data>
-  <data name="Saved group membership is the source of truth. Repair reapplies the matching Discord roles." xml:space="preserve">
+  <data name="Saved_group_membership_is_the_source_of_truth_Repair_reapplies_the_matching" xml:space="preserve">
     <value>Основой служит сохранённый состав групп. Восстановление повторно назначает соответствующие роли Discord.</value>
   </data>
-  <data name="To repair one person, open a group and use Repair roles next to their name." xml:space="preserve">
+  <data name="To_repair_one_person_open_a_group_and_use_Repair_roles_next" xml:space="preserve">
     <value>Чтобы восстановить роли одного человека, откройте группу и нажмите «Восстановить роли» рядом с его именем.</value>
   </data>
-  <data name="Leave group" xml:space="preserve">
+  <data name="Leave_group" xml:space="preserve">
     <value>Выйти из группы</value>
   </data>
-  <data name="Leave {0}? You'll lose its Discord role until someone invites you again." xml:space="preserve">
+  <data name="Leave_Arg0_You_ll_lose_its_Discord_role_until_someone_invites_you" xml:space="preserve">
     <value>Выйти из {0}? Вы потеряете роль Discord, пока вас снова не пригласят.</value>
   </data>
-  <data name="Leave {0}" xml:space="preserve">
+  <data name="Leave_Arg0" xml:space="preserve">
     <value>Выйти из {0}</value>
   </data>
-  <data name="Close group" xml:space="preserve">
+  <data name="Close_group" xml:space="preserve">
     <value>Закрыть группу</value>
   </data>
-  <data name="Close {0} for everyone? Its saved record, games and Discord role are deleted. This can't be undone." xml:space="preserve">
+  <data name="Close_Arg0_for_everyone_Its_saved_record_games_and_Discord_role_are" xml:space="preserve">
     <value>Закрыть {0} для всех? Запись группы, игры и роль Discord будут удалены. Отменить это нельзя.</value>
   </data>
-  <data name="Close {0}" xml:space="preserve">
+  <data name="Close_Arg0" xml:space="preserve">
     <value>Закрыть {0}</value>
   </data>
   <data name="Breadcrumb" xml:space="preserve">
     <value>Навигация</value>
   </data>
-  <data name="{0} games" xml:space="preserve">
+  <data name="Arg0_games" xml:space="preserve">
     <value>Игр: {0}</value>
   </data>
-  <data name="All groups" xml:space="preserve">
+  <data name="All_groups" xml:space="preserve">
     <value>Все группы</value>
   </data>
-  <data name="You're invited" xml:space="preserve">
+  <data name="You_re_invited" xml:space="preserve">
     <value>Вас пригласили</value>
   </data>
-  <data name="{0} invited you to {1}. Accept to see the roster and games and get the group's Discord role." xml:space="preserve">
+  <data name="Arg0_invited_you_to_Arg1_Accept_to_see_the_roster_and_games" xml:space="preserve">
     <value>{0} приглашает вас в {1}. Примите приглашение, чтобы увидеть состав и игры и получить роль группы в Discord.</value>
   </data>
-  <data name="Accept invitation" xml:space="preserve">
+  <data name="Accept_invitation" xml:space="preserve">
     <value>Принять приглашение</value>
   </data>
-  <data name="Group sections" xml:space="preserve">
+  <data name="Group_sections" xml:space="preserve">
     <value>Разделы группы</value>
   </data>
   <data name="Overview" xml:space="preserve">
@@ -356,154 +357,154 @@
   <data name="Description" xml:space="preserve">
     <value>Описание</value>
   </data>
-  <data name="Up to 200 characters. Shown in the directory and to invited members." xml:space="preserve">
+  <data name="Up_to_200_characters_Shown_in_the_directory_and_to_invited_members" xml:space="preserve">
     <value>До 200 символов. Видно в каталоге и приглашённым участникам.</value>
   </data>
-  <data name="Save description" xml:space="preserve">
+  <data name="Save_description" xml:space="preserve">
     <value>Сохранить описание</value>
   </data>
-  <data name="You can leave at any time. The organizer can invite you back." xml:space="preserve">
+  <data name="You_can_leave_at_any_time_The_organizer_can_invite_you_back" xml:space="preserve">
     <value>Вы можете выйти в любой момент. Организатор может пригласить вас снова.</value>
   </data>
-  <data name="You organize this group. To leave it, close the group." xml:space="preserve">
+  <data name="You_organize_this_group_To_leave_it_close_the_group" xml:space="preserve">
     <value>Вы организатор этой группы. Чтобы выйти, закройте группу.</value>
   </data>
-  <data name="Accept the invitation to see who's in this group." xml:space="preserve">
+  <data name="Accept_the_invitation_to_see_who_s_in_this_group" xml:space="preserve">
     <value>Примите приглашение, чтобы увидеть участников группы.</value>
   </data>
-  <data name="Discord didn't return the member list, so names are shown as IDs. A server admin can turn on the Server Members Intent for the bot." xml:space="preserve">
+  <data name="Discord_didn_t_return_the_member_list_so_names_are_shown_as" xml:space="preserve">
     <value>Discord не вернул список участников, поэтому вместо имён показаны ID. Администратор может включить для бота Server Members Intent.</value>
   </data>
-  <data name="Remove {0} from {1}? Their group role is removed too." xml:space="preserve">
+  <data name="Remove_Arg0_from_Arg1_Their_group_role_is_removed_too" xml:space="preserve">
     <value>Удалить {0} из {1}? Роль группы тоже будет снята.</value>
   </data>
-  <data name="Remove {0}" xml:space="preserve">
+  <data name="Remove_Arg0" xml:space="preserve">
     <value>Удалить {0}</value>
   </data>
-  <data name="Repair roles" xml:space="preserve">
+  <data name="Repair_roles" xml:space="preserve">
     <value>Восстановить роли</value>
   </data>
-  <data name="Reapply group roles for {0} only? Nobody else is changed." xml:space="preserve">
+  <data name="Reapply_group_roles_for_Arg0_only_Nobody_else_is_changed" xml:space="preserve">
     <value>Повторно назначить роли групп только для {0}? Других это не затронет.</value>
   </data>
-  <data name="Repair {0}'s roles" xml:space="preserve">
+  <data name="Repair_Arg0_s_roles" xml:space="preserve">
     <value>Восстановить роли: {0}</value>
   </data>
-  <data name="Repair roles for {0}" xml:space="preserve">
+  <data name="Repair_roles_for_Arg0" xml:space="preserve">
     <value>Восстановить роли для {0}</value>
   </data>
   <data name="You" xml:space="preserve">
     <value>Вы</value>
   </data>
-  <data name="No longer in this server" xml:space="preserve">
+  <data name="No_longer_in_this_server" xml:space="preserve">
     <value>Больше не на сервере</value>
   </data>
-  <data name="Invite someone" xml:space="preserve">
+  <data name="Invite_someone" xml:space="preserve">
     <value>Пригласить участника</value>
   </data>
-  <data name="Discord username" xml:space="preserve">
+  <data name="Discord_username" xml:space="preserve">
     <value>Имя пользователя Discord</value>
   </data>
-  <data name="Start typing a name" xml:space="preserve">
+  <data name="Start_typing_a_name" xml:space="preserve">
     <value>Начните вводить имя</value>
   </data>
   <data name="Invite" xml:space="preserve">
     <value>Пригласить</value>
   </data>
-  <data name="They get a Discord message with Accept and Decline buttons. Nobody joins until they accept." xml:space="preserve">
+  <data name="They_get_a_Discord_message_with_Accept_and_Decline_buttons_Nobody_joins" xml:space="preserve">
     <value>Человек получит сообщение в Discord с кнопками «Принять» и «Отклонить». Никто не вступает без согласия.</value>
   </data>
-  <data name="No pending invitations." xml:space="preserve">
+  <data name="No_pending_invitations_2" xml:space="preserve">
     <value>Нет приглашений.</value>
   </data>
   <data name="Revoke" xml:space="preserve">
     <value>Отозвать</value>
   </data>
-  <data name="Revoke {0}'s invitation to {1}? Their Accept button will stop working." xml:space="preserve">
+  <data name="Revoke_Arg0_s_invitation_to_Arg1_Their_Accept_button_will_stop_working" xml:space="preserve">
     <value>Отозвать приглашение {0} в {1}? Кнопка «Принять» перестанет работать.</value>
   </data>
-  <data name="Revoke invitation" xml:space="preserve">
+  <data name="Revoke_invitation" xml:space="preserve">
     <value>Отозвать приглашение</value>
   </data>
-  <data name="Revoke {0}'s invitation" xml:space="preserve">
+  <data name="Revoke_Arg0_s_invitation" xml:space="preserve">
     <value>Отозвать приглашение: {0}</value>
   </data>
   <data name="Invited" xml:space="preserve">
     <value>Приглашён</value>
   </data>
-  <data name="Accept the invitation to see the group's games." xml:space="preserve">
+  <data name="Accept_the_invitation_to_see_the_group_s_games" xml:space="preserve">
     <value>Примите приглашение, чтобы увидеть игры группы.</value>
   </data>
-  <data name="No games yet. Add what the group plays below." xml:space="preserve">
+  <data name="No_games_yet_Add_what_the_group_plays_below" xml:space="preserve">
     <value>Игр пока нет. Добавьте, во что играет группа.</value>
   </data>
-  <data name="No games attached yet." xml:space="preserve">
+  <data name="No_games_attached_yet" xml:space="preserve">
     <value>Игры пока не добавлены.</value>
   </data>
-  <data name="Attached games" xml:space="preserve">
+  <data name="Attached_games" xml:space="preserve">
     <value>Игры группы</value>
   </data>
-  <data name="Remove {0} from {1}?" xml:space="preserve">
+  <data name="Remove_Arg0_from_Arg1" xml:space="preserve">
     <value>Удалить {0} из {1}?</value>
   </data>
-  <data name="View on Steam" xml:space="preserve">
+  <data name="View_on_Steam" xml:space="preserve">
     <value>Открыть в Steam</value>
   </data>
-  <data name="opens in a new tab" xml:space="preserve">
+  <data name="Opens_in_a_new_tab" xml:space="preserve">
     <value>откроется в новой вкладке</value>
   </data>
-  <data name="No Steam link" xml:space="preserve">
+  <data name="No_Steam_link" xml:space="preserve">
     <value>Без ссылки на Steam</value>
   </data>
-  <data name="Edit or link Steam" xml:space="preserve">
+  <data name="Edit_or_link_Steam" xml:space="preserve">
     <value>Изменить или привязать Steam</value>
   </data>
-  <data name="Game name" xml:space="preserve">
+  <data name="Game_name" xml:space="preserve">
     <value>Название игры</value>
   </data>
-  <data name="Steam App ID or link" xml:space="preserve">
+  <data name="Steam_App_ID_or_link" xml:space="preserve">
     <value>Steam App ID или ссылка</value>
   </data>
   <data name="Save" xml:space="preserve">
     <value>Сохранить</value>
   </data>
-  <data name="Add a game" xml:space="preserve">
+  <data name="Add_a_game" xml:space="preserve">
     <value>Добавить игру</value>
   </data>
-  <data name="Add game" xml:space="preserve">
+  <data name="Add_game" xml:space="preserve">
     <value>Добавить игру</value>
   </data>
-  <data name="Paste a number like 730 or a store link like store.steampowered.com/app/730. Leave it empty for games that aren't on Steam." xml:space="preserve">
+  <data name="Paste_a_number_like_730_or_a_store_link_like_store_steampowered" xml:space="preserve">
     <value>Вставьте число, например 730, или ссылку на магазин вроде store.steampowered.com/app/730. Для игр не из Steam оставьте поле пустым.</value>
   </data>
-  <data name="Deletes the group for everyone, including its Discord role. Members, invitations and games can't be recovered." xml:space="preserve">
+  <data name="Deletes_the_group_for_everyone_including_its_Discord_role_Members_invitations_and" xml:space="preserve">
     <value>Удаляет группу для всех вместе с ролью Discord. Участников, приглашения и игры восстановить нельзя.</value>
   </data>
-  <data name="Group not created" xml:space="preserve">
+  <data name="Group_not_created" xml:space="preserve">
     <value>Группа не создана</value>
   </data>
-  <data name="You'll be the organizer. The group is invite-only, and HappyMix creates a matching Discord role." xml:space="preserve">
+  <data name="You_ll_be_the_organizer_The_group_is_invite_only_and_HappyMix" xml:space="preserve">
     <value>Вы станете организатором. Группа доступна только по приглашению, а HappyMix создаст соответствующую роль в Discord.</value>
   </data>
-  <data name="You can't create groups here" xml:space="preserve">
+  <data name="You_can_t_create_groups_here" xml:space="preserve">
     <value>Вы не можете создавать группы на этом сервере</value>
   </data>
-  <data name="This server lets only members with an organizer role create groups. Ask a server admin for the role." xml:space="preserve">
+  <data name="This_server_lets_only_members_with_an_organizer_role_create_groups_Ask" xml:space="preserve">
     <value>На этом сервере группы создают только участники с ролью организатора. Попросите эту роль у администратора.</value>
   </data>
-  <data name="Back to groups" xml:space="preserve">
+  <data name="Back_to_groups" xml:space="preserve">
     <value>К группам</value>
   </data>
-  <data name="Group name" xml:space="preserve">
+  <data name="Group_name" xml:space="preserve">
     <value>Название группы</value>
   </data>
-  <data name="1–40 letters, digits, spaces, hyphens or underscores. It becomes the Discord role name." xml:space="preserve">
+  <data name="Text_1_40_letters_digits_spaces_hyphens_or_underscores_It_becomes_the_Discord" xml:space="preserve">
     <value>1–40 букв, цифр, пробелов, дефисов или подчёркиваний. Станет названием роли в Discord.</value>
   </data>
-  <data name="Steam is optional: paste a number like 730 or a store link. You can add more games and link Steam later." xml:space="preserve">
+  <data name="Steam_is_optional_paste_a_number_like_730_or_a_store_link" xml:space="preserve">
     <value>Steam необязателен: вставьте число, например 730, или ссылку на магазин. Другие игры и Steam можно добавить позже.</value>
   </data>
-  <data name="Create group" xml:space="preserve">
+  <data name="Create_group" xml:space="preserve">
     <value>Создать группу</value>
   </data>
   <data name="Member" xml:space="preserve">
@@ -512,571 +513,625 @@
   <data name="Moderator" xml:space="preserve">
     <value>Модератор</value>
   </data>
-  <data name="Former member" xml:space="preserve">
+  <data name="Former_member" xml:space="preserve">
     <value>Бывший участник</value>
   </data>
-  <data name="Group created" xml:space="preserve">
+  <data name="Group_created" xml:space="preserve">
     <value>Группа создана</value>
   </data>
-  <data name="You organize this group. Invite members when you're ready." xml:space="preserve">
+  <data name="You_organize_this_group_Invite_members_when_you_re_ready" xml:space="preserve">
     <value>Вы организатор этой группы. Приглашайте участников, когда будете готовы.</value>
   </data>
-  <data name="Choose a person from this server by their Discord username." xml:space="preserve">
+  <data name="Choose_a_person_from_this_server_by_their_Discord_username" xml:space="preserve">
     <value>Выберите человека с этого сервера по имени пользователя Discord.</value>
   </data>
-  <data name="Invitation sent to {0}" xml:space="preserve">
+  <data name="Invitation_sent_to_Arg0" xml:space="preserve">
     <value>Приглашение отправлено: {0}</value>
   </data>
-  <data name="They got a Discord message with Accept and Decline buttons, and can also answer here." xml:space="preserve">
+  <data name="They_got_a_Discord_message_with_Accept_and_Decline_buttons_and_can" xml:space="preserve">
     <value>Человек получил сообщение в Discord с кнопками «Принять» и «Отклонить» и может ответить также здесь.</value>
   </data>
-  <data name="Discord couldn't deliver the message. They can still accept from Groups or with /group join." xml:space="preserve">
+  <data name="Discord_couldn_t_deliver_the_message_They_can_still_accept_from_Groups" xml:space="preserve">
     <value>Discord не смог доставить сообщение. Человек всё равно может принять приглашение в разделе «Группы» или командой /group join.</value>
   </data>
-  <data name="{0} was closed" xml:space="preserve">
+  <data name="Arg0_was_closed" xml:space="preserve">
     <value>Группа {0} закрыта</value>
   </data>
-  <data name="Its saved record and Discord role were deleted." xml:space="preserve">
+  <data name="Its_saved_record_and_Discord_role_were_deleted" xml:space="preserve">
     <value>Запись группы и роль Discord удалены.</value>
   </data>
-  <data name="Role repair failed" xml:space="preserve">
+  <data name="Role_repair_failed" xml:space="preserve">
     <value>Не удалось восстановить роли</value>
   </data>
-  <data name="Group roles repaired" xml:space="preserve">
+  <data name="Group_roles_repaired" xml:space="preserve">
     <value>Роли групп восстановлены</value>
   </data>
-  <data name="Every member's group roles now match the saved groups." xml:space="preserve">
+  <data name="Every_member_s_group_roles_now_match_the_saved_groups" xml:space="preserve">
     <value>Роли всех участников теперь соответствуют сохранённым группам.</value>
   </data>
-  <data name="Saved, but the Discord role didn't update" xml:space="preserve">
+  <data name="Saved_but_the_Discord_role_didn_t_update" xml:space="preserve">
     <value>Сохранено, но роль Discord не обновилась</value>
   </data>
-  <data name="The group record is saved. A server moderator can fix the role from Groups → Repair roles, or with /group repair-roles." xml:space="preserve">
+  <data name="The_group_record_is_saved_A_server_moderator_can_fix_the_role" xml:space="preserve">
     <value>Запись группы сохранена. Модератор сервера может исправить роль в разделе «Группы» → «Восстановление ролей» или командой /group repair-roles.</value>
   </data>
-  <data name="Group not available" xml:space="preserve">
+  <data name="Group_not_available" xml:space="preserve">
     <value>Группа недоступна</value>
   </data>
-  <data name="That group doesn't exist or you don't have access to it." xml:space="preserve">
+  <data name="That_group_doesn_t_exist_or_you_don_t_have_access_to" xml:space="preserve">
     <value>Такой группы нет или у вас нет к ней доступа.</value>
   </data>
-  <data name="You joined the group" xml:space="preserve">
+  <data name="You_joined_the_group" xml:space="preserve">
     <value>Вы вступили в группу</value>
   </data>
-  <data name="Invitation declined" xml:space="preserve">
+  <data name="Invitation_declined" xml:space="preserve">
     <value>Приглашение отклонено</value>
   </data>
-  <data name="You left the group" xml:space="preserve">
+  <data name="You_left_the_group" xml:space="preserve">
     <value>Вы вышли из группы</value>
   </data>
-  <data name="Description saved" xml:space="preserve">
+  <data name="Description_saved" xml:space="preserve">
     <value>Описание сохранено</value>
   </data>
-  <data name="Invitation revoked" xml:space="preserve">
+  <data name="Invitation_revoked" xml:space="preserve">
     <value>Приглашение отозвано</value>
   </data>
-  <data name="Member removed" xml:space="preserve">
+  <data name="Member_removed" xml:space="preserve">
     <value>Участник удалён</value>
   </data>
-  <data name="Roles repaired for this member" xml:space="preserve">
+  <data name="Roles_repaired_for_this_member" xml:space="preserve">
     <value>Роли этого участника восстановлены</value>
   </data>
-  <data name="Game added" xml:space="preserve">
+  <data name="Game_added" xml:space="preserve">
     <value>Игра добавлена</value>
   </data>
-  <data name="Game updated" xml:space="preserve">
+  <data name="Game_updated" xml:space="preserve">
     <value>Игра обновлена</value>
   </data>
-  <data name="Game removed" xml:space="preserve">
+  <data name="Game_removed" xml:space="preserve">
     <value>Игра удалена</value>
   </data>
-  <data name="You need a configured organizer role to create a group." xml:space="preserve">
+  <data name="You_need_a_configured_organizer_role_to_create_a_group" xml:space="preserve">
     <value>Чтобы создать группу, нужна роль организатора.</value>
   </data>
-  <data name="A group with that name already exists." xml:space="preserve">
+  <data name="A_group_with_that_name_already_exists" xml:space="preserve">
     <value>Группа с таким названием уже существует.</value>
   </data>
-  <data name="That member already belongs to the group." xml:space="preserve">
+  <data name="That_member_already_belongs_to_the_group" xml:space="preserve">
     <value>Этот человек уже в группе.</value>
   </data>
-  <data name="This invitation is no longer pending." xml:space="preserve">
+  <data name="This_invitation_is_no_longer_pending" xml:space="preserve">
     <value>Это приглашение больше не действует.</value>
   </data>
-  <data name="You have no pending invitation to this group." xml:space="preserve">
+  <data name="You_have_no_pending_invitation_to_this_group" xml:space="preserve">
     <value>У вас нет приглашения в эту группу.</value>
   </data>
-  <data name="You organize this group. Use /group delete to close it." xml:space="preserve">
+  <data name="You_organize_this_group_Use_group_delete_to_close_it" xml:space="preserve">
     <value>Вы организатор этой группы. Чтобы выйти, закройте её.</value>
   </data>
-  <data name="You are not a member of this group." xml:space="preserve">
+  <data name="You_are_not_a_member_of_this_group" xml:space="preserve">
     <value>Вы не участник этой группы.</value>
   </data>
-  <data name="The organizer owns this group. Use /group delete to close it." xml:space="preserve">
+  <data name="The_organizer_owns_this_group_Use_group_delete_to_close_it" xml:space="preserve">
     <value>Организатора нельзя удалить. Чтобы завершить группу, закройте её.</value>
   </data>
-  <data name="Only server moderators can repair group roles." xml:space="preserve">
+  <data name="Only_server_moderators_can_repair_group_roles" xml:space="preserve">
     <value>Восстанавливать роли групп могут только модераторы сервера.</value>
   </data>
-  <data name="That group does not exist in this server." xml:space="preserve">
+  <data name="That_group_does_not_exist_in_this_server" xml:space="preserve">
     <value>Такой группы на этом сервере нет.</value>
   </data>
-  <data name="Only the group's organizer or a server moderator can manage it." xml:space="preserve">
+  <data name="Only_the_group_s_organizer_or_a_server_moderator_can_manage_it" xml:space="preserve">
     <value>Управлять группой могут только её организатор или модератор сервера.</value>
   </data>
-  <data name="Use a group name of 1 to 40 letters, digits, spaces, hyphens or underscores." xml:space="preserve">
+  <data name="Use_a_group_name_of_1_to_40_letters_digits_spaces_hyphens" xml:space="preserve">
     <value>Название группы: 1–40 букв, цифр, пробелов, дефисов или подчёркиваний.</value>
   </data>
-  <data name="Use a description of up to 200 characters." xml:space="preserve">
+  <data name="Use_a_description_of_up_to_200_characters" xml:space="preserve">
     <value>Описание должно быть до 200 символов.</value>
   </data>
-  <data name="A group can have up to 20 games." xml:space="preserve">
+  <data name="A_group_can_have_up_to_20_games" xml:space="preserve">
     <value>В группе может быть до 20 игр.</value>
   </data>
-  <data name="This group already has that Steam game." xml:space="preserve">
+  <data name="This_group_already_has_that_Steam_game" xml:space="preserve">
     <value>Эта игра из Steam уже есть в группе.</value>
   </data>
-  <data name="That game is no longer attached to this group." xml:space="preserve">
+  <data name="That_game_is_no_longer_attached_to_this_group" xml:space="preserve">
     <value>Этой игры уже нет в группе.</value>
   </data>
-  <data name="Enter a game name of 1 to 60 characters." xml:space="preserve">
+  <data name="Enter_a_game_name_of_1_to_60_characters" xml:space="preserve">
     <value>Название игры должно быть от 1 до 60 символов.</value>
   </data>
-  <data name="Enter a Steam App ID like 730 or a Steam store link like https://store.steampowered.com/app/730/." xml:space="preserve">
+  <data name="Enter_a_Steam_App_ID_like_730_or_a_Steam_store_link" xml:space="preserve">
     <value>Введите Steam App ID, например 730, или ссылку на магазин Steam вроде https://store.steampowered.com/app/730/.</value>
   </data>
-  <data name="Times in {0}" xml:space="preserve">
+  <data name="Times_in_Arg0" xml:space="preserve">
     <value>Время по {0}</value>
   </data>
-  <data name="Manage members" xml:space="preserve">
+  <data name="Manage_members" xml:space="preserve">
     <value>Управлять участниками</value>
   </data>
-  <data name="Choose a day" xml:space="preserve">
+  <data name="Choose_a_day" xml:space="preserve">
     <value>Выберите день</value>
   </data>
-  <data name="Availability on {0} in {1}" xml:space="preserve">
+  <data name="Availability_on_Arg0_in_Arg1" xml:space="preserve">
     <value>Доступность на {0}, время по {1}</value>
   </data>
-  <data name="No data" xml:space="preserve">
+  <data name="No_data" xml:space="preserve">
     <value>Нет данных</value>
   </data>
-  <data name="All day" xml:space="preserve">
+  <data name="All_day" xml:space="preserve">
     <value>Весь день</value>
   </data>
-  <data name="from the previous day" xml:space="preserve">
+  <data name="From_the_previous_day" xml:space="preserve">
     <value>с предыдущего дня</value>
   </data>
-  <data name="to" xml:space="preserve">
+  <data name="To" xml:space="preserve">
     <value>до</value>
   </data>
-  <data name="continues the next day" xml:space="preserve">
+  <data name="Continues_the_next_day" xml:space="preserve">
     <value>продолжается на следующий день</value>
   </data>
   <data name="Weekly" xml:space="preserve">
     <value>Еженедельно</value>
   </data>
-  <data name="saved for this date" xml:space="preserve">
+  <data name="Saved_for_this_date" xml:space="preserve">
     <value>сохранено на эту дату</value>
   </data>
-  <data name="usual hours, not confirmed for this date" xml:space="preserve">
+  <data name="Usual_hours_not_confirmed_for_this_date" xml:space="preserve">
     <value>обычные часы, не подтверждены на эту дату</value>
   </data>
-  <data name="continues from or into the next day" xml:space="preserve">
+  <data name="Continues_from_or_into_the_next_day" xml:space="preserve">
     <value>продолжение с предыдущего или на следующий день</value>
   </data>
-  <data name="hour" xml:space="preserve">
+  <data name="Hour" xml:space="preserve">
     <value>час</value>
   </data>
-  <data name="Free all day" xml:space="preserve">
+  <data name="Free_all_day" xml:space="preserve">
     <value>Свободен весь день</value>
   </data>
-  <data name="Couldn't save today" xml:space="preserve">
+  <data name="Couldn_t_save_today" xml:space="preserve">
     <value>Не удалось сохранить время на сегодня</value>
   </data>
-  <data name="Pick a start and end time, or choose Free all day." xml:space="preserve">
+  <data name="Pick_a_start_and_end_time_or_choose_Free_all_day" xml:space="preserve">
     <value>Выберите время начала и окончания или «Свободен весь день».</value>
   </data>
-  <data name="Couldn't save {0}" xml:space="preserve">
+  <data name="Couldn_t_save_Arg0" xml:space="preserve">
     <value>Не удалось сохранить: {0}</value>
   </data>
-  <data name="You're available all day today." xml:space="preserve">
+  <data name="You_re_available_all_day_today" xml:space="preserve">
     <value>Сегодня вы свободны весь день.</value>
   </data>
-  <data name="All day, every {0}." xml:space="preserve">
+  <data name="All_day_every_Arg0" xml:space="preserve">
     <value>Весь день, каждую неделю: {0}.</value>
   </data>
-  <data name="Today · all day" xml:space="preserve">
+  <data name="Today_all_day" xml:space="preserve">
     <value>Сегодня · весь день</value>
   </data>
-  <data name="Members view" xml:space="preserve">
+  <data name="Members_view" xml:space="preserve">
     <value>Вид участников</value>
   </data>
-  <data name="Roster &amp; invites" xml:space="preserve">
+  <data name="Roster_invites" xml:space="preserve">
     <value>Состав и приглашения</value>
   </data>
-  <data name="usual weekly hours, not confirmed" xml:space="preserve">
+  <data name="Usual_weekly_hours_not_confirmed" xml:space="preserve">
     <value>обычные еженедельные часы, не подтверждено</value>
   </data>
-  <data name="one-off for this date" xml:space="preserve">
+  <data name="One_off_for_this_date" xml:space="preserve">
     <value>разово на эту дату</value>
   </data>
-  <data name="Hours shown" xml:space="preserve">
+  <data name="Hours_shown" xml:space="preserve">
     <value>Показанные часы</value>
   </data>
-  <data name="Free time from {0}:00 to {1}:00" xml:space="preserve">
+  <data name="Free_time_from_Arg0_00_to_Arg1_00" xml:space="preserve">
     <value>Свободное время с {0}:00 до {1}:00</value>
   </data>
-  <data name="Now {0}" xml:space="preserve">
+  <data name="Now_Arg0" xml:space="preserve">
     <value>Сейчас {0}</value>
   </data>
-  <data name="Free together" xml:space="preserve">
+  <data name="Free_together" xml:space="preserve">
     <value>Свободны вместе</value>
   </data>
-  <data name="Best: {0}:00–{1}:00 · {2} of {3} free" xml:space="preserve">
+  <data name="Best_Arg0_00_Arg1_00_Arg2_of_Arg3_free" xml:space="preserve">
     <value>Лучше всего: {0}:00–{1}:00 · свободны {2} из {3}</value>
   </data>
-  <data name="No hour with two or more members free" xml:space="preserve">
+  <data name="No_hour_with_two_or_more_members_free" xml:space="preserve">
     <value>Нет часа, когда свободны двое или больше</value>
   </data>
-  <data name="{0} of {1} free at {2}:00" xml:space="preserve">
+  <data name="Arg0_of_Arg1_free_at_Arg2_00" xml:space="preserve">
     <value>В {2}:00 свободны {0} из {1}</value>
   </data>
-  <data name="Free: {0}" xml:space="preserve">
+  <data name="Free_Arg0" xml:space="preserve">
     <value>Свободен: {0}</value>
   </data>
-  <data name="Free · one-off for this date" xml:space="preserve">
+  <data name="Free_one_off_for_this_date" xml:space="preserve">
     <value>Свободен · разово на эту дату</value>
   </data>
-  <data name="Free · usual weekly hours, not confirmed" xml:space="preserve">
+  <data name="Free_usual_weekly_hours_not_confirmed" xml:space="preserve">
     <value>Свободен · обычные еженедельные часы, не подтверждено</value>
   </data>
-  <data name="Busy · has times that day, not this hour" xml:space="preserve">
+  <data name="Busy_has_times_that_day_not_this_hour" xml:space="preserve">
     <value>Занят · есть время в этот день, но не в этот час</value>
   </data>
-  <data name="{0} linked" xml:space="preserve">
+  <data name="Arg0_linked" xml:space="preserve">
     <value>связано: {0}</value>
   </data>
-  <data name="Linked accounts" xml:space="preserve">
+  <data name="Linked_accounts" xml:space="preserve">
     <value>Связанные аккаунты</value>
   </data>
-  <data name="Connect an alternate account (twink) so HappyMix treats both as one member in this server." xml:space="preserve">
+  <data name="Connect_an_alternate_account_twink_so_HappyMix_treats_both_as_one_member" xml:space="preserve">
     <value>Подключите альтернативный аккаунт (твинк), чтобы HappyMix считал оба одним участником на этом сервере.</value>
   </data>
-  <data name="Your accounts" xml:space="preserve">
+  <data name="Your_accounts" xml:space="preserve">
     <value>Ваши аккаунты</value>
   </data>
-  <data name="All accounts below act as one member: the same groups, invitations and schedule." xml:space="preserve">
+  <data name="All_accounts_below_act_as_one_member_the_same_groups_invitations_and" xml:space="preserve">
     <value>Все аккаунты ниже действуют как один участник: те же группы, приглашения и расписание.</value>
   </data>
   <data name="Primary" xml:space="preserve">
     <value>Основной</value>
   </data>
-  <data name="Alternate (twink)" xml:space="preserve">
+  <data name="Alternate_twink" xml:space="preserve">
     <value>Альтернативный (твинк)</value>
   </data>
-  <data name="Linked {0}" xml:space="preserve">
+  <data name="Linked_Arg0" xml:space="preserve">
     <value>Связан {0}</value>
   </data>
-  <data name="Unlink {0}" xml:space="preserve">
+  <data name="Unlink_Arg0" xml:space="preserve">
     <value>Отвязать {0}</value>
   </data>
   <data name="Unlink" xml:space="preserve">
     <value>Отвязать</value>
   </data>
-  <data name="No alternate accounts are linked yet." xml:space="preserve">
+  <data name="No_alternate_accounts_are_linked_yet" xml:space="preserve">
     <value>Альтернативные аккаунты пока не связаны.</value>
   </data>
-  <data name="Link an alternate account" xml:space="preserve">
+  <data name="Link_an_alternate_account" xml:space="preserve">
     <value>Связать альтернативный аккаунт</value>
   </data>
-  <data name="Link created" xml:space="preserve">
+  <data name="Link_created" xml:space="preserve">
     <value>Ссылка создана</value>
   </data>
-  <data name="Open it while signed in to Discord as your alternate account (twink), for example in a private window. It works once and expires at {0}." xml:space="preserve">
+  <data name="Open_it_while_signed_in_to_Discord_as_your_alternate_account_twink" xml:space="preserve">
     <value>Откройте её, войдя в Discord как альтернативный аккаунт (твинк), например в приватном окне. Она сработает один раз и действует до {0}.</value>
   </data>
-  <data name="Link for your alternate account" xml:space="preserve">
+  <data name="Link_for_your_alternate_account" xml:space="preserve">
     <value>Ссылка для альтернативного аккаунта</value>
   </data>
   <data name="Copy" xml:space="preserve">
     <value>Копировать</value>
   </data>
-  <data name="This page shows the link only once. Don't share it with anyone else: whoever approves it with their own Discord account becomes your alternate." xml:space="preserve">
+  <data name="This_page_shows_the_link_only_once_Don_t_share_it_with" xml:space="preserve">
     <value>Ссылка показывается только один раз. Не передавайте её другим: тот, кто подтвердит её своим аккаунтом Discord, станет вашим альтернативным аккаунтом.</value>
   </data>
-  <data name="Create a link here, signed in as your main account." xml:space="preserve">
+  <data name="Create_a_link_here_signed_in_as_your_main_account" xml:space="preserve">
     <value>Создайте ссылку здесь, войдя как основной аккаунт.</value>
   </data>
-  <data name="Open the link signed in to Discord as your alternate account (twink). A private window or another browser works best." xml:space="preserve">
+  <data name="Open_the_link_signed_in_to_Discord_as_your_alternate_account_twink" xml:space="preserve">
     <value>Откройте ссылку, войдя в Discord как альтернативный аккаунт (твинк). Лучше всего — в приватном окне или другом браузере.</value>
   </data>
-  <data name="Review what will be shared and approve it from the alternate account." xml:space="preserve">
+  <data name="Review_what_will_be_shared_and_approve_it_from_the_alternate_account" xml:space="preserve">
     <value>Проверьте, что станет общим, и подтвердите с альтернативного аккаунта.</value>
   </data>
-  <data name="Create link" xml:space="preserve">
+  <data name="Create_link" xml:space="preserve">
     <value>Создать ссылку</value>
   </data>
-  <data name="Open link requests" xml:space="preserve">
+  <data name="Open_link_requests" xml:space="preserve">
     <value>Открытые запросы на связь</value>
   </data>
-  <data name="Created {0}" xml:space="preserve">
+  <data name="Created_Arg0" xml:space="preserve">
     <value>Создан {0}</value>
   </data>
-  <data name="Expires {0} · works once" xml:space="preserve">
+  <data name="Expires_Arg0_works_once" xml:space="preserve">
     <value>Действует до {0} · одноразово</value>
   </data>
-  <data name="This account is the alternate (twink) of {0}. New links are created from the primary account." xml:space="preserve">
+  <data name="This_account_is_the_alternate_twink_of_Arg0_New_links_are_created" xml:space="preserve">
     <value>Этот аккаунт — альтернативный (твинк) для {0}. Новые связи создаются с основного аккаунта.</value>
   </data>
-  <data name="What linking does" xml:space="preserve">
+  <data name="What_linking_does" xml:space="preserve">
     <value>Что даёт связь</value>
   </data>
-  <data name="Groups, invitations and organizer rights are shared and counted once." xml:space="preserve">
+  <data name="Groups_invitations_and_organizer_rights_are_shared_and_counted_once" xml:space="preserve">
     <value>Группы, приглашения и права организатора общие и считаются один раз.</value>
   </data>
-  <data name="Today, weekly and all-day availability is one schedule. Editing from either account changes it." xml:space="preserve">
+  <data name="Today_weekly_and_all_day_availability_is_one_schedule_Editing_from_either" xml:space="preserve">
     <value>Сегодняшняя, еженедельная и круглосуточная доступность — одно расписание. Изменения с любого аккаунта меняют его.</value>
   </data>
-  <data name="Group roles in Discord are given to every linked account." xml:space="preserve">
+  <data name="Group_roles_in_Discord_are_given_to_every_linked_account" xml:space="preserve">
     <value>Роли групп в Discord получают все связанные аккаунты.</value>
   </data>
-  <data name="Discord permissions are never shared." xml:space="preserve">
+  <data name="Discord_permissions_are_never_shared" xml:space="preserve">
     <value>Разрешения Discord никогда не становятся общими.</value>
   </data>
-  <data name="Admin and moderator access still depends on the account you sign in with." xml:space="preserve">
+  <data name="Admin_and_moderator_access_still_depends_on_the_account_you_sign_in" xml:space="preserve">
     <value>Доступ администратора и модератора зависит от аккаунта, которым вы входите.</value>
   </data>
-  <data name="Links only apply in this server." xml:space="preserve">
+  <data name="Links_only_apply_in_this_server" xml:space="preserve">
     <value>Связи действуют только на этом сервере.</value>
   </data>
-  <data name="Approve linked account" xml:space="preserve">
+  <data name="Approve_linked_account" xml:space="preserve">
     <value>Подтверждение связанного аккаунта</value>
   </data>
   <data name="Approve" xml:space="preserve">
     <value>Подтвердить</value>
   </data>
-  <data name="Switch to your alternate account" xml:space="preserve">
+  <data name="Switch_to_your_alternate_account" xml:space="preserve">
     <value>Переключитесь на альтернативный аккаунт</value>
   </data>
-  <data name="Copy this page's address, sign out, sign in to Discord as your alternate account (twink), and open the address again. A private window makes this easier." xml:space="preserve">
+  <data name="Copy_this_page_s_address_sign_out_sign_in_to_Discord_as" xml:space="preserve">
     <value>Скопируйте адрес страницы, выйдите, войдите в Discord как альтернативный аккаунт (твинк) и откройте адрес снова. В приватном окне это проще.</value>
   </data>
-  <data name="Can't use this link" xml:space="preserve">
+  <data name="Can_t_use_this_link" xml:space="preserve">
     <value>Эту ссылку нельзя использовать</value>
   </data>
-  <data name="Back to linked accounts" xml:space="preserve">
+  <data name="Back_to_linked_accounts" xml:space="preserve">
     <value>К связанным аккаунтам</value>
   </data>
-  <data name="Link {0} to {1}?" xml:space="preserve">
+  <data name="Link_Arg0_to_Arg1" xml:space="preserve">
     <value>Связать {0} с {1}?</value>
   </data>
-  <data name="You're signed in as {0}. Approving makes this account an alternate (twink) of {1} in {2}." xml:space="preserve">
+  <data name="You_re_signed_in_as_Arg0_Approving_makes_this_account_an_alternate" xml:space="preserve">
     <value>Вы вошли как {0}. После подтверждения этот аккаунт станет альтернативным (твинком) для {1} на {2}.</value>
   </data>
   <data name="Accounts" xml:space="preserve">
     <value>Аккаунты</value>
   </data>
-  <data name="Shared from now on" xml:space="preserve">
+  <data name="Shared_from_now_on" xml:space="preserve">
     <value>Теперь общие</value>
   </data>
   <data name="None" xml:space="preserve">
     <value>Нет</value>
   </data>
-  <data name="Already in with both accounts (counted once)" xml:space="preserve">
+  <data name="Already_in_with_both_accounts_counted_once" xml:space="preserve">
     <value>Оба аккаунта уже там (считается один раз)</value>
   </data>
-  <data name="Duplicate invitations merged" xml:space="preserve">
+  <data name="Duplicate_invitations_merged" xml:space="preserve">
     <value>Объединённые повторные приглашения</value>
   </data>
-  <data name="I understand {0} will share organizer rights for: {1}." xml:space="preserve">
+  <data name="I_understand_Arg0_will_share_organizer_rights_for_Arg1" xml:space="preserve">
     <value>Я понимаю, что {0} получит общие права организатора для: {1}.</value>
   </data>
-  <data name="The groups stay saved under this account and remain yours if you unlink." xml:space="preserve">
+  <data name="The_groups_stay_saved_under_this_account_and_remain_yours_if_you" xml:space="preserve">
     <value>Группы остаются сохранёнными за этим аккаунтом и останутся вашими после отвязки.</value>
   </data>
   <data name="Schedule" xml:space="preserve">
     <value>Расписание</value>
   </data>
-  <data name="Both accounts will use one schedule. Moving {0} one-off windows and {1} weekly days from this account; {2} identical entries merged." xml:space="preserve">
+  <data name="Both_accounts_will_use_one_schedule_Moving_Arg0_one_off_windows_and" xml:space="preserve">
     <value>Оба аккаунта получат одно расписание. Будет перенесено разовых окон: {0}, недельных дней: {1}; одинаковых записей объединено: {2}.</value>
   </data>
-  <data name="These entries overlap. Choose which to keep for each one:" xml:space="preserve">
+  <data name="These_entries_overlap_Choose_which_to_keep_for_each_one" xml:space="preserve">
     <value>Эти записи пересекаются. Выберите, что оставить для каждой:</value>
   </data>
-  <data name="Every {0}" xml:space="preserve">
+  <data name="Every_Arg0" xml:space="preserve">
     <value>Каждую неделю: {0}</value>
   </data>
-  <data name="Keep {0}'s" xml:space="preserve">
+  <data name="Keep_Arg0_s" xml:space="preserve">
     <value>Оставить время {0}</value>
   </data>
-  <data name="Use this account's" xml:space="preserve">
+  <data name="Use_this_account_s" xml:space="preserve">
     <value>Взять время этого аккаунта</value>
   </data>
-  <data name="Nothing is thrown away: this account's current schedule is saved and comes back if you unlink." xml:space="preserve">
+  <data name="Nothing_is_thrown_away_this_account_s_current_schedule_is_saved_and" xml:space="preserve">
     <value>Ничего не теряется: текущее расписание этого аккаунта сохранено и вернётся после отвязки.</value>
   </data>
-  <data name="Approve link" xml:space="preserve">
+  <data name="Approve_link" xml:space="preserve">
     <value>Подтвердить связь</value>
   </data>
-  <data name="Unlink account" xml:space="preserve">
+  <data name="Unlink_account" xml:space="preserve">
     <value>Отвязка аккаунта</value>
   </data>
-  <data name="Unlink {0} from {1}?" xml:space="preserve">
+  <data name="Unlink_Arg0_from_Arg1" xml:space="preserve">
     <value>Отвязать {0} от {1}?</value>
   </data>
-  <data name="Here's what changes. Nothing happens until you confirm." xml:space="preserve">
+  <data name="Here_s_what_changes_Nothing_happens_until_you_confirm" xml:space="preserve">
     <value>Вот что изменится. Ничего не произойдёт, пока вы не подтвердите.</value>
   </data>
-  <data name="{0} keeps these groups (its own memberships)" xml:space="preserve">
+  <data name="Arg0_keeps_these_groups_its_own_memberships" xml:space="preserve">
     <value>{0} остаётся в этих группах (собственное членство)</value>
   </data>
-  <data name="{0} loses access to these groups and their Discord roles" xml:space="preserve">
+  <data name="Arg0_loses_access_to_these_groups_and_their_Discord_roles" xml:space="preserve">
     <value>{0} теряет доступ к этим группам и их ролям Discord</value>
   </data>
-  <data name="{0} still organizes" xml:space="preserve">
+  <data name="Arg0_still_organizes" xml:space="preserve">
     <value>{0} по-прежнему организует</value>
   </data>
-  <data name="{0} keeps the shared schedule. {1} gets back its pre-link schedule: {2} upcoming windows and {3} weekly days." xml:space="preserve">
+  <data name="Arg0_keeps_the_shared_schedule_Arg1_gets_back_its_pre_link_schedule" xml:space="preserve">
     <value>{0} сохраняет общее расписание. {1} возвращает своё расписание до связи: ближайших окон {2}, недельных дней {3}.</value>
   </data>
-  <data name="Memberships and invitations accepted while linked stay with {0}. Unrelated Discord roles are not touched." xml:space="preserve">
+  <data name="Memberships_and_invitations_accepted_while_linked_stay_with_Arg0_Unrelated_Discord_roles" xml:space="preserve">
     <value>Членство и приглашения, принятые во время связи, остаются за {0}. Другие роли Discord не меняются.</value>
   </data>
-  <data name="Linked: {0}" xml:space="preserve">
+  <data name="Linked_Arg0_2" xml:space="preserve">
     <value>Связанные: {0}</value>
   </data>
-  <data name="Linked accounts: {0}" xml:space="preserve">
+  <data name="Linked_accounts_Arg0" xml:space="preserve">
     <value>Связанные аккаунты: {0}</value>
   </data>
-  <data name="Link request not created" xml:space="preserve">
+  <data name="Link_request_not_created" xml:space="preserve">
     <value>Запрос на связь не создан</value>
   </data>
-  <data name="Link request revoked" xml:space="preserve">
+  <data name="Link_request_revoked" xml:space="preserve">
     <value>Запрос на связь отозван</value>
   </data>
-  <data name="These accounts were already linked" xml:space="preserve">
+  <data name="These_accounts_were_already_linked" xml:space="preserve">
     <value>Эти аккаунты уже были связаны</value>
   </data>
-  <data name="Accounts linked" xml:space="preserve">
+  <data name="Accounts_linked" xml:space="preserve">
     <value>Аккаунты связаны</value>
   </data>
-  <data name="HappyMix now treats both accounts as one member in this server." xml:space="preserve">
+  <data name="HappyMix_now_treats_both_accounts_as_one_member_in_this_server" xml:space="preserve">
     <value>Теперь HappyMix считает оба аккаунта одним участником на этом сервере.</value>
   </data>
-  <data name="The link is saved, but Discord group roles didn't update. A server moderator can fix them from Groups → Repair roles, or with /group repair-roles." xml:space="preserve">
+  <data name="The_link_is_saved_but_Discord_group_roles_didn_t_update_A" xml:space="preserve">
     <value>Связь сохранена, но роли групп в Discord не обновились. Модератор сервера может исправить их в «Группы» → «Восстановление ролей» или командой /group repair-roles.</value>
   </data>
-  <data name="Accounts unlinked" xml:space="preserve">
+  <data name="Accounts_unlinked" xml:space="preserve">
     <value>Аккаунты отвязаны</value>
   </data>
-  <data name="The alternate keeps its own memberships and gets its saved schedule back." xml:space="preserve">
+  <data name="The_alternate_keeps_its_own_memberships_and_gets_its_saved_schedule_back" xml:space="preserve">
     <value>Альтернативный аккаунт сохраняет собственное членство и возвращает сохранённое расписание.</value>
   </data>
-  <data name="The accounts are unlinked, but Discord group roles didn't update. A server moderator can fix them from Groups → Repair roles." xml:space="preserve">
+  <data name="The_accounts_are_unlinked_but_Discord_group_roles_didn_t_update_A" xml:space="preserve">
     <value>Аккаунты отвязаны, но роли групп в Discord не обновились. Модератор сервера может исправить их в «Группы» → «Восстановление ролей».</value>
   </data>
-  <data name="An account can have up to 5 linked alternates." xml:space="preserve">
+  <data name="An_account_can_have_up_to_5_linked_alternates" xml:space="preserve">
     <value>У аккаунта может быть до 5 связанных альтернативных аккаунтов.</value>
   </data>
-  <data name="Both accounts must be members of this server." xml:space="preserve">
+  <data name="Both_accounts_must_be_members_of_this_server" xml:space="preserve">
     <value>Оба аккаунта должны быть участниками этого сервера.</value>
   </data>
-  <data name="Choose which schedule to keep for each conflict." xml:space="preserve">
+  <data name="Choose_which_schedule_to_keep_for_each_conflict" xml:space="preserve">
     <value>Выберите, какое расписание оставить для каждого конфликта.</value>
   </data>
-  <data name="Confirm that organizer rights will be shared." xml:space="preserve">
+  <data name="Confirm_that_organizer_rights_will_be_shared" xml:space="preserve">
     <value>Подтвердите, что права организатора станут общими.</value>
   </data>
-  <data name="One of these accounts was linked elsewhere meanwhile. Unlink it first." xml:space="preserve">
+  <data name="One_of_these_accounts_was_linked_elsewhere_meanwhile_Unlink_it_first" xml:space="preserve">
     <value>Тем временем один из этих аккаунтов связали с другим. Сначала отвяжите его.</value>
   </data>
-  <data name="Only the primary account or that alternate can unlink it." xml:space="preserve">
+  <data name="Only_the_primary_account_or_that_alternate_can_unlink_it" xml:space="preserve">
     <value>Отвязать может только основной аккаунт или сам альтернативный.</value>
   </data>
-  <data name="That account isn't linked." xml:space="preserve">
+  <data name="That_account_isn_t_linked" xml:space="preserve">
     <value>Этот аккаунт не связан.</value>
   </data>
-  <data name="That request is no longer open." xml:space="preserve">
+  <data name="That_request_is_no_longer_open" xml:space="preserve">
     <value>Этот запрос уже неактивен.</value>
   </data>
-  <data name="The account that created this request is now linked as an alternate itself." xml:space="preserve">
+  <data name="The_account_that_created_this_request_is_now_linked_as_an_alternate" xml:space="preserve">
     <value>Аккаунт, создавший запрос, теперь сам связан как альтернативный.</value>
   </data>
-  <data name="These accounts are already linked." xml:space="preserve">
+  <data name="These_accounts_are_already_linked" xml:space="preserve">
     <value>Эти аккаунты уже связаны.</value>
   </data>
-  <data name="This account is already part of another linked family. Unlink it first." xml:space="preserve">
+  <data name="This_account_is_already_part_of_another_linked_family_Unlink_it_first" xml:space="preserve">
     <value>Этот аккаунт уже связан с другим. Сначала отвяжите его.</value>
   </data>
-  <data name="This account is linked as an alternate. Create requests from your primary account." xml:space="preserve">
+  <data name="This_account_is_linked_as_an_alternate_Create_requests_from_your_primary" xml:space="preserve">
     <value>Этот аккаунт связан как альтернативный. Создавайте запросы с основного аккаунта.</value>
   </data>
-  <data name="This link request has expired, was revoked or was already used. Ask for a new one." xml:space="preserve">
+  <data name="This_link_request_has_expired_was_revoked_or_was_already_used_Ask" xml:space="preserve">
     <value>Этот запрос просрочен, отозван или уже использован. Попросите новый.</value>
   </data>
-  <data name="You already have 3 open requests. Revoke one or wait for it to expire." xml:space="preserve">
+  <data name="You_already_have_3_open_requests_Revoke_one_or_wait_for_it" xml:space="preserve">
     <value>У вас уже 3 открытых запроса. Отзовите один или подождите, пока он истечёт.</value>
   </data>
-  <data name="You can link up to 5 alternate accounts." xml:space="preserve">
+  <data name="You_can_link_up_to_5_alternate_accounts" xml:space="preserve">
     <value>Можно связать до 5 альтернативных аккаунтов.</value>
   </data>
-  <data name="You need to be a member of this server." xml:space="preserve">
+  <data name="You_need_to_be_a_member_of_this_server" xml:space="preserve">
     <value>Вы должны быть участником этого сервера.</value>
   </data>
-  <data name="You're signed in with the account that created this request. Sign in with your alternate account (twink) to approve it." xml:space="preserve">
+  <data name="You_re_signed_in_with_the_account_that_created_this_request_Sign" xml:space="preserve">
     <value>Вы вошли аккаунтом, создавшим этот запрос. Войдите альтернативным аккаунтом (твинком), чтобы подтвердить его.</value>
   </data>
-  <data name="My linked accounts" xml:space="preserve"><value>Мои связанные аккаунты</value></data>
-  <data name="Manage links" xml:space="preserve"><value>Управление связями</value></data>
-  <data name="Link server accounts" xml:space="preserve"><value>Связать аккаунты сервера</value></data>
-  <data name="Select a primary account and an alternate, then review the changes before linking." xml:space="preserve"><value>Выберите основной и дополнительный аккаунты и проверьте изменения перед подтверждением.</value></data>
-  <data name="Choose an account" xml:space="preserve"><value>Выберите аккаунт</value></data>
-  <data name="Review link" xml:space="preserve"><value>Проверить изменения</value></data>
-  <data name="This links both accounts in the selected server." xml:space="preserve"><value>Оба аккаунта будут связаны на выбранном сервере.</value></data>
-  <data name="Only server administrators can link other accounts." xml:space="preserve"><value>Только администраторы сервера могут связывать чужие аккаунты.</value></data>
-  <data name="Choose two different accounts." xml:space="preserve"><value>Выберите два разных аккаунта.</value></data>
-  <data name="Certainty" xml:space="preserve"><value>Уверенность</value></data>
-  <data name="Definite" xml:space="preserve"><value>Точно</value></data>
-  <data name="Tentative" xml:space="preserve"><value>Возможно</value></data>
-  <data name="Definite: I can play. Tentative: I might be able to play." xml:space="preserve"><value>Точно: я могу играть. Возможно: пока не уверен, смогу ли.</value></data>
-  <data name="Save a range, then add another. Each range has its own certainty." xml:space="preserve"><value>Сохраните интервал, затем добавьте следующий. Для каждого укажите, насколько вы уверены.</value></data>
-  <data name="The same start time and time zone updates an existing weekly range." xml:space="preserve"><value>Если время начала и часовой пояс совпадают с сохранённым промежутком, он будет обновлён.</value></data>
-  <data name="Add range" xml:space="preserve"><value>Добавить интервал</value></data>
-  <data name="Save range" xml:space="preserve"><value>Сохранить интервал</value></data>
-  <data name="Remove range" xml:space="preserve"><value>Удалить интервал</value></data>
-  <data name="Clear day" xml:space="preserve"><value>Очистить день</value></data>
-  <data name="Free together counts definite availability only." xml:space="preserve"><value>«Свободны вместе» учитывает только интервалы с отметкой «Точно».</value></data>
-  <data name="{0} definite, {1} tentative at {2}:00" xml:space="preserve"><value>{0} точно, {1} возможно в {2}:00</value></data>
-  <data name="Clear existing ranges before saving a full day." xml:space="preserve"><value>Очистите существующие интервалы, прежде чем сохранить целый день.</value></data>
-  <data name="All linked accounts" xml:space="preserve"><value>Все связанные аккаунты</value></data>
-  <data name="Each card is one member: a primary account and its linked alternates." xml:space="preserve"><value>Каждая карточка — один участник: основной аккаунт и связанные дополнительные.</value></data>
-  <data name="{0} linked members · {1} accounts" xml:space="preserve"><value>{0} связанных участников · {1} аккаунтов</value></data>
-  <data name="No linked accounts yet" xml:space="preserve"><value>Связанных аккаунтов пока нет</value></data>
-  <data name="Link accounts above, or let members link their own accounts." xml:space="preserve"><value>Свяжите аккаунты выше или позвольте участникам связать их самостоятельно.</value></data>
-  <data name="{0} cleared" xml:space="preserve">
+  <data name="My_linked_accounts" xml:space="preserve">
+    <value>Мои связанные аккаунты</value>
+  </data>
+  <data name="Manage_links" xml:space="preserve">
+    <value>Управление связями</value>
+  </data>
+  <data name="Link_server_accounts" xml:space="preserve">
+    <value>Связать аккаунты сервера</value>
+  </data>
+  <data name="Select_a_primary_account_and_an_alternate_then_review_the_changes_before" xml:space="preserve">
+    <value>Выберите основной и дополнительный аккаунты и проверьте изменения перед подтверждением.</value>
+  </data>
+  <data name="Choose_an_account" xml:space="preserve">
+    <value>Выберите аккаунт</value>
+  </data>
+  <data name="Review_link" xml:space="preserve">
+    <value>Проверить изменения</value>
+  </data>
+  <data name="This_links_both_accounts_in_the_selected_server" xml:space="preserve">
+    <value>Оба аккаунта будут связаны на выбранном сервере.</value>
+  </data>
+  <data name="Only_server_administrators_can_link_other_accounts" xml:space="preserve">
+    <value>Только администраторы сервера могут связывать чужие аккаунты.</value>
+  </data>
+  <data name="Choose_two_different_accounts" xml:space="preserve">
+    <value>Выберите два разных аккаунта.</value>
+  </data>
+  <data name="Certainty" xml:space="preserve">
+    <value>Уверенность</value>
+  </data>
+  <data name="Definite" xml:space="preserve">
+    <value>Точно</value>
+  </data>
+  <data name="Tentative" xml:space="preserve">
+    <value>Возможно</value>
+  </data>
+  <data name="Definite_I_can_play_Tentative_I_might_be_able_to_play" xml:space="preserve">
+    <value>Точно: я могу играть. Возможно: пока не уверен, смогу ли.</value>
+  </data>
+  <data name="Save_a_range_then_add_another_Each_range_has_its_own_certainty" xml:space="preserve">
+    <value>Сохраните интервал, затем добавьте следующий. Для каждого укажите, насколько вы уверены.</value>
+  </data>
+  <data name="The_same_start_time_and_time_zone_updates_an_existing_weekly_range" xml:space="preserve">
+    <value>Если время начала и часовой пояс совпадают с сохранённым промежутком, он будет обновлён.</value>
+  </data>
+  <data name="Add_range" xml:space="preserve">
+    <value>Добавить интервал</value>
+  </data>
+  <data name="Save_range" xml:space="preserve">
+    <value>Сохранить интервал</value>
+  </data>
+  <data name="Remove_range" xml:space="preserve">
+    <value>Удалить интервал</value>
+  </data>
+  <data name="Clear_day" xml:space="preserve">
+    <value>Очистить день</value>
+  </data>
+  <data name="Free_together_counts_definite_availability_only" xml:space="preserve">
+    <value>«Свободны вместе» учитывает только интервалы с отметкой «Точно».</value>
+  </data>
+  <data name="Arg0_definite_Arg1_tentative_at_Arg2_00" xml:space="preserve">
+    <value>{0} точно, {1} возможно в {2}:00</value>
+  </data>
+  <data name="Clear_existing_ranges_before_saving_a_full_day" xml:space="preserve">
+    <value>Очистите существующие интервалы, прежде чем сохранить целый день.</value>
+  </data>
+  <data name="All_linked_accounts" xml:space="preserve">
+    <value>Все связанные аккаунты</value>
+  </data>
+  <data name="Each_card_is_one_member_a_primary_account_and_its_linked_alternates" xml:space="preserve">
+    <value>Каждая карточка — один участник: основной аккаунт и связанные дополнительные.</value>
+  </data>
+  <data name="Arg0_linked_members_Arg1_accounts" xml:space="preserve">
+    <value>{0} связанных участников · {1} аккаунтов</value>
+  </data>
+  <data name="No_linked_accounts_yet" xml:space="preserve">
+    <value>Связанных аккаунтов пока нет</value>
+  </data>
+  <data name="Link_accounts_above_or_let_members_link_their_own_accounts" xml:space="preserve">
+    <value>Свяжите аккаунты выше или позвольте участникам связать их самостоятельно.</value>
+  </data>
+  <data name="Arg0_cleared" xml:space="preserve">
     <value>{0}: очищено</value>
   </data>
-  <data name="{0} saved" xml:space="preserve">
+  <data name="Arg0_saved" xml:space="preserve">
     <value>{0}: сохранено</value>
   </data>
-  <data name="{0} ranges" xml:space="preserve">
+  <data name="Arg0_ranges" xml:space="preserve">
     <value>Промежутков: {0}</value>
   </data>
-  <data name="Repeats every week. A day can have several ranges, each definite or tentative." xml:space="preserve">
+  <data name="Repeats_every_week_A_day_can_have_several_ranges_each_definite_or" xml:space="preserve">
     <value>Расписание повторяется каждую неделю. На день можно добавить несколько промежутков и для каждого выбрать «Точно» или «Возможно».</value>
   </data>
-  <data name="{0} of 7 days" xml:space="preserve">
+  <data name="Arg0_of_7_days" xml:space="preserve">
     <value>{0} из 7 дней</value>
   </data>
   <data name="Editing" xml:space="preserve">
     <value>Редактирование</value>
   </data>
-  <data name="Edit {0}" xml:space="preserve">
+  <data name="Edit_Arg0" xml:space="preserve">
     <value>Редактировать: {0}</value>
   </data>
-  <data name="Remove every weekly range on {0}?" xml:space="preserve">
+  <data name="Remove_every_weekly_range_on_Arg0" xml:space="preserve">
     <value>Удалить все еженедельные промежутки на {0}?</value>
   </data>
-  <data name="Clear {0}" xml:space="preserve">
+  <data name="Clear_Arg0" xml:space="preserve">
     <value>Очистить: {0}</value>
   </data>
   <data name="Start" xml:space="preserve">
@@ -1085,43 +1140,43 @@
   <data name="End" xml:space="preserve">
     <value>Конец</value>
   </data>
-  <data name="Ranges on {0}" xml:space="preserve">
+  <data name="Ranges_on_Arg0" xml:space="preserve">
     <value>Промежутки: {0}</value>
   </data>
-  <data name="No ranges yet." xml:space="preserve">
+  <data name="No_ranges_yet" xml:space="preserve">
     <value>Промежутков пока нет.</value>
   </data>
-  <data name="Click a range to select it. Drag its ends or the whole range, or type exact times below." xml:space="preserve">
+  <data name="Click_a_range_to_select_it_Drag_its_ends_or_the_whole" xml:space="preserve">
     <value>Нажмите на промежуток, чтобы выбрать его. Тяните его края или весь промежуток либо введите точное время ниже.</value>
   </data>
-  <data name="Add time range" xml:space="preserve">
+  <data name="Add_time_range" xml:space="preserve">
     <value>Добавить промежуток времени</value>
   </data>
-  <data name="Time zone for this day" xml:space="preserve">
+  <data name="Time_zone_for_this_day" xml:space="preserve">
     <value>Часовой пояс для этого дня</value>
   </data>
-  <data name="Ranges saved in another time zone stay as they are: {0}" xml:space="preserve">
+  <data name="Ranges_saved_in_another_time_zone_stay_as_they_are_Arg0" xml:space="preserve">
     <value>Промежутки, сохранённые в другом часовом поясе, останутся без изменений: {0}</value>
   </data>
-  <data name="Save {0}" xml:space="preserve">
+  <data name="Save_Arg0" xml:space="preserve">
     <value>Сохранить: {0}</value>
   </data>
-  <data name="Add a range: pick From and Until. 00:00 to 00:00 means all day. Clear both to remove a range." xml:space="preserve">
+  <data name="Add_a_range_pick_From_and_Until_00_00_to_00_00" xml:space="preserve">
     <value>Добавьте промежуток: выберите «С» и «До». 00:00–00:00 означает весь день. Очистите оба поля, чтобы удалить промежуток.</value>
   </data>
-  <data name="Choose a valid day of the week." xml:space="preserve">
+  <data name="Choose_a_valid_day_of_the_week" xml:space="preserve">
     <value>Выберите правильный день недели.</value>
   </data>
-  <data name="Use up to 8 ranges per day." xml:space="preserve">
+  <data name="Use_up_to_8_ranges_per_day" xml:space="preserve">
     <value>Можно до 8 промежутков в день.</value>
   </data>
-  <data name="A full day can't be combined with other ranges on the same day." xml:space="preserve">
+  <data name="A_full_day_can_t_be_combined_with_other_ranges_on_the" xml:space="preserve">
     <value>Весь день нельзя совмещать с другими промежутками того же дня.</value>
   </data>
-  <data name="These ranges overlap. Adjust them so each one starts after the previous one ends." xml:space="preserve">
+  <data name="These_ranges_overlap_Adjust_them_so_each_one_starts_after_the_previous" xml:space="preserve">
     <value>Эти промежутки пересекаются. Измените их так, чтобы каждый начинался после окончания предыдущего.</value>
   </data>
-  <data name="This overlaps a range on another day." xml:space="preserve">
+  <data name="This_overlaps_a_range_on_another_day" xml:space="preserve">
     <value>Это пересекается с промежутком другого дня.</value>
   </data>
   <data name="System" xml:space="preserve">
@@ -1142,316 +1197,316 @@
   <data name="Language" xml:space="preserve">
     <value>Язык</value>
   </data>
-  <data name="Command guide" xml:space="preserve">
+  <data name="Command_guide" xml:space="preserve">
     <value>Справочник команд</value>
   </data>
-  <data name="Browse Discord commands, workflows, and options." xml:space="preserve">
+  <data name="Browse_Discord_commands_workflows_and_options" xml:space="preserve">
     <value>Просмотрите команды Discord, сценарии и параметры.</value>
   </data>
-  <data name="Back to {0}" xml:space="preserve">
+  <data name="Back_to_Arg0" xml:space="preserve">
     <value>Назад к {0}</value>
   </data>
-  <data name="Choose a server" xml:space="preserve">
+  <data name="Choose_a_server" xml:space="preserve">
     <value>Выбрать сервер</value>
   </data>
-  <data name="Command modules" xml:space="preserve">
+  <data name="Command_modules" xml:space="preserve">
     <value>Разделы команд</value>
   </data>
-  <data name="Where and when HappyMix posts esports announcements. Only server administrators see this page." xml:space="preserve">
+  <data name="Where_and_when_HappyMix_posts_esports_announcements_Only_server_administrators_see_this" xml:space="preserve">
     <value>Где и когда HappyMix публикует киберспортивные объявления. Эту страницу видят только администраторы сервера.</value>
   </data>
-  <data name="Team aliases" xml:space="preserve">
+  <data name="Team_aliases" xml:space="preserve">
     <value>Сокращения команд</value>
   </data>
-  <data name="Settings not saved" xml:space="preserve">
+  <data name="Settings_not_saved" xml:space="preserve">
     <value>Настройки не сохранены</value>
   </data>
-  <data name="Settings not saved: 1 field needs attention" xml:space="preserve">
+  <data name="Settings_not_saved_1_field_needs_attention" xml:space="preserve">
     <value>Настройки не сохранены: проверьте 1 поле</value>
   </data>
-  <data name="Settings not saved: {0} fields need attention" xml:space="preserve">
+  <data name="Settings_not_saved_Arg0_fields_need_attention" xml:space="preserve">
     <value>Настройки не сохранены: проверьте поля ({0})</value>
   </data>
-  <data name="Settings sections" xml:space="preserve">
+  <data name="Settings_sections" xml:space="preserve">
     <value>Разделы настроек</value>
   </data>
-  <data name="{0} to fix" xml:space="preserve">
+  <data name="Arg0_to_fix" xml:space="preserve">
     <value>исправить: {0}</value>
   </data>
-  <data name="Game sections inherit from Server defaults unless you override a value." xml:space="preserve">
+  <data name="Game_sections_inherit_from_Server_defaults_unless_you_override_a_value" xml:space="preserve">
     <value>Разделы игр наследуют значения сервера, пока вы их не измените.</value>
   </data>
-  <data name="HappyMix can't post in any text channel yet" xml:space="preserve">
+  <data name="HappyMix_can_t_post_in_any_text_channel_yet" xml:space="preserve">
     <value>HappyMix пока не может писать ни в один текстовый канал</value>
   </data>
-  <data name="In Discord, give the HappyMix role View Channel, Send Messages and Embed Links in at least one standard text channel, then reload this page." xml:space="preserve">
+  <data name="In_Discord_give_the_HappyMix_role_View_Channel_Send_Messages_and_Embed" xml:space="preserve">
     <value>В Discord выдайте роли HappyMix права «Просматривать канал», «Отправлять сообщения» и «Встраивать ссылки» хотя бы в одном текстовом канале, затем обновите страницу.</value>
   </data>
-  <data name="Used by every game unless the game overrides it." xml:space="preserve">
+  <data name="Used_by_every_game_unless_the_game_overrides_it" xml:space="preserve">
     <value>Действует для всех игр, если игра не задаёт своё значение.</value>
   </data>
-  <data name="Find a channel" xml:space="preserve">
+  <data name="Find_a_channel" xml:space="preserve">
     <value>Найти канал</value>
   </data>
-  <data name="No channels match." xml:space="preserve">
+  <data name="No_channels_match" xml:space="preserve">
     <value>Нет подходящих каналов.</value>
   </data>
-  <data name="Bot default · {0}" xml:space="preserve">
+  <data name="Bot_default_Arg0" xml:space="preserve">
     <value>По умолчанию для бота · {0}</value>
   </data>
-  <data name="Text channels where HappyMix can view, send messages and embed links." xml:space="preserve">
+  <data name="Text_channels_where_HappyMix_can_view_send_messages_and_embed_links" xml:space="preserve">
     <value>Текстовые каналы, где HappyMix может просматривать, писать и встраивать ссылки.</value>
   </data>
-  <data name="Used for schedules and availability. Start typing a city, like Kyiv, or enter UTC." xml:space="preserve">
+  <data name="Used_for_schedules_and_availability_Start_typing_a_city_like_Kyiv_or" xml:space="preserve">
     <value>Для расписаний и доступности. Начните вводить город, например Kyiv, или введите UTC.</value>
   </data>
-  <data name="Before a followed match. 1–1440." xml:space="preserve">
+  <data name="Before_a_followed_match_1_1440" xml:space="preserve">
     <value>До матча отслеживаемой команды. 1–1440.</value>
   </data>
-  <data name="This server has no roles yet." xml:space="preserve">
+  <data name="This_server_has_no_roles_yet" xml:space="preserve">
     <value>На этом сервере пока нет ролей.</value>
   </data>
-  <data name="With none selected, any member can organize a group." xml:space="preserve">
+  <data name="With_none_selected_any_member_can_organize_a_group" xml:space="preserve">
     <value>Если ничего не выбрано, организовать группу может любой.</value>
   </data>
-  <data name="Today's matches for followed teams" xml:space="preserve">
+  <data name="Today_s_matches_for_followed_teams" xml:space="preserve">
     <value>Сегодняшние матчи отслеживаемых команд</value>
   </data>
-  <data name="Before a match, using the lead time" xml:space="preserve">
+  <data name="Before_a_match_using_the_lead_time" xml:space="preserve">
     <value>Перед матчем, за указанное время</value>
   </data>
-  <data name="When a followed match goes live" xml:space="preserve">
+  <data name="When_a_followed_match_goes_live" xml:space="preserve">
     <value>Когда матч отслеживаемой команды начинается</value>
   </data>
-  <data name="After each map" xml:space="preserve">
+  <data name="After_each_map" xml:space="preserve">
     <value>После каждой карты</value>
   </data>
-  <data name="Final score" xml:space="preserve">
+  <data name="Final_score" xml:space="preserve">
     <value>Итоговый счёт</value>
   </data>
-  <data name="Not saved" xml:space="preserve">
+  <data name="Not_saved" xml:space="preserve">
     <value>Не сохранено</value>
   </data>
-  <data name="No unsaved changes" xml:space="preserve">
+  <data name="No_unsaved_changes" xml:space="preserve">
     <value>Нет несохранённых изменений</value>
   </data>
-  <data name="{0} followed teams" xml:space="preserve">
+  <data name="Arg0_followed_teams" xml:space="preserve">
     <value>Отслеживаемые команды {0}</value>
   </data>
-  <data name="No teams yet. Search for a team by name to add it." xml:space="preserve">
+  <data name="No_teams_yet_Search_for_a_team_by_name_to_add_it" xml:space="preserve">
     <value>Команд пока нет. Найдите команду по названию, чтобы добавить её.</value>
   </data>
-  <data name="Search for a team by name" xml:space="preserve">
+  <data name="Search_for_a_team_by_name" xml:space="preserve">
     <value>Найти команду по названию</value>
   </data>
-  <data name="One team per line. A name is enough; if several teams share it, add the number shown in search, like &quot;Vitality #3455&quot;." xml:space="preserve">
+  <data name="One_team_per_line_A_name_is_enough_if_several_teams_share" xml:space="preserve">
     <value>Одна команда на строку. Достаточно названия; если так называются несколько команд, добавьте номер из поиска, например «Vitality #3455».</value>
   </data>
-  <data name="{0} Twitch channels" xml:space="preserve">
+  <data name="Arg0_Twitch_channels" xml:space="preserve">
     <value>Каналы Twitch {0}</value>
   </data>
-  <data name="No channels yet." xml:space="preserve">
+  <data name="No_channels_yet" xml:space="preserve">
     <value>Каналов пока нет.</value>
   </data>
-  <data name="Twitch handle or twitch.tv link" xml:space="preserve">
+  <data name="Twitch_handle_or_twitch_tv_link" xml:space="preserve">
     <value>Ник Twitch или ссылка twitch.tv</value>
   </data>
-  <data name="One Twitch handle or twitch.tv link per line, up to five." xml:space="preserve">
+  <data name="One_Twitch_handle_or_twitch_tv_link_per_line_up_to_five" xml:space="preserve">
     <value>Один ник Twitch или ссылка twitch.tv на строку, до пяти.</value>
   </data>
-  <data name="Leave a value on Inherit to follow Server defaults." xml:space="preserve">
+  <data name="Leave_a_value_on_Inherit_to_follow_Server_defaults" xml:space="preserve">
     <value>Выберите «По умолчанию», чтобы использовать стандартные настройки.</value>
   </data>
-  <data name="Server default · {0}" xml:space="preserve">
+  <data name="Server_default_Arg0" xml:space="preserve">
     <value>По умолчанию для сервера · {0}</value>
   </data>
-  <data name="Find a role" xml:space="preserve">
+  <data name="Find_a_role" xml:space="preserve">
     <value>Найти роль</value>
   </data>
-  <data name="No roles match." xml:space="preserve">
+  <data name="No_roles_match" xml:space="preserve">
     <value>Нет подходящих ролей.</value>
   </data>
-  <data name="No {0} teams followed, so match posts for this game stop." xml:space="preserve">
+  <data name="No_Arg0_teams_followed_so_match_posts_for_this_game_stop" xml:space="preserve">
     <value>Команды {0} не отслеживаются, поэтому посты о матчах этой игры прекратятся.</value>
   </data>
-  <data name="No Twitch links in {0} announcements." xml:space="preserve">
+  <data name="No_Twitch_links_in_Arg0_announcements" xml:space="preserve">
     <value>Без ссылок Twitch в объявлениях {0}.</value>
   </data>
-  <data name="Optional short names for teams, checked before team search" xml:space="preserve">
+  <data name="Optional_short_names_for_teams_checked_before_team_search" xml:space="preserve">
     <value>Необязательные короткие названия команд, проверяются перед поиском</value>
   </data>
-  <data name="Team aliases source" xml:space="preserve">
+  <data name="Team_aliases_source" xml:space="preserve">
     <value>Источник сокращений команд</value>
   </data>
-  <data name="{0} team aliases" xml:space="preserve">
+  <data name="Arg0_team_aliases" xml:space="preserve">
     <value>Сокращения команд {0}</value>
   </data>
-  <data name="One alias=team number per line, for example NAVI=3216. Usually not needed: team names are found automatically." xml:space="preserve">
+  <data name="One_alias_team_number_per_line_for_example_NAVI_3216_Usually_not" xml:space="preserve">
     <value>Одно сокращение=номер команды на строку, например NAVI=3216. Обычно не нужно: названия команд находятся автоматически.</value>
   </data>
-  <data name="Edit as text" xml:space="preserve">
+  <data name="Edit_as_text" xml:space="preserve">
     <value>Редактировать как текст</value>
   </data>
-  <data name="Show as list" xml:space="preserve">
+  <data name="Show_as_list" xml:space="preserve">
     <value>Показать списком</value>
   </data>
-  <data name="No matches. Press Enter to add it as typed; it's checked when you save." xml:space="preserve">
+  <data name="No_matches_Press_Enter_to_add_it_as_typed_it_s_checked" xml:space="preserve">
     <value>Ничего не найдено. Нажмите Enter, чтобы добавить как есть; проверка будет при сохранении.</value>
   </data>
-  <data name="Search isn't available right now. Press Enter to add it as typed." xml:space="preserve">
+  <data name="Search_isn_t_available_right_now_Press_Enter_to_add_it_as" xml:space="preserve">
     <value>Поиск сейчас недоступен. Нажмите Enter, чтобы добавить как есть.</value>
   </data>
-  <data name="Searching…" xml:space="preserve">
+  <data name="Searching" xml:space="preserve">
     <value>Поиск…</value>
   </data>
-  <data name="That isn't a Twitch handle or twitch.tv link." xml:space="preserve">
+  <data name="That_isn_t_a_Twitch_handle_or_twitch_tv_link" xml:space="preserve">
     <value>Это не ник Twitch и не ссылка twitch.tv.</value>
   </data>
-  <data name="Already in the list." xml:space="preserve">
+  <data name="Already_in_the_list" xml:space="preserve">
     <value>Уже есть в списке.</value>
   </data>
-  <data name="The list is full." xml:space="preserve">
+  <data name="The_list_is_full" xml:space="preserve">
     <value>Список заполнен.</value>
   </data>
-  <data name="Checked when you save" xml:space="preserve">
+  <data name="Checked_when_you_save" xml:space="preserve">
     <value>Проверится при сохранении</value>
   </data>
-  <data name="Removed {0}" xml:space="preserve">
+  <data name="Removed_Arg0" xml:space="preserve">
     <value>Удалено: {0}</value>
   </data>
-  <data name="{0} of {1}" xml:space="preserve">
+  <data name="Arg0_of_Arg1" xml:space="preserve">
     <value>{0} из {1}</value>
   </data>
   <data name="Add" xml:space="preserve">
     <value>Добавить</value>
   </data>
-  <data name="New announcements use these settings right away." xml:space="preserve">
+  <data name="New_announcements_use_these_settings_right_away" xml:space="preserve">
     <value>Новые объявления сразу используют эти настройки.</value>
   </data>
-  <data name="Enter an IANA time zone such as Europe/Kyiv or UTC." xml:space="preserve">
+  <data name="Enter_an_IANA_time_zone_such_as_Europe_Kyiv_or_UTC" xml:space="preserve">
     <value>Введите часовой пояс IANA, например Europe/Kyiv или UTC.</value>
   </data>
-  <data name="HappyMix can't post there. Choose a text channel where it can view, send messages and embed links." xml:space="preserve">
+  <data name="HappyMix_can_t_post_there_Choose_a_text_channel_where_it_can" xml:space="preserve">
     <value>HappyMix не может туда писать. Выберите текстовый канал, где он может просматривать, писать и встраивать ссылки.</value>
   </data>
-  <data name="Choose roles from this server other than @everyone." xml:space="preserve">
+  <data name="Choose_roles_from_this_server_other_than_everyone" xml:space="preserve">
     <value>Выберите роли этого сервера, кроме @everyone.</value>
   </data>
-  <data name="Choose a role from this server other than @everyone." xml:space="preserve">
+  <data name="Choose_a_role_from_this_server_other_than_everyone" xml:space="preserve">
     <value>Выберите роль этого сервера, кроме @everyone.</value>
   </data>
-  <data name="Server settings saved" xml:space="preserve">
+  <data name="Server_settings_saved" xml:space="preserve">
     <value>Настройки сервера сохранены</value>
   </data>
-  <data name="Bot default channel" xml:space="preserve">
+  <data name="Bot_default_channel" xml:space="preserve">
     <value>Канал бота по умолчанию</value>
   </data>
-  <data name="a channel HappyMix can't post in" xml:space="preserve">
+  <data name="A_channel_HappyMix_can_t_post_in" xml:space="preserve">
     <value>канал, в который HappyMix не может писать</value>
   </data>
-  <data name="No teams" xml:space="preserve">
+  <data name="No_teams" xml:space="preserve">
     <value>Без команд</value>
   </data>
-  <data name="No channels" xml:space="preserve">
+  <data name="No_channels" xml:space="preserve">
     <value>Без каналов</value>
   </data>
-  <data name="Built-in team list" xml:space="preserve">
+  <data name="Built_in_team_list" xml:space="preserve">
     <value>Встроенный список команд</value>
   </data>
-  <data name="{0} teams" xml:space="preserve">
+  <data name="Arg0_teams" xml:space="preserve">
     <value>Команд: {0}</value>
   </data>
-  <data name="+{0} more" xml:space="preserve">
+  <data name="Arg0_more" xml:space="preserve">
     <value>и ещё {0}</value>
   </data>
-  <data name="&quot;{0}&quot; isn't a Twitch channel. Use a handle like shroud or a twitch.tv link." xml:space="preserve">
+  <data name="Arg0_isn_t_a_Twitch_channel_Use_a_handle_like_shroud_or" xml:space="preserve">
     <value>«{0}» — не канал Twitch. Укажите ник, например shroud, или ссылку twitch.tv.</value>
   </data>
-  <data name="Add one to five Twitch channels, or choose None." xml:space="preserve">
+  <data name="Add_one_to_five_Twitch_channels_or_choose_None" xml:space="preserve">
     <value>Добавьте от одного до пяти каналов Twitch или выберите «Нет».</value>
   </data>
-  <data name="Check &quot;{0}&quot;. Use one unique alias=123 entry per line." xml:space="preserve">
+  <data name="Check_Arg0_Use_one_unique_alias_123_entry_per_line" xml:space="preserve">
     <value>Проверьте «{0}». Одна уникальная запись сокращение=123 на строку.</value>
   </data>
-  <data name="Add 1 to 20 teams, or choose None." xml:space="preserve">
+  <data name="Add_1_to_20_teams_or_choose_None" xml:space="preserve">
     <value>Добавьте от 1 до 20 команд или выберите «Нет».</value>
   </data>
   <data name="Inherited" xml:space="preserve">
     <value>По умолчанию</value>
   </data>
-  <data name="Team search isn't available right now. Add the team's number like &quot;Team name #123&quot;, or try again later." xml:space="preserve">
+  <data name="Team_search_isn_t_available_right_now_Add_the_team_s_number" xml:space="preserve">
     <value>Поиск команд сейчас недоступен. Добавьте номер команды, например «Название #123», или попробуйте позже.</value>
   </data>
-  <data name="No {0} team called &quot;{1}&quot; was found. Check the spelling, or add the team's number like &quot;{1} #123&quot;." xml:space="preserve">
+  <data name="No_Arg0_team_called_Arg1_was_found_Check_the_spelling_or_add" xml:space="preserve">
     <value>Команда {0} с названием «{1}» не найдена. Проверьте написание или добавьте номер команды, например «{1} #123».</value>
   </data>
-  <data name="Several {0} teams match &quot;{1}&quot;: {2}. Pick one from the search, or add its number like &quot;{1} #123&quot;." xml:space="preserve">
+  <data name="Several_Arg0_teams_match_Arg1_Arg2_Pick_one_from_the_search_or" xml:space="preserve">
     <value>Названию «{1}» соответствуют несколько команд {0}: {2}. Выберите нужную в поиске или добавьте её номер, например «{1} #123».</value>
   </data>
-  <data name="Find a member" xml:space="preserve">
+  <data name="Find_a_member" xml:space="preserve">
     <value>Найти участника</value>
   </data>
-  <data name="No members match." xml:space="preserve">
+  <data name="No_members_match" xml:space="preserve">
     <value>Нет подходящих участников.</value>
   </data>
-  <data name="Add a range: pick From and Until. 00:00 to 00:00 means all day. Set the hour to -- to remove a range." xml:space="preserve">
+  <data name="Add_a_range_pick_From_and_Until_00_00_to_00_00_2" xml:space="preserve">
     <value>Добавьте промежуток: выберите «С» и «До». 00:00–00:00 означает весь день. Чтобы удалить промежуток, поставьте час --.</value>
   </data>
   <data name="Events" xml:space="preserve">
     <value>События</value>
   </data>
-  <data name="Sessions planned for this group: pending until the organizer confirms." xml:space="preserve">
+  <data name="Sessions_planned_for_this_group_pending_until_the_organizer_confirms" xml:space="preserve">
     <value>Запланированные встречи группы. Чтобы встреча состоялась, организатор должен её подтвердить.</value>
   </data>
-  <data name="Plan an event" xml:space="preserve">
+  <data name="Plan_an_event" xml:space="preserve">
     <value>Запланировать событие</value>
   </data>
-  <data name="No events planned for this group yet." xml:space="preserve">
+  <data name="No_events_planned_for_this_group_yet" xml:space="preserve">
     <value>Для этой группы пока нет событий.</value>
   </data>
-  <data name="My events" xml:space="preserve">
+  <data name="My_events" xml:space="preserve">
     <value>Мои события</value>
   </data>
-  <data name="Dates you accepted. Pending plans may still change; confirmed ones are on." xml:space="preserve">
+  <data name="Dates_you_accepted_Pending_plans_may_still_change_confirmed_ones_are_on" xml:space="preserve">
     <value>События, в которых вы согласились участвовать. Организатор ещё может изменить предварительные планы или подтвердить, что событие состоится.</value>
   </data>
-  <data name="{0} invitations waiting" xml:space="preserve">
+  <data name="Arg0_invitations_waiting" xml:space="preserve">
     <value>Приглашения без ответа: {0}</value>
   </data>
-  <data name="All events" xml:space="preserve">
+  <data name="All_events" xml:space="preserve">
     <value>Все события</value>
   </data>
-  <data name="Nothing accepted yet." xml:space="preserve">
+  <data name="Nothing_accepted_yet" xml:space="preserve">
     <value>Вы ещё не согласились участвовать ни в одном событии.</value>
   </data>
-  <data name="Plan a session, invite people, then confirm when enough say yes." xml:space="preserve">
+  <data name="Plan_a_session_invite_people_then_confirm_when_enough_say_yes" xml:space="preserve">
     <value>Запланируйте встречу и пригласите участников. Когда соберётся достаточно желающих, подтвердите её.</value>
   </data>
-  <data name="New event" xml:space="preserve">
+  <data name="New_event" xml:space="preserve">
     <value>Новое событие</value>
   </data>
   <data name="Invitations" xml:space="preserve">
     <value>Приглашения</value>
   </data>
-  <data name="Dates waiting for your answer. Each date of a repeating event is answered on its own." xml:space="preserve">
+  <data name="Dates_waiting_for_your_answer_Each_date_of_a_repeating_event_is" xml:space="preserve">
     <value>Приглашения, на которые вы ещё не ответили. Для повторяющихся событий подтверждайте участие на каждую дату отдельно.</value>
   </data>
-  <data name="{0} waiting" xml:space="preserve">
+  <data name="Arg0_waiting" xml:space="preserve">
     <value>Ждёт: {0}</value>
   </data>
-  <data name="No invitations right now." xml:space="preserve">
+  <data name="No_invitations_right_now" xml:space="preserve">
     <value>Сейчас приглашений нет.</value>
   </data>
-  <data name="Nothing planned yet. Accept an invitation and it shows up here and on your availability." xml:space="preserve">
+  <data name="Nothing_planned_yet_Accept_an_invitation_and_it_shows_up_here_and" xml:space="preserve">
     <value>Пока планов нет. Примите приглашение, и событие появится здесь и в вашем расписании.</value>
   </data>
-  <data name="Organized by you" xml:space="preserve">
+  <data name="Organized_by_you" xml:space="preserve">
     <value>Вы организуете</value>
   </data>
-  <data name="The next date of each event you organize, with who's coming." xml:space="preserve">
+  <data name="The_next_date_of_each_event_you_organize_with_who_s_coming" xml:space="preserve">
     <value>Ближайшая дата каждого вашего события и кто придёт.</value>
   </data>
-  <data name="You haven't planned any events. Start one for a group, or pick people yourself." xml:space="preserve">
+  <data name="You_haven_t_planned_any_events_Start_one_for_a_group_or" xml:space="preserve">
     <value>Вы ещё не планировали событий. Создайте событие для группы или выберите людей сами.</value>
   </data>
   <data name="Once" xml:space="preserve">
@@ -1460,97 +1515,97 @@
   <data name="Daily" xml:space="preserve">
     <value>Ежедневно</value>
   </data>
-  <data name="Nothing is sent until you create it. Invited people can accept or decline in Discord or here." xml:space="preserve">
+  <data name="Nothing_is_sent_until_you_create_it_Invited_people_can_accept_or" xml:space="preserve">
     <value>Ничего не отправляется, пока вы не создадите событие. Приглашённые могут принять или отклонить в Discord или здесь.</value>
   </data>
-  <data name="Event not created" xml:space="preserve">
+  <data name="Event_not_created" xml:space="preserve">
     <value>Событие не создано</value>
   </data>
-  <data name="Once, {0}, {1}" xml:space="preserve">
+  <data name="Once_Arg0_Arg1" xml:space="preserve">
     <value>Один раз, {0}, {1}</value>
   </data>
-  <data name="Every day, {0}, until {1}" xml:space="preserve">
+  <data name="Every_day_Arg0_until_Arg1" xml:space="preserve">
     <value>Каждый день, {0}, до {1}</value>
   </data>
-  <data name="Every {0}, {1}, until {2}" xml:space="preserve">
+  <data name="Every_Arg0_Arg1_until_Arg2" xml:space="preserve">
     <value>Каждую неделю: {0}, {1}, до {2}</value>
   </data>
-  <data name="{0} and {1}" xml:space="preserve">
+  <data name="Arg0_and_Arg1" xml:space="preserve">
     <value>{0} и {1}</value>
   </data>
-  <data name="{0} dates · each date is answered and confirmed on its own" xml:space="preserve">
+  <data name="Arg0_dates_each_date_is_answered_and_confirmed_on_its_own" xml:space="preserve">
     <value>Дат: {0} · на каждую отвечают и подтверждают отдельно</value>
   </data>
-  <data name="Pick at least one weekday." xml:space="preserve">
+  <data name="Pick_at_least_one_weekday" xml:space="preserve">
     <value>Выберите хотя бы один день недели.</value>
   </data>
-  <data name="Pick the last date of the series." xml:space="preserve">
+  <data name="Pick_the_last_date_of_the_series" xml:space="preserve">
     <value>Выберите последнюю дату серии.</value>
   </data>
-  <data name="ends the next day" xml:space="preserve">
+  <data name="Ends_the_next_day" xml:space="preserve">
     <value>заканчивается на следующий день</value>
   </data>
-  <data name="Create and invite {0}" xml:space="preserve">
+  <data name="Create_and_invite_Arg0" xml:space="preserve">
     <value>Создать и пригласить ({0})</value>
   </data>
-  <data name="Create event" xml:space="preserve">
+  <data name="Create_event" xml:space="preserve">
     <value>Создать событие</value>
   </data>
-  <data name="Who is invited" xml:space="preserve">
+  <data name="Who_is_invited" xml:space="preserve">
     <value>Кого пригласить</value>
   </data>
-  <data name="A group" xml:space="preserve">
+  <data name="A_group" xml:space="preserve">
     <value>Группу</value>
   </data>
-  <data name="People I pick" xml:space="preserve">
+  <data name="People_I_pick" xml:space="preserve">
     <value>Выбранных людей</value>
   </data>
   <data name="Group" xml:space="preserve">
     <value>Группа</value>
   </data>
-  <data name="You aren't in any group yet. Pick people instead." xml:space="preserve">
+  <data name="You_aren_t_in_any_group_yet_Pick_people_instead" xml:space="preserve">
     <value>Вы пока не состоите ни в одной группе. Выберите людей.</value>
   </data>
-  <data name="Find a group" xml:space="preserve">
+  <data name="Find_a_group" xml:space="preserve">
     <value>Найти группу</value>
   </data>
-  <data name="No groups match." xml:space="preserve">
+  <data name="No_groups_match" xml:space="preserve">
     <value>Нет подходящих групп.</value>
   </data>
-  <data name="Every other member of the group is invited. People who join later aren't added." xml:space="preserve">
+  <data name="Every_other_member_of_the_group_is_invited_People_who_join_later" xml:space="preserve">
     <value>Приглашаются все остальные участники группы. Присоединившиеся позже не добавляются.</value>
   </data>
   <data name="People" xml:space="preserve">
     <value>Люди</value>
   </data>
-  <data name="Discord didn't return the member list. Try again in a moment." xml:space="preserve">
+  <data name="Discord_didn_t_return_the_member_list_Try_again_in_a_moment" xml:space="preserve">
     <value>Discord не вернул список участников. Попробуйте чуть позже.</value>
   </data>
-  <data name="Invite exactly who you want, up to 50 people." xml:space="preserve">
+  <data name="Invite_exactly_who_you_want_up_to_50_people" xml:space="preserve">
     <value>Пригласите именно тех, кого хотите, до 50 человек.</value>
   </data>
   <data name="Title" xml:space="preserve">
     <value>Название</value>
   </data>
-  <data name="Thursday scrims" xml:space="preserve">
+  <data name="Thursday_scrims" xml:space="preserve">
     <value>Четверговые скримы</value>
   </data>
   <data name="Date" xml:space="preserve">
     <value>Дата</value>
   </data>
-  <data name="Leave empty for the server time zone. The start time stays the same local time when clocks change." xml:space="preserve">
+  <data name="Leave_empty_for_the_server_time_zone_The_start_time_stays_the" xml:space="preserve">
     <value>Оставьте пустым для часового пояса сервера. При переводе часов местное время начала не меняется.</value>
   </data>
   <data name="Repeat" xml:space="preserve">
     <value>Повторение</value>
   </data>
-  <data name="On these days" xml:space="preserve">
+  <data name="On_these_days" xml:space="preserve">
     <value>В эти дни</value>
   </data>
-  <data name="Last date" xml:space="preserve">
+  <data name="Last_date" xml:space="preserve">
     <value>Последняя дата</value>
   </data>
-  <data name="Up to 26 weeks after the first date." xml:space="preserve">
+  <data name="Up_to_26_weeks_after_the_first_date" xml:space="preserve">
     <value>До 26 недель после первой даты.</value>
   </data>
   <data name="Confirmed" xml:space="preserve">
@@ -1562,64 +1617,64 @@
   <data name="Pending" xml:space="preserve">
     <value>Ожидает подтверждения</value>
   </data>
-  <data name="Cancel this date" xml:space="preserve">
+  <data name="Cancel_this_date" xml:space="preserve">
     <value>Отменить на эту дату</value>
   </data>
-  <data name="Cancel event" xml:space="preserve">
+  <data name="Cancel_event" xml:space="preserve">
     <value>Отменить событие</value>
   </data>
-  <data name="Cancel {0} on {1} only? The other dates stay as they are. People who were expecting it get a Discord message." xml:space="preserve">
+  <data name="Cancel_Arg0_on_Arg1_only_The_other_dates_stay_as_they_are" xml:space="preserve">
     <value>Отменить «{0}» только {1}? Остальные даты останутся. Те, кто ждал, получат сообщение в Discord.</value>
   </data>
-  <data name="Cancel {0}? People who were expecting it get a Discord message." xml:space="preserve">
+  <data name="Cancel_Arg0_People_who_were_expecting_it_get_a_Discord_message" xml:space="preserve">
     <value>Отменить «{0}»? Те, кто ждал, получат сообщение в Discord.</value>
   </data>
-  <data name="Keep it" xml:space="preserve">
+  <data name="Keep_it" xml:space="preserve">
     <value>Оставить</value>
   </data>
-  <data name="Cancel the whole series" xml:space="preserve">
+  <data name="Cancel_the_whole_series" xml:space="preserve">
     <value>Отменить всю серию</value>
   </data>
-  <data name="Cancel every remaining date of {0}? Past dates stay in history. Invitees who were expecting a date get one Discord message." xml:space="preserve">
+  <data name="Cancel_every_remaining_date_of_Arg0_Past_dates_stay_in_history_Invitees" xml:space="preserve">
     <value>Отменить все оставшиеся даты «{0}»? Прошедшие даты останутся в истории. Приглашённые, ждавшие дату, получат одно сообщение в Discord.</value>
   </data>
-  <data name="Cancel series" xml:space="preserve">
+  <data name="Cancel_series" xml:space="preserve">
     <value>Отменить серию</value>
   </data>
-  <data name="{0} withdrew after you confirmed" xml:space="preserve">
+  <data name="Arg0_withdrew_after_you_confirmed" xml:space="preserve">
     <value>{0}: отказ после вашего подтверждения</value>
   </data>
-  <data name="The date is still confirmed. You decide whether it goes ahead or gets canceled." xml:space="preserve">
+  <data name="The_date_is_still_confirmed_You_decide_whether_it_goes_ahead_or" xml:space="preserve">
     <value>Событие на эту дату остаётся подтверждённым. Вы решаете, проводить его или отменить.</value>
   </data>
-  <data name="Invitations not delivered: {0}" xml:space="preserve">
+  <data name="Invitations_not_delivered_Arg0" xml:space="preserve">
     <value>Не доставлено приглашений: {0}</value>
   </data>
-  <data name="Their Discord direct messages are closed. They can still answer here on the dashboard." xml:space="preserve">
+  <data name="Their_Discord_direct_messages_are_closed_They_can_still_answer_here_on" xml:space="preserve">
     <value>У них закрыты личные сообщения в Discord. Они всё равно могут ответить здесь, на панели.</value>
   </data>
-  <data name="{0} · organized by {1}" xml:space="preserve">
+  <data name="Arg0_organized_by_Arg1" xml:space="preserve">
     <value>{0} · организатор: {1}</value>
   </data>
-  <data name="Organized by {0}" xml:space="preserve">
+  <data name="Organized_by_Arg0" xml:space="preserve">
     <value>Организатор: {0}</value>
   </data>
-  <data name="Your answer" xml:space="preserve">
+  <data name="Your_answer" xml:space="preserve">
     <value>Ваш ответ</value>
   </data>
-  <data name="You're going. This date is confirmed." xml:space="preserve">
+  <data name="You_re_going_This_date_is_confirmed" xml:space="preserve">
     <value>Вы участвуете. Организатор подтвердил событие на эту дату.</value>
   </data>
-  <data name="You accepted. The organizer hasn't confirmed this date yet." xml:space="preserve">
+  <data name="You_accepted_The_organizer_hasn_t_confirmed_this_date_yet" xml:space="preserve">
     <value>Вы согласились участвовать. Ожидаем подтверждения организатора на эту дату.</value>
   </data>
-  <data name="You withdrew. The organizer can see that you can't make it." xml:space="preserve">
+  <data name="You_withdrew_The_organizer_can_see_that_you_can_t_make_it" xml:space="preserve">
     <value>Вы отказались. Организатор видит, что вы не сможете.</value>
   </data>
-  <data name="You declined this date." xml:space="preserve">
+  <data name="You_declined_this_date" xml:space="preserve">
     <value>Вы отказались от участия на эту дату.</value>
   </data>
-  <data name="You haven't answered yet." xml:space="preserve">
+  <data name="You_haven_t_answered_yet" xml:space="preserve">
     <value>Вы ещё не ответили.</value>
   </data>
   <data name="Withdraw" xml:space="preserve">
@@ -1628,7 +1683,7 @@
   <data name="Responses" xml:space="preserve">
     <value>Ответы</value>
   </data>
-  <data name="{0} invited" xml:space="preserve">
+  <data name="Arg0_invited" xml:space="preserve">
     <value>Приглашено: {0}</value>
   </data>
   <data name="Accepted" xml:space="preserve">
@@ -1637,187 +1692,187 @@
   <data name="Declined" xml:space="preserve">
     <value>Отклонили</value>
   </data>
-  <data name="No reply yet" xml:space="preserve">
+  <data name="No_reply_yet" xml:space="preserve">
     <value>Ещё не ответили</value>
   </data>
-  <data name="Withdrew after accepting" xml:space="preserve">
+  <data name="Withdrew_after_accepting" xml:space="preserve">
     <value>Отказался после согласия</value>
   </data>
-  <data name="Discord message couldn't be sent; can answer here" xml:space="preserve">
+  <data name="Discord_message_couldn_t_be_sent_can_answer_here" xml:space="preserve">
     <value>Сообщение в Discord не отправлено; может ответить здесь</value>
   </data>
-  <data name="No reply" xml:space="preserve">
+  <data name="No_reply" xml:space="preserve">
     <value>Нет ответа</value>
   </data>
-  <data name="Confirm when enough people have accepted. Everyone who accepted gets a Discord message, and the date shows on their availability." xml:space="preserve">
+  <data name="Confirm_when_enough_people_have_accepted_Everyone_who_accepted_gets_a_Discord" xml:space="preserve">
     <value>Подтвердите событие, когда соберётся достаточно участников. Все, кто согласился, получат сообщение в Discord, а событие появится в их расписании.</value>
   </data>
-  <data name="Confirm with {0} of {1} going" xml:space="preserve">
+  <data name="Confirm_with_Arg0_of_Arg1_going" xml:space="preserve">
     <value>Подтвердить событие · участников: {0} из {1}</value>
   </data>
-  <data name="Confirmed. {0} of {1} going right now." xml:space="preserve">
+  <data name="Confirmed_Arg0_of_Arg1_going_right_now" xml:space="preserve">
     <value>Событие подтверждено. Сейчас участвуют {0} из {1}.</value>
   </data>
-  <data name="Dates in this series" xml:space="preserve">
+  <data name="Dates_in_this_series" xml:space="preserve">
     <value>Даты этой серии</value>
   </data>
-  <data name="Answers and confirmation are per date." xml:space="preserve">
+  <data name="Answers_and_confirmation_are_per_date" xml:space="preserve">
     <value>Ответы и подтверждение — для каждой даты отдельно.</value>
   </data>
-  <data name="{0} going" xml:space="preserve">
+  <data name="Arg0_going" xml:space="preserve">
     <value>Участников: {0}</value>
   </data>
   <data name="Repeats" xml:space="preserve">
     <value>Повторяется</value>
   </data>
-  <data name="by {0}" xml:space="preserve">
+  <data name="By_Arg0" xml:space="preserve">
     <value>от {0}</value>
   </data>
-  <data name="{0} declined" xml:space="preserve">
+  <data name="Arg0_declined" xml:space="preserve">
     <value>Отклонили: {0}</value>
   </data>
-  <data name="{0} no reply" xml:space="preserve">
+  <data name="Arg0_no_reply" xml:space="preserve">
     <value>Без ответа: {0}</value>
   </data>
-  <data name="You had accepted" xml:space="preserve">
+  <data name="You_had_accepted" xml:space="preserve">
     <value>Вы согласились участвовать</value>
   </data>
-  <data name="You're going" xml:space="preserve">
+  <data name="You_re_going" xml:space="preserve">
     <value>Вы участвуете</value>
   </data>
-  <data name="You withdrew" xml:space="preserve">
+  <data name="You_withdrew" xml:space="preserve">
     <value>Вы отказались</value>
   </data>
-  <data name="Withdraw from {0} on {1}" xml:space="preserve">
+  <data name="Withdraw_from_Arg0_on_Arg1" xml:space="preserve">
     <value>Отказаться от «{0}», {1}</value>
   </data>
-  <data name="Accept {0} on {1}" xml:space="preserve">
+  <data name="Accept_Arg0_on_Arg1" xml:space="preserve">
     <value>Принять «{0}», {1}</value>
   </data>
-  <data name="Decline {0} on {1}" xml:space="preserve">
+  <data name="Decline_Arg0_on_Arg1" xml:space="preserve">
     <value>Отклонить «{0}», {1}</value>
   </data>
   <data name="Manage" xml:space="preserve">
     <value>Управлять</value>
   </data>
-  <data name="Pick the date of the first event." xml:space="preserve">
+  <data name="Pick_the_date_of_the_first_event" xml:space="preserve">
     <value>Выберите дату первого события.</value>
   </data>
-  <data name="Choose a group, or pick people instead." xml:space="preserve">
+  <data name="Choose_a_group_or_pick_people_instead" xml:space="preserve">
     <value>Выберите группу или людей.</value>
   </data>
-  <data name="Event created" xml:space="preserve">
+  <data name="Event_created" xml:space="preserve">
     <value>Событие создано</value>
   </data>
-  <data name="{0} invited. Invitations go out by Discord message a few days before each date, and are here on the dashboard right away." xml:space="preserve">
+  <data name="Arg0_invited_Invitations_go_out_by_Discord_message_a_few_days_before" xml:space="preserve">
     <value>Приглашено: {0}. Приглашения приходят в Discord за несколько дней до каждой даты, а на панели — сразу.</value>
   </data>
-  <data name="You declined" xml:space="preserve">
+  <data name="You_declined" xml:space="preserve">
     <value>Вы отклонили</value>
   </data>
-  <data name="The organizer can see that you can't make it." xml:space="preserve">
+  <data name="The_organizer_can_see_that_you_can_t_make_it" xml:space="preserve">
     <value>Организатор видит, что вы не сможете.</value>
   </data>
-  <data name="Date confirmed" xml:space="preserve">
+  <data name="Date_confirmed" xml:space="preserve">
     <value>Событие на эту дату подтверждено</value>
   </data>
-  <data name="{0} going. Everyone who accepted gets a Discord message." xml:space="preserve">
+  <data name="Arg0_going_Everyone_who_accepted_gets_a_Discord_message" xml:space="preserve">
     <value>Идут: {0}. Все, кто принял, получат сообщение в Discord.</value>
   </data>
-  <data name="Series canceled" xml:space="preserve">
+  <data name="Series_canceled" xml:space="preserve">
     <value>Серия отменена</value>
   </data>
-  <data name="Date canceled" xml:space="preserve">
+  <data name="Date_canceled" xml:space="preserve">
     <value>Событие на эту дату отменено</value>
   </data>
-  <data name="{0} dates canceled. People who were expecting them get a Discord message." xml:space="preserve">
+  <data name="Arg0_dates_canceled_People_who_were_expecting_them_get_a_Discord_message" xml:space="preserve">
     <value>Отменено дат: {0}. Те, кто их ждал, получат сообщение в Discord.</value>
   </data>
-  <data name="That didn't work" xml:space="preserve">
+  <data name="That_didn_t_work" xml:space="preserve">
     <value>Не получилось</value>
   </data>
-  <data name="a group" xml:space="preserve">
+  <data name="A_group_2" xml:space="preserve">
     <value>группа</value>
   </data>
-  <data name="Event not available" xml:space="preserve">
+  <data name="Event_not_available" xml:space="preserve">
     <value>Событие недоступно</value>
   </data>
-  <data name="That event doesn't exist or you aren't invited to it." xml:space="preserve">
+  <data name="That_event_doesn_t_exist_or_you_aren_t_invited_to_it" xml:space="preserve">
     <value>Это событие не существует или вас на него не пригласили.</value>
   </data>
-  <data name="Back to events" xml:space="preserve">
+  <data name="Back_to_events" xml:space="preserve">
     <value>К событиям</value>
   </data>
-  <data name="A repeating event can run for up to 26 weeks." xml:space="preserve">
+  <data name="A_repeating_event_can_run_for_up_to_26_weeks" xml:space="preserve">
     <value>Повторяющееся событие может длиться до 26 недель.</value>
   </data>
-  <data name="Choose a time zone like Europe/Kyiv." xml:space="preserve">
+  <data name="Choose_a_time_zone_like_Europe_Kyiv" xml:space="preserve">
     <value>Выберите часовой пояс, например Europe/Kyiv.</value>
   </data>
-  <data name="Choose an end date on or after the first date." xml:space="preserve">
+  <data name="Choose_an_end_date_on_or_after_the_first_date" xml:space="preserve">
     <value>Выберите конечную дату не раньше первой.</value>
   </data>
-  <data name="Give the event a title of up to 80 characters." xml:space="preserve">
+  <data name="Give_the_event_a_title_of_up_to_80_characters" xml:space="preserve">
     <value>Дайте событию название до 80 символов.</value>
   </data>
-  <data name="Invite up to 50 people." xml:space="preserve">
+  <data name="Invite_up_to_50_people" xml:space="preserve">
     <value>Пригласите до 50 человек.</value>
   </data>
-  <data name="Keep the description under 1000 characters." xml:space="preserve">
+  <data name="Keep_the_description_under_1000_characters" xml:space="preserve">
     <value>Описание должно быть короче 1000 символов.</value>
   </data>
-  <data name="Only members of the group can plan an event for it." xml:space="preserve">
+  <data name="Only_members_of_the_group_can_plan_an_event_for_it" xml:space="preserve">
     <value>Планировать события группы могут только её участники.</value>
   </data>
-  <data name="Only the organizer can do that." xml:space="preserve">
+  <data name="Only_the_organizer_can_do_that" xml:space="preserve">
     <value>Это может сделать только организатор.</value>
   </data>
-  <data name="Pick at least one weekday for a weekly event." xml:space="preserve">
+  <data name="Pick_at_least_one_weekday_for_a_weekly_event" xml:space="preserve">
     <value>Для еженедельного события выберите хотя бы один день.</value>
   </data>
-  <data name="That date isn't part of this event." xml:space="preserve">
+  <data name="That_date_isn_t_part_of_this_event" xml:space="preserve">
     <value>Эта дата не относится к событию.</value>
   </data>
-  <data name="That event doesn't exist." xml:space="preserve">
+  <data name="That_event_doesn_t_exist" xml:space="preserve">
     <value>Такого события нет.</value>
   </data>
-  <data name="That group no longer exists." xml:space="preserve">
+  <data name="That_group_no_longer_exists" xml:space="preserve">
     <value>Этой группы больше нет.</value>
   </data>
-  <data name="That schedule has too many dates. Use fewer weekdays or an earlier end date." xml:space="preserve">
+  <data name="That_schedule_has_too_many_dates_Use_fewer_weekdays_or_an_earlier" xml:space="preserve">
     <value>В расписании слишком много дат. Выберите меньше дней или более раннюю конечную дату.</value>
   </data>
-  <data name="The end time must differ from the start time." xml:space="preserve">
+  <data name="The_end_time_must_differ_from_the_start_time" xml:space="preserve">
     <value>Время окончания должно отличаться от времени начала.</value>
   </data>
-  <data name="This date has already started." xml:space="preserve">
+  <data name="This_date_has_already_started" xml:space="preserve">
     <value>Событие на эту дату уже началось.</value>
   </data>
-  <data name="This date is over." xml:space="preserve">
+  <data name="This_date_is_over" xml:space="preserve">
     <value>Событие на эту дату уже завершилось.</value>
   </data>
-  <data name="This date was canceled." xml:space="preserve">
+  <data name="This_date_was_canceled" xml:space="preserve">
     <value>Событие на эту дату отменено.</value>
   </data>
-  <data name="This event isn't available to you." xml:space="preserve">
+  <data name="This_event_isn_t_available_to_you" xml:space="preserve">
     <value>Это событие вам недоступно.</value>
   </data>
-  <data name="Use times like 19:30." xml:space="preserve">
+  <data name="Use_times_like_19_30" xml:space="preserve">
     <value>Указывайте время в формате 19:30.</value>
   </data>
-  <data name="You aren't invited to this event." xml:space="preserve">
+  <data name="You_aren_t_invited_to_this_event" xml:space="preserve">
     <value>Вас не пригласили на это событие.</value>
   </data>
-  <data name="Invite at least one person." xml:space="preserve">
+  <data name="Invite_at_least_one_person" xml:space="preserve">
     <value>Пригласите хотя бы одного человека.</value>
   </data>
-  <data name="The group has no other members to invite yet." xml:space="preserve">
+  <data name="The_group_has_no_other_members_to_invite_yet" xml:space="preserve">
     <value>В группе пока нет других участников для приглашения.</value>
   </data>
-  <data name="That time has already passed. Pick a time in the future." xml:space="preserve">
+  <data name="That_time_has_already_passed_Pick_a_time_in_the_future" xml:space="preserve">
     <value>Это время уже прошло. Выберите время в будущем.</value>
   </data>
-  <data name="No date of this schedule is in the future. Check the days and dates." xml:space="preserve">
+  <data name="No_date_of_this_schedule_is_in_the_future_Check_the_days" xml:space="preserve">
     <value>Ни одна дата этого расписания не в будущем. Проверьте дни и даты.</value>
   </data>
 </root>

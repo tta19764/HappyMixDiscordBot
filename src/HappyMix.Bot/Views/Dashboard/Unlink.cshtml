@@ -1,9 +1,9 @@
 @model UnlinkPage
 @{
     Layout = "_DashboardLayout";
-    ViewData["Title"] = T["Unlink account"];
+    ViewData["Title"] = T["Unlink_account"];
     ViewData["NavGuildName"] = Model.GuildName;
-    string Localize(string key) => T[key];
+    string Localize(string key) => T.Message(key);
     var preview = Model.Preview;
     string alternateName = Model.Names.Name(preview.AlternateId, Localize);
     string primaryName = Model.Names.Name(preview.PrimaryId, Localize);
@@ -12,31 +12,31 @@
 
 <nav class="hm-crumbs" aria-label="@T["Breadcrumb"]">
     <a href="/">@T["Servers"]</a><span aria-hidden="true">/</span>
-    <a href="/links/@Model.GuildId">@T["Linked accounts"]</a><span aria-hidden="true">/</span>
+    <a href="/links/@Model.GuildId">@T["Linked_accounts"]</a><span aria-hidden="true">/</span>
     <span>@T["Unlink"]</span>
 </nav>
 <div class="hm-page-head">
     <div>
-        <h1>@T["Unlink {0} from {1}?", alternateName, primaryName]</h1>
-        <p>@T["Here's what changes. Nothing happens until you confirm."]</p>
+        <h1>@T["Unlink_Arg0_from_Arg1", alternateName, primaryName]</h1>
+        <p>@T["Here_s_what_changes_Nothing_happens_until_you_confirm"]</p>
     </div>
 </div>
 
 <form class="hm-card hm-stack" style="max-width: 46rem" method="post" action="/links/@Model.GuildId/unlink/@preview.AlternateId" asp-antiforgery="false">
     @Html.AntiForgeryToken()
     <dl class="hm-impact">
-        <dt>@T["{0} keeps these groups (its own memberships)", alternateName]</dt>
+        <dt>@T["Arg0_keeps_these_groups_its_own_memberships", alternateName]</dt>
         <dd>@List(preview.AlternateKeeps)</dd>
-        <dt>@T["{0} loses access to these groups and their Discord roles", alternateName]</dt>
+        <dt>@T["Arg0_loses_access_to_these_groups_and_their_Discord_roles", alternateName]</dt>
         <dd>@List(preview.AlternateLoses)</dd>
-        <dt>@T["{0} still organizes", alternateName]</dt>
+        <dt>@T["Arg0_still_organizes", alternateName]</dt>
         <dd>@List(preview.AlternateStillOrganizes)</dd>
         <dt>@T["Schedule"]</dt>
-        <dd>@T["{0} keeps the shared schedule. {1} gets back its pre-link schedule: {2} upcoming windows and {3} weekly days.", primaryName, alternateName, preview.WindowsRestored, preview.WeeklyDaysRestored]</dd>
+        <dd>@T["Arg0_keeps_the_shared_schedule_Arg1_gets_back_its_pre_link_schedule", primaryName, alternateName, preview.WindowsRestored, preview.WeeklyDaysRestored]</dd>
     </dl>
-    <p class="hm-help">@T["Memberships and invitations accepted while linked stay with {0}. Unrelated Discord roles are not touched.", primaryName]</p>
+    <p class="hm-help">@T["Memberships_and_invitations_accepted_while_linked_stay_with_Arg0_Unrelated_Discord_roles", primaryName]</p>
     <div class="hm-row" style="justify-content: flex-end">
         <a class="hm-btn hm-btn--ghost" href="/links/@Model.GuildId">@T["Cancel"]</a>
-        <button class="hm-btn hm-btn--danger">@DashboardIcons.Render("trash")@T["Unlink {0}", alternateName]</button>
+        <button class="hm-btn hm-btn--danger">@DashboardIcons.Render("trash")@T["Unlink_Arg0", alternateName]</button>
     </div>
 </form>

@@ -1,0 +1,182 @@
+@using HappyMix.Application.Abstractions.Events
+@model EventDetailPage
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = Model.Title;
+    ViewData["NavGuildName"] = Model.GuildName;
+    var occurrence = Model.Occurrence;
+    string date = occurrence.Date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+    string baseUrl = $"/events/{Model.GuildId}/{Model.View.Details.Event.Id}";
+    string self = $"{baseUrl}?date={date}";
+    string statusKey = occurrence.Status switch { OccurrenceStatus.Confirmed => "confirmed", OccurrenceStatus.Canceled => "canceled", _ => "pending" };
+    string statusLabel = occurrence.Status switch { OccurrenceStatus.Confirmed => T["Confirmed"], OccurrenceStatus.Canceled => T["Canceled"], _ => T["Pending"] };
+    var counts = Model.Counts;
+    int invited = counts.Accepted + counts.Declined + counts.Waiting;
+    ViewData["GuildId"] = Model.GuildId;
+    ViewData["ReturnUrl"] = self;
+    var cancelDate = new ConfirmModel(Model.Repeats ? T["Cancel_this_date"] : T["Cancel_event"],
+        Model.Repeats ? T["Cancel_Arg0_on_Arg1_only_The_other_dates_stay_as_they_are", Model.Title, Model.When]
+                      : T["Cancel_Arg0_People_who_were_expecting_it_get_a_Discord_message", Model.Title],
+        $"{baseUrl}/cancel", Model.Repeats ? T["Cancel_this_date"] : T["Cancel_event"], Icon: "trash",
+        Fields: new Dictionary<string, string> { ["date"] = date, ["scope"] = "date", ["returnUrl"] = self }, DismissLabel: T["Keep_it"]);
+    var cancelSeries = new ConfirmModel(T["Cancel_the_whole_series"],
+        T["Cancel_every_remaining_date_of_Arg0_Past_dates_stay_in_history_Invitees", Model.Title],
+        $"{baseUrl}/cancel", T["Cancel_series"], Icon: "trash",
+        Fields: new Dictionary<string, string> { ["date"] = date, ["scope"] = "series", ["returnUrl"] = self }, DismissLabel: T["Keep_it"]);
+    var withdrawalBanner = new BannerModel("warn", T["Arg0_withdrew_after_you_confirmed", EventText.Join(Model.RecentWithdrawals, T)],
+        T["The_date_is_still_confirmed_You_decide_whether_it_goes_ahead_or"]);
+    var dmBanner = new BannerModel("warn", T["Invitations_not_delivered_Arg0", Model.FailedDms],
+        T["Their_Discord_direct_messages_are_closed_They_can_still_answer_here_on"]);
+}
+
+<nav class="hm-crumbs" aria-label="@T["Breadcrumb"]">
+    <a href="/">@T["Servers"]</a><span aria-hidden="true">/</span>
+    <a href="/events/@Model.GuildId">@T["Events"]</a><span aria-hidden="true">/</span>
+    <span>@Model.Title</span>
+</nav>
+<div class="hm-page-head">
+    <div>
+        <p class="hm-subtle">@(Model.GroupName is { } group ? T["Arg0_organized_by_Arg1", group, Model.Organizer] : T["Organized_by_Arg0", Model.Organizer])</p>
+        <h1>@Model.Title <span class="hm-badge hm-event__status hm-event__status--@statusKey">@statusLabel</span></h1>
+        <p>@Model.When · @Model.View.Details.Event.TimeZone</p>
+        <p class="hm-subtle">@Model.Schedule</p>
+    </div>
+    <a class="hm-btn" href="/events/@Model.GuildId">@DashboardIcons.Render("back")@T["All_events"]</a>
+</div>
+
+@if (Model.Banner is { } banner)
+{
+    <div style="margin-bottom: var(--hm-space-4)"><partial name="_Banner" model="banner" /></div>
+}
+@if (Model.View.IsOrganizer && Model.RecentWithdrawals.Count > 0 && occurrence.Status == OccurrenceStatus.Confirmed)
+{
+    <div style="margin-bottom: var(--hm-space-4)">
+        <partial name="_Banner" model="withdrawalBanner" />
+    </div>
+}
+@if (Model.FailedDms > 0)
+{
+    <div style="margin-bottom: var(--hm-space-4)">
+        <partial name="_Banner" model="dmBanner" />
+    </div>
+}
+
+<div class="hm-split">
+    <div class="hm-stack">
+        @if (Model.View.Details.Event.Description is { } description)
+        {
+            <section class="hm-card"><p style="white-space: pre-line">@description</p></section>
+        }
+
+        @if (Model.View.IsInvitee && occurrence.Status != OccurrenceStatus.Canceled && !Model.Started)
+        {
+            <section class="hm-card hm-stack hm-stack--sm" aria-labelledby="ev-answer">
+                <h2 id="ev-answer">@T["Your_answer"]</h2>
+                <p class="hm-muted">
+                    @(Model.MyAnswer switch
+                    {
+                        true => occurrence.Status == OccurrenceStatus.Confirmed ? T["You_re_going_This_date_is_confirmed"] : T["You_accepted_The_organizer_hasn_t_confirmed_this_date_yet"],
+                        false when Model.Withdrawn => T["You_withdrew_The_organizer_can_see_that_you_can_t_make_it"],
+                        false => T["You_declined_this_date"],
+                        _ => T["You_haven_t_answered_yet"]
+                    })
+                </p>
+                <form class="hm-row" method="post" action="@baseUrl/respond" asp-antiforgery="false">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="date" value="@date">
+                    <input type="hidden" name="returnUrl" value="@self">
+                    @if (Model.MyAnswer != true)
+                    {
+                        <button class="hm-btn hm-btn--primary" name="answer" value="accept">@DashboardIcons.Render("check")@T["Accept"]</button>
+                    }
+                    @if (Model.MyAnswer == true)
+                    {
+                        <button class="hm-btn" name="answer" value="decline">@T["Withdraw"]</button>
+                    }
+                    else if (Model.MyAnswer is null)
+                    {
+                        <button class="hm-btn" name="answer" value="decline">@T["Decline"]</button>
+                    }
+                </form>
+            </section>
+        }
+
+        <section class="hm-card" aria-labelledby="ev-responses">
+            <div class="hm-card__head"><div><h2 id="ev-responses">@T["Responses"]</h2><p>@T["Arg0_invited", invited]</p></div></div>
+            <div class="hm-event-tally">
+                <div class="hm-event-tally__item hm-event-tally__item--yes"><span>@T["Accepted"]</span><b>@counts.Accepted</b></div>
+                <div class="hm-event-tally__item hm-event-tally__item--no"><span>@T["Declined"]</span><b>@counts.Declined</b></div>
+                <div class="hm-event-tally__item"><span>@T["No_reply_yet"]</span><b>@counts.Waiting</b></div>
+            </div>
+            <ul class="hm-list">
+                @foreach (var row in Model.Responses)
+                {
+                    <li class="hm-list__item">
+                        <partial name="_Avatar" model="new AvatarModel(row.Person.Profile, row.Person.Name, true)" />
+                        <div class="hm-list__main">
+                            <p class="hm-list__title">@row.Person.Name</p>
+                            @if (row.Withdrawn)
+                            {
+                                <p class="hm-list__meta">@T["Withdrew_after_accepting"]</p>
+                            }
+                            else if (row.DmFailed && row.State == "waiting")
+                            {
+                                <p class="hm-list__meta">@T["Discord_message_couldn_t_be_sent_can_answer_here"]</p>
+                            }
+                        </div>
+                        <span class="hm-badge @(row.State switch { "accepted" => "hm-badge--mint", "declined" => "hm-badge--danger", _ => "" })">
+                            @(row.State switch { "accepted" => T["Accepted"], "declined" => T["Declined"], _ => T["No_reply"] })
+                        </span>
+                    </li>
+                }
+            </ul>
+        </section>
+    </div>
+
+    <aside class="hm-stack">
+        @if (Model.CanChange)
+        {
+            <section class="hm-card hm-stack hm-stack--sm" aria-labelledby="ev-organize">
+                <h2 id="ev-organize" style="font-size: var(--hm-fs-lg)">@T["Organizer"]</h2>
+                @if (occurrence.Status == OccurrenceStatus.Pending)
+                {
+                    <p class="hm-help">@T["Confirm_when_enough_people_have_accepted_Everyone_who_accepted_gets_a_Discord"]</p>
+                    <form method="post" action="@baseUrl/confirm" asp-antiforgery="false">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="date" value="@date">
+                        <input type="hidden" name="returnUrl" value="@self">
+                        <button class="hm-btn hm-btn--primary" style="width: 100%">@DashboardIcons.Render("check")@T["Confirm_with_Arg0_of_Arg1_going", counts.Accepted, invited]</button>
+                    </form>
+                }
+                else
+                {
+                    <p class="hm-help">@T["Confirmed_Arg0_of_Arg1_going_right_now", counts.Accepted, invited]</p>
+                }
+                <partial name="_Confirm" model="cancelDate" />
+            </section>
+        }
+        @if (Model.Repeats)
+        {
+            <section class="hm-card" aria-labelledby="ev-dates">
+                <div class="hm-card__head"><div><h2 id="ev-dates" style="font-size: var(--hm-fs-lg)">@T["Dates_in_this_series"]</h2><p>@T["Answers_and_confirmation_are_per_date"]</p></div></div>
+                <ul class="hm-events hm-events--compact">
+                    @foreach (var row in Model.Dates)
+                    {
+                        <li class="hm-event hm-event--@row.StatusKey @(row.Date == occurrence.Date ? "is-current" : "")">
+                            <span class="hm-event__date" aria-hidden="true"><small>@row.DayShort</small><b>@row.DayNumber</b></span>
+                            <div class="hm-event__main">
+                                <a class="hm-event__title" href="@row.Url" aria-current="@(row.Date == occurrence.Date ? "page" : null)">@row.When</a>
+                                <p class="hm-event__meta">@T["Arg0_going", row.Counts.Accepted]</p>
+                            </div>
+                            <span class="hm-badge hm-event__status hm-event__status--@row.StatusKey">@(row.StatusKey switch { "confirmed" => T["Confirmed"], "canceled" => T["Canceled"], _ => T["Pending"] })</span>
+                        </li>
+                    }
+                </ul>
+                @if (Model.View.IsOrganizer && !Model.SeriesCanceled)
+                {
+                    <div style="margin-top: var(--hm-space-3)"><partial name="_Confirm" model="cancelSeries" /></div>
+                }
+            </section>
+        }
+    </aside>
+</div>

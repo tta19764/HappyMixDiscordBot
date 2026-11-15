@@ -932,3 +932,77 @@ for (const editor of document.querySelectorAll("[data-list-editor]")) {
     foot.hidden = false;
     render();
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// New event: spell the schedule out in plain language before anything is created, filter the member list, and
+// show how many people the submit button will invite. The form works without this; the server checks everything.
+for (const form of document.querySelectorAll("[data-event-form]")) {
+    const labels = form.dataset;
+    const box = form.querySelector("[data-event-summary-box]");
+    const summary = form.querySelector("[data-event-summary]");
+    const detail = form.querySelector("[data-event-summary-detail]");
+    const submit = form.querySelector("[data-event-submit]");
+    const value = name => form.querySelector(`[name="${name}"]:checked`)?.value ?? form.querySelector(`[name="${name}"]`)?.value ?? "";
+    const format = (template, ...values) => values.reduce((text, item, index) => text.replaceAll(`{${index}}`, item), template);
+    const join = items => items.length < 2 ? (items[0] ?? "") : format(labels.labelAnd, items.slice(0, -1).join(", "), items.at(-1));
+    const parse = text => /^\d{4}-\d{2}-\d{2}$/.test(text) ? new Date(`${text}T12:00:00`) : null;
+    const locale = document.documentElement.lang || undefined;
+    const filter = form.querySelector("[data-people-filter]");
+    const people = [...form.querySelectorAll("[data-person]")];
+    const peopleCount = form.querySelector("[data-people-count]");
+
+    const update = () => {
+        const repeat = value("Repeat");
+        const start = parse(value("StartDate"));
+        const until = parse(value("Until"));
+        const from = `${value("StartHour")}:${value("StartMinute")}`, to = `${value("EndHour")}:${value("EndMinute")}`;
+        const times = `${from}–${to}${to <= from ? ` (${labels.labelNextDay})` : ""}`;
+        const zone = form.querySelector("[data-event-zone]")?.value.trim() || form.querySelector("[data-event-zone]")?.placeholder || "";
+        const days = [...form.querySelectorAll("[name=Weekdays]:checked")];
+        let text = "", note = "";
+        if (start) {
+            const longDate = start.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+            const untilText = until?.toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" }) ?? "…";
+            if (repeat === "once") text = format(labels.labelOnce, longDate, times);
+            else if (repeat === "daily") text = format(labels.labelDaily, times, untilText);
+            else text = format(labels.labelWeekly, days.length ? join(days.map(day => day.dataset.dayName)) : "…", times, untilText);
+            if (repeat !== "once") {
+                if (repeat === "weekly" && days.length === 0) note = labels.labelPickDays;
+                else if (!until || until < start) note = labels.labelPickUntil;
+                else {
+                    const wanted = new Set(days.map(day => day.value));
+                    const names = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                    let count = 0;
+                    for (const day = new Date(start); day <= until; day.setDate(day.getDate() + 1))
+                        if (repeat === "daily" || wanted.has(names[day.getDay()])) count++;
+                    note = format(labels.labelDates, count);
+                }
+            }
+            text += ` · ${zone}`;
+        }
+        box.hidden = !text;
+        summary.textContent = text;
+        detail.textContent = note;
+        detail.hidden = !note;
+
+        const audience = value("Audience");
+        const invited = audience === "group"
+            ? Number(form.querySelector("select[name=GroupId]")?.selectedOptions[0]?.dataset.count ?? 0)
+            : form.querySelectorAll("[name=Invitees]:checked").length;
+        if (peopleCount) peopleCount.textContent = audience === "people" ? `${form.querySelectorAll("[name=Invitees]:checked").length}` : "";
+        const label = invited > 0 ? format(labels.labelInvite, invited) : labels.labelCreate;
+        submit.lastChild.textContent = label;
+    };
+
+    if (filter) {
+        filter.hidden = people.length < 8;
+        filter.addEventListener("input", event => {
+            event.stopPropagation();
+            const query = filter.value.trim().toLowerCase();
+            for (const person of people) person.hidden = !!query && !person.dataset.person.includes(query);
+        });
+    }
+    form.addEventListener("input", update);
+    form.addEventListener("change", update);
+    update();
+}
