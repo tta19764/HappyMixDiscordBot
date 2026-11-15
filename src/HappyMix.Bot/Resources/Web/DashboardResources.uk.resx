@@ -12,7 +12,7 @@
     <value>Сервери</value>
   </data>
   <data name="Availability">
-    <value>Доступність</value>
+    <value>Коли можу грати</value>
   </data>
   <data name="Settings">
     <value>Налаштування</value>
@@ -42,7 +42,7 @@
     <value>Тижневий розклад</value>
   </data>
   <data name="Availability today">
-    <value>Доступність сьогодні</value>
+    <value>Коли можу грати сьогодні</value>
   </data>
   <data name="From">
     <value>З</value>
@@ -72,7 +72,7 @@
     <value>Тижневий розклад ще порожній</value>
   </data>
   <data name="Your usual week">
-    <value>Ваш звичайний тиждень</value>
+    <value>Ваш розклад на тиждень</value>
   </data>
   <data name="Cancel">
     <value>Скасувати</value>
@@ -81,7 +81,7 @@
     <value>✓ Збережено</value>
   </data>
   <data name="No hours">
-    <value>Немає годин</value>
+    <value>Час не вказано</value>
   </data>
   <data name="Edit">
     <value>Редагувати</value>
@@ -90,7 +90,7 @@
     <value>Очистити</value>
   </data>
   <data name="Add hours">
-    <value>Додати години</value>
+    <value>Вказати час</value>
   </data>
   <data name="Available">
     <value>Доступний час</value>
@@ -117,7 +117,7 @@
     <value>Каталог команд</value>
   </data>
   <data name="Reminder lead time">
-    <value>Час нагадування</value>
+    <value>За скільки хвилин нагадати</value>
   </data>
   <data name="minutes">
     <value>хвилин</value>
@@ -147,7 +147,7 @@
     <value>Незбережені зміни</value>
   </data>
   <data name="Discard">
-    <value>Відхилити зміни</value>
+    <value>Скасувати зміни</value>
   </data>
   <data name="Save settings">
     <value>Зберегти налаштування</value>
@@ -162,13 +162,13 @@
     <value>Видалити</value>
   </data>
   <data name="Default ·">
-    <value>Типове ·</value>
+    <value>За замовчуванням ·</value>
   </data>
   <data name="Inherit">
-    <value>Успадкувати</value>
+    <value>За замовчуванням</value>
   </data>
   <data name="Custom">
-    <value>Власне</value>
+    <value>Власні налаштування</value>
   </data>
   <data name="Off">
     <value>Вимкнено</value>
@@ -1039,7 +1039,7 @@
   <data name="Tentative" xml:space="preserve"><value>Можливо</value></data>
   <data name="Definite: I can play. Tentative: I might be able to play." xml:space="preserve"><value>Точно: я можу грати. Можливо: ще не впевнений, чи зможу.</value></data>
   <data name="Save a range, then add another. Each range has its own certainty." xml:space="preserve"><value>Збережіть проміжок, потім додайте наступний. Для кожного вкажіть, наскільки ви впевнені.</value></data>
-  <data name="The same start time and time zone updates an existing weekly range." xml:space="preserve"><value>Той самий час початку й часовий пояс оновлюють наявний щотижневий проміжок.</value></data>
+  <data name="The same start time and time zone updates an existing weekly range." xml:space="preserve"><value>Якщо час початку й часовий пояс збігаються зі збереженим проміжком, його буде оновлено.</value></data>
   <data name="Add range" xml:space="preserve"><value>Додати проміжок</value></data>
   <data name="Save range" xml:space="preserve"><value>Зберегти проміжок</value></data>
   <data name="Remove range" xml:space="preserve"><value>Видалити проміжок</value></data>
@@ -1062,7 +1062,7 @@
     <value>Проміжків: {0}</value>
   </data>
   <data name="Repeats every week. A day can have several ranges, each definite or tentative." xml:space="preserve">
-    <value>Повторюється щотижня. День може мати кілька проміжків, кожен — точний або ймовірний.</value>
+    <value>Розклад повторюється щотижня. На день можна додати кілька проміжків і для кожного вказати «Точно» або «Можливо».</value>
   </data>
   <data name="{0} of 7 days" xml:space="preserve">
     <value>{0} із 7 днів</value>
@@ -1260,7 +1260,7 @@
     <value>Один нік Twitch або посилання twitch.tv на рядок, до п’яти.</value>
   </data>
   <data name="Leave a value on Inherit to follow Server defaults." xml:space="preserve">
-    <value>Залиште «Успадкувати», щоб використовувати значення сервера.</value>
+    <value>Виберіть «За замовчуванням», щоб використовувати стандартні налаштування.</value>
   </data>
   <data name="Server default · {0}" xml:space="preserve">
     <value>Типовий для сервера · {0}</value>
@@ -1377,7 +1377,7 @@
     <value>Додайте від 1 до 20 команд або виберіть «Немає».</value>
   </data>
   <data name="Inherited" xml:space="preserve">
-    <value>Успадковано</value>
+    <value>За замовчуванням</value>
   </data>
   <data name="Team search isn't available right now. Add the team's number like &quot;Team name #123&quot;, or try again later." xml:space="preserve">
     <value>Пошук команд зараз недоступний. Додайте номер команди, наприклад «Назва #123», або спробуйте пізніше.</value>
@@ -1396,5 +1396,428 @@
   </data>
   <data name="Add a range: pick From and Until. 00:00 to 00:00 means all day. Set the hour to -- to remove a range." xml:space="preserve">
     <value>Додайте проміжок: виберіть «З» і «До». 00:00–00:00 означає весь день. Щоб видалити проміжок, поставте годину --.</value>
+  </data>
+  <data name="Events" xml:space="preserve">
+    <value>Події</value>
+  </data>
+  <data name="Sessions planned for this group: pending until the organizer confirms." xml:space="preserve">
+    <value>Заплановані зустрічі групи. Щоб зустріч відбулася, організатор має її підтвердити.</value>
+  </data>
+  <data name="Plan an event" xml:space="preserve">
+    <value>Запланувати подію</value>
+  </data>
+  <data name="No events planned for this group yet." xml:space="preserve">
+    <value>Для цієї групи ще немає подій.</value>
+  </data>
+  <data name="My events" xml:space="preserve">
+    <value>Мої події</value>
+  </data>
+  <data name="Dates you accepted. Pending plans may still change; confirmed ones are on." xml:space="preserve">
+    <value>Події, у яких ви погодилися взяти участь. Організатор ще може змінити попередні плани або підтвердити, що подія відбудеться.</value>
+  </data>
+  <data name="{0} invitations waiting" xml:space="preserve">
+    <value>Запрошення без відповіді: {0}</value>
+  </data>
+  <data name="All events" xml:space="preserve">
+    <value>Усі події</value>
+  </data>
+  <data name="Nothing accepted yet." xml:space="preserve">
+    <value>Ви ще не погодилися взяти участь у жодній події.</value>
+  </data>
+  <data name="Plan a session, invite people, then confirm when enough say yes." xml:space="preserve">
+    <value>Заплануйте зустріч і запросіть учасників. Коли збереться достатньо охочих, підтвердьте її.</value>
+  </data>
+  <data name="New event" xml:space="preserve">
+    <value>Нова подія</value>
+  </data>
+  <data name="Invitations" xml:space="preserve">
+    <value>Запрошення</value>
+  </data>
+  <data name="Dates waiting for your answer. Each date of a repeating event is answered on its own." xml:space="preserve">
+    <value>Запрошення, на які ви ще не відповіли. Для повторюваних подій підтверджуйте участь на кожну дату окремо.</value>
+  </data>
+  <data name="{0} waiting" xml:space="preserve">
+    <value>Чекає: {0}</value>
+  </data>
+  <data name="No invitations right now." xml:space="preserve">
+    <value>Зараз запрошень немає.</value>
+  </data>
+  <data name="Nothing planned yet. Accept an invitation and it shows up here and on your availability." xml:space="preserve">
+    <value>Поки що планів немає. Прийміть запрошення, і подія з’явиться тут та у вашому розкладі.</value>
+  </data>
+  <data name="Organized by you" xml:space="preserve">
+    <value>Ви організовуєте</value>
+  </data>
+  <data name="The next date of each event you organize, with who's coming." xml:space="preserve">
+    <value>Найближча дата кожної вашої події та хто прийде.</value>
+  </data>
+  <data name="You haven't planned any events. Start one for a group, or pick people yourself." xml:space="preserve">
+    <value>Ви ще не планували подій. Створіть подію для групи або виберіть людей самі.</value>
+  </data>
+  <data name="Once" xml:space="preserve">
+    <value>Один раз</value>
+  </data>
+  <data name="Daily" xml:space="preserve">
+    <value>Щодня</value>
+  </data>
+  <data name="Nothing is sent until you create it. Invited people can accept or decline in Discord or here." xml:space="preserve">
+    <value>Нічого не надсилається, доки ви не створите подію. Запрошені можуть прийняти чи відхилити в Discord або тут.</value>
+  </data>
+  <data name="Event not created" xml:space="preserve">
+    <value>Подію не створено</value>
+  </data>
+  <data name="Once, {0}, {1}" xml:space="preserve">
+    <value>Один раз, {0}, {1}</value>
+  </data>
+  <data name="Every day, {0}, until {1}" xml:space="preserve">
+    <value>Щодня, {0}, до {1}</value>
+  </data>
+  <data name="Every {0}, {1}, until {2}" xml:space="preserve">
+    <value>Щотижня: {0}, {1}, до {2}</value>
+  </data>
+  <data name="{0} and {1}" xml:space="preserve">
+    <value>{0} і {1}</value>
+  </data>
+  <data name="{0} dates · each date is answered and confirmed on its own" xml:space="preserve">
+    <value>Дат: {0} · на кожну відповідають і підтверджують окремо</value>
+  </data>
+  <data name="Pick at least one weekday." xml:space="preserve">
+    <value>Виберіть хоча б один день тижня.</value>
+  </data>
+  <data name="Pick the last date of the series." xml:space="preserve">
+    <value>Виберіть останню дату серії.</value>
+  </data>
+  <data name="ends the next day" xml:space="preserve">
+    <value>закінчується наступного дня</value>
+  </data>
+  <data name="Create and invite {0}" xml:space="preserve">
+    <value>Створити й запросити ({0})</value>
+  </data>
+  <data name="Create event" xml:space="preserve">
+    <value>Створити подію</value>
+  </data>
+  <data name="Who is invited" xml:space="preserve">
+    <value>Кого запросити</value>
+  </data>
+  <data name="A group" xml:space="preserve">
+    <value>Групу</value>
+  </data>
+  <data name="People I pick" xml:space="preserve">
+    <value>Вибраних людей</value>
+  </data>
+  <data name="Group" xml:space="preserve">
+    <value>Група</value>
+  </data>
+  <data name="You aren't in any group yet. Pick people instead." xml:space="preserve">
+    <value>Ви ще не в жодній групі. Виберіть людей.</value>
+  </data>
+  <data name="Find a group" xml:space="preserve">
+    <value>Знайти групу</value>
+  </data>
+  <data name="No groups match." xml:space="preserve">
+    <value>Немає відповідних груп.</value>
+  </data>
+  <data name="Every other member of the group is invited. People who join later aren't added." xml:space="preserve">
+    <value>Запрошуються всі інші учасники групи. Ті, хто приєднається пізніше, не додаються.</value>
+  </data>
+  <data name="People" xml:space="preserve">
+    <value>Люди</value>
+  </data>
+  <data name="Discord didn't return the member list. Try again in a moment." xml:space="preserve">
+    <value>Discord не повернув список учасників. Спробуйте трохи згодом.</value>
+  </data>
+  <data name="Invite exactly who you want, up to 50 people." xml:space="preserve">
+    <value>Запросіть саме тих, кого хочете, до 50 людей.</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Назва</value>
+  </data>
+  <data name="Thursday scrims" xml:space="preserve">
+    <value>Четвергові скріми</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>Дата</value>
+  </data>
+  <data name="Leave empty for the server time zone. The start time stays the same local time when clocks change." xml:space="preserve">
+    <value>Залиште порожнім для часового поясу сервера. Під час переведення годинника місцевий час початку не змінюється.</value>
+  </data>
+  <data name="Repeat" xml:space="preserve">
+    <value>Повторення</value>
+  </data>
+  <data name="On these days" xml:space="preserve">
+    <value>У ці дні</value>
+  </data>
+  <data name="Last date" xml:space="preserve">
+    <value>Остання дата</value>
+  </data>
+  <data name="Up to 26 weeks after the first date." xml:space="preserve">
+    <value>До 26 тижнів після першої дати.</value>
+  </data>
+  <data name="Confirmed" xml:space="preserve">
+    <value>Підтверджено</value>
+  </data>
+  <data name="Canceled" xml:space="preserve">
+    <value>Скасовано</value>
+  </data>
+  <data name="Pending" xml:space="preserve">
+    <value>Очікує підтвердження</value>
+  </data>
+  <data name="Cancel this date" xml:space="preserve">
+    <value>Скасувати на цю дату</value>
+  </data>
+  <data name="Cancel event" xml:space="preserve">
+    <value>Скасувати подію</value>
+  </data>
+  <data name="Cancel {0} on {1} only? The other dates stay as they are. People who were expecting it get a Discord message." xml:space="preserve">
+    <value>Скасувати «{0}» лише {1}? Інші дати залишаться. Ті, хто чекав, отримають повідомлення в Discord.</value>
+  </data>
+  <data name="Cancel {0}? People who were expecting it get a Discord message." xml:space="preserve">
+    <value>Скасувати «{0}»? Ті, хто чекав, отримають повідомлення в Discord.</value>
+  </data>
+  <data name="Keep it" xml:space="preserve">
+    <value>Залишити</value>
+  </data>
+  <data name="Cancel the whole series" xml:space="preserve">
+    <value>Скасувати всю серію</value>
+  </data>
+  <data name="Cancel every remaining date of {0}? Past dates stay in history. Invitees who were expecting a date get one Discord message." xml:space="preserve">
+    <value>Скасувати всі решта дат «{0}»? Минулі дати залишаться в історії. Запрошені, які чекали дату, отримають одне повідомлення в Discord.</value>
+  </data>
+  <data name="Cancel series" xml:space="preserve">
+    <value>Скасувати серію</value>
+  </data>
+  <data name="{0} withdrew after you confirmed" xml:space="preserve">
+    <value>{0}: відмова після вашого підтвердження</value>
+  </data>
+  <data name="The date is still confirmed. You decide whether it goes ahead or gets canceled." xml:space="preserve">
+    <value>Подія на цю дату залишається підтвердженою. Ви вирішуєте, чи проводити її, чи скасувати.</value>
+  </data>
+  <data name="Invitations not delivered: {0}" xml:space="preserve">
+    <value>Не доставлено запрошень: {0}</value>
+  </data>
+  <data name="Their Discord direct messages are closed. They can still answer here on the dashboard." xml:space="preserve">
+    <value>У них закриті особисті повідомлення в Discord. Вони все одно можуть відповісти тут, на панелі.</value>
+  </data>
+  <data name="{0} · organized by {1}" xml:space="preserve">
+    <value>{0} · організатор: {1}</value>
+  </data>
+  <data name="Organized by {0}" xml:space="preserve">
+    <value>Організатор: {0}</value>
+  </data>
+  <data name="Your answer" xml:space="preserve">
+    <value>Ваша відповідь</value>
+  </data>
+  <data name="You're going. This date is confirmed." xml:space="preserve">
+    <value>Ви берете участь. Організатор підтвердив подію на цю дату.</value>
+  </data>
+  <data name="You accepted. The organizer hasn't confirmed this date yet." xml:space="preserve">
+    <value>Ви погодилися взяти участь. Очікуємо підтвердження організатора на цю дату.</value>
+  </data>
+  <data name="You withdrew. The organizer can see that you can't make it." xml:space="preserve">
+    <value>Ви відмовилися. Організатор бачить, що ви не зможете.</value>
+  </data>
+  <data name="You declined this date." xml:space="preserve">
+    <value>Ви відмовилися від участі на цю дату.</value>
+  </data>
+  <data name="You haven't answered yet." xml:space="preserve">
+    <value>Ви ще не відповіли.</value>
+  </data>
+  <data name="Withdraw" xml:space="preserve">
+    <value>Відмовитися</value>
+  </data>
+  <data name="Responses" xml:space="preserve">
+    <value>Відповіді</value>
+  </data>
+  <data name="{0} invited" xml:space="preserve">
+    <value>Запрошено: {0}</value>
+  </data>
+  <data name="Accepted" xml:space="preserve">
+    <value>Прийняли</value>
+  </data>
+  <data name="Declined" xml:space="preserve">
+    <value>Відхилили</value>
+  </data>
+  <data name="No reply yet" xml:space="preserve">
+    <value>Ще не відповіли</value>
+  </data>
+  <data name="Withdrew after accepting" xml:space="preserve">
+    <value>Відмовився після згоди</value>
+  </data>
+  <data name="Discord message couldn't be sent; can answer here" xml:space="preserve">
+    <value>Повідомлення в Discord не надіслано; може відповісти тут</value>
+  </data>
+  <data name="No reply" xml:space="preserve">
+    <value>Немає відповіді</value>
+  </data>
+  <data name="Confirm when enough people have accepted. Everyone who accepted gets a Discord message, and the date shows on their availability." xml:space="preserve">
+    <value>Підтвердьте подію, коли збереться достатньо учасників. Усі, хто погодився, отримають повідомлення в Discord, а подія з’явиться в їхньому розкладі.</value>
+  </data>
+  <data name="Confirm with {0} of {1} going" xml:space="preserve">
+    <value>Підтвердити подію · учасників: {0} із {1}</value>
+  </data>
+  <data name="Confirmed. {0} of {1} going right now." xml:space="preserve">
+    <value>Подію підтверджено. Наразі беруть участь {0} із {1}.</value>
+  </data>
+  <data name="Dates in this series" xml:space="preserve">
+    <value>Дати цієї серії</value>
+  </data>
+  <data name="Answers and confirmation are per date." xml:space="preserve">
+    <value>Відповіді й підтвердження — для кожної дати окремо.</value>
+  </data>
+  <data name="{0} going" xml:space="preserve">
+    <value>Учасників: {0}</value>
+  </data>
+  <data name="Repeats" xml:space="preserve">
+    <value>Повторюється</value>
+  </data>
+  <data name="by {0}" xml:space="preserve">
+    <value>від {0}</value>
+  </data>
+  <data name="{0} declined" xml:space="preserve">
+    <value>Відхилили: {0}</value>
+  </data>
+  <data name="{0} no reply" xml:space="preserve">
+    <value>Без відповіді: {0}</value>
+  </data>
+  <data name="You had accepted" xml:space="preserve">
+    <value>Ви погодилися взяти участь</value>
+  </data>
+  <data name="You're going" xml:space="preserve">
+    <value>Ви берете участь</value>
+  </data>
+  <data name="You withdrew" xml:space="preserve">
+    <value>Ви відмовилися</value>
+  </data>
+  <data name="Withdraw from {0} on {1}" xml:space="preserve">
+    <value>Відмовитися від «{0}», {1}</value>
+  </data>
+  <data name="Accept {0} on {1}" xml:space="preserve">
+    <value>Прийняти «{0}», {1}</value>
+  </data>
+  <data name="Decline {0} on {1}" xml:space="preserve">
+    <value>Відхилити «{0}», {1}</value>
+  </data>
+  <data name="Manage" xml:space="preserve">
+    <value>Керувати</value>
+  </data>
+  <data name="Pick the date of the first event." xml:space="preserve">
+    <value>Виберіть дату першої події.</value>
+  </data>
+  <data name="Choose a group, or pick people instead." xml:space="preserve">
+    <value>Виберіть групу або людей.</value>
+  </data>
+  <data name="Event created" xml:space="preserve">
+    <value>Подію створено</value>
+  </data>
+  <data name="{0} invited. Invitations go out by Discord message a few days before each date, and are here on the dashboard right away." xml:space="preserve">
+    <value>Запрошено: {0}. Запрошення надходять у Discord за кілька днів до кожної дати, а на панелі — одразу.</value>
+  </data>
+  <data name="You declined" xml:space="preserve">
+    <value>Ви відхилили</value>
+  </data>
+  <data name="The organizer can see that you can't make it." xml:space="preserve">
+    <value>Організатор бачить, що ви не зможете.</value>
+  </data>
+  <data name="Date confirmed" xml:space="preserve">
+    <value>Подію на цю дату підтверджено</value>
+  </data>
+  <data name="{0} going. Everyone who accepted gets a Discord message." xml:space="preserve">
+    <value>Ідуть: {0}. Усі, хто прийняв, отримають повідомлення в Discord.</value>
+  </data>
+  <data name="Series canceled" xml:space="preserve">
+    <value>Серію скасовано</value>
+  </data>
+  <data name="Date canceled" xml:space="preserve">
+    <value>Подію на цю дату скасовано</value>
+  </data>
+  <data name="{0} dates canceled. People who were expecting them get a Discord message." xml:space="preserve">
+    <value>Скасовано дат: {0}. Ті, хто їх чекав, отримають повідомлення в Discord.</value>
+  </data>
+  <data name="That didn't work" xml:space="preserve">
+    <value>Не вдалося</value>
+  </data>
+  <data name="a group" xml:space="preserve">
+    <value>група</value>
+  </data>
+  <data name="Event not available" xml:space="preserve">
+    <value>Подія недоступна</value>
+  </data>
+  <data name="That event doesn't exist or you aren't invited to it." xml:space="preserve">
+    <value>Ця подія не існує або вас на неї не запрошено.</value>
+  </data>
+  <data name="Back to events" xml:space="preserve">
+    <value>До подій</value>
+  </data>
+  <data name="A repeating event can run for up to 26 weeks." xml:space="preserve">
+    <value>Повторювана подія може тривати до 26 тижнів.</value>
+  </data>
+  <data name="Choose a time zone like Europe/Kyiv." xml:space="preserve">
+    <value>Виберіть часовий пояс, наприклад Europe/Kyiv.</value>
+  </data>
+  <data name="Choose an end date on or after the first date." xml:space="preserve">
+    <value>Виберіть кінцеву дату, не ранішу за першу.</value>
+  </data>
+  <data name="Give the event a title of up to 80 characters." xml:space="preserve">
+    <value>Дайте події назву до 80 символів.</value>
+  </data>
+  <data name="Invite up to 50 people." xml:space="preserve">
+    <value>Запросіть до 50 людей.</value>
+  </data>
+  <data name="Keep the description under 1000 characters." xml:space="preserve">
+    <value>Опис має бути коротшим за 1000 символів.</value>
+  </data>
+  <data name="Only members of the group can plan an event for it." xml:space="preserve">
+    <value>Планувати події групи можуть лише її учасники.</value>
+  </data>
+  <data name="Only the organizer can do that." xml:space="preserve">
+    <value>Це може зробити лише організатор.</value>
+  </data>
+  <data name="Pick at least one weekday for a weekly event." xml:space="preserve">
+    <value>Для щотижневої події виберіть хоча б один день.</value>
+  </data>
+  <data name="That date isn't part of this event." xml:space="preserve">
+    <value>Ця дата не належить до події.</value>
+  </data>
+  <data name="That event doesn't exist." xml:space="preserve">
+    <value>Такої події немає.</value>
+  </data>
+  <data name="That group no longer exists." xml:space="preserve">
+    <value>Цієї групи вже немає.</value>
+  </data>
+  <data name="That schedule has too many dates. Use fewer weekdays or an earlier end date." xml:space="preserve">
+    <value>У розкладі забагато дат. Виберіть менше днів або ранішу кінцеву дату.</value>
+  </data>
+  <data name="The end time must differ from the start time." xml:space="preserve">
+    <value>Час закінчення має відрізнятися від часу початку.</value>
+  </data>
+  <data name="This date has already started." xml:space="preserve">
+    <value>Подія на цю дату вже почалася.</value>
+  </data>
+  <data name="This date is over." xml:space="preserve">
+    <value>Подія на цю дату вже завершилася.</value>
+  </data>
+  <data name="This date was canceled." xml:space="preserve">
+    <value>Подію на цю дату скасовано.</value>
+  </data>
+  <data name="This event isn't available to you." xml:space="preserve">
+    <value>Ця подія вам недоступна.</value>
+  </data>
+  <data name="Use times like 19:30." xml:space="preserve">
+    <value>Вказуйте час у форматі 19:30.</value>
+  </data>
+  <data name="You aren't invited to this event." xml:space="preserve">
+    <value>Вас не запрошено на цю подію.</value>
+  </data>
+  <data name="Invite at least one person." xml:space="preserve">
+    <value>Запросіть хоча б одну людину.</value>
+  </data>
+  <data name="The group has no other members to invite yet." xml:space="preserve">
+    <value>У групі ще немає інших учасників для запрошення.</value>
+  </data>
+  <data name="That time has already passed. Pick a time in the future." xml:space="preserve">
+    <value>Цей час уже минув. Виберіть час у майбутньому.</value>
+  </data>
+  <data name="No date of this schedule is in the future. Check the days and dates." xml:space="preserve">
+    <value>Жодна дата цього розкладу не в майбутньому. Перевірте дні та дати.</value>
   </data>
 </root>

@@ -1,8 +1,8 @@
 # HappyMix implementation roadmap
 
-Reviewed: 2026-11-14.
+Reviewed: 2026-11-15.
 
-Days 1–7 record delivered development milestones. Days 8–31 are the remaining checklist. Linked alternate accounts (Day 7) are implemented and all 142 tests passed locally, including the architecture tests. Live verification of the deployed dashboard, board and linked-account flows is now Day 8; inserting Day 7 moved every later slot back by one.
+Days 1–6 record delivered milestones. Day 7 includes all changes starting with linked accounts, through the current dashboard, command UX, Twitch, light-theme and event work. Day 7 remains partial while the light-theme redesign and events are in progress. The previous 142-test result covers the linked-account milestone; it does not certify the current working tree.
 
 ## How to maintain this plan
 
@@ -11,7 +11,7 @@ Open `docs/progress.html` directly in a browser. No server, npm install, or paid
 Commit the Markdown and generated HTML together. The dashboard is read-only; it never silently saves changes in browser storage.
 
 Statuses: `done`, `partial`, `planned`, `blocked`. Done means the acceptance criterion is implemented and verified; partial means some implementation exists. Record evidence when changing status.
-Days are adjustable work slots, not dates or promises. The first seven slots summarize work already delivered.
+Days are adjustable work slots, not dates or promises. The first six slots summarize delivered work; Day 7 groups development starting with linked accounts.
 Progress is counted by completed items, not estimated hours. Baseline capabilities and development days are counted separately.
 
 ## Current baseline
@@ -38,8 +38,8 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 | 4 | Groups | done | Groups, membership, and game attachments | Invite-only groups, descriptions, rosters, role repair, and the web workspace. Games can be attached with an optional Steam App ID. | 3 |
 | 5 | Availability | done | Personal and recurring availability | Today and weekly timetable entry, named time zones, fixed offsets, overnight windows, and full-day shortcuts. MVC dashboard and English, Ukrainian, and Russian resources. | 2, 3 |
 | 6 | Availability | done | Group member availability board | Seven day tabs, member rows with No data, and distinct one-off and recurring hours with overnight carryover. Authorization and schedule behavior covered by tests. | 4, 5 |
-| 7 | Identity | done | Linked alternate accounts (twinks) | Linking needs the primary's short-lived single-use request and the alternate's own Discord sign-in and approval; both must be server members. Each family is one member for groups, organizer rights, availability and board counts, in the dashboard and slash commands. Discord admin and moderator rights stay per account. Invitations and group roles apply only to the addressed account. The roster and board show that account first. Link and unlink previews, explicit conflict resolution and restore on unlink. AccountLinkTests: 14 tests; 142 total pass. Live Discord verification pending on Day 8. | 4, 6 |
-| 8 | Quality | planned | Live dashboard, board and linked-account verification | Verify Discord sign-in, localization, text-channel selectors, group access, and overnight and full-day rendering on the deployed build. Link two real Discord accounts through two sign-ins, confirm shared groups and schedule, role reconciliation and unlinking on the live server. | 7 |
+| 7 | Identity, dashboard and events | partial | Linked accounts and subsequent development | Linking needs the primary's short-lived single-use request and the alternate's own Discord sign-in and approval; both must be server members. Each family is one member for groups, organizer rights, availability and board counts, in the dashboard and slash commands. Discord admin and moderator rights stay per account. Invitations and group roles apply only to the addressed account. The roster and board show that account first. Link and unlink previews, explicit conflict resolution and restore on unlink. AccountLinkTests: 14 tests; 142 total passed at that milestone. Subsequent work includes multiple availability ranges and schedule preservation on linking, admin linked-account list, weekly sliders and 24-hour inputs, searchable settings editors, light theme and navigation, named-time-zone command suggestions, live Twitch checks for reminders/start/map results, README/shared info/help updates, and natural Ukrainian/Russian wording for settings, availability and events. Light-theme redesign and group/standalone recurring events are currently in progress. Latest build passed using SDK 10.0.402 with duplicate translation-resource warnings. Full current-suite and live verification pending. | 4, 6 |
+| 8 | Quality | planned | Live dashboard, board and linked-account verification | Verify Discord sign-in, localization, text-channel selectors, group access, and overnight and full-day rendering on the deployed build. Link two real Discord accounts through two sign-ins, confirm shared groups and schedule, role reconciliation and unlinking on the live server. Also verify named-zone command inputs, live/offline Twitch checks on reminders/start/map results, info/help guidance, light-theme screens and completed event flows including invitations, confirmation, recurrence, withdrawals and cancellation. | 7 |
 | 9 | Availability | planned | Exceptions and opt-in prompts | Date exception overrides recurrence; snooze and quiet hours prevent unwanted prompts; keep commitment reasons private | 6, 8 |
 | 10 | Availability | planned | Weekly overview and overlap finder | Show confirmed versus expected hours separately; find shared windows of a requested duration | 9 |
 | 11 | Steam | planned | Profile linking and library import | Import a real public library by Steam ID/profile URL; resolve vanity names; show privacy errors; label link self-declared | 3 |
@@ -79,7 +79,7 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 
 - Join-to-create voice lobby with ownership transfer.
 - Verified Steam sign-in (requires an additional web authentication flow).
-- Recurring sessions and advanced availability poll voting.
+- Advanced availability poll voting. Recurring events are included in Day 7.
 - Match prediction leaderboard without money or betting.
 - Regional price alerts from a verified permitted data source.
 - Calendar export and optional external calendar synchronization.
@@ -99,6 +99,6 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 
 - Exact main-team allowlists replace the general CS2 tier feed. Administrators can change their server's list with `/settings teams`. PandaScore returned no FUT Dota main roster.
 - The daily schedule publishes once per persisted destination/local date, not at a configured morning time, and does not edit schedule changes.
-- Announcement state is now persisted per destination channel and discipline. Guild-specific notification preferences are not yet implemented.
+- Announcement state is now persisted per destination channel and discipline. Guild-specific notification preferences are implemented; live routing verification remains on Day 24.
 - Existing local changes were present during this review; this roadmap does not certify them as released.
 - The repository still pins SDK 10.0.102 with latestPatch. Tests were successfully executed with installed SDK 10.0.402 from work/sdk-validation using a local SDK selection file; the root pin is unchanged. Normal root-directory dotnet commands still require the pinned SDK or an explicitly reviewed SDK-policy update.
