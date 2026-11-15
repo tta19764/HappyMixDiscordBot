@@ -1,18 +1,45 @@
 @model WeekRangeItemModel
 @{
     string id = Model.Id;
+    // 24-hour hour and minute lists, so every browser shows the same format (a native time input follows the
+    // visitor's system locale and may show AM/PM). An unusual saved minute, like :07, is kept as an option.
+    var hours = Enumerable.Range(0, 24).Select(hour => hour.ToString("00")).ToArray();
+    var start = TimeRangeModel.Split(Model.Start);
+    var end = TimeRangeModel.Split(Model.End);
+    string[] Minutes(string? current) => Enumerable.Range(0, 12).Select(step => (step * 5).ToString("00"))
+        .Append(current ?? "00").Where(value => value.Length == 2).Distinct().Order().ToArray();
+    var parts = new[]
+    {
+        (Which: "start", Label: T["From"].Value, Hour: start?.Hour ?? "", Minute: start?.Minute ?? "00"),
+        (Which: "end", Label: T["Until"].Value, Hour: end?.Hour ?? "", Minute: end?.Minute ?? "00")
+    };
 }
 <li class="hm-wrange" data-range-item data-blank="@(Model.Blank ? "true" : "false")">
     <button class="hm-wrange__summary" type="button" data-select-range hidden aria-describedby="@id-preview"></button>
     <div class="hm-wrange__fields" data-range-fields>
-        <div class="hm-field">
-            <label class="hm-label" for="@id-start">@T["From"]</label>
-            <input class="hm-time hm-wrange__time" id="@id-start" name="rangeStart" type="time" step="300" value="@Model.Start" data-range-start>
-        </div>
-        <div class="hm-field">
-            <label class="hm-label" for="@id-end">@T["Until"]</label>
-            <input class="hm-time hm-wrange__time" id="@id-end" name="rangeEnd" type="time" step="300" value="@Model.End" data-range-end>
-        </div>
+        @foreach (var part in parts)
+        {
+            string name = part.Which == "start" ? "rangeStart" : "rangeEnd";
+            <div class="hm-field">
+                <span class="hm-label" id="@id-@part.Which-label">@part.Label</span>
+                <div class="hm-time-pair" role="group" aria-labelledby="@id-@part.Which-label" data-range-@part.Which>
+                    <select class="hm-time-select" id="@id-@part.Which" name="@(name)Hour" aria-label="@part.Label · @T["hour"]" data-time-hour>
+                        <option value="" selected="@(part.Hour == "")">--</option>
+                        @foreach (var hour in hours)
+                        {
+                            <option value="@hour" selected="@(hour == part.Hour)">@hour</option>
+                        }
+                    </select>
+                    <span aria-hidden="true">:</span>
+                    <select class="hm-time-select" name="@(name)Minute" aria-label="@part.Label · @T["minutes"]" data-time-minute>
+                        @foreach (var minute in Minutes(part.Minute))
+                        {
+                            <option value="@minute" selected="@(minute == part.Minute)">@minute</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        }
         <div class="hm-field">
             <label class="hm-label" for="@id-kind">@T["Certainty"]</label>
             <select class="hm-select" id="@id-kind" name="rangeKind" data-range-kind>
@@ -28,7 +55,7 @@
     <p class="hm-help hm-wrange__preview" id="@id-preview" data-range-preview-line aria-live="polite">
         @if (Model.Blank)
         {
-            @T["Add a range: pick From and Until. 00:00 to 00:00 means all day. Clear both to remove a range."]
+            @T["Add a range: pick From and Until. 00:00 to 00:00 means all day. Set the hour to -- to remove a range."]
         }
     </p>
 </li>

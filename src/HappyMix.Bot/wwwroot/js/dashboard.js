@@ -165,10 +165,15 @@ document.querySelector("[data-theme-form]")?.addEventListener("submit", event =>
 // Weekly day editor: a 30-hour track (the day plus the early hours of the next) drawn over the server-rendered
 // range list. The list's inputs stay the source of truth, so saving and the no-JavaScript form behave the same.
 for (const editor of document.querySelectorAll("[data-week-editor]")) {
-    const TRACK = 30, STEP = 0.25, MIN = 0.25;
+    // The track shows the day plus the next morning (30h). It grows in 6h steps, up to the whole next day, when a
+    // range ends later, so an overnight range never sticks out of the track (which used to scroll the card sideways).
+    const BASE_TRACK = 30, MAX_TRACK = 48, STEP = 0.25, MIN = 0.25;
+    let TRACK = BASE_TRACK;
     const list = editor.querySelector("[data-range-list]");
     const track = editor.querySelector("[data-track]");
     const empty = editor.querySelector("[data-track-empty]");
+    const axis = editor.querySelector(".hm-weditor__axis");
+    const nextDay = editor.querySelector(".hm-weditor__nextday");
     const template = editor.querySelector("[data-range-template]");
     const addButton = editor.querySelector("[data-add-range]");
     const labels = editor.dataset;
@@ -186,17 +191,35 @@ for (const editor of document.querySelectorAll("[data-week-editor]")) {
     const clamp = (value, low, high) => Math.min(Math.max(value, low), high);
     const items = () => [...list.querySelectorAll("[data-range-item]")];
     const field = (item, name) => item.querySelector(`[data-range-${name}]`);
+    // From and Until are 24-hour hour/minute selects; "--" as the hour means the time is empty.
+    const getTime = (item, which) => {
+        const pair = field(item, which);
+        const hour = pair.querySelector("[data-time-hour]").value;
+        return hour ? `${hour}:${pair.querySelector("[data-time-minute]").value || "00"}` : "";
+    };
+    const setTime = (item, which, value) => {
+        const pair = field(item, which);
+        const [hour, minute] = value.split(":");
+        const minutes = pair.querySelector("[data-time-minute]");
+        if (![...minutes.options].some(option => option.value === minute)) {
+            const option = new Option(minute, minute);
+            const next = [...minutes.options].find(existing => existing.value > minute);
+            minutes.add(option, next ?? null);
+        }
+        pair.querySelector("[data-time-hour]").value = hour;
+        minutes.value = minute;
+    };
     const tentative = item => field(item, "kind").value === "tentative";
 
     const read = item => {
-        const start = toHours(field(item, "start").value), end = toHours(field(item, "end").value);
+        const start = toHours(getTime(item, "start")), end = toHours(getTime(item, "end"));
         if (start === null || end === null) return null;
         if (start === 0 && end === 0) return { start: 0, end: 24, allDay: true };
         return { start, end: end <= start ? end + 24 : end, allDay: false };
     };
     const write = (item, start, end) => {
-        field(item, "start").value = toTime(start);
-        field(item, "end").value = toTime(end);
+        setTime(item, "start", toTime(start));
+        setTime(item, "end", toTime(end));
     };
     const duration = range => {
         const minutes = Math.round((range.end - range.start) * 60);
@@ -212,7 +235,7 @@ for (const editor of document.querySelectorAll("[data-week-editor]")) {
     // Neighbours limit dragging so ranges never overlap on the track.
     const bounds = item => {
         const range = read(item);
-        let low = 0, high = TRACK;
+        let low = 0, high = MAX_TRACK;
         for (const other of items()) {
             if (other === item) continue;
             const span = read(other);
@@ -251,9 +274,11 @@ for (const editor of document.querySelectorAll("[data-week-editor]")) {
         const { low, high } = bounds(item);
         const rect = track.getBoundingClientRect();
         const origin = (event.clientX - rect.left) / rect.width * TRACK;
+        let edgeTimer = 0, last = event;
         const target = event.currentTarget;
         try { target.setPointerCapture(event.pointerId); } catch { /* synthetic or already released pointer */ }
         const move = moveEvent => {
+            last = moveEvent;
             const at = (moveEvent.clientX - rect.left) / rect.width * TRACK;
             let { start: from, end: until } = start;
             if (mode === "start") from = clamp(snap(at), Math.max(low, until - 24 + (until > 24 ? MIN : 0)), Math.min(until - MIN, 24 - MIN));
@@ -265,8 +290,17 @@ for (const editor of document.querySelectorAll("[data-week-editor]")) {
             }
             write(item, from, until);
             place(item, read(item));
+            // Holding a range at the right edge opens up 6 more hours of the next day every 400ms, like auto-scroll.
+            const atEdge = mode !== "start" && moveEvent.clientX >= rect.right - 8 && TRACK < MAX_TRACK;
+            if (atEdge && !edgeTimer)
+                edgeTimer = setInterval(() => {
+                    if (TRACK >= MAX_TRACK || last.clientX < rect.right - 8) { clearInterval(edgeTimer); edgeTimer = 0; return; }
+                    setTrack(TRACK + 6);
+                    move(last);
+                }, 400);
         };
         const stop = () => {
+            clearInterval(edgeTimer);
             target.removeEventListener("pointermove", move);
             target.removeEventListener("pointerup", stop);
             target.removeEventListener("pointercancel", stop);
@@ -288,10 +322,11 @@ for (const editor of document.querySelectorAll("[data-week-editor]")) {
             const min = Math.max(low, range.end - 24), max = Math.min(range.end - MIN, 24 - MIN);
             range.start = event.key === "Home" ? min : event.key === "End" ? max : clamp(range.start + delta, min, max);
         } else {
-            const min = range.start + MIN, max = Math.min(high, range.start + 24 - (range.start === 0 ? 0 : MIN), TRACK);
+            const min = range.start + MIN, max = Math.min(high, range.start + 24 - (range.start === 0 ? 0 : MIN), MAX_TRACK);
             range.end = event.key === "Home" ? min : event.key === "End" ? max : clamp(range.end + delta, min, max);
         }
         write(item, range.start, range.end);
+        setTrack(Math.max(TRACK, hoursNeeded()));
         place(item, read(item));
     };
 
@@ -332,7 +367,35 @@ for (const editor of document.querySelectorAll("[data-week-editor]")) {
         return block;
     };
 
+    const hoursNeeded = () => {
+        const latest = Math.max(0, ...items().map(read).filter(Boolean).map(range => range.end));
+        return Math.min(MAX_TRACK, BASE_TRACK + Math.ceil(Math.max(0, latest - BASE_TRACK) / 6) * 6);
+    };
+    const setTrack = hours => {
+        if (hours === TRACK) return;
+        TRACK = hours;
+        const next = `${24 / TRACK * 100}%`;
+        track.style.setProperty("--hm-next", next);
+        track.style.setProperty("--hm-cols", String(TRACK / 3));
+        if (nextDay) nextDay.style.left = next;
+        const step = TRACK > BASE_TRACK ? 6 : 3;
+        axis.replaceChildren(...Array.from({ length: TRACK / step + 1 }, (_, index) => {
+            const hour = index * step;
+            const label = document.createElement("span");
+            label.textContent = String(hour % 24).padStart(2, "0");
+            label.style.left = `${hour / TRACK * 100}%`;
+            if (hour > 24) label.className = "hm-weditor__next";
+            return label;
+        }));
+        for (const [item, block] of blocks) {
+            const range = read(item);
+            if (range) place(item, range);
+            for (const handle of block.handles) handle.setAttribute("aria-valuemax", String(TRACK));
+        }
+    };
+
     function render() {
+        setTrack(hoursNeeded());
         const current = items();
         for (const [item, block] of blocks)
             if (!current.includes(item)) { block.remove(); blocks.delete(item); }
@@ -358,8 +421,9 @@ for (const editor of document.querySelectorAll("[data-week-editor]")) {
     function select(item, focusFields = true) {
         selected = item;
         render();
-        if (focusFields && item) field(item, "start").focus({ preventScroll: true });
-        blocks.get(item)?.scrollIntoView({ block: "nearest", inline: "nearest" });
+        if (focusFields && item) field(item, "start").querySelector("select").focus({ preventScroll: true });
+        // Only scroll vertically: an inline scroll here once moved the whole card sideways.
+        if (item) track.scrollIntoView({ block: "nearest", inline: "nearest" });
     }
 
     const prepare = item => {

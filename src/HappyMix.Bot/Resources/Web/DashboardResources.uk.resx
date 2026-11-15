@@ -1394,4 +1394,7 @@
   <data name="No members match." xml:space="preserve">
     <value>Немає відповідних учасників.</value>
   </data>
+  <data name="Add a range: pick From and Until. 00:00 to 00:00 means all day. Set the hour to -- to remove a range." xml:space="preserve">
+    <value>Додайте проміжок: виберіть «З» і «До». 00:00–00:00 означає весь день. Щоб видалити проміжок, поставте годину --.</value>
+  </data>
 </root>

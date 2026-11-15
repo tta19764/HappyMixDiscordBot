@@ -101,7 +101,8 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
     public async Task<IActionResult> Save(ulong guildId, string action, string? start, string? end,
         DayOfWeek? day, string? offset, Guid? windowId, string? startHour, string? startMinute,
         string? endHour, string? endMinute, bool allDay = false, bool tentative = false,
-        string[]? rangeStart = null, string[]? rangeEnd = null, string[]? rangeKind = null)
+        string[]? rangeStartHour = null, string[]? rangeStartMinute = null, string[]? rangeEndHour = null,
+        string[]? rangeEndMinute = null, string[]? rangeKind = null)
     {
         if (await GetDiscordMemberAsync(guildId) is not { } member)
             return NotMember();
@@ -116,7 +117,8 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
         bool hasTimes = allDay || (start is not null && end is not null);
 
         if (action == "weekly-day" && day is { } editedDay)
-            return await SaveWeeklyDayAsync(guildId, member, editedDay, offset, rangeStart ?? [], rangeEnd ?? [], rangeKind ?? []);
+            return await SaveWeeklyDayAsync(guildId, member, editedDay, offset, Times(rangeStartHour, rangeStartMinute),
+                Times(rangeEndHour, rangeEndMinute), rangeKind ?? []);
 
         switch (action)
         {
@@ -231,6 +233,11 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
     /// Saves the day editor: every range on that day (in the editor's time zone) is replaced at once, so existing
     /// ranges can be moved, resized, retyped or removed. Blank rows are ignored; 00:00–00:00 means all day.
     /// </summary>
+    // Each range row posts an hour and a minute select; an empty hour means that time was left empty.
+    private static string[] Times(string[]? hours, string[]? minutes) => (hours ?? []).Select((hour, index) =>
+        string.IsNullOrWhiteSpace(hour) ? "" : $"{hour.Trim()}:{(minutes is not null && index < minutes.Length && minutes[index] is { Length: > 0 } minute ? minute.Trim() : "00")}")
+        .ToArray();
+
     private async Task<IActionResult> SaveWeeklyDayAsync(ulong guildId, Discord.Rest.RestGuildUser member, DayOfWeek day,
         string? offset, string[] starts, string[] ends, string[] kinds)
     {
