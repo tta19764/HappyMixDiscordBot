@@ -14,24 +14,24 @@ public sealed partial class AvailabilityModule
         : InteractionModuleBase<SocketInteractionContext>
     {
         [SlashCommand("today", "Set today's availability. An earlier end time means tomorrow.")]
-        public async Task TodayAsync(string start = "", string end = "",
-            [Autocomplete<AvailabilityTimeZoneAutocomplete>, Summary(description: "Time zone or UTC offset. Defaults to the server time zone.")] string? offset = null, [Summary(description: "True if you might be free, false if definite.")] bool tentative = false, [Summary("all_day")] bool allDay = false)
+        public async Task TodayAsync([Summary(description: "Local start time, e.g. 18:30. Optional for all-day availability.")] string start = "", [Summary(description: "Local end time, e.g. 22:00. Earlier times end the next day.")] string end = "",
+            [Autocomplete<AvailabilityTimeZoneAutocomplete>, Summary(description: "Choose a time zone, e.g. Europe/Kyiv. Defaults to the server time zone.")] string? timezone = null, [Summary(description: "True if you might be free, false if definite.")] bool tentative = false, [Summary("all_day")] bool allDay = false)
         {
             await DeferAsync(ephemeral: true);
             var result = await sender.Send(new SetTodayAvailabilityCommand(Context.Guild.Id, Context.User.Id,
-                start, end, offset, options.Value.TimeZoneId, allDay, tentative));
+                start, end, timezone, options.Value.TimeZoneId, allDay, tentative));
             await ModifyOriginalResponseAsync(message => message.Content = result.IsSuccess
                 ? $"Saved {Format(result.Value)}"
                 : result.Error.Description);
         }
 
         [SlashCommand("timetable", "Add a weekly range; matching start and zone updates that range.")]
-        public async Task TimetableAsync(DayOfWeek day, string start = "", string end = "",
-            [Autocomplete<AvailabilityTimeZoneAutocomplete>, Summary(description: "Time zone or UTC offset. Defaults to the server time zone.")] string? offset = null, [Summary(description: "True if you might be free, false if definite.")] bool tentative = false, [Summary("all_day")] bool allDay = false)
+        public async Task TimetableAsync(DayOfWeek day, [Summary(description: "Local start time, e.g. 18:30. Optional for all-day availability.")] string start = "", [Summary(description: "Local end time, e.g. 22:00. Earlier times end the next day.")] string end = "",
+            [Autocomplete<AvailabilityTimeZoneAutocomplete>, Summary(description: "Choose a time zone, e.g. Europe/Kyiv. Defaults to the server time zone.")] string? timezone = null, [Summary(description: "True if you might be free, false if definite.")] bool tentative = false, [Summary("all_day")] bool allDay = false)
         {
             await DeferAsync(ephemeral: true);
             var result = await sender.Send(new SetWeeklyAvailabilityCommand(Context.Guild.Id, Context.User.Id,
-                day, start, end, offset, options.Value.TimeZoneId, allDay, tentative));
+                day, start, end, timezone, options.Value.TimeZoneId, allDay, tentative));
             await ModifyOriginalResponseAsync(message => message.Content = result.IsSuccess
                 ? $"Saved weekly availability: {FormatWeekly(result.Value)}"
                 : result.Error.Description);

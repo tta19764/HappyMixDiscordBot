@@ -152,7 +152,7 @@ Discord server administrators can manage these SQLite-backed settings with `/set
 
 The alias maps in `appsettings.json` seed each catalog on its first settings save. Each server then keeps its own copy in SQLite. Adding a team makes it available for selection. Servers using the catalog as their followed list also begin following the added team. A server with an explicit followed list can select the new team with `/settings teams`.
 
-Schedules and reminders show **Watch** when PandaScore lists a preferred Twitch channel for the match. Otherwise they show the preferred links as **Twitch channels**. Defaults are `cs2_maincast` and `cs2_maincast2` for CS2, and `ghostik` and `dota2_maincast` for Dota 2.
+Daily schedules show **Watch** when PandaScore lists a preferred Twitch channel for the match. Otherwise they show the preferred links as **Twitch channels**. Defaults are `cs2_maincast` and `cs2_maincast2` for CS2, and `ghostik` and `dota2_maincast` for Dota 2.
 
 ## Saved gaming groups
 
@@ -212,19 +212,27 @@ docker run --rm --name happymix-bot `
 
 ### One-off availability
 
-Use `/availability add` with a date, time and UTC offset for both endpoints, for example
-`2026-11-13 22:00 +02:00` through `2026-11-14 01:00 +02:00`. Discord displays those times
+Use `/availability add` or `/availability edit` with local dates and times for both endpoints,
+for example `start:2026-12-01 22:00 end:2026-12-02 01:00 timezone:Europe/Kyiv`.
+Choose the required `timezone` from autocomplete suggestions. Times skipped or repeated by
+daylight saving are rejected. Discord displays saved times
 in each viewer's local timezone. Use `/availability list` to get the ID for `edit` or `remove`.
 
-### Live match-start alerts
+For `/availability set today` and `/availability set timetable`, enter local times such as
+`18:30` and `22:00`, or select `all_day`. The optional `timezone` offers named suggestions
+and defaults to the server time zone. An earlier end time means the following day.
+Use `tentative` for uncertain availability.
+
+### Live match alerts and Twitch links
 
 The bot posts a start alert the first time PandaScore reports a followed series as running.
 Use the `match-starts` option of `/settings notifications` to control these alerts.
 Set `Twitch__ClientId` and `Twitch__ClientSecret` in the deployment environment
 (`/opt/happymix/bot.env` on the VM) using credentials from a Twitch developer application.
-Start alerts link only preferred channels that Twitch reports live in the matching game category
+Reminders (using the configured lead time), match-start alerts, and results after each map
+link only preferred channels that Twitch reports live in the matching game category
 when the bot sends the message. A live channel can be showing a different match.
-The alert still posts if Twitch credentials are missing or the lookup fails.
+These notifications still post without Twitch links if credentials are missing or the lookup fails.
 
 ## Availability dashboard
 

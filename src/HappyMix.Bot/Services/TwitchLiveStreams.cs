@@ -95,7 +95,7 @@ internal sealed partial class TwitchLiveStreams(
     public void Dispose() => _tokenLock.Dispose();
 
     [LoggerMessage(EventId = 1, Level = LogLevel.Warning,
-        Message = "Twitch live status lookup failed ({FailureType}); sending match start without links.")]
+        Message = "Twitch live status lookup failed ({FailureType}); sending announcement without links.")]
     private static partial void LogLookupFailed(ILogger logger, string failureType);
 
     private sealed record TokenResponse(string Access_Token, int Expires_In);

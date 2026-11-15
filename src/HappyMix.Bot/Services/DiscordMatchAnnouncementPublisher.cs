@@ -107,30 +107,26 @@ internal sealed class DiscordMatchAnnouncementPublisher(
     }
 
     /// <inheritdoc />
-    public Task PublishStartingSoonAsync(
+    public async Task PublishStartingSoonAsync(
         EsportsMatch match,
         CancellationToken cancellationToken)
     {
         var embed = new EmbedBuilder()
             .WithTitle($"{match.Game.DisplayName()} • Match starts within {settings?.Preferences?.ReminderMinutes ?? 30} minutes")
-            .WithDescription(FormatMatchDetails(match) + FormatTwitchLinks(match))
+            .WithDescription(FormatMatchDetails(match) + await FormatLiveTwitchLinksAsync(match, cancellationToken))
             .WithColor(Color.Orange)
             .WithCurrentTimestamp()
             .Build();
 
         ulong? role = match.Game == Esport.CounterStrike2
             ? settings?.Preferences?.CounterStrikePingRoleId : settings?.Preferences?.Dota2PingRoleId;
-        return SendAsync(embed, cancellationToken, role);
+        await SendAsync(embed, cancellationToken, role);
     }
 
     /// <inheritdoc />
     public async Task PublishMatchStartedAsync(EsportsMatch match, CancellationToken cancellationToken)
     {
-        var preferred = GetTwitchChannels(match).Select(TwitchChannels.GetHandle).OfType<string>()
-            .Distinct(StringComparer.Ordinal).Take(5).ToArray();
-        var live = await twitch.GetLiveAsync(preferred, match.Game, cancellationToken);
-        var links = live.Select(handle => $"[{handle}](https://www.twitch.tv/{handle})");
-        string streams = live.Count == 0 ? string.Empty : $"\nLive on Twitch: {string.Join(" · ", links)}";
+        string streams = await FormatLiveTwitchLinksAsync(match, cancellationToken);
         var embed = new EmbedBuilder()
             .WithTitle($"{match.Game.DisplayName()} • Match started")
             .WithDescription(FormatMatchDetails(match) + streams)
@@ -141,11 +137,15 @@ internal sealed class DiscordMatchAnnouncementPublisher(
     }
 
     /// <inheritdoc />
-    public Task PublishMapResultAsync(
+    public async Task PublishMapResultAsync(
         EsportsMatch match,
         EsportsGame game,
         CancellationToken cancellationToken)
-        => SendAsync(BuildGameResultEmbed(match, game), cancellationToken);
+    {
+        var embed = BuildGameResultEmbed(match, game).ToEmbedBuilder();
+        embed.WithDescription(embed.Description + await FormatLiveTwitchLinksAsync(match, cancellationToken));
+        await SendAsync(embed.Build(), cancellationToken);
+    }
 
     /// <summary>Formats an individual result using map terminology for CS2 and game terminology for Dota 2.</summary>
     /// <param name="match">The parent series and discipline.</param>
@@ -233,6 +233,15 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         }
 
         return resolvedChannel;
+    }
+
+    private async Task<string> FormatLiveTwitchLinksAsync(EsportsMatch match, CancellationToken cancellationToken)
+    {
+        var preferred = GetTwitchChannels(match).Select(TwitchChannels.GetHandle).OfType<string>()
+            .Distinct(StringComparer.Ordinal).Take(5).ToArray();
+        var live = await twitch.GetLiveAsync(preferred, match.Game, cancellationToken);
+        var links = live.Select(handle => $"[{handle}](https://www.twitch.tv/{handle})");
+        return live.Count == 0 ? string.Empty : $"\nLive on Twitch: {string.Join(" · ", links)}";
     }
 
     private string FormatTwitchLinks(EsportsMatch match) => TwitchChannels.Format(match, GetTwitchChannels(match));
