@@ -57,7 +57,19 @@ public sealed partial class DashboardController
         var ids = people.Append(member.Id).Distinct().Take(EventRules.MaxInvitees + 1).ToArray();
         var data = (await sender.Send(new GetMembersAvailabilityQuery(guildId, ids, day, options.Value.TimeZoneId), HttpContext.RequestAborted)).Value;
         var (profiles, available) = await memberDirectory.GetMembersAsync(guildId, HttpContext.RequestAborted);
-        return PartialView("_MembersBoard", new MembersBoardModel(data, new MemberNames(profiles, available), member.Id, Selectable: true));
+        var events = await LoadBoardEventsAsync(guildId, member.Id, data.Rows.Select(row => row.UserId), data.Date, data.TimeZone);
+        return PartialView("_MembersBoard", new MembersBoardModel(data, new MemberNames(profiles, available), member.Id, Selectable: true, Events: events));
+    }
+
+    /// <summary>Confirmed events of the board's members on its date, keyed by the board row's account.</summary>
+    private async Task<ILookup<ulong, BoardEvent>> LoadBoardEventsAsync(ulong guildId, ulong viewerId, IEnumerable<ulong> members,
+        DateOnly date, string zoneId)
+    {
+        var zone = TimeZoneInfo.TryFindSystemTimeZoneById(zoneId, out var found) ? found : TimeZoneInfo.Utc;
+        var from = LocalTimes.StartOfDay(date, zone);
+        var blocks = (await sender.Send(new GetMembersEventsQuery(guildId, viewerId, members.ToArray(), from,
+            LocalTimes.StartOfDay(date.AddDays(1), zone)), HttpContext.RequestAborted)).Value;
+        return BoardEvents.ForDate(blocks, date, zone, guildId, text["Busy_event"]);
     }
 
     [HttpPost("/events/{guildId}/new")]

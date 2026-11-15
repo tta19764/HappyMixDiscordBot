@@ -253,7 +253,8 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
             var data = (await sender.Send(new GetMembersAvailabilityQuery(guildId, ids, selectedDate, options.Value.TimeZoneId, IncludeMonth: true),
                 cancellationToken)).Value;
             membersBoard = new MembersBoardModel(data, new MemberNames(profiles, available), member.Id,
-                DayUrl: day => $"/availability/{guildId}?view=members&date={day:yyyy-MM-dd}");
+                DayUrl: day => $"/availability/{guildId}?view=members&date={day:yyyy-MM-dd}",
+                Events: await LoadBoardEventsAsync(guildId, member.Id, data.Rows.Select(row => row.UserId), data.Date, data.TimeZone));
         }
         return View("Availability", new AvailabilityPage(guildId, guild?.Name ?? "HappyMix",
             member.GuildPermissions.Administrator, view, zone.Id,

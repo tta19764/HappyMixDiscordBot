@@ -1376,3 +1376,33 @@ form:has([data-repeat-toggle]:not(:checked)) [data-repeat-through] { display: no
 .hm-mboard__hint { color: var(--hm-text-muted); }
 @media (max-width: 47.99rem) { .hm-event-board { padding: var(--hm-space-3); } .hm-tgrid__pick--head span { display: none; } }
 .hm-day__info { display: grid; justify-items: start; gap: 2px; min-width: 0; }
+
+/* ---------- 30. Confirmed events on boards, short events ---------- */
+.hm-tgrid__event { position: absolute; top: .3rem; bottom: .3rem; z-index: 2; display: flex; align-items: center; min-width: 8px; padding: 0 var(--hm-space-2);
+    border-radius: 7px; background: var(--hm-event); color: var(--hm-event-ink); box-shadow: 0 0 0 2px var(--hm-surface); text-decoration: none;
+    font-size: var(--hm-fs-xs); font-weight: 800; white-space: nowrap; overflow: visible; }
+.hm-tgrid__event:hover { color: var(--hm-event-ink); filter: brightness(1.08); }
+.hm-tgrid__event-label { overflow: hidden; text-overflow: ellipsis; }
+.hm-tgrid__event--private { background: repeating-linear-gradient(135deg, var(--hm-event) 0 5px, color-mix(in srgb, var(--hm-event) 70%, var(--hm-surface)) 5px 10px); }
+/* Short events: a slim block with a marker on top, and the title as a tag beside it (left of it near the end of the day). */
+.hm-tgrid__event--short { padding: 0; justify-content: center; }
+.hm-tgrid__event--short::before { content: ""; position: absolute; top: -4px; left: 50%; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: var(--hm-event); box-shadow: 0 0 0 2px var(--hm-surface); }
+.hm-tgrid__event--short .hm-tgrid__event-label { position: absolute; left: calc(100% + 4px); top: 50%; transform: translateY(-50%); max-width: 9rem; padding: 1px 6px;
+    border-radius: 4px; background: var(--hm-event-tint); color: var(--hm-text); box-shadow: inset 0 0 0 1px var(--hm-event); }
+.hm-tgrid__event--short.hm-tgrid__event--end .hm-tgrid__event-label { left: auto; right: calc(100% + 4px); }
+.hm-tgrid__event:hover::after, .hm-tgrid__event:focus-visible::after {
+    content: attr(data-tip); position: absolute; left: 0; bottom: calc(100% + 8px); z-index: 6; width: max-content; max-width: 16rem;
+    padding: var(--hm-space-2) var(--hm-space-3); border-radius: var(--hm-radius-md); background: var(--hm-surface-2); border: 1px solid var(--hm-border-strong);
+    box-shadow: var(--hm-shadow); color: var(--hm-text); font-size: var(--hm-fs-xs); font-weight: 600; white-space: normal; }
+.hm-tgrid__event--end:hover::after, .hm-tgrid__event--end:focus-visible::after { left: auto; right: 0; }
+.hm-swatch--event { background: var(--hm-event); border-color: transparent; }
+
+.hm-dayline__seg--event { min-width: 6px; }
+.hm-dayline__seg--short { border-radius: 3px; }
+.hm-dayline__seg--short::after { content: ""; position: absolute; top: -5px; left: 50%; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: var(--hm-event); box-shadow: 0 0 0 2px var(--hm-surface); }
+.hm-dayline--events .hm-dayline__seg { overflow: visible; }
+.hm-dayline--events .hm-dayline__seg > span { overflow: hidden; text-overflow: ellipsis; }
+.hm-dayline--events .hm-dayline__seg--short { padding: 0; }
+.hm-dayline--events .hm-dayline__seg--short > span { position: absolute; left: calc(100% + 4px); top: 50%; transform: translateY(-50%); max-width: 12rem; padding: 1px 6px;
+    border-radius: 4px; background: var(--hm-event-tint); color: var(--hm-text); box-shadow: inset 0 0 0 1px var(--hm-event); }
+.hm-dayline--events .hm-dayline__seg--short.hm-dayline__seg--late > span { left: auto; right: calc(100% + 4px); }

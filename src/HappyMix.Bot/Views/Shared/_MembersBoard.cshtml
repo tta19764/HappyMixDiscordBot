@@ -114,6 +114,10 @@
                                 }
                             </span>
                         }
+                        @if (Model.Events is { } events)
+                        {
+                            <partial name="_BoardEvents" model="new BoardEventsModel(events[row.UserId])" />
+                        }
                         @if (Model.Selectable)
                         {
                             <span class="hm-tgrid__pick" data-pick hidden></span>
@@ -128,6 +132,7 @@
         <span><i class="hm-swatch hm-swatch--weekly"></i>@T["Weekly"]</span>
         <span><i class="hm-swatch hm-swatch--tentative"></i>@T["Tentative"]</span>
         <span><i class="hm-swatch hm-swatch--nodata"></i>@T["No_data"]</span>
+        <span><i class="hm-swatch hm-swatch--event"></i>@T["Confirmed_event"]</span>
         @if (Model.Selectable)
         {
             <span><i class="hm-swatch hm-swatch--pick"></i>@T["Event_time"]</span>

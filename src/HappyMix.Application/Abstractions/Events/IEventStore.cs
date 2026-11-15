@@ -47,6 +47,9 @@ public interface IEventStore
 
     Task<IReadOnlyList<EventDetails>> ListForGroupAsync(ulong guildId, Guid groupId, DateTimeOffset from);
 
+    /// <summary>Events of the server with a confirmed date overlapping <paramref name="from"/>–<paramref name="until"/>.</summary>
+    Task<IReadOnlyList<EventDetails>> ListConfirmedAsync(ulong guildId, DateTimeOffset from, DateTimeOffset until);
+
     /// <summary>Records an answer. Answering the same way twice changes nothing.</summary>
     Task<EventResponseChange> RespondAsync(Guid eventId, DateOnly day, ulong userId, bool accepted, DateTimeOffset now);
 

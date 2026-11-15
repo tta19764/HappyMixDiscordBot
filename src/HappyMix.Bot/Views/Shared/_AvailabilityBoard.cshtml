@@ -134,6 +134,7 @@
                                 }
                             </span>
                         }
+                        <partial name="_BoardEvents" model="new BoardEventsModel(Model.BoardEvents[row.UserId], first, span)" />
                         @if (nowLeft is { } nowPosition)
                         {
                             <span class="hm-tgrid__now" style="left: @Css(nowPosition)"></span>
@@ -161,6 +162,7 @@
         <span><i class="hm-swatch hm-swatch--tentative"></i>@T["Tentative"]</span>
         <span><i class="hm-swatch hm-swatch--busy"></i>@T["Busy_has_times_that_day_not_this_hour"]</span>
         <span><i class="hm-swatch hm-swatch--nodata"></i>@T["No_data"]</span>
+        <span><i class="hm-swatch hm-swatch--event"></i>@T["Confirmed_event"]</span>
         <span>↤ ↦ @T["Continues_from_or_into_the_next_day"]</span>
     </p>
 </div>

@@ -1968,4 +1968,6 @@
 <data name="You_re_now_an_invitee_who_accepted_every_remaining_date_You_can_withdraw_any_time" xml:space="preserve"><value>You're now an invitee going to every remaining date. You can withdraw any time.</value></data>
 <data name="Pick_someone_who_is_invited_to_this_event" xml:space="preserve"><value>Pick someone who is invited to this event.</value></data>
 <data name="The_organizer_changed_in_the_meantime_Reload_and_try_again" xml:space="preserve"><value>The organizer changed in the meantime. Reload and try again.</value></data>
+<data name="Busy_event" xml:space="preserve"><value>Busy · event</value></data>
+<data name="Confirmed_event" xml:space="preserve"><value>Confirmed event</value></data>
 </root>

@@ -1,0 +1,26 @@
+@model BoardEventsModel
+@{
+    string Css(double value) => value.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture) + "%";
+}
+@* Confirmed events on one board row. Short events get a narrow block with the title beside it instead of inside. *@
+@foreach (var item in Model.Events)
+{
+    double start = Math.Max(item.StartHour, Model.FirstHour), end = Math.Min(item.EndHour, Model.FirstHour + Model.HourSpan);
+    if (end <= start)
+    {
+        continue;
+    }
+    double left = (start - Model.FirstHour) / Model.HourSpan * 100;
+    double width = (end - start) / Model.HourSpan * 100;
+    bool narrow = item.IsShort || width < 9;
+    string tip = $"{item.Title} · {item.Time}";
+    string classes = $"hm-tgrid__event {(narrow ? "hm-tgrid__event--short" : "")} {(left > 60 ? "hm-tgrid__event--end" : "")} {(item.Url is null ? "hm-tgrid__event--private" : "")}";
+    if (item.Url is { } url)
+    {
+        <a class="@classes" href="@url" style="left: @Css(left); width: @Css(width)" data-tip="@tip" aria-label="@tip"><span class="hm-tgrid__event-label">@item.Title</span></a>
+    }
+    else
+    {
+        <span class="@classes" style="left: @Css(left); width: @Css(width)" data-tip="@tip" aria-label="@tip"><span class="hm-tgrid__event-label">@item.Title</span></span>
+    }
+}

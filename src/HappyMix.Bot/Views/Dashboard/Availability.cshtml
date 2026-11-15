@@ -75,7 +75,7 @@ else if (!Model.IsWeekly)
             <div class="hm-dayline hm-dayline--events" aria-hidden="true">
                 @foreach (var block in dayEvents)
                 {
-                    <span class="hm-dayline__seg hm-dayline__seg--event @(block.Confirmed ? "" : "hm-dayline__seg--event-pending")"
+                    <span class="hm-dayline__seg hm-dayline__seg--event @(block.Confirmed ? "" : "hm-dayline__seg--event-pending") @(block.EndHour - block.StartHour < 1.5 ? "hm-dayline__seg--short" : "") @(block.StartHour > 15 ? "hm-dayline__seg--late" : "")"
                           style="left: @AvailabilityFormat.Css(block.StartHour / 24 * 100); width: @AvailabilityFormat.Css((block.EndHour - block.StartHour) / 24 * 100)"><span>@block.Title</span></span>
                 }
             </div>
@@ -269,7 +269,7 @@ else
                         }
                         @foreach (var block in rowEvents)
                         {
-                            <span class="hm-dayline__seg hm-dayline__seg--event @(block.Confirmed ? "" : "hm-dayline__seg--event-pending")" title="@block.Title · @block.Time"
+                            <span class="hm-dayline__seg hm-dayline__seg--event @(block.Confirmed ? "" : "hm-dayline__seg--event-pending") @(block.EndHour - block.StartHour < 1.5 ? "hm-dayline__seg--short" : "") @(block.StartHour > 15 ? "hm-dayline__seg--late" : "")" title="@block.Title · @block.Time"
                                   style="left: @AvailabilityFormat.Css(block.StartHour / 24 * 100); width: @AvailabilityFormat.Css((block.EndHour - block.StartHour) / 24 * 100)"></span>
                         }
                         @foreach (var window in row.Windows)

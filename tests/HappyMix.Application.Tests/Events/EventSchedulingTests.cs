@@ -214,6 +214,24 @@ public sealed class EventSchedulingTests
         Assert.True((await fixture.Sender.Send(new ConfirmEventCommand(Guild, Kai, id, Thursday))).IsSuccess);
     }
 
+    [Fact]
+    public async Task ConfirmedEventsShowForTheOrganizerAndAcceptedInviteesWithTitlesOnlyForParticipants()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var id = (await fixture.Sender.Send(Create(Organizer) with { Invitees = [Kai, Mira] })).Value.EventId;
+        await fixture.Sender.Send(new RespondToEventCommand(Guild, Kai, id, Thursday, true));
+        var from = new DateTimeOffset(2026, 11, 18, 0, 0, 0, TimeSpan.Zero);
+        var query = new GetMembersEventsQuery(Guild, Mira, [Organizer, Kai, Mira, Taro], from, from.AddDays(3));
+
+        Assert.Empty((await fixture.Sender.Send(query)).Value); // pending dates don't count
+        await fixture.Sender.Send(new ConfirmEventCommand(Guild, Organizer, id, Thursday));
+
+        var blocks = (await fixture.Sender.Send(query)).Value;
+        Assert.Equal([Organizer, Kai], blocks.Select(item => item.UserId).Order());
+        Assert.All(blocks, item => Assert.True(item.Visible));
+        Assert.All((await fixture.Sender.Send(query with { ViewerId = Taro })).Value, item => Assert.False(item.Visible));
+    }
+
     private static CreateEventCommand Create(ulong organizer) => new(Guild, organizer, Guid.NewGuid(), null, [Kai],
         "Thursday scrims", "Bring a mic", Thursday, "20:00", "23:00", Kyiv, "UTC", EventRecurrence.Once, [], null);
 

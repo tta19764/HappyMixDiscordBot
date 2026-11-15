@@ -76,7 +76,7 @@ public sealed record EventBlock(DateOnly Date, double StartHour, double EndHour,
 /// links calendar days when the month counts are shown.
 /// </summary>
 public sealed record MembersBoardModel(HappyMix.Application.Guilds.MembersAvailability Data, MemberNames Names, ulong Viewer,
-    bool Selectable = false, Func<DateOnly, string>? DayUrl = null);
+    bool Selectable = false, Func<DateOnly, string>? DayUrl = null, ILookup<ulong, BoardEvent>? Events = null);
 
 public sealed record RoleOption(ulong Id, string Name, string Color);
 

@@ -53,6 +53,38 @@ public sealed record EventDetailPage(ulong GuildId, string GuildName, bool CanCo
     public bool CanChange => View.IsOrganizer && !Started && Occurrence.Status != OccurrenceStatus.Canceled;
 }
 
+/// <summary>
+/// A confirmed event drawn on a member's row of an availability board, in hours 0–24 of the board date. A null
+/// <see cref="Url"/> means the viewer isn't part of the event, so the title is replaced by a generic label.
+/// </summary>
+public sealed record BoardEvent(ulong UserId, string Title, double StartHour, double EndHour, string Time, string? Url)
+{
+    /// <summary>Under 90 minutes: too narrow for a label inside the block.</summary>
+    public bool IsShort => EndHour - StartHour < 1.5;
+}
+
+/// <summary>Events for one board row, placed on the visible hour range.</summary>
+public sealed record BoardEventsModel(IEnumerable<BoardEvent> Events, int FirstHour = 0, int HourSpan = 24);
+
+public static class BoardEvents
+{
+    public static ILookup<ulong, BoardEvent> Empty { get; } = Array.Empty<BoardEvent>().ToLookup(item => item.UserId);
+
+    /// <summary>Splits event dates at local midnight and keeps the part on <paramref name="date"/>.</summary>
+    public static ILookup<ulong, BoardEvent> ForDate(IEnumerable<MemberEventBlock> blocks, DateOnly date, TimeZoneInfo zone, ulong guildId, string hiddenTitle)
+    {
+        var dayStart = date.ToDateTime(TimeOnly.MinValue);
+        return blocks.Select(block =>
+        {
+            var start = TimeZoneInfo.ConvertTime(block.Start, zone).DateTime;
+            var end = TimeZoneInfo.ConvertTime(block.End, zone).DateTime;
+            double from = Math.Max(0, (start - dayStart).TotalHours), until = Math.Min(24, (end - dayStart).TotalHours);
+            return until <= from ? null : new BoardEvent(block.UserId, block.Visible ? block.Title : hiddenTitle, from, until,
+                $"{start:HH:mm}–{end:HH:mm}", block.Visible ? $"/events/{guildId}/{block.EventId}?date={block.Date:yyyy-MM-dd}" : null);
+        }).OfType<BoardEvent>().ToLookup(item => item.UserId);
+    }
+}
+
 /// <summary>Formats event times and schedules in the event's own time zone and the viewer's language.</summary>
 public static class EventText
 {

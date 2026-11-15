@@ -51,6 +51,9 @@ public sealed record GroupPage(
     bool Evening = false,
     string? Tab = null)
 {
+    /// <summary>Confirmed events of the members on the board date.</summary>
+    public ILookup<ulong, BoardEvent> BoardEvents { get; init; } = HappyMix.Bot.Web.BoardEvents.Empty;
+
     /// <summary>Upcoming dates of this group's events; empty for people who can't see the roster.</summary>
     public IReadOnlyList<EventRow> Events { get; init; } = [];
 

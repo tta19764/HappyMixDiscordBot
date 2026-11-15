@@ -263,7 +263,12 @@ public sealed partial class DashboardController
                 .OrderBy(row => row.Date).Take(10).ToArray();
         }
         var view = View("Group", new GroupPage(guildId, GuildName(guildId), viewer, group, names,
-            candidates, banner, backUrl, form, board, evening, tab) { Events = events });
+            candidates, banner, backUrl, form, board, evening, tab)
+        {
+            Events = events,
+            BoardEvents = board is null ? BoardEvents.Empty
+                : await LoadBoardEventsAsync(guildId, actor.UserId, board.Rows.Select(row => row.UserId), board.Date, board.TimeZone)
+        });
         if (form?.Error is not null)
             view.StatusCode = StatusCodes.Status422UnprocessableEntity;
         return view;
