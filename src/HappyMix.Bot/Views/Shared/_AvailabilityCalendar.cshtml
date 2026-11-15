@@ -1,0 +1,33 @@
+@model AvailabilityPage
+@{
+    var first = new DateOnly(Model.SelectedDate.Year, Model.SelectedDate.Month, 1);
+    int days = DateTime.DaysInMonth(first.Year, first.Month);
+    string Url(DateOnly date) => $"/availability/{Model.GuildId}?date={date:yyyy-MM-dd}";
+    var culture = System.Globalization.CultureInfo.CurrentUICulture;
+}
+<section class="hm-card hm-calendar" aria-label="@T["Calendar_Availability"]">
+    <div class="hm-row hm-row--between">
+        @if (first > DateOnly.MinValue) { <a class="hm-btn" href="@Url(first.AddMonths(-1))">@T["Previous"]</a> }
+        <h2>@first.ToString("MMMM yyyy", culture)</h2>
+        @if (first.Year < 9999 || first.Month < 12) { <a class="hm-btn" href="@Url(first.AddMonths(1))">@T["Next"]</a> }
+    </div>
+    <div class="hm-calendar__grid">
+        @for (int index = 0; index < 7; index++)
+        {
+            <span>@culture.DateTimeFormat.GetAbbreviatedDayName((DayOfWeek)((index + 1) % 7))</span>
+        }
+        @for (int index = 0; index < ((int)first.DayOfWeek + 6) % 7; index++) { <span></span> }
+        @for (int number = 1; number <= days; number++)
+        {
+            var date = new DateOnly(first.Year, first.Month, number);
+            bool configured = Model.ConfiguredDates.Contains(date);
+            <a class="hm-calendar__day @(configured ? "is-configured" : "")" href="@Url(date)"
+               aria-current="@(date == Model.SelectedDate ? "date" : null)"
+               aria-label="@(date.ToString("D", culture) + (configured ? " · " + T["Calendar_Configured"] : ""))">
+                @number
+                @if (configured) { <span aria-hidden="true">●</span> }
+            </a>
+        }
+    </div>
+    <p class="hm-help">● @T["Calendar_Configured"]</p>
+</section>

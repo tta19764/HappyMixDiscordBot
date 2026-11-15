@@ -26,6 +26,8 @@ public interface IAvailabilityStore
     /// <summary>Creates a window or replaces the specified member-owned window.</summary>
     Task<AvailabilityWindow> SaveAsync(ulong guildId, ulong userId, Guid? id, DateTimeOffset start, DateTimeOffset finish, bool tentative = false);
 
+    Task SaveDatesAsync(ulong guildId, ulong userId, IReadOnlyList<AvailabilityWindow> windows);
+
     Task<bool> RemoveAsync(ulong guildId, ulong userId, Guid id);
     Task<IReadOnlyList<WeeklyAvailability>> ListWeeklyAsync(ulong guildId, ulong userId);
     /// <summary>Adds a weekly range or updates the range with the same day, start and time zone.</summary>

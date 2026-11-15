@@ -473,6 +473,45 @@ for (const editor of document.querySelectorAll("[data-week-editor]")) {
     list.addEventListener("input", render);
     list.addEventListener("change", render);
 
+    const clipboard = editor.querySelector("[data-schedule-clipboard]");
+    const copyStatus = editor.querySelector("[data-copy-status]");
+    editor.querySelector("[data-copy-schedule]")?.addEventListener("click", async () => {
+        const fields = ["rangeStartHour", "rangeStartMinute", "rangeEndHour", "rangeEndMinute", "rangeKind"];
+        const ranges = items().map(item => fields.map(name => item.querySelector(`[name="${name}"]`).value));
+        clipboard.value = JSON.stringify({ format: "happymix-day-v1", zone: editor.elements.offset.value || editor.elements.offset.placeholder, ranges });
+        clipboard.focus();
+        clipboard.select();
+        try { await navigator.clipboard.writeText(clipboard.value); } catch { /* Selected text supports Ctrl+C. */ }
+    });
+    editor.querySelector("[data-paste-schedule]")?.addEventListener("click", () => {
+        try {
+            const data = JSON.parse(clipboard.value);
+            const validTime = (value, max) => typeof value === "string" && /^\d{2}$/.test(value) && Number(value) < max;
+            if (data.format !== "happymix-day-v1" || typeof data.zone !== "string" || data.zone.length > 100 ||
+                !Array.isArray(data.ranges) || data.ranges.length > 8 || !data.ranges.every(row =>
+                    Array.isArray(row) && row.length === 5 && validTime(row[0], 24) && validTime(row[1], 60) &&
+                    validTime(row[2], 24) && validTime(row[3], 60) && ["definite", "tentative"].includes(row[4]))) throw new Error();
+            for (const item of items()) item.remove();
+            const fields = ["rangeStartHour", "rangeStartMinute", "rangeEndHour", "rangeEndMinute", "rangeKind"];
+            for (const row of data.ranges) {
+                const fragment = editor.querySelector("[data-range-template]").content.cloneNode(true);
+                const item = fragment.querySelector("[data-range-item]");
+                fields.forEach((name, index) => {
+                    const select = item.querySelector(`[name="${name}"]`);
+                    if (![...select.options].some(option => option.value === row[index])) select.add(new Option(row[index], row[index]));
+                    select.value = row[index];
+                });
+                prepare(item);
+                editor.querySelector("[data-range-list]").append(item);
+            }
+            editor.elements.offset.value = data.zone;
+            selected = items()[0] ?? null;
+            render();
+            editor.dispatchEvent(new Event("change", { bubbles: true }));
+            copyStatus.textContent = copyStatus.dataset.ready;
+        } catch { copyStatus.textContent = copyStatus.dataset.invalid; }
+    });
+
     // Enhance: drop the empty fallback row, show the track and tools, and collapse unselected ranges.
     for (const item of items()) {
         if (item.dataset.blank === "true" && !read(item)) item.remove();
@@ -1005,4 +1044,8 @@ for (const form of document.querySelectorAll("[data-event-form]")) {
     form.addEventListener("input", update);
     form.addEventListener("change", update);
     update();
+}
+
+for (const image of document.querySelectorAll("[data-game-art]")) {
+    image.addEventListener("error", () => { image.hidden = true; });
 }

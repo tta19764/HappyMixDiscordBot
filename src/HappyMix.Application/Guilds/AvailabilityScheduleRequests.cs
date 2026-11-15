@@ -15,13 +15,45 @@ public sealed record SetWeeklyAvailabilityCommand(ulong GuildId, ulong UserId, D
 public sealed record GetWeeklyAvailabilityQuery(ulong GuildId, ulong UserId) : IQuery<IReadOnlyList<WeeklyAvailability>>;
 public sealed record ClearWeeklyAvailabilityCommand(ulong GuildId, ulong UserId, DayOfWeek Day, TimeOnly? Start = null, string? TimeZone = null) : ICommand;
 
+public sealed record SetDateAvailabilityCommand(ulong GuildId, ulong UserId, DateOnly First, DateOnly Last,
+    string Start, string End, string? Zone, string DefaultZone, bool FullDay, bool Tentative) : ICommand<int>;
+
 internal sealed partial class AvailabilityScheduleHandlers(IAvailabilityStore store, IGuildSettingsStore settings, IClock clock,
     IAccountLinkStore accountLinks) :
     ICommandHandler<SetTodayAvailabilityCommand, AvailabilityWindow>,
+    ICommandHandler<SetDateAvailabilityCommand, int>,
     ICommandHandler<SetWeeklyAvailabilityCommand, WeeklyAvailability>,
     IQueryHandler<GetWeeklyAvailabilityQuery, IReadOnlyList<WeeklyAvailability>>,
     ICommandHandler<ClearWeeklyAvailabilityCommand>
 {
+    public async Task<Result<int>> Handle(SetDateAvailabilityCommand command, CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (command.Last < command.First)
+                throw new AvailabilityException("Choose an end date on or after the first date.");
+            var zone = await GetZoneAsync(command.GuildId, command.Zone, command.DefaultZone, cancellationToken);
+            var (start, end) = command.FullDay ? (TimeOnly.MinValue, TimeOnly.MinValue) : ParseTimes(command.Start, command.End);
+            var windows = new List<AvailabilityWindow>();
+            for (int number = command.First.DayNumber; number <= command.Last.DayNumber; number++)
+            {
+                var date = DateOnly.FromDayNumber(number);
+                if (date == DateOnly.MaxValue && (command.FullDay || end < start))
+                    throw new AvailabilityException("The end of this range exceeds the supported calendar.");
+                var from = command.FullDay ? LocalTimes.StartOfDay(date, zone) : Resolve(date.ToDateTime(start), zone);
+                var until = command.FullDay ? LocalTimes.StartOfDay(date.AddDays(1), zone)
+                    : Resolve((end < start ? date.AddDays(1) : date).ToDateTime(end), zone);
+                windows.Add(new AvailabilityWindow(Guid.NewGuid(), from, until, command.Tentative));
+            }
+            await store.SaveDatesAsync(command.GuildId, await MemberAsync(command.GuildId, command.UserId), windows);
+            return Result.Success(windows.Count);
+        }
+        catch (AvailabilityException exception)
+        {
+            return Result.Failure<int>(new("Availability.Invalid", exception.Message));
+        }
+    }
+
     public async Task<Result<AvailabilityWindow>> Handle(SetTodayAvailabilityCommand command, CancellationToken cancellationToken)
     {
         try

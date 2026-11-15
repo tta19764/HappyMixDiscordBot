@@ -30,10 +30,27 @@
         @foreach (var subscription in Model.Subscriptions)
         {
             bool joined = Model.Roles.Contains(ulong.Parse(subscription.RoleId, System.Globalization.CultureInfo.InvariantCulture));
-            <form class="hm-row hm-row--between" method="post" action="@url">
+            var portraits = Model.Subscribers.GetValueOrDefault(subscription.RoleId) ?? [];
+            <form class="hm-news-card" method="post" action="@url">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="game" value="@subscription.AppId" />
-                <a href="https://discord.com/channels/@Model.GuildId/@subscription.ChannelId">@subscription.Name</a>
+                <div class="hm-news-card__art">
+                    <img src="https://cdn.akamai.steamstatic.com/steam/apps/@subscription.AppId/header.jpg" alt="" loading="lazy" data-game-art />
+                </div>
+                <div class="hm-news-card__body">
+                <h3><a href="https://discord.com/channels/@Model.GuildId/@subscription.ChannelId">@subscription.Name</a></h3>
+                <div class="hm-news-members">
+                    @foreach (string portrait in portraits.Take(4))
+                    {
+                        <img src="@portrait" alt="" width="32" height="32" loading="lazy" />
+                    }
+                    @if (Model.MembersAvailable)
+                    {
+                        <span>@T["News_Subscribers", portraits.Length]</span>
+                        @if (portraits.Length > 4) { <span>@T["News_More", portraits.Length - 4]</span> }
+                    }
+                    else { <span>@T["News_MembersUnavailable"]</span> }
+                </div>
                 <div class="hm-row">
                     @if (subscription.Deleting)
                     {
@@ -49,6 +66,7 @@
                     {
                         <button class="hm-btn" name="action" value="delete">@T["GameNews_Delete"]</button>
                     }
+                </div>
                 </div>
             </form>
         }

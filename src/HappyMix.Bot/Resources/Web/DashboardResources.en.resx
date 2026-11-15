@@ -1911,4 +1911,17 @@
   <data name="GameNews_Deleting" xml:space="preserve">
     <value>Deletion pending. Retry to finish.</value>
   </data>
+<data name="News_Subscribers" xml:space="preserve"><value>{0} subscribers</value></data>
+<data name="News_More" xml:space="preserve"><value>+{0} more</value></data>
+<data name="News_MembersUnavailable" xml:space="preserve"><value>Member list unavailable</value></data>
+<data name="Week_CopyLabel" xml:space="preserve"><value>Copy a day’s ranges and time zone. Paste the text into another day’s editor.</value></data>
+<data name="Week_Copy" xml:space="preserve"><value>Copy day</value></data>
+<data name="Week_Paste" xml:space="preserve"><value>Apply pasted day</value></data>
+<data name="Week_Invalid" xml:space="preserve"><value>Paste a valid copied schedule.</value></data>
+<data name="Week_Ready" xml:space="preserve"><value>Applied. Save the day to keep these changes.</value></data>
+<data name="Calendar_Availability" xml:space="preserve"><value>By date</value></data>
+<data name="Calendar_Date" xml:space="preserve"><value>First date</value></data>
+<data name="Calendar_Through" xml:space="preserve"><value>Repeat through (optional)</value></data>
+<data name="Calendar_RangeHelp" xml:space="preserve"><value>Use the same hours on every date through the end date, including weekends. Leave empty for one day.</value></data>
+<data name="Calendar_Configured" xml:space="preserve"><value>Separately configured availability</value></data>
 </root>

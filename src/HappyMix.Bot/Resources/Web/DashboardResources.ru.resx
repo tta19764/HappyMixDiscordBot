@@ -1911,4 +1911,17 @@
   <data name="GameNews_Deleting" xml:space="preserve">
     <value>Удаление не завершено. Попробуйте ещё раз.</value>
   </data>
+<data name="News_Subscribers" xml:space="preserve"><value>Подписчиков: {0}</value></data>
+<data name="News_More" xml:space="preserve"><value>Ещё {0}</value></data>
+<data name="News_MembersUnavailable" xml:space="preserve"><value>Список участников недоступен</value></data>
+<data name="Week_CopyLabel" xml:space="preserve"><value>Скопируйте часы и часовой пояс дня и вставьте текст в редактор другого дня.</value></data>
+<data name="Week_Copy" xml:space="preserve"><value>Копировать день</value></data>
+<data name="Week_Paste" xml:space="preserve"><value>Применить вставленное расписание</value></data>
+<data name="Week_Invalid" xml:space="preserve"><value>Вставьте скопированное расписание.</value></data>
+<data name="Week_Ready" xml:space="preserve"><value>Применено. Сохраните день.</value></data>
+<data name="Calendar_Availability" xml:space="preserve"><value>По дате</value></data>
+<data name="Calendar_Date" xml:space="preserve"><value>Начальная дата</value></data>
+<data name="Calendar_Through" xml:space="preserve"><value>Повторять до (необязательно)</value></data>
+<data name="Calendar_RangeHelp" xml:space="preserve"><value>Эти часы будут добавлены на каждый день по конечную дату включительно, в том числе на выходные. Для одного дня оставьте поле пустым.</value></data>
+<data name="Calendar_Configured" xml:space="preserve"><value>Отдельно настроенная доступность</value></data>
 </root>

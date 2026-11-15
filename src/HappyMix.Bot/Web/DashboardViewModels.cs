@@ -53,6 +53,8 @@ public sealed record AvailabilityPage(
     BannerModel? Banner,
     AvailabilityForm Form)
 {
+    public DateOnly SelectedDate { get; init; }
+    public IReadOnlySet<DateOnly> ConfiguredDates { get; init; } = new HashSet<DateOnly>();
     public bool IsWeekly => View == "weekly";
     /// <summary>Dates the member accepted (pending and confirmed, plus canceled ones they expected) and invitations waiting.</summary>
     public IReadOnlyList<EventRow> MyEvents { get; init; } = [];

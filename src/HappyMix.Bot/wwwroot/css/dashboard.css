@@ -1149,3 +1149,21 @@ form[data-dirty="true"] .hm-savebar__clean { display: none; }
     .hm-event__actions .hm-btn { flex: 1; }
     .hm-event-tally__item b { font-size: 1.25rem; }
 }
+
+.hm-news-card { display:grid; grid-template-columns:180px minmax(0,1fr); gap:var(--hm-space-5); border:1px solid var(--hm-border); border-radius:16px; overflow:hidden; padding:16px; }
+.hm-news-card__art { border-radius:10px; overflow:hidden; background:var(--hm-surface); align-self:start; min-height:84px; }
+.hm-news-card__art img { display:block; width:100%; aspect-ratio:460/215; object-fit:cover; }
+.hm-news-card__art img[hidden] { display:none; }
+.hm-news-card__body { display:grid; gap:16px; }
+.hm-news-card h3 { margin:0; }
+.hm-news-members { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.hm-news-members img { border-radius:50%; object-fit:cover; }
+.hm-news-members img + img { margin-left:-14px; border:2px solid var(--hm-surface); }
+@media(max-width:600px) { .hm-news-card { grid-template-columns:1fr; } .hm-news-card__art { max-width:280px; } }
+.hm-calendar { margin-bottom:24px; }
+.hm-calendar__grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; text-align:center; }
+.hm-calendar__day { display:flex; justify-content:center; align-items:center; gap:6px; min-height:44px; border-radius:8px; text-decoration:none; }
+.hm-calendar__day:hover { background:var(--hm-surface); }
+.hm-calendar__day[aria-current] { outline:2px solid currentColor; font-weight:700; }
+.hm-calendar__day.is-configured { font-weight:700; }
+.hm-calendar__day span { font-size:8px; }

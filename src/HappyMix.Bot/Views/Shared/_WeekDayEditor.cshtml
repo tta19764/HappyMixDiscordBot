@@ -42,6 +42,15 @@
         <partial name="_WeekRangeItem" model="template" />
     </template>
 
+    <div class="hm-stack">
+        <label for="@row.Anchor-copy">@T["Week_CopyLabel"]</label>
+        <textarea class="hm-input" id="@row.Anchor-copy" data-schedule-clipboard rows="2" spellcheck="false"></textarea>
+        <div class="hm-row">
+            <button class="hm-btn" type="button" data-copy-schedule>@T["Week_Copy"]</button>
+            <button class="hm-btn" type="button" data-paste-schedule>@T["Week_Paste"]</button>
+            <span role="status" data-copy-status data-invalid="@T["Week_Invalid"]" data-ready="@T["Week_Ready"]"></span>
+        </div>
+    </div>
     <div class="hm-row hm-weditor__tools">
         <button class="hm-btn" type="button" data-add-range hidden>@DashboardIcons.Render("plus")@T["Add_time_range"]</button>
         <details class="hm-tz" open="@Model.CustomZone">

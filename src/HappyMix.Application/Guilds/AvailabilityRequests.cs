@@ -5,7 +5,7 @@ using HappyMix.Domain.Abstractions;
 
 namespace HappyMix.Application.Guilds;
 
-public sealed record GetUpcomingAvailabilityQuery(ulong GuildId, ulong UserId) : IQuery<AvailabilityWindow[]>;
+public sealed record GetUpcomingAvailabilityQuery(ulong GuildId, ulong UserId, bool IncludePast = false) : IQuery<AvailabilityWindow[]>;
 public sealed record SaveAvailabilityCommand(ulong GuildId, ulong UserId, Guid? Id, DateTimeOffset Start,
     DateTimeOffset End, bool Tentative = false) : ICommand<AvailabilityWindow>;
 public sealed record RemoveAvailabilityCommand(ulong GuildId, ulong UserId, Guid Id) : ICommand;
@@ -18,7 +18,7 @@ internal sealed class AvailabilityHandlers(IAvailabilityStore store, IClock cloc
     public async Task<Result<AvailabilityWindow[]>> Handle(GetUpcomingAvailabilityQuery query, CancellationToken cancellationToken)
     {
         var windows = await store.ListAsync(query.GuildId, await MemberAsync(query.GuildId, query.UserId));
-        return Result.Success(windows.Where(window => window.End > clock.UtcNow).ToArray());
+        return Result.Success(windows.Where(window => query.IncludePast || window.End > clock.UtcNow).ToArray());
     }
 
     public async Task<Result<AvailabilityWindow>> Handle(SaveAvailabilityCommand command, CancellationToken cancellationToken)

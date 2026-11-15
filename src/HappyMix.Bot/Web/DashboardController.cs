@@ -113,6 +113,9 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
         // The editor posts hour and minute selects; plain start/end values are still accepted.
         start ??= TimeRangeModel.Join(startHour, startMinute);
         end ??= TimeRangeModel.Join(endHour, endMinute);
+        if (action == "today" && !string.IsNullOrWhiteSpace(Request.Form["date"]) &&
+            !DateOnly.TryParseExact(Request.Form["date"], "yyyy-MM-dd", Culture, DateTimeStyles.None, out _))
+            return BadRequest("Use a valid date in YYYY-MM-DD format.");
         var form = new AvailabilityForm(start, end, offset, allDay, tentative);
         bool hasTimes = allDay || (start is not null && end is not null);
 
@@ -130,7 +133,16 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
                     Error(text["Couldn_t_save_Arg0", missingDay], text["Pick_a_start_and_end_time_or_choose_Free_all_day"]), form);
             case "today":
             {
-                var result = await sender.Send(new SetTodayAvailabilityCommand(guildId, userId, start ?? "", end ?? "",
+                var zone = await GetGuildZoneAsync(guildId, cancellationToken);
+                var first = SelectedAvailabilityDate(zone);
+                var lastText = Request.Form["through"].ToString();
+                if (!DateOnly.TryParseExact(lastText, "yyyy-MM-dd", Culture, DateTimeStyles.None, out var last))
+                {
+                    if (!string.IsNullOrWhiteSpace(lastText))
+                        return BadRequest("Use a valid end date in YYYY-MM-DD format.");
+                    last = first;
+                }
+                var result = await sender.Send(new SetDateAvailabilityCommand(guildId, userId, first, last, start ?? "", end ?? "",
                     offset, options.Value.TimeZoneId, allDay, tentative), cancellationToken);
                 if (result.IsFailure)
                     return await RenderAvailabilityAsync(guildId, member, "today", null, null,
@@ -185,7 +197,7 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
         TempData["MessageTitle"] = title;
         TempData["Message"] = text;
         return RedirectToAction(nameof(Availability), null,
-            new { guildId, view = view == "weekly" ? "weekly" : null, saved = highlight ? day : null },
+            new { guildId, view = view == "weekly" ? "weekly" : null, saved = highlight ? day : null, date = Request.HasFormContentType ? Request.Form["date"].ToString() : Request.Query["date"].ToString() },
             day?.ToString().ToLowerInvariant());
     }
 
@@ -203,10 +215,13 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
         var zone = await GetGuildZoneAsync(guildId, cancellationToken);
         var now = TimeZoneInfo.ConvertTime(clock.UtcNow, zone);
         var today = DateOnly.FromDateTime(now.DateTime);
-        var upcoming = (await sender.Send(new GetUpcomingAvailabilityQuery(guildId, member.Id), cancellationToken)).Value;
+        var selectedDate = SelectedAvailabilityDate(zone);
+        var upcoming = (await sender.Send(new GetUpcomingAvailabilityQuery(guildId, member.Id, IncludePast: true), cancellationToken)).Value;
         var weekly = (await sender.Send(new GetWeeklyAvailabilityQuery(guildId, member.Id), cancellationToken)).Value;
 
-        var rows = upcoming.OrderBy(window => window.Start).Select(window =>
+        var rows = upcoming.Where(window => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(window.Start, zone).DateTime) <= selectedDate &&
+            DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(window.End.AddTicks(-1), zone).DateTime) >= selectedDate)
+            .OrderBy(window => window.Start).Select(window =>
         {
             var start = TimeZoneInfo.ConvertTime(window.Start, zone).DateTime;
             var end = TimeZoneInfo.ConvertTime(window.End, zone).DateTime;
@@ -226,10 +241,17 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
         return View("Availability", new AvailabilityPage(guildId, guild?.Name ?? "HappyMix",
             member.GuildPermissions.Administrator, view, zone.Id,
             AvailabilityFormat.Offset(zone.GetUtcOffset(clock.UtcNow)),
-            now.ToString("dddd d MMMM", CultureInfo.CurrentCulture), rows, week,
-            GetPresets(now, weekly.FirstOrDefault(item => item.Day == now.DayOfWeek)), banner, form)
+            selectedDate.ToString("dddd d MMMM yyyy", CultureInfo.CurrentCulture), rows, week,
+            (selectedDate == today ? GetPresets(now, weekly.FirstOrDefault(item => item.Day == now.DayOfWeek)) : []), banner, form)
         {
-            MyEvents = accepted.Take(6).ToArray(), EventInvitations = invitations.Count
+            MyEvents = accepted.Take(6).ToArray(), EventInvitations = invitations.Count,
+            SelectedDate = selectedDate,
+            ConfiguredDates = upcoming.SelectMany(window =>
+            {
+                var first = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(window.Start, zone).DateTime);
+                var last = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(window.End.AddTicks(-1), zone).DateTime);
+                return Enumerable.Range(first.DayNumber, last.DayNumber - first.DayNumber + 1).Select(DateOnly.FromDayNumber);
+            }).ToHashSet()
         });
     }
 
@@ -314,6 +336,13 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
     {
         foreach (var range in WeeklyOccurrences.ForDate(window, today))
             yield return (TimeZoneInfo.ConvertTime(range.Start, zone), TimeZoneInfo.ConvertTime(range.End, zone), window.Tentative);
+    }
+
+    private DateOnly SelectedAvailabilityDate(TimeZoneInfo zone)
+    {
+        string value = Request.HasFormContentType ? Request.Form["date"].ToString() : Request.Query["date"].ToString();
+        return DateOnly.TryParseExact(value, "yyyy-MM-dd", Culture, DateTimeStyles.None, out var date)
+            ? date : DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(clock.UtcNow, zone).DateTime);
     }
 
     private async Task<TimeZoneInfo> GetGuildZoneAsync(ulong guildId, CancellationToken cancellationToken)

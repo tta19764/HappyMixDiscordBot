@@ -65,7 +65,7 @@ public sealed partial class GameNewsService(GameNewsStore store, DiscordSocketCl
         try
         {
             role = await guild.CreateRoleAsync($"News · {name}", GuildPermissions.None, isMentionable: false);
-            channel = await guild.CreateTextChannelAsync($"game-news-{appId}", settings =>
+            channel = await guild.CreateTextChannelAsync($"{ChannelName(name)}-{appId}", settings =>
                 settings.Topic = $"Steam news for {name} · https://store.steampowered.com/app/{appId}/");
             var bot = await guild.GetCurrentUserAsync(CacheMode.AllowDownload);
             var permissions = bot.GetPermissions(channel);
@@ -168,6 +168,12 @@ public sealed partial class GameNewsService(GameNewsStore store, DiscordSocketCl
         if (title.Contains("patch", StringComparison.OrdinalIgnoreCase) || title.Contains("update", StringComparison.OrdinalIgnoreCase))
             return "Game update";
         return "Steam news";
+    }
+
+    private static string ChannelName(string name)
+    {
+        string slug = string.Concat(name.ToLowerInvariant().Select(character => char.IsLetterOrDigit(character) ? character : '-')).Trim('-');
+        return slug.Length == 0 ? "game-news" : slug;
     }
 
     public static uint ParseAppId(string? input)

@@ -1,7 +1,7 @@
 @model AvailabilityPage
 @{
     Layout = "_DashboardLayout";
-    ViewData["Title"] = Model.IsWeekly ? T["Weekly_timetable"] : T["Availability_today"];
+    ViewData["Title"] = Model.IsWeekly ? T["Weekly_timetable"] : T["Calendar_Availability"];
     ViewData["NavGuildName"] = Model.GuildName;
     string baseUrl = $"/availability/{Model.GuildId}";
     string weeklyUrl = baseUrl + "?view=weekly";
@@ -15,7 +15,7 @@
 
 <div class="hm-row hm-row--between" style="margin-bottom: var(--hm-space-5)">
     <nav class="hm-segment" aria-label="Availability view">
-        <a href="@baseUrl" aria-current="@(Model.IsWeekly ? null : "page")">@DashboardIcons.Render("clock")@T["Today"]</a>
+        <a href="@baseUrl" aria-current="@(Model.IsWeekly ? null : "page")">@DashboardIcons.Render("clock")@T["Calendar_Availability"]</a>
         <a href="@weeklyUrl" aria-current="@(Model.IsWeekly ? "page" : null)">@DashboardIcons.Render("calendar")@T["Weekly_timetable"]</a>
     </nav>
     @if (Model.IsWeekly)
@@ -57,15 +57,21 @@
 
 @if (!Model.IsWeekly)
 {
+    <partial name="_AvailabilityCalendar" model="Model" />
     <div class="hm-split">
         <form class="hm-card hm-stack" style="gap: var(--hm-space-5)" method="post" action="@baseUrl" asp-antiforgery="false"
               data-range data-day="@T["Today"]" data-next-day="@T["Tomorrow"]" aria-labelledby="today-title">
             @Html.AntiForgeryToken()
             <div>
-                <h2 id="today-title">@T["Today"]</h2>
+                <h2 id="today-title">@T["Calendar_Availability"]</h2>
                 <p class="hm-help">@Model.TodayLabel</p>
             </div>
 
+            <label for="availability-date">@T["Calendar_Date"]</label>
+            <input class="hm-input" id="availability-date" type="date" name="date" required value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+            <label for="availability-through">@T["Calendar_Through"]</label>
+            <input class="hm-input" id="availability-through" type="date" name="through" value="@(Context.Request.HasFormContentType ? Context.Request.Form["through"].ToString() : "")" />
+            <p class="hm-help">@T["Calendar_RangeHelp"]</p>
             <partial name="_TimeRange" model="todayRange" />
             <partial name="_Certainty" model="Model.Form.Tentative" />
             <p class="hm-help">@T["Save_a_range_then_add_another_Each_range_has_its_own_certainty"]</p>
@@ -115,6 +121,7 @@
                                 </div>
                                 <form method="post" action="@baseUrl" asp-antiforgery="false">
                                     @Html.AntiForgeryToken()
+                                    <input type="hidden" name="date" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
                                     <input type="hidden" name="windowId" value="@window.Id">
                                     <button class="hm-btn hm-btn--ghost hm-btn--icon" name="action" value="remove" aria-label="Remove @window.Title">@DashboardIcons.Render("trash")</button>
                                 </form>

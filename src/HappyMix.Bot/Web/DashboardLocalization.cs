@@ -23,7 +23,9 @@ public static class DashboardLocalization
         var manager = new ResourceManager("HappyMix.Bot.Resources.Web.DashboardResources", typeof(DashboardResources).Assembly);
         var resources = manager.GetResourceSet(CultureInfo.GetCultureInfo("en"), true, true)
             ?? throw new InvalidOperationException("The English dashboard resource catalog is missing.");
-        return resources.Cast<DictionaryEntry>().ToDictionary(
-            entry => (string)entry.Value!, entry => (string)entry.Key, StringComparer.Ordinal);
+        return resources.Cast<DictionaryEntry>()
+            .OrderBy(entry => (string)entry.Key, StringComparer.Ordinal)
+            .GroupBy(entry => (string)entry.Value!, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => (string)group.First().Key, StringComparer.Ordinal);
     }
 }

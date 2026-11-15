@@ -107,6 +107,33 @@ internal sealed class SqliteAvailabilityStore(IDbContextFactory<HappyMixDbContex
             .ToListAsync();
     }
 
+    public async Task SaveDatesAsync(ulong guildId, ulong userId, IReadOnlyList<AvailabilityWindow> windows)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        await using var transaction = await context.Database.BeginTransactionAsync();
+        var existing = await ForMember(context, guildId, userId).ToListAsync();
+        foreach (var window in windows)
+        {
+            if (window.End <= window.Start)
+                throw new AvailabilityException("End must be after start.");
+            var same = existing.FirstOrDefault(row => row.StartUtc == window.Start.UtcTicks && row.EndUtc == window.End.UtcTicks);
+            if (existing.Any(row => row != same && row.StartUtc < window.End.UtcTicks && window.Start.UtcTicks < row.EndUtc))
+                throw new AvailabilityException("This overlaps another availability window.");
+            if (same is not null)
+                same.Tentative = window.Tentative;
+            else
+            {
+                var row = new AvailabilityRecord { Id = window.Id, GuildId = guildId.ToString(CultureInfo.InvariantCulture),
+                    UserId = userId.ToString(CultureInfo.InvariantCulture), StartUtc = window.Start.UtcTicks,
+                    EndUtc = window.End.UtcTicks, Tentative = window.Tentative };
+                context.Add(row);
+                existing.Add(row);
+            }
+        }
+        await context.SaveChangesAsync();
+        await transaction.CommitAsync();
+    }
+
     public async Task<AvailabilityWindow> SaveAsync(
         ulong guildId, ulong userId, Guid? id, DateTimeOffset start, DateTimeOffset finish, bool tentative = false)
     {
