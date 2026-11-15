@@ -1107,3 +1107,26 @@ for (const image of document.querySelectorAll("[data-game-art]")) {
         });
     }
 })();
+
+// Pop-over panels ("Copy to", confirmations): open upwards when there's no room below, keep one open at a time, and
+// close when a click or keyboard focus moves somewhere else on the page.
+(() => {
+    const panels = () => document.querySelectorAll("details.hm-copyto[open], details.hm-confirm:not(.hm-confirm--inline)[open]");
+    const closeOthers = keep => { for (const details of panels()) if (details !== keep) details.open = false; };
+    for (const details of document.querySelectorAll("details.hm-copyto, details.hm-confirm:not(.hm-confirm--inline)")) {
+        details.addEventListener("toggle", () => {
+            if (!details.open) return;
+            closeOthers(details);
+            const panel = details.querySelector(".hm-copyto__panel, .hm-confirm__panel");
+            const up = details.classList.contains("hm-copyto") ? "hm-copyto--up" : "hm-confirm--up";
+            details.classList.remove(up);
+            if (!panel || getComputedStyle(panel).position !== "absolute") return;
+            const below = window.innerHeight - details.getBoundingClientRect().bottom;
+            if (panel.offsetHeight + 16 > below && details.getBoundingClientRect().top > panel.offsetHeight + 16)
+                details.classList.add(up);
+        });
+    }
+    const outside = event => { for (const details of panels()) if (!details.contains(event.target)) details.open = false; };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("focusin", outside);
+})();

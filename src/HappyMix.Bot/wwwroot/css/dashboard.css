@@ -1318,3 +1318,6 @@ form:has([data-repeat-toggle]:not(:checked)) [data-repeat-through] { display: no
 @media (max-width: 47.99rem) { .hm-news-add__fields { grid-template-columns: 1fr; } .hm-news-search .hm-input { width: 100%; } }
 .hm-news-card__actions .hm-badge { white-space: normal; min-height: 0; padding-block: 2px; line-height: 1.35; }
 .hm-week .hm-day__actions .hm-copyto__panel .hm-btn { width: auto; padding: 0 var(--hm-space-3); }
+/* The weekly card must not clip "Copy to" and confirmation panels; panels near the bottom open upwards. */
+.hm-card--flush:has(.hm-week) { overflow: visible; }
+.hm-copyto--up .hm-copyto__panel, .hm-confirm--up .hm-confirm__panel { bottom: 100%; margin-top: 0; margin-bottom: var(--hm-space-2); }
