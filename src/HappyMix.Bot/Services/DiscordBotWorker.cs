@@ -40,6 +40,7 @@ public sealed partial class DiscordBotWorker(
         interactions.Log += LogAsync;
         client.Ready += OnReadyAsync;
         client.InteractionCreated += OnInteractionCreatedAsync;
+        interactions.InteractionExecuted += OnInteractionExecutedAsync;
 
         // Modules are discovered once during startup and activated through the same
         // container that owns Application and Infrastructure dependencies.
@@ -60,6 +61,7 @@ public sealed partial class DiscordBotWorker(
         interactions.Log -= LogAsync;
         client.Ready -= OnReadyAsync;
         client.InteractionCreated -= OnInteractionCreatedAsync;
+        interactions.InteractionExecuted -= OnInteractionExecutedAsync;
     }
 
     private async Task OnReadyAsync()
@@ -80,6 +82,27 @@ public sealed partial class DiscordBotWorker(
         if (!result.IsSuccess)
         {
             LogInteractionFailed(logger, interaction.Id, result.ErrorReason);
+        }
+    }
+
+    // Handlers run asynchronously, so their exceptions only arrive here. Log them and tell the person instead of
+    // leaving Discord's "This interaction failed" (or nothing at all, after a defer).
+    private async Task OnInteractionExecutedAsync(ICommandInfo? command, IInteractionContext context, Discord.Interactions.IResult result)
+    {
+        if (result.IsSuccess)
+            return;
+        LogInteractionFailed(logger, context.Interaction.Id, $"{command?.Name}: {result.ErrorReason}");
+        const string message = "Something went wrong. Please try again, or answer from the dashboard.";
+        try
+        {
+            if (context.Interaction.HasResponded)
+                await context.Interaction.FollowupAsync(message, ephemeral: true);
+            else
+                await context.Interaction.RespondAsync(message, ephemeral: true);
+        }
+        catch (Discord.Net.HttpException)
+        {
+            // The interaction token may have expired; the failure is already logged.
         }
     }
 

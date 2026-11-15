@@ -1,7 +1,7 @@
 @model AvailabilityPage
 @{
     Layout = "_DashboardLayout";
-    ViewData["Title"] = Model.IsWeekly ? T["Weekly_timetable"] : T["Calendar_Availability"];
+    ViewData["Title"] = Model.IsMembers ? T["Members_availability"] : Model.IsWeekly ? T["Weekly_timetable"] : T["Calendar_Availability"];
     ViewData["NavGuildName"] = Model.GuildName;
     string baseUrl = $"/availability/{Model.GuildId}";
     string weeklyUrl = baseUrl + "?view=weekly";
@@ -15,8 +15,9 @@
 
 <div class="hm-row hm-row--between" style="margin-bottom: var(--hm-space-5)">
     <nav class="hm-segment" aria-label="Availability view">
-        <a href="@baseUrl" aria-current="@(Model.IsWeekly ? null : "page")">@DashboardIcons.Render("clock")@T["Calendar_Availability"]</a>
+        <a href="@baseUrl" aria-current="@(Model.IsWeekly || Model.IsMembers ? null : "page")">@DashboardIcons.Render("clock")@T["Calendar_Availability"]</a>
         <a href="@weeklyUrl" aria-current="@(Model.IsWeekly ? "page" : null)">@DashboardIcons.Render("calendar")@T["Weekly_timetable"]</a>
+        <a href="@baseUrl?view=members" aria-current="@(Model.IsMembers ? "page" : null)">@DashboardIcons.Render("users")@T["Members"]</a>
     </nav>
     @if (Model.IsWeekly)
     {
@@ -55,9 +56,37 @@
     </section>
 }
 
-@if (!Model.IsWeekly)
+@if (Model.IsMembers && Model.Members is { } membersBoard)
+{
+    <section class="hm-card hm-members-view" aria-label="@T["Members_availability"]">
+        <partial name="_MembersBoard" model="membersBoard" />
+    </section>
+}
+else if (!Model.IsWeekly)
 {
     <partial name="_AvailabilityCalendar" model="Model" />
+    var dayEvents = Model.EventBlocks.Where(block => block.Date == Model.SelectedDate).ToArray();
+    @if (dayEvents.Length > 0)
+    {
+        <section class="hm-card hm-day-events" aria-labelledby="day-events-title">
+            <div class="hm-card__head" style="margin-bottom: var(--hm-space-3)">
+                <h2 id="day-events-title" style="font-size: var(--hm-fs-lg)">@T["Events_on_Arg0", Model.SelectedDate.ToString("dddd d MMMM", System.Globalization.CultureInfo.CurrentCulture)]</h2>
+            </div>
+            <div class="hm-dayline hm-dayline--events" aria-hidden="true">
+                @foreach (var block in dayEvents)
+                {
+                    <span class="hm-dayline__seg hm-dayline__seg--event @(block.Confirmed ? "" : "hm-dayline__seg--event-pending")"
+                          style="left: @AvailabilityFormat.Css(block.StartHour / 24 * 100); width: @AvailabilityFormat.Css((block.EndHour - block.StartHour) / 24 * 100)"><span>@block.Title</span></span>
+                }
+            </div>
+            <ul class="hm-event-chips">
+                @foreach (var block in dayEvents)
+                {
+                    <li><a class="hm-event-chip @(block.Confirmed ? "" : "hm-event-chip--pending")" href="@block.Url">@DashboardIcons.Render("calendar")<b>@block.Title</b><span>@block.Time · @T[block.Confirmed ? "Confirmed" : "Pending"]</span></a></li>
+                }
+            </ul>
+        </section>
+    }
     <div class="hm-split">
         <form class="hm-card hm-stack" style="gap: var(--hm-space-5)" method="post" action="@baseUrl" asp-antiforgery="false"
               data-range data-day="@T["Today"]" data-next-day="@T["Tomorrow"]" aria-labelledby="today-title">
@@ -181,6 +210,8 @@ else
                 }
 
                 bool hasHours = row.Windows.Count > 0;
+                var rowDate = Model.SelectedDate.AddDays(((int)row.Day - (int)Model.SelectedDate.DayOfWeek + 7) % 7);
+                var rowEvents = Model.EventBlocks.Where(block => block.Date == rowDate).ToArray();
                 <div class="hm-day @(row.IsToday ? "hm-day--today" : "") @(row.IsSaved ? "hm-day--saved" : "") @(row.Day is DayOfWeek.Saturday or DayOfWeek.Sunday ? "hm-day--weekend" : "")" id="@row.Anchor"
                      data-drop-day="@row.Day" data-day-name="@row.Name" data-has-hours="@(hasHours ? "true" : "false")" draggable="@(hasHours ? "true" : null)">
                     <div class="hm-day__label">
@@ -198,6 +229,13 @@ else
                                 <small>@T["Today"]</small>
                             }
                         </span>
+                        <span class="hm-day__info">
+                        @foreach (var block in rowEvents)
+                        {
+                            <a class="hm-event-chip hm-event-chip--sm @(block.Confirmed ? "" : "hm-event-chip--pending")" href="@block.Url" title="@rowDate.ToString("D", System.Globalization.CultureInfo.CurrentCulture)">
+                                @DashboardIcons.Render("calendar")<b>@block.Title</b><span>@block.Time</span>
+                            </a>
+                        }
                         @if (row.Windows.Count == 0)
                         {
                             <span class="hm-day__none">@T["No_hours"]</span>
@@ -222,11 +260,17 @@ else
                                 }
                             </span>
                         }
+                        </span>
                     </div>
                     <a class="hm-dayline hm-dayline--link" href="@editUrl" aria-label="@T["Edit_Arg0", row.Name]">
                         @foreach (var carry in carries)
                         {
                             <span class="hm-dayline__seg hm-dayline__seg--carry @(carry.Tentative ? "hm-dayline__seg--tentative" : "")" style="left: 0; width: @AvailabilityFormat.Css(AvailabilityFormat.Percent(carry.End))"></span>
+                        }
+                        @foreach (var block in rowEvents)
+                        {
+                            <span class="hm-dayline__seg hm-dayline__seg--event @(block.Confirmed ? "" : "hm-dayline__seg--event-pending")" title="@block.Title · @block.Time"
+                                  style="left: @AvailabilityFormat.Css(block.StartHour / 24 * 100); width: @AvailabilityFormat.Css((block.EndHour - block.StartHour) / 24 * 100)"></span>
                         }
                         @foreach (var window in row.Windows)
                         {
@@ -283,6 +327,7 @@ else
             <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg hm-legend-swatch"></span>@T["Definite"]</span>
             <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg hm-dayline__seg--tentative hm-legend-swatch"></span>@T["Tentative"]</span>
             <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg hm-dayline__seg--carry hm-legend-swatch"></span>@T["Carried_over_from_the_night_before"]</span>
+            <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg hm-dayline__seg--event hm-legend-swatch"></span>@T["Event_you_accepted_this_week"]</span>
         </div>
     </section>
 }

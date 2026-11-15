@@ -15,7 +15,12 @@ internal sealed partial class TwitchLiveStreams(
     private DateTimeOffset _expiresAt;
     private readonly SemaphoreSlim _tokenLock = new(1);
 
-    public async Task<IReadOnlyList<string>> GetLiveAsync(string[] handles, Esport game, CancellationToken cancellationToken)
+    /// <summary>
+    /// Channels from <paramref name="handles"/> that are live in the game's category. With <paramref name="teams"/>, only
+    /// channels whose stream title names every known team (see <see cref="StreamTitleMatcher"/>) are returned.
+    /// </summary>
+    public async Task<IReadOnlyList<string>> GetLiveAsync(string[] handles, Esport game, CancellationToken cancellationToken,
+        IReadOnlyCollection<EsportsOpponent>? teams = null)
     {
         string? clientId = config["Twitch:ClientId"];
         string? secret = config["Twitch:ClientSecret"];
@@ -37,7 +42,8 @@ internal sealed partial class TwitchLiveStreams(
                 await InvalidateTokenAsync(token, cancellationToken);
             response.EnsureSuccessStatusCode();
             var body = await response.Content.ReadFromJsonAsync<StreamResponse>(cancellationToken);
-            var live = (body?.Data ?? []).Where(stream => stream.Type == "live")
+            var matcher = teams is { Count: > 0 } ? new StreamTitleMatcher(teams) : null;
+            var live = (body?.Data ?? []).Where(stream => stream.Type == "live" && (matcher?.Matches(stream.Title) ?? true))
                 .Select(stream => stream.User_Login).ToHashSet(StringComparer.OrdinalIgnoreCase);
             return handles.Where(live.Contains).ToArray();
         }
@@ -100,5 +106,5 @@ internal sealed partial class TwitchLiveStreams(
 
     private sealed record TokenResponse(string Access_Token, int Expires_In);
     private sealed record StreamResponse(Stream[] Data);
-    private sealed record Stream(string User_Login, string Type);
+    private sealed record Stream(string User_Login, string Type, string? Title);
 }

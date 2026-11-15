@@ -1,6 +1,7 @@
 using System.Globalization;
 using HappyMix.Application.Abstractions.Events;
 using HappyMix.Application.Events;
+using HappyMix.Application.Guilds;
 using HappyMix.Bot.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,6 +33,31 @@ public sealed partial class DashboardController
         var tomorrow = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(clock.UtcNow, zone).DateTime).AddDays(1);
         var form = new EventForm { GroupId = group, StartDate = tomorrow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), Weekdays = [tomorrow.DayOfWeek] };
         return await RenderEventFormAsync(guildId, member.Id, member.GuildPermissions.Administrator, form, null);
+    }
+
+    /// <summary>
+    /// The new-event form's availability board for a date: the chosen group's members, or the picked people, plus the
+    /// organizer. Returned as an HTML fragment that dashboard.js puts under the time fields with the time slider.
+    /// </summary>
+    [HttpGet("/events/{guildId}/availability")]
+    public async Task<IActionResult> EventAvailability(ulong guildId, Guid? group, ulong[]? invitees, string? date)
+    {
+        if (await GetDiscordMemberAsync(guildId) is not { } member)
+            return NotMember();
+        DateOnly? day = DateOnly.TryParseExact(date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed) ? parsed : null;
+        IEnumerable<ulong> people = invitees ?? [];
+        if (group is { } groupId)
+        {
+            // Only groups the member belongs to are listed, so nobody can read another group's roster through this.
+            var groups = (await sender.Send(new GetEventGroupsQuery(guildId, member.Id), HttpContext.RequestAborted)).Value;
+            if (groups.FirstOrDefault(item => item.Id == groupId) is not { } chosen)
+                return NotFound();
+            people = chosen.MemberIds;
+        }
+        var ids = people.Append(member.Id).Distinct().Take(EventRules.MaxInvitees + 1).ToArray();
+        var data = (await sender.Send(new GetMembersAvailabilityQuery(guildId, ids, day, options.Value.TimeZoneId), HttpContext.RequestAborted)).Value;
+        var (profiles, available) = await memberDirectory.GetMembersAsync(guildId, HttpContext.RequestAborted);
+        return PartialView("_MembersBoard", new MembersBoardModel(data, new MemberNames(profiles, available), member.Id, Selectable: true));
     }
 
     [HttpPost("/events/{guildId}/new")]
@@ -133,6 +159,15 @@ public sealed partial class DashboardController
         RunEventActionAsync(guildId, eventId, date, (userId, day) => sender.Send(new CancelEventCommand(guildId, userId, eventId, scope == "series" ? null : day)),
             count => (scope == "series" ? text["Series_canceled"] : text["Date_canceled"]).Value,
             count => text["Arg0_dates_canceled_People_who_were_expecting_them_get_a_Discord_message", count].Value);
+
+    [HttpPost("/events/{guildId}/{eventId:guid}/transfer")]
+    public Task<IActionResult> TransferEvent(ulong guildId, Guid eventId, string date, ulong organizer) =>
+        RunEventActionAsync(guildId, eventId, date, async (userId, _) =>
+            {
+                var result = await sender.Send(new TransferEventCommand(guildId, userId, eventId, organizer));
+                return result.IsSuccess ? HappyMix.Domain.Abstractions.Result.Success(true) : HappyMix.Domain.Abstractions.Result.Failure<bool>(result.Error);
+            },
+            _ => text["Organizer_changed"].Value, _ => text["You_re_now_an_invitee_who_accepted_every_remaining_date_You_can_withdraw_any_time"].Value);
 
     private async Task<IActionResult> RunEventActionAsync<T>(ulong guildId, Guid eventId, string date,
         Func<ulong, DateOnly, Task<HappyMix.Domain.Abstractions.Result<T>>> action, Func<T, string> title, Func<T, string?> body)

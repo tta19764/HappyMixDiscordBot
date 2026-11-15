@@ -1948,4 +1948,24 @@
 <data name="News_Delete_question_Arg0" xml:space="preserve"><value>Видалити {0} для всіх? Канал новин і роль буде видалено.</value></data>
 <data name="News_No_match" xml:space="preserve"><value>Немає гри з такою назвою.</value></data>
 <data name="News_Add_help" xml:space="preserve"><value>Вставте посилання на Steam або ID застосунку. HappyMix створить канал новин і роль, на яку можна підписатися.</value></data>
+<data name="Members_availability" xml:space="preserve"><value>Доступність учасників</value></data>
+<data name="Arg0_members_with_time" xml:space="preserve"><value>Учасників із часом: {0}</value></data>
+<data name="Each_day_shows_how_many_members_have_saved_time_Pick_a_day_to_see_who_and_when" xml:space="preserve"><value>Біля кожного дня — скільки учасників вказали час. Виберіть день, щоб побачити, хто й коли.</value></data>
+<data name="Arg0_of_Arg1_have_time" xml:space="preserve"><value>час є у {0} з {1}</value></data>
+<data name="Drag_the_highlighted_band_to_pick_the_time_or_click_an_hour" xml:space="preserve"><value>Перетягніть виділену смугу (або її краї), щоб вибрати час, чи клацніть годину.</value></data>
+<data name="Event_time" xml:space="preserve"><value>Час події</value></data>
+<data name="Events_on_Arg0" xml:space="preserve"><value>Ваші події: {0}</value></data>
+<data name="Event_you_accepted_this_week" xml:space="preserve"><value>Подія, яку ви прийняли (цей тиждень)</value></data>
+<data name="Event_you_accepted" xml:space="preserve"><value>Прийнята подія</value></data>
+<data name="Loading_availability" xml:space="preserve"><value>Завантаження доступності…</value></data>
+<data name="Couldn_t_load_availability" xml:space="preserve"><value>Не вдалося завантажити доступність. Виберіть дату ще раз.</value></data>
+<data name="Who_s_free_that_day" xml:space="preserve"><value>Хто вільний цього дня</value></data>
+<data name="Hand_over_organizer" xml:space="preserve"><value>Передати організатора</value></data>
+<data name="New_organizer" xml:space="preserve"><value>Новий організатор</value></data>
+<data name="They_can_confirm_and_cancel_dates_from_now_on_You_stay_invited_as_going_and_can_withdraw" xml:space="preserve"><value>Відтепер дати підтверджує й скасовує новий організатор. Ви залишаєтеся запрошеним як учасник і можете відмовитися, як усі.</value></data>
+<data name="Hand_over" xml:space="preserve"><value>Передати</value></data>
+<data name="Organizer_changed" xml:space="preserve"><value>Організатора змінено</value></data>
+<data name="You_re_now_an_invitee_who_accepted_every_remaining_date_You_can_withdraw_any_time" xml:space="preserve"><value>Тепер ви запрошений учасник на всі наступні дати. Відмовитися можна будь-коли.</value></data>
+<data name="Pick_someone_who_is_invited_to_this_event" xml:space="preserve"><value>Виберіть когось із запрошених на цю подію.</value></data>
+<data name="The_organizer_changed_in_the_meantime_Reload_and_try_again" xml:space="preserve"><value>Тим часом організатора змінили. Оновіть сторінку й спробуйте ще раз.</value></data>
 </root>

@@ -119,6 +119,12 @@
         }
     </div>
 
+    <section class="hm-event-board" data-event-board data-url="/events/@Model.GuildId/availability" hidden aria-live="polite"
+             data-loading="@T["Loading_availability"]" data-failed="@T["Couldn_t_load_availability"]">
+        <h3 class="hm-label">@T["Who_s_free_that_day"]</h3>
+        <div data-event-board-body></div>
+    </section>
+
     <div class="hm-field">
         <label class="hm-label" for="ev-zone">@T["Time_zone"] <span class="hm-label__opt">@T["Optional"]</span></label>
         <input class="hm-input" id="ev-zone" name="TimeZone" value="@form.TimeZone" list="time-zones" placeholder="@Model.ServerZone" autocomplete="off" spellcheck="false" data-event-zone>

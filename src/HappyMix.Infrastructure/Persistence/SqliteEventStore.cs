@@ -122,6 +122,35 @@ internal sealed class SqliteEventStore(IDbContextFactory<HappyMixDbContext> fact
         return rows.Select(row => ParseDate(row.Date)).ToArray();
     }
 
+    public async Task<bool> TransferOrganizerAsync(Guid eventId, ulong current, ulong successor, IReadOnlyCollection<DateOnly> openDates, DateTimeOffset now)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        await using var transaction = await context.Database.BeginTransactionAsync();
+        var row = await context.Set<EventRecord>().FirstOrDefaultAsync(item => item.Id == eventId && item.OrganizerId == Id(current));
+        var invitee = await context.Set<EventInviteeRecord>().FindAsync(eventId, Id(successor));
+        if (row is null || invitee is null)
+            return false;
+        row.OrganizerId = Id(successor);
+        context.Remove(invitee);
+        context.Add(new EventInviteeRecord { EventId = eventId, UserId = Id(current) });
+        long stamp = now.ToUnixTimeSeconds();
+        foreach (var day in openDates)
+        {
+            var answer = await context.Set<EventResponseRecord>().FindAsync(eventId, Date(day), Id(current));
+            if (answer is null)
+                context.Add(new EventResponseRecord { EventId = eventId, Date = Date(day), UserId = Id(current), Accepted = true, RespondedUtc = stamp });
+            else
+            {
+                answer.Accepted = true;
+                answer.Withdrawn = false;
+                answer.RespondedUtc = stamp;
+            }
+        }
+        await context.SaveChangesAsync();
+        await transaction.CommitAsync();
+        return true;
+    }
+
     public async Task EnqueueAsync(IEnumerable<(Guid EventId, DateOnly Date, ulong UserId, EventNotificationKind Kind)> messages, DateTimeOffset now)
     {
         await using var context = await factory.CreateDbContextAsync();

@@ -239,7 +239,8 @@ internal sealed class DiscordMatchAnnouncementPublisher(
     {
         var preferred = GetTwitchChannels(match).Select(TwitchChannels.GetHandle).OfType<string>()
             .Distinct(StringComparer.Ordinal).Take(5).ToArray();
-        var live = await twitch.GetLiveAsync(preferred, match.Game, cancellationToken);
+        // A channel in the right category may be showing another match; only link streams whose title names both teams.
+        var live = await twitch.GetLiveAsync(preferred, match.Game, cancellationToken, match.Opponents);
         var links = live.Select(handle => $"[{handle}](https://www.twitch.tv/{handle})");
         return live.Count == 0 ? string.Empty : $"\nLive on Twitch: {string.Join(" · ", links)}";
     }

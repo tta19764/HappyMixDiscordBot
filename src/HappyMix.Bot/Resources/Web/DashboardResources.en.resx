@@ -1948,4 +1948,24 @@
 <data name="News_Delete_question_Arg0" xml:space="preserve"><value>Delete {0} for everyone? Its news channel and role are removed.</value></data>
 <data name="News_No_match" xml:space="preserve"><value>No game matches that name.</value></data>
 <data name="News_Add_help" xml:space="preserve"><value>Paste a Steam store link or app ID. HappyMix creates a news channel and a role people can subscribe to.</value></data>
+<data name="Members_availability" xml:space="preserve"><value>Members' availability</value></data>
+<data name="Arg0_members_with_time" xml:space="preserve"><value>{0} members with time</value></data>
+<data name="Each_day_shows_how_many_members_have_saved_time_Pick_a_day_to_see_who_and_when" xml:space="preserve"><value>Each day shows how many members have saved time. Pick a day to see who and when.</value></data>
+<data name="Arg0_of_Arg1_have_time" xml:space="preserve"><value>{0} of {1} have time</value></data>
+<data name="Drag_the_highlighted_band_to_pick_the_time_or_click_an_hour" xml:space="preserve"><value>Drag the highlighted band (or its edges) to pick the time, or click an hour.</value></data>
+<data name="Event_time" xml:space="preserve"><value>Event time</value></data>
+<data name="Events_on_Arg0" xml:space="preserve"><value>Your events on {0}</value></data>
+<data name="Event_you_accepted_this_week" xml:space="preserve"><value>Event you accepted (this week)</value></data>
+<data name="Event_you_accepted" xml:space="preserve"><value>Event you accepted</value></data>
+<data name="Loading_availability" xml:space="preserve"><value>Loading availability…</value></data>
+<data name="Couldn_t_load_availability" xml:space="preserve"><value>Couldn't load availability. Pick the date again to retry.</value></data>
+<data name="Who_s_free_that_day" xml:space="preserve"><value>Who's free that day</value></data>
+<data name="Hand_over_organizer" xml:space="preserve"><value>Hand over organizer</value></data>
+<data name="New_organizer" xml:space="preserve"><value>New organizer</value></data>
+<data name="They_can_confirm_and_cancel_dates_from_now_on_You_stay_invited_as_going_and_can_withdraw" xml:space="preserve"><value>From now on they confirm and cancel dates. You stay invited as going and can withdraw like anyone else.</value></data>
+<data name="Hand_over" xml:space="preserve"><value>Hand over</value></data>
+<data name="Organizer_changed" xml:space="preserve"><value>Organizer changed</value></data>
+<data name="You_re_now_an_invitee_who_accepted_every_remaining_date_You_can_withdraw_any_time" xml:space="preserve"><value>You're now an invitee going to every remaining date. You can withdraw any time.</value></data>
+<data name="Pick_someone_who_is_invited_to_this_event" xml:space="preserve"><value>Pick someone who is invited to this event.</value></data>
+<data name="The_organizer_changed_in_the_meantime_Reload_and_try_again" xml:space="preserve"><value>The organizer changed in the meantime. Reload and try again.</value></data>
 </root>

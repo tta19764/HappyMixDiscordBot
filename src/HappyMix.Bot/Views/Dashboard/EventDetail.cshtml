@@ -153,6 +153,29 @@
                     <p class="hm-help">@T["Confirmed_Arg0_of_Arg1_going_right_now", counts.Accepted, invited]</p>
                 }
                 <partial name="_Confirm" model="cancelDate" />
+                @if (!Model.SeriesCanceled && Model.Responses.Count > 0)
+                {
+                    <details class="hm-confirm hm-confirm--neutral hm-confirm--inline">
+                        <summary class="hm-btn">@DashboardIcons.Render("users")<span class="hm-btn__label">@T["Hand_over_organizer"]</span></summary>
+                        <form class="hm-confirm__panel" method="post" action="@baseUrl/transfer" asp-antiforgery="false">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="date" value="@date">
+                            <input type="hidden" name="returnUrl" value="@self">
+                            <label class="hm-label" for="ev-new-organizer">@T["New_organizer"]</label>
+                            <select class="hm-select" id="ev-new-organizer" name="organizer" required>
+                                @foreach (var row in Model.Responses.OrderBy(row => row.Person.Name, StringComparer.CurrentCultureIgnoreCase))
+                                {
+                                    <option value="@row.Person.Id">@row.Person.Name</option>
+                                }
+                            </select>
+                            <p>@T["They_can_confirm_and_cancel_dates_from_now_on_You_stay_invited_as_going_and_can_withdraw"]</p>
+                            <div class="hm-row">
+                                <button class="hm-btn hm-btn--ghost" type="button" data-close-details hidden>@T["Cancel"]</button>
+                                <button class="hm-btn hm-btn--primary">@T["Hand_over"]</button>
+                            </div>
+                        </form>
+                    </details>
+                }
             </section>
         }
         @if (Model.Repeats)

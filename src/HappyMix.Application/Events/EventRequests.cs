@@ -47,7 +47,11 @@ public sealed record GetGroupEventsQuery(ulong GuildId, Guid GroupId) : IQuery<I
 /// <summary>Groups the user belongs to, for "plan an event for a group".</summary>
 public sealed record GetEventGroupsQuery(ulong GuildId, ulong UserId) : IQuery<IReadOnlyList<EventGroupOption>>;
 
-public sealed record EventGroupOption(Guid Id, string Name, int Members);
+public sealed record EventGroupOption(Guid Id, string Name, int Members)
+{
+    /// <summary>Members and organizer, as primary accounts.</summary>
+    public IReadOnlyCollection<ulong> MemberIds { get; init; } = [];
+}
 
 /// <summary>Queues invitations for dates coming up and sends a batch of waiting Discord messages.</summary>
 public sealed record DispatchEventMessagesCommand(int Limit = 20) : ICommand<int>;
@@ -68,11 +72,15 @@ public static class EventRules
     }
 }
 
+/// <summary>The organizer hands the event to one of its invitees and stays on as an accepted invitee.</summary>
+public sealed record TransferEventCommand(ulong GuildId, ulong UserId, Guid EventId, ulong NewOrganizerId) : ICommand;
+
 internal sealed class EventHandlers(IEventStore store, IGuildGroupStore groups, IAccountLinkStore accountLinks,
     IGuildSettingsStore settings, IClock clock, IEventNotifier notifier) :
     ICommandHandler<CreateEventCommand, EventCreated>,
     ICommandHandler<RespondToEventCommand, EventAnswer>,
     ICommandHandler<ConfirmEventCommand, EventCounts>,
+    ICommandHandler<TransferEventCommand>,
     ICommandHandler<CancelEventCommand, int>,
     IQueryHandler<GetEventQuery, EventView>,
     IQueryHandler<GetMemberEventsQuery, MemberEvents>,
@@ -87,7 +95,7 @@ internal sealed class EventHandlers(IEventStore store, IGuildGroupStore groups, 
         return Result.Success<IReadOnlyList<EventGroupOption>>((await groups.ListAsync(query.GuildId))
             .Select(group => (Group: group, Members: group.Members.Append(group.OrganizerId).Select(links.Member).ToHashSet()))
             .Where(item => item.Members.Contains(viewer))
-            .Select(item => new EventGroupOption(item.Group.Id, item.Group.Name, item.Members.Count))
+            .Select(item => new EventGroupOption(item.Group.Id, item.Group.Name, item.Members.Count) { MemberIds = item.Members })
             .OrderBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase).ToArray());
     }
 
@@ -170,6 +178,26 @@ internal sealed class EventHandlers(IEventStore store, IGuildGroupStore groups, 
         return new EventAnswer(details.Event.Title, occurrence.Start, details.Event.TimeZone, occurrence.Status, change.Accepted,
             change.Withdrawn, change.PreviouslyAccepted != change.Accepted);
     });
+
+    public async Task<Result> Handle(TransferEventCommand command, CancellationToken cancellationToken)
+    {
+        var outcome = await RunAsync(async () =>
+        {
+            var (details, viewer) = await LoadAsync(command.GuildId, command.UserId, command.EventId);
+            RequireOrganizer(details, viewer);
+            if (details.Event.CanceledAt is not null)
+                throw new EventRuleException("This event was canceled.");
+            ulong target = (await accountLinks.LoadAsync(command.GuildId)).Member(command.NewOrganizerId);
+            if (!details.Invitees.Contains(target))
+                throw new EventRuleException("Pick someone who is invited to this event.");
+            var open = details.Occurrences.Where(item => item.End > clock.UtcNow && item.Status != OccurrenceStatus.Canceled)
+                .Select(item => item.Date).ToArray();
+            if (!await store.TransferOrganizerAsync(command.EventId, viewer, target, open, clock.UtcNow))
+                throw new EventRuleException("The organizer changed in the meantime. Reload and try again.");
+            return true;
+        });
+        return outcome.IsSuccess ? Result.Success() : Result.Failure(outcome.Error);
+    }
 
     public Task<Result<EventCounts>> Handle(ConfirmEventCommand command, CancellationToken cancellationToken) => RunAsync(async () =>
     {

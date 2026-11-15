@@ -56,6 +56,13 @@ public interface IEventStore
     /// <summary>Cancels the series and every occurrence that hasn't started yet. Returns the dates canceled now.</summary>
     Task<IReadOnlyList<DateOnly>> CancelSeriesAsync(Guid eventId, DateTimeOffset now);
 
+    /// <summary>
+    /// Hands the event to <paramref name="successor"/> (an invitee), atomically. The previous organizer becomes an invitee who
+    /// has accepted every remaining date, so they can withdraw like anyone else. False when <paramref name="current"/> is no
+    /// longer the organizer or <paramref name="successor"/> isn't invited.
+    /// </summary>
+    Task<bool> TransferOrganizerAsync(Guid eventId, ulong current, ulong successor, IReadOnlyCollection<DateOnly> openDates, DateTimeOffset now);
+
     /// <summary>Queues messages; one already queued for the same person, date and kind is left alone.</summary>
     Task EnqueueAsync(IEnumerable<(Guid EventId, DateOnly Date, ulong UserId, EventNotificationKind Kind)> messages, DateTimeOffset now);
 

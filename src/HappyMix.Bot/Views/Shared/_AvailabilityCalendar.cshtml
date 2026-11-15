@@ -21,6 +21,7 @@
         {
             var date = new DateOnly(first.Year, first.Month, number);
             bool configured = Model.ConfiguredDates.Contains(date);
+            var events = Model.EventBlocks.Where(block => block.Date == date).ToArray();
             <a class="hm-calendar__day @(configured ? "is-configured" : "") @(date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday ? "is-weekend" : "")" href="@Url(date)"
                data-drop-date="@date.ToString("yyyy-MM-dd")" data-day-name="@date.ToString("d MMMM", culture)" data-has-hours="@(configured ? "true" : "false")"
                draggable="@(configured ? "true" : "false")"
@@ -28,10 +29,11 @@
                aria-label="@(date.ToString("D", culture) + (configured ? " · " + T["Calendar_Configured"] : ""))">
                 @number
                 @if (configured) { <span aria-hidden="true">●</span> }
+                @if (events.Length > 0) { <span class="hm-calendar__event" title="@string.Join(", ", events.Select(block => block.Title + " " + block.Time))">@events[0].Title</span> }
             </a>
         }
     </div>
-    <p class="hm-help">● @T["Calendar_Configured"]<span data-drag-tip hidden> · @T["Drag_a_marked_date_onto_another_to_copy_its_hours_there"]</span></p>
+    <p class="hm-help"><span class="hm-calendar__legend-event"></span>@T["Event_you_accepted"] · ● @T["Calendar_Configured"]<span data-drag-tip hidden> · @T["Drag_a_marked_date_onto_another_to_copy_its_hours_there"]</span></p>
     <form method="post" action="/availability/@Model.GuildId" asp-antiforgery="false" data-drop-form hidden>
         @Html.AntiForgeryToken()
         <input type="hidden" name="action" value="copy-date">

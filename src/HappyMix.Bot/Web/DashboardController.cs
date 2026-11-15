@@ -93,7 +93,7 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
         var banner = TempData["MessageTitle"] is string title
             ? new BannerModel("success", title, TempData["Message"] as string)
             : null;
-        return await RenderAvailabilityAsync(guildId, member, view == "weekly" ? "weekly" : "today",
+        return await RenderAvailabilityAsync(guildId, member, view is "weekly" or "members" ? view : "today",
             edit, saved, banner, new AvailabilityForm());
     }
 
@@ -244,6 +244,17 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
 
         var guild = discord.GetGuild(guildId);
         var (invitations, accepted, _) = await LoadEventRowsAsync(guildId, member.Id);
+        var eventBlocks = await LoadEventBlocksAsync(guildId, member.Id, zone, today);
+        MembersBoardModel? membersBoard = null;
+        if (view == "members")
+        {
+            var (profiles, available) = await memberDirectory.GetMembersAsync(guildId, cancellationToken);
+            var ids = profiles.Values.Where(profile => !profile.IsBot && profile.InServer).Select(profile => profile.Id).ToArray();
+            var data = (await sender.Send(new GetMembersAvailabilityQuery(guildId, ids, selectedDate, options.Value.TimeZoneId, IncludeMonth: true),
+                cancellationToken)).Value;
+            membersBoard = new MembersBoardModel(data, new MemberNames(profiles, available), member.Id,
+                DayUrl: day => $"/availability/{guildId}?view=members&date={day:yyyy-MM-dd}");
+        }
         return View("Availability", new AvailabilityPage(guildId, guild?.Name ?? "HappyMix",
             member.GuildPermissions.Administrator, view, zone.Id,
             AvailabilityFormat.Offset(zone.GetUtcOffset(clock.UtcNow)),
@@ -251,6 +262,7 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
             (selectedDate == today ? GetPresets(now, weekly.FirstOrDefault(item => item.Day == now.DayOfWeek)) : []), banner, form)
         {
             MyEvents = accepted.Take(6).ToArray(), EventInvitations = invitations.Count,
+            EventBlocks = eventBlocks, Members = membersBoard,
             SelectedDate = selectedDate,
             ConfiguredDates = upcoming.SelectMany(window =>
             {
@@ -322,6 +334,36 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
             return await RenderAvailabilityAsync(guildId, member, "today", null, null,
                 Error(text["Couldn_t_copy_Arg0", from.ToString("d MMMM", culture)], text.Message(result.Error.Description)), new AvailabilityForm());
         return Saved(text["Copied_Arg0", from.ToString("d MMMM", culture)], text["Now_also_on_Arg0", to.ToString("dddd d MMMM", culture)], guildId, "today");
+    }
+
+    /// <summary>Accepted, not canceled event dates from yesterday through six weeks ahead, split at local midnight.</summary>
+    private async Task<IReadOnlyList<EventBlock>> LoadEventBlocksAsync(ulong guildId, ulong userId, TimeZoneInfo zone, DateOnly today)
+    {
+        var mine = (await sender.Send(new HappyMix.Application.Events.GetMemberEventsQuery(guildId, userId), HttpContext.RequestAborted)).Value;
+        var blocks = new List<EventBlock>();
+        foreach (var details in mine.Events)
+        foreach (var occurrence in details.Occurrences)
+        {
+            if (occurrence.Status == HappyMix.Application.Abstractions.Events.OccurrenceStatus.Canceled ||
+                !details.Responses.Any(item => item.UserId == mine.ViewerId && item.Date == occurrence.Date && item.Accepted) &&
+                details.Event.OrganizerId != mine.ViewerId)
+                continue;
+            var start = TimeZoneInfo.ConvertTime(occurrence.Start, zone).DateTime;
+            var end = TimeZoneInfo.ConvertTime(occurrence.End, zone).DateTime;
+            string time = $"{start:HH:mm}–{end:HH:mm}";
+            string url = $"/events/{guildId}/{details.Event.Id}?date={occurrence.Date:yyyy-MM-dd}";
+            bool confirmed = occurrence.Status == HappyMix.Application.Abstractions.Events.OccurrenceStatus.Confirmed;
+            for (var day = DateOnly.FromDateTime(start); day.ToDateTime(TimeOnly.MinValue) < end; day = day.AddDays(1))
+            {
+                if (day < today.AddDays(-1) || day > today.AddDays(42))
+                    continue;
+                var dayStart = day.ToDateTime(TimeOnly.MinValue);
+                double from = Math.Max(0, (start - dayStart).TotalHours), until = Math.Min(24, (end - dayStart).TotalHours);
+                if (until > from)
+                    blocks.Add(new EventBlock(day, from, until, details.Event.Title, time, confirmed, url));
+            }
+        }
+        return blocks.OrderBy(block => block.Date).ThenBy(block => block.StartHour).ToArray();
     }
 
     private static AvailabilityPreset[] GetPresets(DateTimeOffset now, WeeklyAvailability? todayWeekly)

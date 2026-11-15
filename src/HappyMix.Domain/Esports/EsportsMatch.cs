@@ -48,7 +48,8 @@ public sealed record EsportsMatch(
 /// <summary>A team identified by the provider.</summary>
 /// <param name="Id">Provider team ID.</param>
 /// <param name="Name">Display name, never used for subscription matching.</param>
-public sealed record EsportsOpponent(long Id, string Name);
+/// <param name="Acronym">Short name such as "NAVI", if the provider has one. Used to recognise the team in stream titles.</param>
+public sealed record EsportsOpponent(long Id, string Name, string? Acronym = null);
 
 /// <summary>A team's series score.</summary>
 /// <param name="TeamId">Provider team ID.</param>

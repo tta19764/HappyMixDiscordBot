@@ -26,19 +26,27 @@ public sealed class EventInvitationModule(ISender sender) : InteractionModuleBas
         await component.DeferAsync();
         bool accept = action == "accept";
         var result = await sender.Send(new RespondToEventCommand(guildId, Context.User.Id, eventId, date, accept));
-        string original = component.Message.Content;
+        string original = component.Message?.Content ?? "";
         string status = result.IsFailure ? $"⚠️ {result.Error.Description}"
             : result.Value.Accepted
                 ? result.Value.Status == OccurrenceStatus.Confirmed ? "✅ You're going. This date is confirmed." : "✅ You accepted. The organizer hasn't confirmed this date yet."
                 : result.Value.Withdrawn ? "↩️ You withdrew. The organizer can see that you can't make it." : "You declined this date.";
 
-        // Keep the buttons so the answer can be changed (for example, withdrawing later); a canceled or past date drops them.
-        bool keepButtons = result.IsSuccess;
+        // After an answer only the opposite choice stays: Withdraw once accepted, Accept once declined. A failed answer
+        // (canceled or past date) drops the buttons.
+        var buttons = new ComponentBuilder();
+        if (result.IsSuccess)
+        {
+            string id = $"{guildId}:{eventId:N}:{dateText}";
+            if (result.Value.Accepted)
+                buttons.WithButton("Withdraw", $"event:decline:{id}", ButtonStyle.Danger);
+            else
+                buttons.WithButton("Accept", $"event:accept:{id}", ButtonStyle.Success);
+        }
         await component.ModifyOriginalResponseAsync(message =>
         {
             message.Content = $"{StripStatus(original)}\n\n**{status}**";
-            if (!keepButtons)
-                message.Components = new ComponentBuilder().Build();
+            message.Components = buttons.Build();
             message.AllowedMentions = AllowedMentions.None;
         });
     }

@@ -1130,3 +1130,120 @@ for (const image of document.querySelectorAll("[data-game-art]")) {
     document.addEventListener("pointerdown", outside);
     document.addEventListener("focusin", outside);
 })();
+
+// ---------------------------------------------------------------------------------------------------------------
+// New event: show who's free on the chosen date (the group's members or the picked people) and a time band over the
+// board. Dragging the band, its edges, or clicking an hour sets From and Until; changing the selects moves the band.
+(() => {
+    const box = document.querySelector("[data-event-board]");
+    const form = box?.closest("form");
+    if (!box || !form) return;
+    const body = box.querySelector("[data-event-board-body]");
+    const field = name => form.querySelector(`[name="${name}"]`);
+    const STEP = 0.25; // 15 minutes
+    const snap = hours => Math.round(hours / STEP) * STEP;
+    const pad = value => String(value).padStart(2, "0");
+
+    const read = () => {
+        const start = Number(field("StartHour").value) + Number(field("StartMinute").value) / 60;
+        let end = Number(field("EndHour").value) + Number(field("EndMinute").value) / 60;
+        if (end <= start) end += 24;
+        return [start, end];
+    };
+    const setTime = (which, hours) => {
+        hours = ((hours % 24) + 24) % 24;
+        const hour = Math.floor(hours + 1e-6), minute = Math.round((hours - hour) * 60);
+        field(`${which}Hour`).value = pad(hour);
+        const minutes = field(`${which}Minute`);
+        if (![...minutes.options].some(option => option.value === pad(minute))) minutes.add(new Option(pad(minute), pad(minute)));
+        minutes.value = pad(minute);
+    };
+    const write = (start, end) => {
+        setTime("Start", start);
+        setTime("End", end);
+        form.dispatchEvent(new Event("change", { bubbles: true }));
+        draw();
+    };
+    const draw = () => {
+        const [start, end] = read();
+        const width = Math.min(end, 24) - start;
+        for (const pick of body.querySelectorAll("[data-pick]")) {
+            pick.hidden = false;
+            pick.style.left = `${start / 24 * 100}%`;
+            pick.style.width = `${Math.max(width, STEP) / 24 * 100}%`;
+            pick.classList.toggle("hm-tgrid__pick--next", end > 24);
+        }
+        const label = body.querySelector("[data-pick-label]");
+        if (label) label.textContent = `${pad(Math.floor(start))}:${pad(Math.round(start % 1 * 60))}–${pad(Math.floor(end % 24))}:${pad(Math.round(end % 1 * 60))}`;
+    };
+
+    // Drag: the band's middle moves it, its outer 12px resize it; a click elsewhere on a track moves the band there.
+    let drag = null;
+    body.addEventListener("pointerdown", event => {
+        const track = event.target.closest(".hm-tgrid__track, .hm-tgrid__hours");
+        if (!track || !body.querySelector("[data-event-slider]")) return;
+        const rect = track.getBoundingClientRect();
+        const at = (event.clientX - rect.left) / rect.width * 24;
+        const [start, end] = read();
+        const pick = event.target.closest("[data-pick]");
+        let mode = "move";
+        if (pick) {
+            const box = pick.getBoundingClientRect();
+            if (event.clientX - box.left < 12) mode = "start";
+            else if (box.right - event.clientX < 12) mode = "end";
+        } else {
+            const length = end - start;
+            const from = Math.min(Math.max(snap(at - length / 2), 0), 24 - STEP);
+            write(from, from + length);
+        }
+        drag = { mode, rect, origin: at, start: read()[0], end: read()[1] };
+        track.setPointerCapture?.(event.pointerId);
+        event.preventDefault();
+    });
+    body.addEventListener("pointermove", event => {
+        if (!drag) return;
+        const delta = snap((event.clientX - drag.rect.left) / drag.rect.width * 24 - drag.origin);
+        let { start, end } = drag;
+        if (drag.mode === "move") {
+            const length = end - start;
+            start = Math.min(Math.max(start + delta, 0), 24 - STEP);
+            end = start + length;
+        } else if (drag.mode === "start") start = Math.min(Math.max(start + delta, 0), end - STEP);
+        else end = Math.min(Math.max(end + delta, start + STEP), start + 24 - STEP);
+        write(start, end);
+    });
+    const stop = () => { drag = null; };
+    body.addEventListener("pointerup", stop);
+    body.addEventListener("pointercancel", stop);
+
+    let timer = 0, request = 0;
+    const load = () => {
+        const params = new URLSearchParams();
+        const date = field("StartDate").value;
+        if (!date) { box.hidden = true; return; }
+        params.set("date", date);
+        const audience = form.querySelector('[name="Audience"]:checked')?.value ?? "group";
+        if (audience === "group") {
+            const group = field("GroupId")?.value;
+            if (!group) { box.hidden = true; return; }
+            params.set("group", group);
+        } else {
+            for (const box of form.querySelectorAll('[name="Invitees"]:checked')) params.append("invitees", box.value);
+        }
+        box.hidden = false;
+        const ticket = ++request;
+        body.setAttribute("aria-busy", "true");
+        if (!body.firstElementChild) body.innerHTML = `<p class="hm-help">${box.dataset.loading}</p>`;
+        fetch(`${box.dataset.url}?${params}`, { credentials: "same-origin" })
+            .then(response => response.ok ? response.text() : Promise.reject())
+            .then(html => { if (ticket !== request) return; body.innerHTML = html; draw(); })
+            .catch(() => { if (ticket === request) body.innerHTML = `<p class="hm-help">${box.dataset.failed}</p>`; })
+            .finally(() => body.removeAttribute("aria-busy"));
+    };
+    form.addEventListener("change", event => {
+        const name = event.target.name;
+        if (["StartHour", "StartMinute", "EndHour", "EndMinute"].includes(name)) { draw(); return; }
+        if (["StartDate", "GroupId", "Audience", "Invitees"].includes(name)) { clearTimeout(timer); timer = setTimeout(load, 250); }
+    });
+    load();
+})();

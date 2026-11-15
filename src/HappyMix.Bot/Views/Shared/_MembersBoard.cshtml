@@ -1,0 +1,136 @@
+@using System.Globalization
+@using HappyMix.Application.Guilds
+@model MembersBoardModel
+@{
+    var data = Model.Data;
+    var culture = CultureInfo.CurrentCulture;
+    string Localize(string key) => T.Message(key);
+    string Css(double value) => value.ToString("0.###", CultureInfo.InvariantCulture) + "%";
+    string Hour(int hour) => hour.ToString("00", CultureInfo.InvariantCulture);
+    string RangeText(BoardRange range) => range.AllDay ? T["All_day"]
+        : (range.FromPreviousDay ? "↤ " : "") + AvailabilityFormat.Time(range.Start) + (range.IntoNextDay ? " ↦" : "–" + AvailabilityFormat.Time(range.End));
+    string Kind(BoardRange range) => T.Message(range.Tentative ? "Tentative" : "Definite") + " · " + T.Message(range.Source == AvailabilitySource.Weekly ? "Weekly" : "One-off");
+    int total = data.Rows.Length;
+    int Level(int count) => count == 0 || total == 0 ? 0 : Math.Clamp((int)Math.Ceiling(count * 4.0 / total), 1, 4);
+    var rows = data.Rows.OrderByDescending(row => row.HasData).ThenBy(row => row.UserId == Model.Viewer ? 0 : 1)
+        .ThenBy(row => Model.Names.Name(row.UserId, Localize), StringComparer.CurrentCultureIgnoreCase).ToArray();
+    int withData = rows.Count(row => row.HasData);
+}
+<div class="hm-mboard" @(Model.Selectable ? "data-event-slider" : "")>
+    @if (Model.DayUrl is { } dayUrl && data.MonthCounts.Count > 0)
+    {
+        var first = new DateOnly(data.Date.Year, data.Date.Month, 1);
+        int people = Math.Max(1, total);
+        <section class="hm-card hm-calendar hm-mcal" aria-label="@T["Members_availability"]">
+            <div class="hm-row hm-row--between">
+                <a class="hm-btn" href="@dayUrl(first.AddMonths(-1))">@T["Previous"]</a>
+                <h2>@first.ToString("MMMM yyyy", culture)</h2>
+                <a class="hm-btn" href="@dayUrl(first.AddMonths(1))">@T["Next"]</a>
+            </div>
+            <div class="hm-calendar__grid">
+                @for (int index = 0; index < 7; index++)
+                {
+                    <span>@culture.DateTimeFormat.GetAbbreviatedDayName((DayOfWeek)((index + 1) % 7))</span>
+                }
+                @for (int index = 0; index < ((int)first.DayOfWeek + 6) % 7; index++) { <span></span> }
+                @foreach (var (day, count) in data.MonthCounts.OrderBy(item => item.Key))
+                {
+                    int level = count == 0 ? 0 : Math.Clamp((int)Math.Ceiling(count * 4.0 / people), 1, 4);
+                    <a class="hm-calendar__day hm-mcal__day hm-mcal__day--@level @(day == data.Today ? "is-today" : "")" href="@dayUrl(day)"
+                       aria-current="@(day == data.Date ? "date" : null)" aria-label="@day.ToString("D", culture) · @T["Arg0_members_with_time", count]">
+                        <b>@day.Day</b>
+                        @if (count > 0) { <small>@count</small> }
+                    </a>
+                }
+            </div>
+            <p class="hm-help">@T["Each_day_shows_how_many_members_have_saved_time_Pick_a_day_to_see_who_and_when"]</p>
+        </section>
+    }
+
+    <div class="hm-board__head">
+        <p class="hm-help hm-board__zone">
+            @DashboardIcons.Render("globe")<span>@T["Times_in_Arg0", data.TimeZone]</span>
+            <span class="hm-subtle">· @data.Date.ToString("dddd d MMMM", culture) · @T["Arg0_of_Arg1_have_time", withData, total]</span>
+        </p>
+        @if (Model.Selectable)
+        {
+            <p class="hm-help hm-mboard__hint">@T["Drag_the_highlighted_band_to_pick_the_time_or_click_an_hour"]</p>
+        }
+    </div>
+    <div class="hm-tgrid" role="table" aria-label="@T["Availability_on_Arg0_in_Arg1", data.Date.ToString("D", culture), data.TimeZone]" style="--hm-tgrid-hours: 24">
+        <div class="hm-tgrid__row hm-tgrid__row--head" role="row">
+            <span class="hm-tgrid__name" role="columnheader">@T["Member"]</span>
+            <span class="hm-tgrid__hours" role="columnheader">
+                @for (int hour = 0; hour < 24; hour++)
+                {
+                    <span class="hm-tgrid__hour @(hour % 3 == 0 ? "hm-tgrid__hour--major" : "")" aria-hidden="true" style="left: @Css(hour * 100.0 / 24)">@Hour(hour)</span>
+                }
+                @if (Model.Selectable)
+                {
+                    <span class="hm-tgrid__pick hm-tgrid__pick--head" data-pick hidden><span data-pick-label></span></span>
+                }
+            </span>
+        </div>
+        <div class="hm-tgrid__row hm-tgrid__row--together" role="row">
+            <span class="hm-tgrid__name" role="rowheader">@DashboardIcons.Render("users")<span>@T["Free_together"]</span></span>
+            <span class="hm-tgrid__heat" role="cell">
+                <span class="hm-tgrid__cells" aria-hidden="true" data-pick-host>
+                    @for (int hour = 0; hour < 24; hour++)
+                    {
+                        <span class="hm-tgrid__cell hm-tgrid__cell--@Level(data.FreeByHour[hour])" title="@Hour(hour):00 · @data.FreeByHour[hour]">@data.FreeByHour[hour]</span>
+                    }
+                </span>
+            </span>
+        </div>
+        @foreach (var row in rows)
+        {
+            string name = Model.Names.Name(row.UserId, Localize);
+            <div class="hm-tgrid__row @(row.HasData ? "" : "hm-tgrid__row--empty")" role="row">
+                <span class="hm-tgrid__name" role="rowheader">
+                    <partial name="_Avatar" model="new AvatarModel(Model.Names.Get(row.UserId), name, Small: true)" />
+                    <span class="hm-tgrid__who">@name</span>
+                    @if (row.UserId == Model.Viewer)
+                    {
+                        <span class="hm-badge hm-tgrid__org">@T["You"]</span>
+                    }
+                </span>
+                <span class="hm-tgrid__cellwrap" role="cell">
+                    <span class="hm-sr-only">@(row.HasData ? T["Free_Arg0", string.Join(", ", row.Ranges.Select(range => RangeText(range) + " (" + Kind(range) + ")"))] : T["No_data"])</span>
+                    <span class="hm-tgrid__track" aria-hidden="true">
+                        @if (!row.HasData)
+                        {
+                            <span class="hm-tgrid__nodata">@T["No_data"]</span>
+                        }
+                        @foreach (var range in row.Ranges)
+                        {
+                            double left = GroupAvailabilityBoard.StartHours(range) / 24 * 100;
+                            double width = Math.Max(0.5, GroupAvailabilityBoard.EndHours(range) / 24 * 100 - left);
+                            string tip = $"{name} · {RangeText(range)} · {Kind(range)}";
+                            <span class="hm-tgrid__block @(range.Tentative ? "hm-tgrid__block--tentative" : "") @(range.Source == AvailabilitySource.Weekly ? "hm-tgrid__block--weekly" : "") @(range.FromPreviousDay ? "hm-tgrid__block--carry" : "") @(range.IntoNextDay ? "hm-tgrid__block--next" : "") @(left > 55 ? "hm-tgrid__block--end" : "")"
+                                  style="left: @Css(left); width: @Css(width)" data-tip="@tip">
+                                @if (width >= 200.0 / 24)
+                                {
+                                    <span class="hm-tgrid__label">@RangeText(range)</span>
+                                }
+                            </span>
+                        }
+                        @if (Model.Selectable)
+                        {
+                            <span class="hm-tgrid__pick" data-pick hidden></span>
+                        }
+                    </span>
+                </span>
+            </div>
+        }
+    </div>
+    <p class="hm-help hm-board__legend">
+        <span><i class="hm-swatch hm-swatch--oneoff"></i>@T["Free_one_off_for_this_date"]</span>
+        <span><i class="hm-swatch hm-swatch--weekly"></i>@T["Weekly"]</span>
+        <span><i class="hm-swatch hm-swatch--tentative"></i>@T["Tentative"]</span>
+        <span><i class="hm-swatch hm-swatch--nodata"></i>@T["No_data"]</span>
+        @if (Model.Selectable)
+        {
+            <span><i class="hm-swatch hm-swatch--pick"></i>@T["Event_time"]</span>
+        }
+    </p>
+</div>

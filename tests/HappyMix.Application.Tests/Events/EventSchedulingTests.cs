@@ -193,6 +193,27 @@ public sealed class EventSchedulingTests
         Assert.Single(fixture.Notifier.Attempts, item => item.UserId == Mira);
     }
 
+    [Fact]
+    public async Task OrganizerCanHandOverAndThenWithdrawLikeAnyInvitee()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var id = (await fixture.Sender.Send(Create(Organizer) with { Invitees = [Kai, Mira] })).Value.EventId;
+
+        Assert.True((await fixture.Sender.Send(new TransferEventCommand(Guild, Kai, id, Mira))).IsFailure);
+        Assert.True((await fixture.Sender.Send(new TransferEventCommand(Guild, Organizer, id, Outsider))).IsFailure);
+        Assert.True((await fixture.Sender.Send(new TransferEventCommand(Guild, Organizer, id, Kai))).IsSuccess);
+
+        var view = (await fixture.Sender.Send(new GetEventQuery(Guild, Organizer, id))).Value;
+        Assert.Equal(Kai, view.Details.Event.OrganizerId);
+        Assert.Equal([Organizer, Mira], view.Details.Invitees.Order());
+        Assert.Equal(1, EventRules.Count(view.Details, Thursday).Accepted);
+        Assert.True((await fixture.Sender.Send(new ConfirmEventCommand(Guild, Organizer, id, Thursday))).IsFailure);
+
+        var withdrawn = await fixture.Sender.Send(new RespondToEventCommand(Guild, Organizer, id, Thursday, false));
+        Assert.True(withdrawn.Value.Withdrawn);
+        Assert.True((await fixture.Sender.Send(new ConfirmEventCommand(Guild, Kai, id, Thursday))).IsSuccess);
+    }
+
     private static CreateEventCommand Create(ulong organizer) => new(Guild, organizer, Guid.NewGuid(), null, [Kai],
         "Thursday scrims", "Bring a mic", Thursday, "20:00", "23:00", Kyiv, "UTC", EventRecurrence.Once, [], null);
 

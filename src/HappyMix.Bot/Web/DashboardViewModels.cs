@@ -56,12 +56,27 @@ public sealed record AvailabilityPage(
     public DateOnly SelectedDate { get; init; }
     public IReadOnlySet<DateOnly> ConfiguredDates { get; init; } = new HashSet<DateOnly>();
     public bool IsWeekly => View == "weekly";
+    public bool IsMembers => View == "members";
+    /// <summary>Everyone's availability for the "Members" view: the selected date's board and the month's counts.</summary>
+    public MembersBoardModel? Members { get; init; }
+    /// <summary>Event dates the member accepted, in the server time zone, for the timetable and calendar.</summary>
+    public IReadOnlyList<EventBlock> EventBlocks { get; init; } = [];
     /// <summary>Dates the member accepted (pending and confirmed, plus canceled ones they expected) and invitations waiting.</summary>
     public IReadOnlyList<EventRow> MyEvents { get; init; } = [];
     public int EventInvitations { get; init; }
     public int WeeklyCount => Week.Count(row => row.Windows.Count > 0);
     public bool IsEditing => Week.Any(row => row.IsEditing);
 }
+
+/// <summary>An accepted event date drawn on the member's own availability. Hours run 0–24 on <see cref="Date"/>.</summary>
+public sealed record EventBlock(DateOnly Date, double StartHour, double EndHour, string Title, string Time, bool Confirmed, string Url);
+
+/// <summary>
+/// A members × hours board. <see cref="Selectable"/> adds the event form's time slider on top; <see cref="DayUrl"/>
+/// links calendar days when the month counts are shown.
+/// </summary>
+public sealed record MembersBoardModel(HappyMix.Application.Guilds.MembersAvailability Data, MemberNames Names, ulong Viewer,
+    bool Selectable = false, Func<DateOnly, string>? DayUrl = null);
 
 public sealed record RoleOption(ulong Id, string Name, string Color);
 

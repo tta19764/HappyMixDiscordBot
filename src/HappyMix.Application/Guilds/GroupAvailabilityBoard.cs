@@ -79,33 +79,12 @@ internal sealed class GroupAvailabilityBoardQueries(IGuildGroupStore groups, IAv
         var members = links.Representatives(group!.Members);
         var snapshot = await availability.ListForMembersAsync(actor.GuildId, links.Members(members), dayStart, dayEnd);
 
-        var windows = snapshot.Windows.ToLookup(item => item.UserId, item => item.Window);
-        var weekly = snapshot.Weekly.ToLookup(item => item.UserId, item => item.Weekly);
-        var rows = members.Select(userId => new BoardRow(userId,
-                windows[links.Member(userId)].Select(window => (AvailabilitySource.OneOff, window.Start, window.End, window.Tentative))
-                    .Concat(weekly[links.Member(userId)].SelectMany(item => WeeklyOccurrences.ForDate(item, date)
-                        .Select(occurrence => (AvailabilitySource.Weekly, occurrence.Start, occurrence.End, item.Tentative))))
-                    .Where(item => item.Item2 < dayEnd && dayStart < item.Item3)
-                    .OrderBy(item => item.Item2).ThenBy(item => item.Item1)
-                    .Select(item => Clip(item.Item1, item.Item2, item.Item3, dayStart, dayEnd, zone, item.Item4))
-                    .ToArray()))
-            .OrderByDescending(row => row.HasData)
-            .ToArray();
+        var rows = BoardRows.Build(links, members, snapshot, date, zone);
 
         var freeByHour = Enumerable.Range(0, 24).Select(hour => rows.Count(row => row.Ranges.Any(range =>
             !range.Tentative && GroupAvailabilityBoard.StartHours(range) < hour + 1 && GroupAvailabilityBoard.EndHours(range) > hour))).ToArray();
         TimeOnly? now = date == today ? TimeOnly.FromDateTime(TimeZoneInfo.ConvertTime(clock.UtcNow, zone).DateTime) : null;
         return Result.Success(new GroupAvailabilityBoard(group.Id, zone.Id, today, date, days, rows, freeByHour, now));
-    }
-
-    private static BoardRange Clip(AvailabilitySource source, DateTimeOffset start, DateTimeOffset end,
-        DateTimeOffset dayStart, DateTimeOffset dayEnd, TimeZoneInfo zone, bool tentative)
-    {
-        bool fromPrevious = start < dayStart;
-        bool intoNext = end > dayEnd;
-        var from = TimeOnly.FromDateTime(TimeZoneInfo.ConvertTime(fromPrevious ? dayStart : start, zone).DateTime);
-        var until = TimeOnly.FromDateTime(TimeZoneInfo.ConvertTime(intoNext ? dayEnd : end, zone).DateTime);
-        return new BoardRange(source, from, until, fromPrevious, intoNext, start <= dayStart && end >= dayEnd, tentative);
     }
 
     private static TimeZoneInfo? FindZone(string? id) =>

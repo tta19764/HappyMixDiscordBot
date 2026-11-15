@@ -1948,4 +1948,24 @@
 <data name="News_Delete_question_Arg0" xml:space="preserve"><value>Удалить {0} для всех? Канал новостей и роль будут удалены.</value></data>
 <data name="News_No_match" xml:space="preserve"><value>Нет игры с таким названием.</value></data>
 <data name="News_Add_help" xml:space="preserve"><value>Вставьте ссылку на Steam или ID приложения. HappyMix создаст канал новостей и роль, на которую можно подписаться.</value></data>
+<data name="Members_availability" xml:space="preserve"><value>Доступность участников</value></data>
+<data name="Arg0_members_with_time" xml:space="preserve"><value>Участников со временем: {0}</value></data>
+<data name="Each_day_shows_how_many_members_have_saved_time_Pick_a_day_to_see_who_and_when" xml:space="preserve"><value>У каждого дня — сколько участников указали время. Выберите день, чтобы увидеть, кто и когда.</value></data>
+<data name="Arg0_of_Arg1_have_time" xml:space="preserve"><value>время есть у {0} из {1}</value></data>
+<data name="Drag_the_highlighted_band_to_pick_the_time_or_click_an_hour" xml:space="preserve"><value>Перетащите выделенную полосу (или её края), чтобы выбрать время, или нажмите на час.</value></data>
+<data name="Event_time" xml:space="preserve"><value>Время события</value></data>
+<data name="Events_on_Arg0" xml:space="preserve"><value>Ваши события: {0}</value></data>
+<data name="Event_you_accepted_this_week" xml:space="preserve"><value>Событие, которое вы приняли (эта неделя)</value></data>
+<data name="Event_you_accepted" xml:space="preserve"><value>Принятое событие</value></data>
+<data name="Loading_availability" xml:space="preserve"><value>Загрузка доступности…</value></data>
+<data name="Couldn_t_load_availability" xml:space="preserve"><value>Не удалось загрузить доступность. Выберите дату ещё раз.</value></data>
+<data name="Who_s_free_that_day" xml:space="preserve"><value>Кто свободен в этот день</value></data>
+<data name="Hand_over_organizer" xml:space="preserve"><value>Передать организатора</value></data>
+<data name="New_organizer" xml:space="preserve"><value>Новый организатор</value></data>
+<data name="They_can_confirm_and_cancel_dates_from_now_on_You_stay_invited_as_going_and_can_withdraw" xml:space="preserve"><value>Теперь даты подтверждает и отменяет новый организатор. Вы остаётесь приглашённым как участник и можете отказаться, как все.</value></data>
+<data name="Hand_over" xml:space="preserve"><value>Передать</value></data>
+<data name="Organizer_changed" xml:space="preserve"><value>Организатор изменён</value></data>
+<data name="You_re_now_an_invitee_who_accepted_every_remaining_date_You_can_withdraw_any_time" xml:space="preserve"><value>Теперь вы приглашённый участник на все следующие даты. Отказаться можно в любой момент.</value></data>
+<data name="Pick_someone_who_is_invited_to_this_event" xml:space="preserve"><value>Выберите кого-то из приглашённых на это событие.</value></data>
+<data name="The_organizer_changed_in_the_meantime_Reload_and_try_again" xml:space="preserve"><value>Тем временем организатора сменили. Обновите страницу и попробуйте ещё раз.</value></data>
 </root>

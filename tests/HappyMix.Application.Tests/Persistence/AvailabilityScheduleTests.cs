@@ -210,6 +210,28 @@ public sealed class AvailabilityScheduleTests
         Assert.True((await sender.Send(new CopyDateAvailabilityCommand(1, 2, from, from, "UTC"))).IsFailure);
     }
 
+    [Fact]
+    public async Task MembersAvailabilityShowsEachMemberForTheDateAndCountsTheMonth()
+    {
+        using var database = await SqliteTestDatabase.CreateAsync();
+        using var services = CreateServices(database.Services);
+        var sender = services.GetRequiredService<ISender>();
+        var day = new DateOnly(2026, 11, 20);
+        Assert.True((await sender.Send(new SetDateAvailabilityCommand(1, 2, day, day, "18", "22", "UTC", "UTC", false, false))).IsSuccess);
+        Assert.True((await sender.Send(new SetWeeklyAvailabilityCommand(1, 3, DayOfWeek.Friday, "20", "23", "UTC", "UTC"))).IsSuccess);
+
+        var result = await sender.Send(new GetMembersAvailabilityQuery(1, [2, 3, 4], day, "UTC", IncludeMonth: true));
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(3, result.Value.Rows.Length);
+        Assert.Equal(2, result.Value.Rows.Count(row => row.HasData));
+        Assert.Equal(2, result.Value.FreeByHour[20]);
+        Assert.Equal(30, result.Value.MonthCounts.Count);
+        Assert.Equal(2, result.Value.MonthCounts[day]);
+        Assert.Equal(1, result.Value.MonthCounts[day.AddDays(7)]);
+        Assert.Equal(0, result.Value.MonthCounts[day.AddDays(1)]);
+    }
+
     private static ServiceProvider CreateServices(IServiceProvider storage) => new ServiceCollection()
         .AddLogging().AddApplication()
         .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())

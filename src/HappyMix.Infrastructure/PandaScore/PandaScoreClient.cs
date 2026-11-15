@@ -159,7 +159,7 @@ internal sealed record PandaScoreMatch(
         Id, Name, BeginAt, Status,
         League?.Name ?? "Unknown league", Tournament?.Name ?? "Unknown tournament",
         Opponents?.Where(slot => slot.Opponent is not null)
-            .Select(slot => new EsportsOpponent(slot.Opponent!.Id, slot.Opponent.Name)).ToArray() ?? [],
+            .Select(slot => new EsportsOpponent(slot.Opponent!.Id, slot.Opponent.Name, string.IsNullOrWhiteSpace(slot.Opponent.Acronym) ? null : slot.Opponent.Acronym.Trim())).ToArray() ?? [],
         Results?.Select(result => new EsportsTeamResult(result.TeamId, result.Score)).ToArray() ?? [],
         Games?.Select(item => new EsportsGame(
             item.Id, item.Position, item.Status, item.Complete, item.Winner?.Id)).ToArray() ?? [],
@@ -178,7 +178,12 @@ internal sealed record PandaScoreNamedResource(
     [property: JsonPropertyName("name")] string Name);
 
 internal sealed record PandaScoreOpponentSlot(
-    [property: JsonPropertyName("opponent")] PandaScoreNamedResource? Opponent);
+    [property: JsonPropertyName("opponent")] PandaScoreOpponent? Opponent);
+
+internal sealed record PandaScoreOpponent(
+    [property: JsonPropertyName("id")] long Id,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("acronym")] string? Acronym);
 
 internal sealed record PandaScoreResult(
     [property: JsonPropertyName("team_id")] long TeamId,
