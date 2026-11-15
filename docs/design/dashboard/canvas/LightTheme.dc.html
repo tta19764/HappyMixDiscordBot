@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HappyMix light theme foundations</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./light.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#5a45cf}a:hover{color:#4734b2}
+</style>
+</helmet>
+<div class="lx" style="width: 1440px; min-height: 2240px; padding: 56px 64px; display: flex; flex-direction: column; gap: 40px">
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+    <div style="display: grid; gap: 8px">
+      <span class="lx-badge lx-badge--brand" style="justify-self: start">Light theme · v2</span>
+      <h1 style="font-size: 40px">Lavender paper</h1>
+      <p class="lx-muted" style="max-width: 720px; font-size: 17px">A softly tinted page, white cards lifted by shadow, ink-violet for anything you can act on, and greens that stay readable inside availability bars.</p>
+    </div>
+    <div class="lx-segment" aria-label="Theme"><a href="#">System</a><a href="#" aria-current="page">Light</a><a href="#">Dark</a></div>
+  </div>
+
+  <section style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px">
+    <div class="lx-card" style="display: grid; gap: 12px">
+      <h3>Ground &amp; surfaces</h3>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <div><div class="lx-swatch" style="background: #eceef6"></div><p class="lx-subtle"><b style="color: #1c1e33">Page</b> #ECEEF6</p></div>
+        <div><div class="lx-swatch" style="background: #ffffff"></div><p class="lx-subtle"><b style="color: #1c1e33">Card</b> #FFFFFF</p></div>
+        <div><div class="lx-swatch" style="background: #f5f6fb"></div><p class="lx-subtle"><b style="color: #1c1e33">Panel</b> #F5F6FB</p></div>
+        <div><div class="lx-swatch" style="background: #f0f2f8"></div><p class="lx-subtle"><b style="color: #1c1e33">Well</b> #F0F2F8</p></div>
+      </div>
+    </div>
+    <div class="lx-card" style="display: grid; gap: 12px">
+      <h3>Ink &amp; lines</h3>
+      <div style="display: grid; gap: 8px">
+        <p style="font-size: 18px; font-weight: 700; color: #1c1e33">Text #1C1E33 <span class="lx-subtle">16.0:1</span></p>
+        <p style="color: #474c69">Muted #474C69 <span class="lx-subtle">8.6:1</span></p>
+        <p style="color: #5f6584">Subtle #5F6584 <span class="lx-subtle">5.9 card · 5.1 page</span></p>
+        <div class="lx-row" style="gap: 8px"><span style="width: 40px; height: 2px; background: #dde0ec"></span><span class="lx-subtle">Border #DDE0EC</span></div>
+        <div class="lx-row" style="gap: 8px"><span style="width: 40px; height: 2px; background: #c3c8dc"></span><span class="lx-subtle">Strong #C3C8DC</span></div>
+      </div>
+    </div>
+    <div class="lx-card" style="display: grid; gap: 12px">
+      <h3>Accent</h3>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <div><div class="lx-swatch" style="background: #5a45cf"></div><p class="lx-subtle"><b style="color: #1c1e33">Violet</b> #5A45CF</p></div>
+        <div><div class="lx-swatch" style="background: #4734b2"></div><p class="lx-subtle"><b style="color: #1c1e33">Pressed</b> #4734B2</p></div>
+        <div><div class="lx-swatch" style="background: #ece9fd"></div><p class="lx-subtle"><b style="color: #1c1e33">Tint</b> #ECE9FD</p></div>
+        <div><div class="lx-swatch" style="background: #4c63e0"></div><p class="lx-subtle"><b style="color: #1c1e33">Focus</b> #4C63E0</p></div>
+      </div>
+    </div>
+    <div class="lx-card" style="display: grid; gap: 12px">
+      <h3>Status</h3>
+      <div style="display: grid; gap: 8px">
+        <div class="lx-row" style="gap: 8px"><span class="lx-swatch" style="width: 40px; height: 28px; background: #43c99a"></span><span class="lx-badge lx-badge--mint">Free · Confirmed</span></div>
+        <div class="lx-row" style="gap: 8px"><span class="lx-swatch" style="width: 40px; height: 28px; background: #f6dfab"></span><span class="lx-badge lx-badge--warn">Tentative · Pending</span></div>
+        <div class="lx-row" style="gap: 8px"><span class="lx-swatch" style="width: 40px; height: 28px; background: #e7ecfb"></span><span class="lx-badge lx-badge--inherit">Inherited · Weekly</span></div>
+        <div class="lx-row" style="gap: 8px"><span class="lx-swatch" style="width: 40px; height: 28px; background: #fde9e7"></span><span class="lx-badge lx-badge--danger">Error · Canceled</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px">
+    <div style="display: grid; gap: 12px">
+      <h2>Surface hierarchy</h2>
+      <div style="background: #eceef6; border: 1px dashed #c3c8dc; border-radius: 16px; padding: 24px; display: grid; gap: 16px">
+        <p class="lx-subtle">Page · #ECEEF6</p>
+        <div class="lx-card" style="display: grid; gap: 14px">
+          <div class="lx-card__head" style="margin: 0"><div><h3>Card · white, shadow 1</h3><p>Hairline #DDE0EC + two soft shadows</p></div><span class="lx-badge">Raised</span></div>
+          <div class="lx-card lx-card--flat" style="padding: 14px; display: grid; gap: 10px">
+            <p class="lx-subtle">Panel inside a card · #F5F6FB, no shadow</p>
+            <div class="lx-track"><span class="lx-seg" style="left: 70%; width: 22%"></span></div>
+            <p class="lx-subtle">Well / track · #F0F2F8</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display: grid; gap: 12px">
+      <h2>Overlay &amp; dialog</h2>
+      <div class="lx-scrim" style="min-height: 300px">
+        <div class="lx-dialog" style="width: 420px; display: grid; gap: 14px">
+          <h3>Cancel the whole series?</h3>
+          <p class="lx-muted" style="font-size: 14px">Every future date of “Thursday scrims” is canceled and 6 invitees get a Discord message. Past dates stay in history.</p>
+          <div class="lx-row" style="justify-content: flex-end"><button class="lx-btn lx-btn--ghost" type="button">Keep it</button><button class="lx-btn lx-btn--danger" type="button">Cancel series</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px">
+    <div class="lx-card" style="display: grid; gap: 14px; align-content: start">
+      <h3>Buttons · rest, hover, focus</h3>
+      <div class="lx-row"><button class="lx-btn lx-btn--primary" type="button">Confirm event</button><button class="lx-btn lx-btn--primary is-hover" type="button">Hover</button><button class="lx-btn lx-btn--primary is-focus" type="button">Focus</button></div>
+      <div class="lx-row"><button class="lx-btn" type="button">Edit</button><button class="lx-btn is-hover" type="button">Hover</button><button class="lx-btn is-focus" type="button">Focus</button></div>
+      <div class="lx-row"><button class="lx-btn lx-btn--ghost" type="button">Discard</button><button class="lx-btn lx-btn--danger" type="button">Cancel event</button><button class="lx-btn lx-btn--sm" type="button">Small</button></div>
+    </div>
+    <div class="lx-card" style="display: grid; gap: 14px; align-content: start">
+      <h3>Inputs</h3>
+      <div class="lx-field"><label class="lx-label" for="lt-title">Title</label><input class="lx-input" id="lt-title" value="Thursday scrims"></div>
+      <div class="lx-field"><label class="lx-label" for="lt-focus">Focused</label><input class="lx-input is-focus" id="lt-focus" placeholder="Search for a team by name"></div>
+      <div class="lx-field"><label class="lx-label" for="lt-err">With an error</label><input class="lx-input is-error" id="lt-err" value="Vitality"><p class="lx-error">Several teams match “Vitality”. Pick one from the search.</p></div>
+    </div>
+    <div class="lx-card" style="display: grid; gap: 14px; align-content: start">
+      <h3>Picker · hover &amp; selected</h3>
+      <div class="lx-select lx-input">#match-results<svg class="lx-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></div>
+      <div class="lx-card" style="padding: 8px; box-shadow: var(--shadow-2); display: grid; gap: 2px">
+        <div class="lx-option">#announcements</div>
+        <div class="lx-option is-hover">#cs2-matches</div>
+        <div class="lx-option is-selected">#match-results<svg class="lx-ico" viewBox="0 0 24 24" aria-hidden="true" style="margin-left: auto; color: #5a45cf"><path d="m5 12 5 5 9-10"></path></svg></div>
+        <div class="lx-option">#off-topic</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px">
+    <div class="lx-card" style="display: grid; gap: 16px">
+      <div class="lx-card__head" style="margin: 0"><div><h3>Availability</h3><p>Bars on a well, fills with dark ink, carry-over hatched</p></div></div>
+      <div style="display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 12px 16px; align-items: center">
+        <b style="font-size: 14px">Monday</b><div class="lx-track"><span class="lx-seg lx-seg--tent" style="left: 50%; width: 8.3%"></span><span class="lx-seg" style="left: 79%; width: 16.7%"></span></div>
+        <b style="font-size: 14px">Friday</b><div class="lx-track"><span class="lx-seg" style="left: 87.5%; width: 12.5%; border-radius: 999px 0 0 999px"></span></div>
+        <b style="font-size: 14px">Saturday</b><div class="lx-track"><span class="lx-seg lx-seg--carry" style="left: 0; width: 6.3%"></span></div>
+      </div>
+      <div style="position: relative; height: 56px; border-radius: 10px; border: 1px solid #c3c8dc; background-color: #f0f2f8; background-image: linear-gradient(to right, #dde0ec 1px, transparent 1px); background-size: 10% 100%">
+        <span style="position: absolute; top: 0; bottom: 0; left: 80%; right: 0; background: rgb(40 45 90 / .06); border-left: 2px solid #c3c8dc"></span>
+        <span class="lx-block lx-block--tent" style="left: 40%; width: 6.7%">12–14</span>
+        <span class="lx-block lx-block--sel" style="left: 63.3%; width: 20%">19:00–01:00</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); border-radius: 8px; overflow: hidden">
+        <span class="lx-grid-cell lx-heat-0">0</span><span class="lx-grid-cell lx-heat-0">0</span><span class="lx-grid-cell lx-heat-1">1</span><span class="lx-grid-cell lx-heat-1">1</span><span class="lx-grid-cell lx-heat-2">2</span><span class="lx-grid-cell lx-heat-2">3</span><span class="lx-grid-cell lx-heat-3">4</span><span class="lx-grid-cell lx-heat-3">5</span><span class="lx-grid-cell lx-heat-3">5</span><span class="lx-grid-cell lx-heat-2">3</span><span class="lx-grid-cell lx-heat-1">1</span><span class="lx-grid-cell lx-heat-0">0</span>
+      </div>
+      <p class="lx-subtle">Free-together heat map: busy cells are cool grey, then three greens; the darkest carries dark ink (7.1:1).</p>
+    </div>
+    <div class="lx-card" style="display: grid; gap: 14px; align-content: start">
+      <div class="lx-card__head" style="margin: 0"><div><h3>Calendar</h3><p>November 2026</p></div><div class="lx-row" style="gap: 4px"><button class="lx-btn lx-btn--ghost lx-btn--sm" type="button" aria-label="Previous month">‹</button><button class="lx-btn lx-btn--ghost lx-btn--sm" type="button" aria-label="Next month">›</button></div></div>
+      <div class="lx-cal">
+        <span class="is-head">Mo</span><span class="is-head">Tu</span><span class="is-head">We</span><span class="is-head">Th</span><span class="is-head">Fr</span><span class="is-head">Sa</span><span class="is-head">Su</span>
+        <span class="is-out">26</span><span class="is-out">27</span><span class="is-out">28</span><span class="is-out">29</span><span class="is-out">30</span><span class="is-out">31</span><span>1</span>
+        <span>2</span><span>3</span><span>4</span><span class="is-confirmed">5</span><span>6</span><span>7</span><span>8</span>
+        <span>9</span><span>10</span><span>11</span><span class="is-confirmed">12</span><span>13</span><span>14</span><span class="is-today">15</span>
+        <span>16</span><span>17</span><span>18</span><span class="is-event">19</span><span>20</span><span class="is-sel">21</span><span>22</span>
+        <span>23</span><span>24</span><span>25</span><span class="is-event">26</span><span>27</span><span>28</span><span>29</span>
+      </div>
+      <div class="lx-row" style="gap: 14px; font-size: 12px; color: #5f6584"><span class="lx-row" style="gap: 6px"><i style="width: 14px; height: 14px; border-radius: 4px; background: #43c99a"></i>Confirmed</span><span class="lx-row" style="gap: 6px"><i style="width: 14px; height: 14px; border-radius: 4px; background: #ece9fd"></i>Pending</span><span class="lx-row" style="gap: 6px"><i style="width: 14px; height: 14px; border-radius: 4px; box-shadow: inset 0 0 0 1.5px #5a45cf"></i>Today</span></div>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px">
+    <div class="lx-card">
+      <div class="lx-card__head"><div><h3>Event rows · pending, confirmed, canceled</h3><p>Status is written out every time; colour and outline only reinforce it</p></div></div>
+      <div class="lx-event lx-event--pending">
+        <span class="lx-date"><small>Thu</small><b>19</b></span>
+        <div><p class="lx-event__title">Thursday scrims <span class="lx-badge lx-badge--warn">Pending</span></p><p class="lx-event__meta">20:00–23:00 · Europe/Kyiv · Weekly on Thu · Friday Night Frags</p></div>
+        <span class="lx-count"><span style="color: #0a7352"><b>4</b> going</span><span style="color: #b3261e"><b>1</b> no</span><span class="lx-subtle"><b>2</b> no reply</span></span>
+      </div>
+      <div class="lx-event lx-event--confirmed">
+        <span class="lx-date" style="background: #def4eb; color: #0a7352"><small>Sat</small><b>21</b></span>
+        <div><p class="lx-event__title">Faceit night <span class="lx-badge lx-badge--mint">Confirmed</span></p><p class="lx-event__meta">19:00–01:00 · Europe/Kyiv · You're going</p></div>
+        <button class="lx-btn lx-btn--sm" type="button">Withdraw</button>
+      </div>
+      <div class="lx-event lx-event--canceled">
+        <span class="lx-date" style="background: #eef0f8; color: #5f6584"><small>Sun</small><b>22</b></span>
+        <div><p class="lx-event__title">Dota inhouse</p><p class="lx-event__meta">Canceled by Mira · Sun 18:00</p></div>
+        <span class="lx-badge lx-badge--danger">Canceled</span>
+      </div>
+    </div>
+    <div class="lx-card" style="display: grid; gap: 12px; align-content: start">
+      <h3>Banners</h3>
+      <div class="lx-banner lx-banner--success"><svg class="lx-ico" viewBox="0 0 24 24" aria-hidden="true" style="color: #0a7352"><path d="m5 12 5 5 9-10"></path></svg><div><b>Event confirmed</b><span class="lx-muted" style="font-size: 14px">5 people were told in Discord.</span></div></div>
+      <div class="lx-banner lx-banner--warn"><svg class="lx-ico" viewBox="0 0 24 24" aria-hidden="true" style="color: #8a5300"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5h.01"></path></svg><div><b>2 invitations couldn't be sent</b><span class="lx-muted" style="font-size: 14px">Bogdan and Ivy have DMs closed. They can still answer here.</span></div></div>
+      <div class="lx-banner lx-banner--error"><svg class="lx-ico" viewBox="0 0 24 24" aria-hidden="true" style="color: #b3261e"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5h.01"></path></svg><div><b>Event not created</b><span class="lx-muted" style="font-size: 14px">The end time must be after the start.</span></div></div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2240}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

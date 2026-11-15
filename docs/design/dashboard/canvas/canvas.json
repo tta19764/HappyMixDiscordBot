@@ -77,6 +77,57 @@
       "w": 390,
       "x": 1360,
       "y": 6560
+    },
+    "GroupBoard-Desktop.dc.html": {
+      "x": 0,
+      "y": 13800,
+      "w": 1280,
+      "h": 1120,
+      "title": "Group availability · hour grid · desktop (proposal)"
+    },
+    "GroupBoard-Mobile.dc.html": {
+      "x": 1360,
+      "y": 13800,
+      "w": 390,
+      "h": 1320,
+      "title": "Group availability · hour grid · mobile (proposal)"
+    },
+    "LightTheme.dc.html": {
+      "x": 0,
+      "y": 15760,
+      "w": 1440,
+      "h": 2240,
+      "title": "Light theme — Lavender paper: palette, surfaces & components"
+    },
+    "Light-Dashboard-Desktop.dc.html": {
+      "x": 0,
+      "y": 18480,
+      "w": 1280,
+      "h": 1320,
+      "expand": "fill",
+      "title": "Light · availability dashboard · desktop"
+    },
+    "Light-Dashboard-Mobile.dc.html": {
+      "x": 1360,
+      "y": 18480,
+      "w": 390,
+      "h": 1640,
+      "title": "Light · availability dashboard · mobile"
+    },
+    "Events-Desktop.dc.html": {
+      "x": 0,
+      "y": 20600,
+      "w": 1280,
+      "h": 1560,
+      "expand": "fill",
+      "title": "Events · create & manage · desktop"
+    },
+    "Events-Mobile.dc.html": {
+      "x": 1360,
+      "y": 20600,
+      "w": 390,
+      "h": 1900,
+      "title": "Events · invitation & my events · mobile"
     }
   },
   "createdOnFiles": {
@@ -98,7 +149,14 @@
     "noteToday",
     "noteWeekly",
     "noteSettings",
-    "noteStates"
+    "noteStates",
+    "rowGroupBoard",
+    "noteGroupBoard",
+    "rowLight",
+    "noteLight",
+    "rowLightPages",
+    "rowEvents",
+    "noteEvents"
   ],
   "notes": {
     "mainNote": {
@@ -188,6 +246,58 @@
       "w": 240,
       "x": 0,
       "y": 6300
+    },
+    "rowGroupBoard": {
+      "kind": "title1",
+      "maxW": 1750,
+      "text": "6 · Group availability — hour grid (proposal)",
+      "x": 0,
+      "y": 13540
+    },
+    "noteGroupBoard": {
+      "fill": "blue",
+      "size": 24,
+      "w": 460,
+      "x": 1830,
+      "y": 13800,
+      "text": "Hour grid (proposal)\n\n1  Day tabs stay: today + 6 days, date kept in the URL.\n2  Hours: whole day 00–24, or 12–24 to zoom on evenings (more room per hour, especially on phones). Choice kept in the URL.\n3  Free together: how many members are free in each hour, darker = more. The best hour is outlined, so finding a session time is one glance.\n4  Now line on today's tab.\n5  Hover or keyboard focus on a block shows who, when and whether it's one-off or usual weekly hours.\n\nCells: Free (solid mint = one-off, striped with blue outline = weekly, not confirmed), Busy (grey = has availability that day but not this hour), No data (hatched, labelled). Colour is never the only signal.\n\nRoster & invites move behind a second tab in the Members card, so both stay one click away.\n\nAccessibility: each row also carries a text summary (\"Kai: free 00:00–01:30, 18:00–22:00 weekly\") for screen readers."
+    },
+    "rowLight": {
+      "kind": "title1",
+      "maxW": 1750,
+      "text": "7 · Light theme — Lavender paper",
+      "x": 0,
+      "y": 15500
+    },
+    "noteLight": {
+      "fill": "purple",
+      "size": 24,
+      "w": 460,
+      "x": 1520,
+      "y": 15760,
+      "text": "Light theme direction\n\nThe old light theme was the dark theme with inverted values: a near-white page, white cards and grey lines, so everything glared and nothing separated.\n\n1  Ground is a soft lavender-grey (#ECEEF6), never white. Cards are white and lift off it with a two-layer soft shadow plus a hairline border: elevation does the separating, not heavy borders.\n2  Three surface steps: page → card → inset (#F5F6FB for secondary panels, #F0F2F8 for tracks and wells). Inputs stay white with an inner shadow so they read as fields.\n3  Ink violet #5A45CF is the only accent: links, primary buttons, selection. Selection = violet tint + 3px violet edge, hover = cool grey.\n4  Availability greens split into text green (#0A7352) and fill green (#43C99A, with dark ink), so time labels inside bars stay readable.\n5  Every text colour passes 4.5:1 on both page and card."
+    },
+    "rowLightPages": {
+      "kind": "title1",
+      "maxW": 1750,
+      "text": "8 · Light theme on real pages",
+      "x": 0,
+      "y": 18220
+    },
+    "rowEvents": {
+      "kind": "title1",
+      "maxW": 1750,
+      "text": "9 · Events — scheduling flow",
+      "x": 0,
+      "y": 20340
+    },
+    "noteEvents": {
+      "fill": "blue",
+      "size": 24,
+      "w": 460,
+      "x": 1830,
+      "y": 20600,
+      "text": "Events\n\n1  Create from a group (members invited automatically) or standalone (pick exactly who). Title, start, end, time zone, optional description.\n2  Repeat: once, daily, weekly on one day, weekly on several days. A plain-language line spells out the schedule before saving.\n3  Pending events have a dashed amber outline and a Pending badge; confirmed ones a solid green edge; canceled ones are struck through and grey. Status is always written out, never colour alone.\n4  The organizer sees Accepted · Declined · No reply with avatars, and confirms with the current count shown on the button.\n5  Recurring series: actions say their scope — \"Cancel this date\" vs \"Cancel the whole series\".\n6  Invitees get a DM with Accept / Decline buttons; the same buttons live on the dashboard if the DM fails."
     }
   },
   "order": [
@@ -200,7 +310,14 @@
     "Weekly-Mobile.dc.html",
     "Settings-Desktop.dc.html",
     "Settings-Mobile.dc.html",
-    "States.dc.html"
+    "States.dc.html",
+    "GroupBoard-Desktop.dc.html",
+    "GroupBoard-Mobile.dc.html",
+    "LightTheme.dc.html",
+    "Light-Dashboard-Desktop.dc.html",
+    "Light-Dashboard-Mobile.dc.html",
+    "Events-Desktop.dc.html",
+    "Events-Mobile.dc.html"
   ],
   "pages": [],
   "title": "HappyMix Dashboard Redesign"

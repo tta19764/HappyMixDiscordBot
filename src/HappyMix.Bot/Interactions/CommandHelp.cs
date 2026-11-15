@@ -8,6 +8,8 @@ internal static class CommandHelp
     internal static string Flow(string module) => module switch
     {
         "group" => "Create a group, invite a specific Discord account, and have that account accept. Members can then check rosters, games, and shared availability. The organizer or a moderator manages the group.",
+        "game-news" => "Create a subscription by Steam App ID or store link. Anyone can subscribe to an existing game. The creator or a server administrator can delete its channel and role.",
+        "event" => "Use /event list and /event show to find an event and its dates. Create, respond to, confirm, or cancel events here.",
         "availability" => "Set today's hours or a recurring weekday, then check your saved windows. Earlier end times roll into the next day. Weekly hours show as recurring on the group board.",
         "settings" => "Administrators can inspect server defaults, then set announcement channels, followed teams, notifications, and roles. Per-game settings can inherit the server or deployment defaults.",
         "links" => "Create a private approval link and open it while signed in as the alternate. Both accounts must belong to this server. Administrators can review and link server accounts from the dashboard.",

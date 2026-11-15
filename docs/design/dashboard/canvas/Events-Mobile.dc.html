@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Event invitation and my events, mobile</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./light.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#5a45cf}a:hover{color:#4734b2}
+</style>
+</helmet>
+<div class="lx" style="width: 390px; min-height: 1900px">
+  <header class="lx-header"><div class="lx-header__in" style="padding: 0 16px"><img src="./happymix.svg" alt="HappyMix" width="30" height="30"><span class="lx-pill" style="flex: 1">Friday Night Frags</span></div></header>
+  <main style="padding: 16px; display: grid; gap: 16px">
+    <div style="display: grid; gap: 4px"><h1 style="font-size: 24px">Events</h1><p class="lx-muted" style="font-size: 14px">Invitations, your plans and what's confirmed.</p></div>
+
+    <section style="display: grid; gap: 8px" aria-labelledby="em-dm">
+      <p id="em-dm" class="lx-label">In Discord</p>
+      <div style="border-radius: 12px; background: #313338; color: #dbdee1; padding: 14px; display: grid; gap: 10px; font-size: 14px">
+        <div class="lx-row" style="gap: 8px"><img src="./happymix.svg" alt="" width="28" height="28"><b style="color: #f2f3f5">HappyMix</b><span style="font-size: 11px; background: #5865f2; color: #fff; border-radius: 3px; padding: 0 4px">APP</span></div>
+        <div style="border-left: 4px solid #5a45cf; background: #2b2d31; border-radius: 4px; padding: 10px 12px; display: grid; gap: 4px">
+          <b style="color: #f2f3f5">Mira invited you: Thursday scrims</b>
+          <span>Thu 19 Nov · 20:00–23:00 (Europe/Kyiv)</span>
+          <span>Every Thu &amp; Sat until 19 Dec · CS2 squad</span>
+          <span style="color: #b5bac1">Answer for this date; each date is separate.</span>
+        </div>
+        <div class="lx-row" style="gap: 8px"><span style="background: #248046; color: #fff; border-radius: 4px; padding: 8px 14px; font-weight: 600">Accept</span><span style="background: #4e5058; color: #fff; border-radius: 4px; padding: 8px 14px; font-weight: 600">Decline</span><span style="color: #00a8fc; padding: 8px 4px">Open dashboard</span></div>
+      </div>
+    </section>
+
+    <section class="lx-card" style="padding: 16px; display: grid; gap: 12px" aria-labelledby="em-inv">
+      <div class="lx-row" style="justify-content: space-between"><h2 id="em-inv" style="font-size: 17px">Invitations</h2><span class="lx-badge lx-badge--brand">1 new</span></div>
+      <div style="display: grid; gap: 10px; padding: 14px; border: 1px dashed #d9a03a; border-radius: 10px">
+        <div><p class="lx-event__title">Thursday scrims</p><p class="lx-event__meta">Thu 19 Nov · 20:00–23:00 · from Mira</p><p class="lx-event__meta">4 going · waiting for you</p></div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px"><button class="lx-btn lx-btn--primary" type="button">Accept</button><button class="lx-btn" type="button">Decline</button></div>
+      </div>
+    </section>
+
+    <section class="lx-card" style="padding: 16px; display: grid; gap: 10px" aria-labelledby="em-my">
+      <h2 id="em-my" style="font-size: 17px">My events</h2>
+      <p class="lx-subtle">Pending plans can still change; confirmed ones are on.</p>
+      <div class="lx-event lx-event--confirmed" style="grid-template-columns: 48px minmax(0, 1fr); padding: 12px">
+        <span class="lx-date" style="width: 48px; height: 48px; background: #def4eb; color: #0a7352"><small>Sat</small><b>21</b></span>
+        <div style="display: grid; gap: 6px"><div><p class="lx-event__title">Thursday scrims</p><p class="lx-event__meta">Sat 21 Nov · 20:00–23:00 · 5 going</p></div><div class="lx-row" style="gap: 8px"><span class="lx-badge lx-badge--mint">Confirmed</span><button class="lx-btn lx-btn--sm" type="button">Withdraw</button></div></div>
+      </div>
+      <div class="lx-event lx-event--pending" style="grid-template-columns: 48px minmax(0, 1fr); padding: 12px">
+        <span class="lx-date" style="width: 48px; height: 48px"><small>Wed</small><b>25</b></span>
+        <div style="display: grid; gap: 6px"><div><p class="lx-event__title">Ranked duo</p><p class="lx-event__meta">21:00–23:30 · standalone · 1 going</p></div><div class="lx-row" style="gap: 8px"><span class="lx-badge lx-badge--warn">Pending</span><button class="lx-btn lx-btn--sm" type="button">Withdraw</button></div></div>
+      </div>
+      <div class="lx-event lx-event--canceled" style="grid-template-columns: 48px minmax(0, 1fr); padding: 12px">
+        <span class="lx-date" style="width: 48px; height: 48px; background: #eef0f8; color: #5f6584"><small>Thu</small><b>26</b></span>
+        <div style="display: grid; gap: 6px"><div><p class="lx-event__title">Thursday scrims</p><p class="lx-event__meta">This date was canceled by Mira</p></div><span class="lx-badge lx-badge--danger" style="justify-self: start">Canceled</span></div>
+      </div>
+    </section>
+
+    <section class="lx-card" style="padding: 16px; display: grid; gap: 12px" aria-labelledby="em-confirm">
+      <h2 id="em-confirm" style="font-size: 17px">Confirm this date?</h2>
+      <div class="lx-card lx-card--flat" style="padding: 12px; display: grid; gap: 6px">
+        <div class="lx-row" style="justify-content: space-between"><span>Accepted</span><b style="color: #0a7352">4</b></div>
+        <div class="lx-row" style="justify-content: space-between"><span>Declined</span><b style="color: #b3261e">1</b></div>
+        <div class="lx-row" style="justify-content: space-between"><span>No reply</span><b>1</b></div>
+      </div>
+      <p class="lx-subtle">Everyone who accepted gets a Discord message, and the event shows on their availability.</p>
+      <button class="lx-btn lx-btn--primary" type="button">Confirm with 4 going</button>
+      <button class="lx-btn lx-btn--danger" type="button">Cancel this date</button>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

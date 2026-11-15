@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Availability dashboard, light, desktop</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./light.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#5a45cf}a:hover{color:#4734b2}
+</style>
+</helmet>
+<div class="lx" style="min-height: 1320px">
+  <header class="lx-header">
+    <div class="lx-shell lx-header__in">
+      <a class="lx-brand" href="#"><img src="./happymix.svg" alt="" width="30" height="30">HappyMix</a>
+      <span class="lx-pill">Friday Night Frags<svg class="lx-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span>
+      <span class="lx-spacer"></span>
+      <a class="lx-btn lx-btn--ghost lx-btn--sm" href="#">Info</a>
+      <button class="lx-btn lx-btn--ghost lx-btn--sm" type="button" aria-label="Theme: Light"><svg class="lx-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2"></path></svg></button>
+      <button class="lx-btn lx-btn--ghost lx-btn--sm" type="button">EN</button>
+    </div>
+  </header>
+  <main class="lx-shell" style="padding: 24px 0 48px; display: grid; gap: 20px">
+    <div style="display: grid; gap: 6px">
+      <p class="lx-subtle">Servers / Friday Night Frags</p>
+      <h1>Availability</h1>
+      <p class="lx-muted">Tell the group when you can play. HappyMix uses this to plan sessions.</p>
+    </div>
+    <nav class="lx-tabs" aria-label="Server"><a href="#" aria-current="page">Availability</a><a href="#">Events</a><a href="#">Groups</a><a href="#">Linked accounts</a><a href="#">Settings</a></nav>
+    <div class="lx-row" style="justify-content: space-between">
+      <nav class="lx-segment" aria-label="Availability view"><a href="#">Today</a><a href="#" aria-current="page">Weekly timetable</a></nav>
+      <span class="lx-subtle">Times in Europe/Kyiv</span>
+    </div>
+
+    <section class="lx-card" style="padding: 0; overflow: hidden" aria-labelledby="ld-my">
+      <div class="lx-card__head" style="padding: 18px 20px 0; margin-bottom: 10px">
+        <div><h2 id="ld-my">My events</h2><p>Events you've said yes to. Pending ones may still change.</p></div>
+        <a class="lx-btn lx-btn--sm" href="#">All events</a>
+      </div>
+      <div style="padding: 0 20px 18px">
+        <div class="lx-event lx-event--confirmed">
+          <span class="lx-date" style="background: #def4eb; color: #0a7352"><small>Sat</small><b>21</b></span>
+          <div><p class="lx-event__title">Faceit night <span class="lx-badge lx-badge--mint">Confirmed</span></p><p class="lx-event__meta">19:00–01:00 · Friday Night Frags · 5 going</p></div>
+          <button class="lx-btn lx-btn--sm" type="button">Withdraw</button>
+        </div>
+        <div class="lx-event lx-event--pending">
+          <span class="lx-date"><small>Thu</small><b>26</b></span>
+          <div><p class="lx-event__title">Thursday scrims <span class="lx-badge lx-badge--warn">Pending</span></p><p class="lx-event__meta">20:00–23:00 · Weekly on Thu · waiting for Mira to confirm · 4 going</p></div>
+          <button class="lx-btn lx-btn--sm" type="button">Withdraw</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="lx-card" style="padding: 0" aria-labelledby="ld-week">
+      <div class="lx-card__head" style="padding: 18px 20px 6px; margin: 0"><div><h2 id="ld-week">Your usual week</h2><p>Repeats every week. Confirmed events show as violet blocks.</p></div><span class="lx-badge">5 of 7 days</span></div>
+      <div style="display: grid; grid-template-columns: 110px 190px minmax(0, 1fr) 190px; gap: 16px; padding: 0 20px 6px; font-size: 12px; color: #5f6584"><span></span><span></span><span style="display: flex; justify-content: space-between"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></span><span></span></div>
+      <div style="display: grid">
+        <div style="display: grid; grid-template-columns: 110px 190px minmax(0, 1fr) 190px; gap: 16px; align-items: center; padding: 12px 20px; border-top: 1px solid #dde0ec">
+          <b>Monday</b>
+          <div style="font-size: 14px"><b>12:00–14:00</b> <span class="lx-badge lx-badge--warn">Tentative</span><br><b>19:00–23:00</b></div>
+          <div class="lx-track"><span class="lx-seg lx-seg--tent" style="left: 50%; width: 8.3%"></span><span class="lx-seg" style="left: 79%; width: 16.7%"></span></div>
+          <div class="lx-row" style="justify-content: flex-end; gap: 8px"><button class="lx-btn lx-btn--sm" type="button">Edit</button><button class="lx-btn lx-btn--sm lx-btn--danger" type="button">Clear</button></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 110px 190px minmax(0, 1fr) 190px; gap: 16px; align-items: center; padding: 12px 20px; border-top: 1px solid #dde0ec">
+          <b>Tuesday</b><span class="lx-subtle">No hours</span>
+          <div class="lx-track"></div>
+          <div class="lx-row" style="justify-content: flex-end"><button class="lx-btn lx-btn--sm" type="button">+ Add hours</button></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 110px 190px minmax(0, 1fr) 190px; gap: 16px; align-items: center; padding: 12px 20px; border-top: 1px solid #dde0ec; background: #def4eb">
+          <div><b>Wednesday</b><br><span style="font-size: 12px; color: #0a7352; font-weight: 700">✓ Saved</span></div>
+          <div style="font-size: 14px"><b>18:30–20:00</b><br><b>21:00–23:30</b> <span class="lx-badge lx-badge--warn">Tentative</span></div>
+          <div class="lx-track" style="background-color: #ffffff"><span class="lx-seg" style="left: 77%; width: 6.3%"></span><span class="lx-seg lx-seg--tent" style="left: 87.5%; width: 10.4%"></span></div>
+          <div class="lx-row" style="justify-content: flex-end; gap: 8px"><button class="lx-btn lx-btn--sm" type="button">Edit</button><button class="lx-btn lx-btn--sm lx-btn--danger" type="button">Clear</button></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 110px 190px minmax(0, 1fr) 190px; gap: 16px; align-items: center; padding: 12px 20px; border-top: 1px solid #dde0ec">
+          <b>Thursday</b>
+          <div style="font-size: 14px"><b>20:00–23:00</b> <span class="lx-badge lx-badge--brand">Event</span></div>
+          <div class="lx-track"><span class="lx-seg" style="left: 83.3%; width: 12.5%; background: #5a45cf"></span></div>
+          <div class="lx-row" style="justify-content: flex-end"><button class="lx-btn lx-btn--sm" type="button">+ Add hours</button></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 110px 190px minmax(0, 1fr) 190px; gap: 16px; align-items: center; padding: 12px 20px; border-top: 1px solid #dde0ec">
+          <b>Friday</b>
+          <div style="font-size: 14px"><b>21:00–01:30</b> <span class="lx-subtle">↦ Sat</span></div>
+          <div class="lx-track"><span class="lx-seg" style="left: 87.5%; width: 12.5%; border-radius: 999px 0 0 999px"></span></div>
+          <div class="lx-row" style="justify-content: flex-end; gap: 8px"><button class="lx-btn lx-btn--sm" type="button">Edit</button><button class="lx-btn lx-btn--sm lx-btn--danger" type="button">Clear</button></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 110px 190px minmax(0, 1fr) 190px; gap: 16px; align-items: center; padding: 12px 20px; border-top: 1px solid #dde0ec; box-shadow: inset 3px 0 0 #5a45cf">
+          <div><b>Saturday</b><br><span class="lx-subtle">Today</span></div><span class="lx-subtle">No hours</span>
+          <div class="lx-track"><span class="lx-seg lx-seg--carry" style="left: 0; width: 6.3%"></span></div>
+          <div class="lx-row" style="justify-content: flex-end"><button class="lx-btn lx-btn--sm" type="button">+ Add hours</button></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 110px 190px minmax(0, 1fr) 190px; gap: 16px; align-items: center; padding: 12px 20px; border-top: 1px solid #dde0ec">
+          <b>Sunday</b><div style="font-size: 14px"><b>All day</b></div>
+          <div class="lx-track"><span class="lx-seg" style="left: 0; width: 100%"></span></div>
+          <div class="lx-row" style="justify-content: flex-end; gap: 8px"><button class="lx-btn lx-btn--sm" type="button">Edit</button><button class="lx-btn lx-btn--sm lx-btn--danger" type="button">Clear</button></div>
+        </div>
+      </div>
+      <div class="lx-row" style="padding: 12px 20px; border-top: 1px solid #dde0ec; font-size: 12px; color: #5f6584; gap: 18px">
+        <span class="lx-row" style="gap: 6px"><i style="width: 26px; height: 10px; border-radius: 99px; background: #43c99a"></i>Definite</span>
+        <span class="lx-row" style="gap: 6px"><i style="width: 26px; height: 10px; border-radius: 99px; background: #f6dfab; box-shadow: inset 0 0 0 1.5px #d9a03a"></i>Tentative</span>
+        <span class="lx-row" style="gap: 6px"><i style="width: 26px; height: 10px; border-radius: 99px; background: #5a45cf"></i>Confirmed event</span>
+        <span class="lx-row" style="gap: 6px"><i style="width: 26px; height: 10px; border-radius: 99px; background: repeating-linear-gradient(135deg, #43c99a 0 3px, #def4eb 3px 6px)"></i>Carried over from the night before</span>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1320}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

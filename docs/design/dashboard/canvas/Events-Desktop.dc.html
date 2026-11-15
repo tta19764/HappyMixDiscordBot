@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Events, create and manage, desktop</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./light.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#5a45cf}a:hover{color:#4734b2}
+</style>
+</helmet>
+<div class="lx" style="min-height: 1560px">
+  <header class="lx-header">
+    <div class="lx-shell lx-header__in">
+      <a class="lx-brand" href="#"><img src="./happymix.svg" alt="" width="30" height="30">HappyMix</a>
+      <span class="lx-pill">Friday Night Frags</span>
+      <span class="lx-spacer"></span>
+      <a class="lx-btn lx-btn--ghost lx-btn--sm" href="#">Info</a>
+    </div>
+  </header>
+  <main class="lx-shell" style="padding: 24px 0 48px; display: grid; gap: 20px">
+    <div style="display: grid; gap: 6px"><p class="lx-subtle">Servers / Friday Night Frags / Events</p><h1>Events</h1><p class="lx-muted">Plan a session, invite people, then confirm when enough say yes.</p></div>
+    <nav class="lx-tabs" aria-label="Server"><a href="#">Availability</a><a href="#" aria-current="page">Events</a><a href="#">Groups</a><a href="#">Linked accounts</a></nav>
+
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start">
+      <form class="lx-card" style="display: grid; gap: 16px" aria-labelledby="ev-new">
+        <div class="lx-card__head" style="margin: 0"><div><h2 id="ev-new">New event</h2><p>Nothing is sent until you create it.</p></div></div>
+        <div class="lx-segment" role="radiogroup" aria-label="Who is invited" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr))"><a href="#" aria-current="true" style="justify-content: center">For a group</a><a href="#" style="justify-content: center">Pick people</a></div>
+        <div class="lx-field"><span class="lx-label">Group</span><span class="lx-input lx-select">CS2 squad · 7 members<svg class="lx-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span><p class="lx-help">Every member except you gets a Discord DM and a dashboard invitation.</p></div>
+        <div class="lx-field"><label class="lx-label" for="ev-title">Title</label><input class="lx-input" id="ev-title" value="Thursday scrims"></div>
+        <div style="display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 10px">
+          <div class="lx-field"><label class="lx-label" for="ev-date">Starts</label><input class="lx-input" id="ev-date" value="Thu 19 Nov 2026"></div>
+          <div class="lx-field"><span class="lx-label">From</span><span class="lx-input lx-select">20 : 00</span></div>
+          <div class="lx-field"><span class="lx-label">Until</span><span class="lx-input lx-select">23 : 00</span></div>
+        </div>
+        <div class="lx-field"><span class="lx-label">Time zone</span><span class="lx-input lx-select">Europe/Kyiv · server default</span></div>
+        <fieldset style="border: 0; padding: 0; margin: 0; display: grid; gap: 8px"><legend class="lx-label" style="margin-bottom: 8px">Repeat</legend>
+          <div class="lx-row" style="gap: 8px"><button class="lx-chip" type="button" aria-pressed="false">Once</button><button class="lx-chip" type="button" aria-pressed="false">Daily</button><button class="lx-chip" type="button" aria-pressed="true">Weekly</button></div>
+          <div class="lx-row" style="gap: 6px"><button class="lx-chip" type="button" aria-pressed="false">Mon</button><button class="lx-chip" type="button" aria-pressed="false">Tue</button><button class="lx-chip" type="button" aria-pressed="false">Wed</button><button class="lx-chip" type="button" aria-pressed="true">Thu</button><button class="lx-chip" type="button" aria-pressed="false">Fri</button><button class="lx-chip" type="button" aria-pressed="true">Sat</button><button class="lx-chip" type="button" aria-pressed="false">Sun</button></div>
+          <div class="lx-field" style="max-width: 240px"><label class="lx-label" for="ev-until">Ends on</label><input class="lx-input" id="ev-until" value="Sat 19 Dec 2026"></div>
+        </fieldset>
+        <div class="lx-banner" style="background: #ece9fd; border-color: #c9c0f6"><svg class="lx-ico" viewBox="0 0 24 24" aria-hidden="true" style="color: #5a45cf"><rect x="3.5" y="5" width="17" height="15" rx="2"></rect><path d="M3.5 10h17M8 3v4M16 3v4"></path></svg><div><b>Every Thursday and Saturday, 20:00–23:00 Europe/Kyiv</b><span class="lx-muted" style="font-size: 14px">From Thu 19 Nov to Sat 19 Dec · 10 dates · each date is answered and confirmed on its own</span></div></div>
+        <div class="lx-field"><label class="lx-label" for="ev-desc">Description <span class="lx-subtle">optional</span></label><textarea class="lx-input" id="ev-desc" style="min-height: 84px; padding: 10px 12px">Bring your Faceit account. Warm-up at 19:45.</textarea></div>
+        <div class="lx-row" style="justify-content: flex-end"><button class="lx-btn lx-btn--ghost" type="button">Cancel</button><button class="lx-btn lx-btn--primary" type="submit">Create and invite 6</button></div>
+      </form>
+
+      <div style="display: grid; gap: 20px">
+        <section class="lx-card" style="display: grid; gap: 16px" aria-labelledby="ev-detail">
+          <div class="lx-card__head" style="margin: 0">
+            <div><p class="lx-subtle">CS2 squad · organized by you</p><h2 id="ev-detail">Thursday scrims</h2><p>Thu 19 Nov · 20:00–23:00 · Europe/Kyiv · repeats Thu &amp; Sat</p></div>
+            <span class="lx-badge lx-badge--warn">Pending</span>
+          </div>
+          <div class="lx-banner lx-banner--warn"><svg class="lx-ico" viewBox="0 0 24 24" aria-hidden="true" style="color: #8a5300"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5h.01"></path></svg><div><b>Taro withdrew</b><span class="lx-muted" style="font-size: 14px">Taro had accepted and now can't make it. You decide whether this date still goes ahead.</span></div></div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+            <div class="lx-card lx-card--flat" style="padding: 12px"><p class="lx-subtle">Accepted</p><p style="font-size: 26px; font-weight: 800; color: #0a7352">4</p><div class="lx-row" style="gap: 0"><span class="lx-avatar lx-avatar--yes">KA</span><span class="lx-avatar lx-avatar--yes" style="margin-left: -6px">MI</span><span class="lx-avatar lx-avatar--yes" style="margin-left: -6px">OK</span><span class="lx-avatar lx-avatar--yes" style="margin-left: -6px">LE</span></div></div>
+            <div class="lx-card lx-card--flat" style="padding: 12px"><p class="lx-subtle">Declined</p><p style="font-size: 26px; font-weight: 800; color: #b3261e">1</p><div class="lx-row"><span class="lx-avatar lx-avatar--no">TA</span></div></div>
+            <div class="lx-card lx-card--flat" style="padding: 12px"><p class="lx-subtle">No reply yet</p><p style="font-size: 26px; font-weight: 800">1</p><div class="lx-row"><span class="lx-avatar lx-avatar--wait">IV</span></div></div>
+          </div>
+          <ul class="lx-list" style="font-size: 14px">
+            <li><span class="lx-avatar lx-avatar--yes">KA</span><span style="flex: 1">Kai</span><span class="lx-badge lx-badge--mint">Accepted</span></li>
+            <li><span class="lx-avatar lx-avatar--no">TA</span><span style="flex: 1">Taro <span class="lx-subtle">· withdrew 10 min ago</span></span><span class="lx-badge lx-badge--danger">Declined</span></li>
+            <li><span class="lx-avatar lx-avatar--wait">IV</span><span style="flex: 1">Ivy <span class="lx-subtle">· DM failed, can answer here</span></span><span class="lx-badge">No reply</span></li>
+          </ul>
+          <div class="lx-row" style="justify-content: space-between">
+            <button class="lx-btn lx-btn--danger" type="button">Cancel this date</button>
+            <button class="lx-btn lx-btn--primary" type="button">Confirm with 4 of 6 going</button>
+          </div>
+        </section>
+
+        <section class="lx-card" aria-labelledby="ev-dates">
+          <div class="lx-card__head"><div><h3 id="ev-dates">Dates in this series</h3><p>Answers and confirmation are per date</p></div><button class="lx-btn lx-btn--sm lx-btn--danger" type="button">Cancel the whole series</button></div>
+          <div class="lx-event lx-event--pending" style="grid-template-columns: 48px minmax(0, 1fr) auto"><span class="lx-date" style="width: 48px; height: 48px"><small>Thu</small><b>19</b></span><div><p class="lx-event__title">20:00–23:00</p><p class="lx-event__meta">4 going · 1 no · 1 no reply</p></div><span class="lx-badge lx-badge--warn">Pending</span></div>
+          <div class="lx-event lx-event--confirmed" style="grid-template-columns: 48px minmax(0, 1fr) auto"><span class="lx-date" style="width: 48px; height: 48px; background: #def4eb; color: #0a7352"><small>Sat</small><b>21</b></span><div><p class="lx-event__title">20:00–23:00</p><p class="lx-event__meta">5 going</p></div><span class="lx-badge lx-badge--mint">Confirmed</span></div>
+          <div class="lx-event lx-event--canceled" style="grid-template-columns: 48px minmax(0, 1fr) auto"><span class="lx-date" style="width: 48px; height: 48px; background: #eef0f8; color: #5f6584"><small>Thu</small><b>26</b></span><div><p class="lx-event__title">20:00–23:00</p><p class="lx-event__meta">This date only · canceled by you</p></div><span class="lx-badge lx-badge--danger">Canceled</span></div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1560}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

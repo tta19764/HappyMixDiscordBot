@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Group availability grid, mobile</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./happymix.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#c9bfff}a:hover{color:#ddd7ff}
+.m-track{position:relative;height:30px;border-radius:7px;background-color:#2a2e45;background-image:linear-gradient(to right,rgba(14,15,28,.6) 1px,transparent 1px);background-size:calc(100%/12) 100%;border:1px solid #31375a;overflow:hidden}
+.m-track--empty{background-color:#101222;background-image:repeating-linear-gradient(135deg,rgba(154,161,196,.14) 0 6px,transparent 6px 12px)}
+.m-block{position:absolute;top:4px;bottom:4px;border-radius:5px}
+.m-block--oneoff{background:#8ef2cd}
+.m-block--weekly{background:repeating-linear-gradient(135deg,#8ef2cd 0 6px,#6fd8b2 6px 12px);box-shadow:inset 0 0 0 2px #aebcff}
+.m-block--next{border-top-right-radius:0;border-bottom-right-radius:0}
+.m-ticks{position:relative;height:16px;font-size:10px;font-weight:700;color:#9aa1c4;font-variant-numeric:tabular-nums}
+.m-ticks span{position:absolute;transform:translateX(-50%)}
+.m-heat{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:2px;position:relative}
+.m-heat div{height:34px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums}
+.m-member{display:grid;gap:6px;padding:12px 14px;border-top:1px solid #31375a}
+.m-member--empty{background:#121424}
+.m-who{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}
+.m-ranges{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;color:#b7bcda;font-variant-numeric:tabular-nums}
+.m-ranges b{color:#f3f4ff}
+.m-kind{font-size:10px;font-weight:800;padding:1px 5px;border-radius:4px}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1320px; box-sizing: border-box; padding: 16px; background: #0e0f1c; color: #f3f4ff; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; gap: 14px">
+  <div style="display: flex; flex-direction: column; gap: 4px">
+    <p style="margin: 0; font-size: 12px; color: #9aa1c4">Groups / Friday Night Frags</p>
+    <h1 style="margin: 0; font-size: 22px">Friday Night Frags</h1>
+  </div>
+
+  <section class="hm-card hm-card--flush" style="display: flex; flex-direction: column">
+    <div style="padding: 14px 14px 0; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <h2 style="margin: 0; font-size: 18px">Members</h2>
+        <span class="hm-badge">6</span>
+      </div>
+      <nav class="hm-segment hm-segment--block" aria-label="Members view"><a href="#" aria-current="page">Availability</a><a href="#">Roster</a></nav>
+      <nav style="display: flex; gap: 6px; overflow-x: auto; margin: 0 -14px; padding: 0 14px 4px" aria-label="Choose a day">
+        <sc-for list="{{days}}" as="d" hint-placeholder-count="7">
+          <a href="#" style="{{d.style}}" aria-current="{{d.current}}"><span style="font-weight: 700; font-size: 13px">{{d.name}}</span><span style="font-size: 11px">{{d.date}}</span></a>
+        </sc-for>
+      </nav>
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+        <span style="font-size: 12px; color: #b7bcda">Times in <b style="color: #f3f4ff">Europe/Kyiv</b></span>
+        <nav class="hm-segment" aria-label="Hours shown" style="padding: 2px"><a href="#" style="min-width: 0; padding: 0 10px; min-height: 36px">00–24</a><a href="#" aria-current="page" style="min-width: 0; padding: 0 10px; min-height: 36px">12–24</a></nav>
+      </div>
+
+      <div style="display: grid; gap: 6px; padding: 10px; border-radius: 10px; background: #12352e; border: 1px solid #1f5a4b">
+        <div style="display: flex; justify-content: space-between; align-items: baseline">
+          <span style="font-size: 13px; font-weight: 700; color: #8ef2cd">Free together</span>
+          <span style="font-size: 12px; color: #f3f4ff">Best <b>21:00–22:00</b> · 4 of 6</span>
+        </div>
+        <div class="m-heat">
+          <sc-for list="{{heat}}" as="c" hint-placeholder-count="12"><div style="{{c.style}}">{{c.label}}</div></sc-for>
+        </div>
+        <div class="m-ticks"><sc-for list="{{ticks}}" as="t" hint-placeholder-count="5"><span style="{{t.style}}">{{t.label}}</span></sc-for></div>
+      </div>
+    </div>
+
+    <div style="margin-top: 12px">
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+        <div class="{{r.cls}}">
+          <div class="m-who">
+            <span class="hm-avatar hm-avatar--sm" aria-hidden="true" style="width: 24px; height: 24px; font-size: 10px">{{r.initial}}</span>
+            <span style="{{r.nameStyle}}">{{r.name}}</span>
+          </div>
+          <div class="{{r.trackCls}}">
+            <sc-for list="{{r.blocks}}" as="b" hint-placeholder-count="1"><div class="{{b.cls}}" style="{{b.style}}"></div></sc-for>
+          </div>
+          <div class="m-ranges">
+            <sc-for list="{{r.texts}}" as="x" hint-placeholder-count="1"><span><b>{{x.time}}</b> <span class="m-kind" style="{{x.kindStyle}}">{{x.kind}}</span></span></sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 11px; color: #b7bcda">
+    <span style="display: inline-flex; align-items: center; gap: 6px"><i style="display: inline-block; width: 20px; height: 12px; border-radius: 3px; background: #8ef2cd"></i>One-off</span>
+    <span style="display: inline-flex; align-items: center; gap: 6px"><i style="display: inline-block; width: 20px; height: 12px; border-radius: 3px; background: repeating-linear-gradient(135deg,#8ef2cd 0 5px,#6fd8b2 5px 10px); box-shadow: inset 0 0 0 2px #aebcff"></i>Weekly, not confirmed</span>
+    <span style="display: inline-flex; align-items: center; gap: 6px"><i style="display: inline-block; width: 20px; height: 12px; border-radius: 3px; background: #2a2e45; border: 1px solid #31375a"></i>Busy</span>
+    <span style="display: inline-flex; align-items: center; gap: 6px"><i style="display: inline-block; width: 20px; height: 12px; border-radius: 3px; background: repeating-linear-gradient(135deg,rgba(154,161,196,.3) 0 4px,#101222 4px 8px)"></i>No data</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1320}}'>
+class Component extends DCLogic {
+  renderVals() {
+    // 12–24 view: positions are a share of the 12 visible hours.
+    const pos = (a, b) => 'left: ' + ((a - 12) / 12 * 100) + '%; width: ' + ((b - a) / 12 * 100) + '%';
+    const names = ['Today', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    const days = names.map((name, i) => ({
+      name: name, date: (14 + i) + ' Nov', current: i === 0 ? 'page' : 'false',
+      style: 'flex: 0 0 72px; display: grid; justify-items: center; gap: 2px; padding: 8px 4px; border-radius: 10px; text-decoration: none; ' +
+        (i === 0 ? 'background: #c9bfff; color: #16112e; border: 1px solid #c9bfff; box-shadow: inset 0 -3px 0 #16112e'
+          : 'background: #0b0c17; color: #b7bcda; border: 1px solid #31375a')
+    }));
+    const counts = [1, 1, 1, 1, 1, 1, 2, 3, 3, 4, 3, 3];
+    const shades = ['#141628', '#163a33', '#1d5a4a', '#3ea688', '#8ef2cd'];
+    const heat = counts.map((n) => ({
+      label: n, style: 'background: ' + shades[Math.min(n, 4)] + '; color: ' + (n >= 3 ? '#062a20' : '#b7bcda') +
+        (n === 4 ? '; box-shadow: inset 0 0 0 2px #f3f4ff' : '')
+    }));
+    const ticks = [12, 15, 18, 21, 24].map((h) => ({ label: String(h).padStart(2, '0'), style: 'left: ' + ((h - 12) / 12 * 100) + '%' }));
+    const oneoff = 'background: #12352e; color: #8ef2cd';
+    const weekly = 'background: #1c2348; color: #aebcff';
+    const row = (name, blocks, texts) => ({
+      name: name, initial: name[0], blocks: blocks, texts: texts,
+      cls: 'm-member' + (blocks.length || texts.length ? '' : ' m-member--empty'),
+      trackCls: 'm-track' + (blocks.length || texts.length ? '' : ' m-track--empty'),
+      nameStyle: blocks.length || texts.length ? '' : 'color: #9aa1c4'
+    });
+    return {
+      days: days, heat: heat, ticks: ticks,
+      rows: [
+        row('Kai', [{ cls: 'm-block m-block--weekly', style: pos(18, 22) }],
+          [{ time: '18:00–22:00', kind: 'Weekly', kindStyle: weekly }, { time: '↤ 00:00–01:30', kind: 'Weekly', kindStyle: weekly }]),
+        row('Mira', [{ cls: 'm-block m-block--oneoff', style: pos(12, 24) }], [{ time: 'All day', kind: 'One-off', kindStyle: oneoff }]),
+        row('Oksana', [{ cls: 'm-block m-block--oneoff m-block--next', style: pos(21, 24) }],
+          [{ time: '21:00 ↦ next day', kind: 'One-off', kindStyle: oneoff }]),
+        row('Taro', [{ cls: 'm-block m-block--weekly', style: pos(19.5, 23.5) }], [{ time: '19:30–23:30', kind: 'Weekly', kindStyle: weekly }]),
+        row('Bogdan', [], [{ time: 'No data', kind: '', kindStyle: 'display: none' }]),
+        row('Former member · …5432', [], [{ time: 'No data', kind: '', kindStyle: 'display: none' }])
+      ].map((item) => item.name === 'Bogdan' || item.name.startsWith('Former')
+        ? Object.assign(item, { cls: 'm-member m-member--empty', trackCls: 'm-track m-track--empty', nameStyle: 'color: #9aa1c4' })
+        : item)
+    };
+  }
+}
+</script>
+</body>
+</html>

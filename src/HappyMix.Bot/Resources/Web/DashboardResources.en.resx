@@ -1875,4 +1875,40 @@
   <data name="No_date_of_this_schedule_is_in_the_future_Check_the_days" xml:space="preserve">
     <value>No date of this schedule is in the future. Check the days and dates.</value>
   </data>
+  <data name="GameNews_Title" xml:space="preserve">
+    <value>Game news</value>
+  </data>
+  <data name="GameNews_Lead" xml:space="preserve">
+    <value>Follow Steam announcements and get pinged in Discord.</value>
+  </data>
+  <data name="GameNews_Create" xml:space="preserve">
+    <value>Create subscription</value>
+  </data>
+  <data name="GameNews_App" xml:space="preserve">
+    <value>Steam App ID or store link</value>
+  </data>
+  <data name="GameNews_Error" xml:space="preserve">
+    <value>Could not update subscription</value>
+  </data>
+  <data name="GameNews_ManageAll" xml:space="preserve">
+    <value>Manage server subscriptions</value>
+  </data>
+  <data name="GameNews_Subscriptions" xml:space="preserve">
+    <value>Server subscriptions</value>
+  </data>
+  <data name="GameNews_Empty" xml:space="preserve">
+    <value>There are no subscriptions yet.</value>
+  </data>
+  <data name="GameNews_Subscribe" xml:space="preserve">
+    <value>Subscribe</value>
+  </data>
+  <data name="GameNews_Unsubscribe" xml:space="preserve">
+    <value>Unsubscribe</value>
+  </data>
+  <data name="GameNews_Delete" xml:space="preserve">
+    <value>Delete channel and role</value>
+  </data>
+  <data name="GameNews_Deleting" xml:space="preserve">
+    <value>Deletion pending. Retry to finish.</value>
+  </data>
 </root>

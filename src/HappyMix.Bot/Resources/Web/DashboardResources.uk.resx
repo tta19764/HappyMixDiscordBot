@@ -1875,4 +1875,40 @@
   <data name="No_date_of_this_schedule_is_in_the_future_Check_the_days" xml:space="preserve">
     <value>Жодна дата цього розкладу не в майбутньому. Перевірте дні та дати.</value>
   </data>
+  <data name="GameNews_Title" xml:space="preserve">
+    <value>Новини ігор</value>
+  </data>
+  <data name="GameNews_Lead" xml:space="preserve">
+    <value>Стежте за новинами Steam й отримуйте сповіщення в Discord.</value>
+  </data>
+  <data name="GameNews_Create" xml:space="preserve">
+    <value>Створити підписку</value>
+  </data>
+  <data name="GameNews_App" xml:space="preserve">
+    <value>ID гри в Steam або посилання на її сторінку</value>
+  </data>
+  <data name="GameNews_Error" xml:space="preserve">
+    <value>Не вдалося змінити підписку</value>
+  </data>
+  <data name="GameNews_ManageAll" xml:space="preserve">
+    <value>Керування підписками сервера</value>
+  </data>
+  <data name="GameNews_Subscriptions" xml:space="preserve">
+    <value>Підписки сервера</value>
+  </data>
+  <data name="GameNews_Empty" xml:space="preserve">
+    <value>Підписок ще немає.</value>
+  </data>
+  <data name="GameNews_Subscribe" xml:space="preserve">
+    <value>Підписатися</value>
+  </data>
+  <data name="GameNews_Unsubscribe" xml:space="preserve">
+    <value>Відписатися</value>
+  </data>
+  <data name="GameNews_Delete" xml:space="preserve">
+    <value>Видалити канал і роль</value>
+  </data>
+  <data name="GameNews_Deleting" xml:space="preserve">
+    <value>Видалення не завершено. Спробуйте ще раз.</value>
+  </data>
 </root>

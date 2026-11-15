@@ -62,6 +62,8 @@ public static class DependencyInjection
             new InteractionService(provider.GetRequiredService<DiscordSocketClient>().Rest));
         services.AddHttpClient("Twitch", client => client.Timeout = TimeSpan.FromSeconds(5));
         services.AddSingleton<TwitchLiveStreams>();
+        services.AddHttpClient("SteamNews", client => client.Timeout = TimeSpan.FromSeconds(10));
+        services.AddSingleton<GameNewsService>();
         services.AddSingleton<DiscordMatchAnnouncementPublisher>();
         services.AddSingleton<IGuildAnnouncementPublisher>(provider =>
             provider.GetRequiredService<DiscordMatchAnnouncementPublisher>());
@@ -88,6 +90,11 @@ public static class DependencyInjection
                 .WithSimpleSchedule(schedule => schedule
                     .WithInterval(TimeSpan.FromMinutes(1))
                     .RepeatForever()));
+
+            JobKey newsKey = new("publish-game-news");
+            scheduler.AddJob<PublishGameNewsJob>(job => job.WithIdentity(newsKey));
+            scheduler.AddTrigger(trigger => trigger.ForJob(newsKey).StartNow()
+                .WithSimpleSchedule(schedule => schedule.WithIntervalInMinutes(10).RepeatForever()));
 
             JobKey eventsKey = new("dispatch-event-messages");
             scheduler.AddJob<DispatchEventMessagesJob>(job => job.WithIdentity(eventsKey));

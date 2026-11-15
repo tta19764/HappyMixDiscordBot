@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Availability dashboard, light, mobile</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./light.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#5a45cf}a:hover{color:#4734b2}
+</style>
+</helmet>
+<div class="lx" style="width: 390px; min-height: 1640px">
+  <header class="lx-header">
+    <div class="lx-header__in" style="padding: 0 16px; gap: 8px">
+      <img src="./happymix.svg" alt="HappyMix" width="30" height="30">
+      <span class="lx-pill" style="min-width: 0; flex: 1"><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Friday Night Frags</span></span>
+      <button class="lx-btn lx-btn--ghost lx-btn--sm" type="button" aria-label="Theme: Light"><svg class="lx-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2"></path></svg></button>
+      <button class="lx-btn lx-btn--ghost lx-btn--sm" type="button">EN</button>
+    </div>
+  </header>
+  <main style="padding: 16px; display: grid; gap: 16px">
+    <div style="display: grid; gap: 4px"><h1 style="font-size: 24px">Availability</h1><p class="lx-muted" style="font-size: 14px">Tell the group when you can play.</p></div>
+    <nav class="lx-tabs" aria-label="Server" style="overflow-x: auto; white-space: nowrap"><a href="#" aria-current="page">Availability</a><a href="#">Events</a><a href="#">Groups</a><a href="#">Linked</a></nav>
+    <nav class="lx-segment" aria-label="Availability view" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr))"><a href="#" style="justify-content: center">Today</a><a href="#" aria-current="page" style="justify-content: center">Weekly</a></nav>
+
+    <section class="lx-card" style="padding: 16px; display: grid; gap: 10px" aria-labelledby="lm-my">
+      <div class="lx-row" style="justify-content: space-between"><h2 id="lm-my" style="font-size: 17px">My events</h2><a href="#" style="font-size: 14px; font-weight: 600">All</a></div>
+      <div class="lx-event lx-event--confirmed" style="grid-template-columns: 48px minmax(0, 1fr); padding: 12px">
+        <span class="lx-date" style="width: 48px; height: 48px; background: #def4eb; color: #0a7352"><small>Sat</small><b>21</b></span>
+        <div><p class="lx-event__title">Faceit night</p><p class="lx-event__meta">19:00–01:00 · 5 going</p><span class="lx-badge lx-badge--mint" style="margin-top: 6px">Confirmed</span></div>
+      </div>
+      <div class="lx-event lx-event--pending" style="grid-template-columns: 48px minmax(0, 1fr); padding: 12px">
+        <span class="lx-date" style="width: 48px; height: 48px"><small>Thu</small><b>26</b></span>
+        <div><p class="lx-event__title">Thursday scrims</p><p class="lx-event__meta">20:00–23:00 · weekly · 4 going</p><span class="lx-badge lx-badge--warn" style="margin-top: 6px">Pending</span></div>
+      </div>
+    </section>
+
+    <section class="lx-card" style="padding: 0" aria-labelledby="lm-week">
+      <div style="padding: 16px 16px 8px"><h2 id="lm-week" style="font-size: 17px">Your usual week</h2><p class="lx-subtle">Repeats every week</p></div>
+      <div style="display: grid; gap: 8px; padding: 12px 16px; border-top: 1px solid #dde0ec">
+        <div class="lx-row" style="justify-content: space-between"><div><b>Monday</b><p style="font-size: 14px">12:00–14:00 <span class="lx-badge lx-badge--warn">Tentative</span></p><p style="font-size: 14px">19:00–23:00</p></div><div class="lx-row" style="gap: 6px"><button class="lx-btn lx-btn--sm" type="button" aria-label="Edit Monday">✎</button><button class="lx-btn lx-btn--sm lx-btn--danger" type="button" aria-label="Clear Monday">✕</button></div></div>
+        <div class="lx-track"><span class="lx-seg lx-seg--tent" style="left: 50%; width: 8.3%"></span><span class="lx-seg" style="left: 79%; width: 16.7%"></span></div>
+      </div>
+      <div style="display: grid; gap: 8px; padding: 12px 16px; border-top: 1px solid #dde0ec">
+        <div class="lx-row" style="justify-content: space-between"><div><b>Tuesday</b><p class="lx-subtle">No hours</p></div><button class="lx-btn lx-btn--sm" type="button" aria-label="Add hours on Tuesday">+</button></div>
+        <div class="lx-track"></div>
+      </div>
+      <div style="display: grid; gap: 8px; padding: 12px 16px; border-top: 1px solid #dde0ec">
+        <div class="lx-row" style="justify-content: space-between"><div><b>Thursday</b><p style="font-size: 14px">20:00–23:00 <span class="lx-badge lx-badge--brand">Event</span></p></div><button class="lx-btn lx-btn--sm" type="button" aria-label="Add hours on Thursday">+</button></div>
+        <div class="lx-track"><span class="lx-seg" style="left: 83.3%; width: 12.5%; background: #5a45cf"></span></div>
+      </div>
+      <div style="display: grid; gap: 10px; padding: 14px 16px; border-top: 1px solid #dde0ec; background: #f5f6fb">
+        <div class="lx-row" style="justify-content: space-between"><b>Friday</b><span class="lx-badge">Editing</span></div>
+        <div style="position: relative; height: 60px; border-radius: 10px; border: 1px solid #c3c8dc; background-color: #f0f2f8; background-image: linear-gradient(to right, #dde0ec 1px, transparent 1px); background-size: 20% 100%">
+          <span style="position: absolute; top: 0; bottom: 0; left: 80%; right: 0; background: rgb(40 45 90 / .06); border-left: 2px solid #c3c8dc"></span>
+          <span class="lx-block lx-block--sel" style="left: 70%; width: 15%"></span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <div class="lx-field"><span class="lx-label">From</span><div class="lx-row" style="gap: 4px; flex-wrap: nowrap"><span class="lx-input lx-select" style="min-width: 0">21</span>:<span class="lx-input lx-select" style="min-width: 0">00</span></div></div>
+          <div class="lx-field"><span class="lx-label">Until</span><div class="lx-row" style="gap: 4px; flex-wrap: nowrap"><span class="lx-input lx-select" style="min-width: 0">01</span>:<span class="lx-input lx-select" style="min-width: 0">30</span></div></div>
+        </div>
+        <p class="lx-subtle">Fri · 21:00 → Sat 01:30 · 4h 30m · Definite</p>
+        <button class="lx-btn lx-btn--primary" type="button">Save Friday</button>
+      </div>
+      <div style="display: grid; gap: 8px; padding: 12px 16px; border-top: 1px solid #dde0ec">
+        <div class="lx-row" style="justify-content: space-between"><div><b>Sunday</b><p style="font-size: 14px">All day</p></div><button class="lx-btn lx-btn--sm" type="button" aria-label="Edit Sunday">✎</button></div>
+        <div class="lx-track"><span class="lx-seg" style="left: 0; width: 100%"></span></div>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1640}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

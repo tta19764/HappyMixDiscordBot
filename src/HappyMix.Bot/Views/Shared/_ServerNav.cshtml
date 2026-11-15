@@ -9,6 +9,7 @@
 <nav class="hm-tabs" aria-label="Server">
     <a href="/availability/@Model.GuildId" aria-current="@(Model.Active == "availability" ? "page" : null)">@T["Availability"]</a>
     <a href="/events/@Model.GuildId" aria-current="@(Model.Active == "events" ? "page" : null)">@T["Events"]</a>
+    <a href="/game-news/@Model.GuildId" aria-current="@(Model.Active == "game-news" ? "page" : null)">@T["GameNews_Title"]</a>
     <a href="/groups/@Model.GuildId" aria-current="@(Model.Active == "groups" ? "page" : null)">@T["Groups"]</a>
     <a href="/links/@Model.GuildId" aria-current="@(Model.Active == "links" ? "page" : null)">@T["Linked_accounts"]</a>
     @if (Model.CanConfigure)

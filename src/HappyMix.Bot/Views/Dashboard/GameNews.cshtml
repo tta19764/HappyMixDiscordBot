@@ -1,0 +1,56 @@
+@model GameNewsPage
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = T["GameNews_Title"];
+    string url = $"/game-news/{Model.GuildId}";
+    var nav = new ServerNavModel(Model.GuildId, Model.GuildName, "game-news", Model.IsAdmin,
+        "GameNews_Title", T["GameNews_Lead"]);
+}
+<partial name="_ServerNav" model="nav" />
+<div class="hm-stack">
+    @if (Model.Error is not null)
+    {
+        <partial name="_Banner" model='new BannerModel("error", T["GameNews_Error"], T.Message(Model.Error))' />
+    }
+    <form class="hm-card hm-stack" method="post" action="@url">
+        @Html.AntiForgeryToken()
+        <h2>@T["GameNews_Create"]</h2>
+        <label for="game-news-game">@T["GameNews_App"]</label>
+        <input class="hm-input" id="game-news-game" name="game" required maxlength="350" />
+        <label for="game-news-name">@T["Game_name"]</label>
+        <input class="hm-input" id="game-news-name" name="name" required maxlength="65" />
+        <button class="hm-btn hm-btn--primary" name="action" value="create">@T["GameNews_Create"]</button>
+    </form>
+    <section class="hm-card hm-stack">
+        <h2>@T[Model.IsAdmin ? "GameNews_ManageAll" : "GameNews_Subscriptions"]</h2>
+        @if (Model.Subscriptions.Length == 0)
+        {
+            <p>@T["GameNews_Empty"]</p>
+        }
+        @foreach (var subscription in Model.Subscriptions)
+        {
+            bool joined = Model.Roles.Contains(ulong.Parse(subscription.RoleId, System.Globalization.CultureInfo.InvariantCulture));
+            <form class="hm-row hm-row--between" method="post" action="@url">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="game" value="@subscription.AppId" />
+                <a href="https://discord.com/channels/@Model.GuildId/@subscription.ChannelId">@subscription.Name</a>
+                <div class="hm-row">
+                    @if (subscription.Deleting)
+                    {
+                        <span>@T["GameNews_Deleting"]</span>
+                    }
+                    @if (!subscription.Deleting)
+                    {
+                        <button class="hm-btn" name="action" value="@(joined ? "unsubscribe" : "subscribe")">
+                            @T[joined ? "GameNews_Unsubscribe" : "GameNews_Subscribe"]
+                        </button>
+                    }
+                    @if (Model.IsAdmin || subscription.OwnerId == Model.MemberId)
+                    {
+                        <button class="hm-btn" name="action" value="delete">@T["GameNews_Delete"]</button>
+                    }
+                </div>
+            </form>
+        }
+    </section>
+</div>

@@ -280,3 +280,22 @@ Use `T["Resource_Key"]` in views and `text["Resource_Key"]` in controllers.
 errors, Discord command metadata, and existing view models to the resource keys.
 Unknown messages retain their original text. New dashboard copy should use direct
 stable-key lookups and an entry in each language file.
+
+### Steam game news and Discord commands
+
+Use the dashboard's **Game news** tab or `/game-news create` with a Steam App ID or
+store link and a display name. HappyMix creates one channel and role per game per
+server. Any member can join or leave the role. The creator and administrators can
+delete the subscription and its Discord resources. The bot needs Manage Channels,
+Manage Roles, and the ability to mention its non-mentionable subscription role
+(the Mention Everyone permission in the news channel). Its role must be above the
+roles it manages. Notifications whitelist only the subscription role.
+
+Every ten minutes HappyMix checks Steam announcements, skips posts from before the
+subscription, and records delivered IDs in SQLite. Release, playtest and update
+headings are inferred from announcement titles. Every post links to the source.
+Silent builds and unannounced store or playtest state changes are outside this feed.
+
+`/dashboard` opens the dashboard. Use `/event list`, `/event groups` and `/event show`
+to find IDs and dates, then `/event create`, `/event respond`, `/event confirm` or
+`/event cancel` to manage events in Discord.
