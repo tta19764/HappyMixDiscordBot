@@ -1922,6 +1922,30 @@
 <data name="Calendar_Availability" xml:space="preserve"><value>By date</value></data>
 <data name="Calendar_Date" xml:space="preserve"><value>First date</value></data>
 <data name="Calendar_Through" xml:space="preserve"><value>Repeat through (optional)</value></data>
-<data name="Calendar_RangeHelp" xml:space="preserve"><value>Use the same hours on every date through the end date, including weekends. Leave empty for one day.</value></data>
+<data name="Calendar_RangeHelp" xml:space="preserve"><value>Use the same hours on every date from the first date through this one, weekends included.</value></data>
 <data name="Calendar_Configured" xml:space="preserve"><value>Separately configured availability</value></data>
+<data name="Couldn_t_copy_Arg0" xml:space="preserve"><value>Couldn't copy {0}</value></data>
+<data name="Copied_Arg0" xml:space="preserve"><value>Copied {0}</value></data>
+<data name="Now_also_on_Arg0" xml:space="preserve"><value>The same hours are now set on {0}.</value></data>
+<data name="Drag_onto_another_day_to_copy" xml:space="preserve"><value>Drag onto another day to copy</value></data>
+<data name="Copy_Arg0_to_other_days" xml:space="preserve"><value>Copy {0} to other days</value></data>
+<data name="Copy_to" xml:space="preserve"><value>Copy to…</value></data>
+<data name="Weekdays" xml:space="preserve"><value>Weekdays</value></data>
+<data name="Weekend" xml:space="preserve"><value>Weekend</value></data>
+<data name="Every_day" xml:space="preserve"><value>Every day</value></data>
+<data name="Replace" xml:space="preserve"><value>Replace</value></data>
+<data name="Copy_hours" xml:space="preserve"><value>Copy hours</value></data>
+<data name="Replaces_the_hours_on_the_days_you_pick" xml:space="preserve"><value>The days you pick get exactly these hours; what they had before is replaced.</value></data>
+<data name="Tip_drag_a_day_onto_another_to_copy_its_hours_The_day_you_drop_on_is_replaced" xml:space="preserve"><value>Tip: drag a day by its name onto another day to copy its hours. The day you drop it on is replaced.</value></data>
+<data name="Drag_a_marked_date_onto_another_to_copy_its_hours_there" xml:space="preserve"><value>Drag a marked date onto another date to copy its hours there</value></data>
+<data name="Replace_the_hours_on_Arg1_with_the_hours_from_Arg0" xml:space="preserve"><value>Replace the hours on {1} with the hours from {0}? What {1} has now will be removed.</value></data>
+<data name="Copy_the_hours_from_Arg0_to_Arg1" xml:space="preserve"><value>Copy the hours from {0} to {1}?</value></data>
+<data name="Repeat_on_the_following_days" xml:space="preserve"><value>Repeat on the following days</value></data>
+<data name="Repeat_through" xml:space="preserve"><value>Repeat through</value></data>
+<data name="News_Following_Arg0_of_Arg1" xml:space="preserve"><value>You follow {0} of {1} games. Subscribing gives you the game's role and its news channel.</value></data>
+<data name="News_Find_a_game" xml:space="preserve"><value>Find a game</value></data>
+<data name="News_Subscribed" xml:space="preserve"><value>Subscribed</value></data>
+<data name="News_Delete_question_Arg0" xml:space="preserve"><value>Delete {0} for everyone? Its news channel and role are removed.</value></data>
+<data name="News_No_match" xml:space="preserve"><value>No game matches that name.</value></data>
+<data name="News_Add_help" xml:space="preserve"><value>Paste a Steam store link or app ID. HappyMix creates a news channel and a role people can subscribe to.</value></data>
 </root>

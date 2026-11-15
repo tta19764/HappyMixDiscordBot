@@ -1,74 +1,128 @@
 @model GameNewsPage
+@using HappyMix.Infrastructure.Persistence
 @{
     Layout = "_DashboardLayout";
     ViewData["Title"] = T["GameNews_Title"];
     string url = $"/game-news/{Model.GuildId}";
     var nav = new ServerNavModel(Model.GuildId, Model.GuildName, "game-news", Model.IsAdmin,
         "GameNews_Title", T["GameNews_Lead"]);
+    bool Joined(GameNewsSubscription item) => Model.Roles.Contains(ulong.Parse(item.RoleId, System.Globalization.CultureInfo.InvariantCulture));
+    // Your subscriptions first, then the rest by name.
+    var games = Model.Subscriptions.OrderByDescending(Joined).ThenBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase).ToArray();
+    int joinedCount = games.Count(Joined);
 }
 <partial name="_ServerNav" model="nav" />
-<div class="hm-stack">
+<div class="hm-stack hm-stack--lg">
     @if (Model.Error is not null)
     {
         <partial name="_Banner" model='new BannerModel("error", T["GameNews_Error"], T.Message(Model.Error))' />
     }
-    <form class="hm-card hm-stack" method="post" action="@url">
-        @Html.AntiForgeryToken()
-        <h2>@T["GameNews_Create"]</h2>
-        <label for="game-news-game">@T["GameNews_App"]</label>
-        <input class="hm-input" id="game-news-game" name="game" required maxlength="350" />
-        <label for="game-news-name">@T["Game_name"]</label>
-        <input class="hm-input" id="game-news-name" name="name" required maxlength="65" />
-        <button class="hm-btn hm-btn--primary" name="action" value="create">@T["GameNews_Create"]</button>
-    </form>
-    <section class="hm-card hm-stack">
-        <h2>@T[Model.IsAdmin ? "GameNews_ManageAll" : "GameNews_Subscriptions"]</h2>
-        @if (Model.Subscriptions.Length == 0)
+
+    <section class="hm-card" aria-labelledby="news-games">
+        <div class="hm-card__head">
+            <div>
+                <h2 id="news-games">@T[Model.IsAdmin ? "GameNews_ManageAll" : "GameNews_Subscriptions"]</h2>
+                <p>@T["News_Following_Arg0_of_Arg1", joinedCount, games.Length]</p>
+            </div>
+            <div class="hm-row">
+                @if (games.Length > 5)
+                {
+                    <label class="hm-news-search" data-news-search hidden>
+                        @DashboardIcons.Render("search")
+                        <input class="hm-input" type="search" placeholder="@T["News_Find_a_game"]" aria-label="@T["News_Find_a_game"]" autocomplete="off">
+                    </label>
+                }
+                <a class="hm-btn hm-btn--primary" href="#news-add">@DashboardIcons.Render("plus")<span class="hm-btn__label">@T["GameNews_Create"]</span></a>
+            </div>
+        </div>
+        @if (games.Length == 0)
         {
-            <p>@T["GameNews_Empty"]</p>
+            <div class="hm-empty">
+                @DashboardIcons.Render("bell")
+                <p>@T["GameNews_Empty"]</p>
+            </div>
         }
-        @foreach (var subscription in Model.Subscriptions)
+        else
         {
-            bool joined = Model.Roles.Contains(ulong.Parse(subscription.RoleId, System.Globalization.CultureInfo.InvariantCulture));
-            var portraits = Model.Subscribers.GetValueOrDefault(subscription.RoleId) ?? [];
-            <form class="hm-news-card" method="post" action="@url">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="game" value="@subscription.AppId" />
-                <div class="hm-news-card__art">
-                    <img src="https://cdn.akamai.steamstatic.com/steam/apps/@subscription.AppId/header.jpg" alt="" loading="lazy" data-game-art />
-                </div>
-                <div class="hm-news-card__body">
-                <h3><a href="https://discord.com/channels/@Model.GuildId/@subscription.ChannelId">@subscription.Name</a></h3>
-                <div class="hm-news-members">
-                    @foreach (string portrait in portraits.Take(4))
-                    {
-                        <img src="@portrait" alt="" width="32" height="32" loading="lazy" />
-                    }
-                    @if (Model.MembersAvailable)
-                    {
-                        <span>@T["News_Subscribers", portraits.Length]</span>
-                        @if (portraits.Length > 4) { <span>@T["News_More", portraits.Length - 4]</span> }
-                    }
-                    else { <span>@T["News_MembersUnavailable"]</span> }
-                </div>
-                <div class="hm-row">
-                    @if (subscription.Deleting)
-                    {
-                        <span>@T["GameNews_Deleting"]</span>
-                    }
-                    @if (!subscription.Deleting)
-                    {
-                        <button class="hm-btn" name="action" value="@(joined ? "unsubscribe" : "subscribe")">
-                            @T[joined ? "GameNews_Unsubscribe" : "GameNews_Subscribe"]
-                        </button>
-                    }
-                    @if (Model.IsAdmin || subscription.OwnerId == Model.MemberId)
-                    {
-                        <button class="hm-btn" name="action" value="delete">@T["GameNews_Delete"]</button>
-                    }
-                </div>
-                </div>
-            </form>
+            <ul class="hm-news-grid">
+                @foreach (var subscription in games)
+                {
+                    bool joined = Joined(subscription);
+                    var portraits = Model.Subscribers.GetValueOrDefault(subscription.RoleId) ?? [];
+                    bool canDelete = Model.IsAdmin || subscription.OwnerId == Model.MemberId;
+                    <li class="hm-news-card @(joined ? "is-joined" : "") @(subscription.Deleting ? "is-deleting" : "")" data-news-name="@subscription.Name.ToLowerInvariant()">
+                        <div class="hm-news-card__art">
+                            <img src="https://cdn.akamai.steamstatic.com/steam/apps/@subscription.AppId/header.jpg" alt="" loading="lazy" data-game-art />
+                            @if (joined)
+                            {
+                                <span class="hm-news-card__flag">@DashboardIcons.Render("check")@T["News_Subscribed"]</span>
+                            }
+                        </div>
+                        <div class="hm-news-card__body">
+                            <h3><a href="https://discord.com/channels/@Model.GuildId/@subscription.ChannelId">@subscription.Name</a></h3>
+                            <div class="hm-news-members">
+                                @foreach (string portrait in portraits.Take(4))
+                                {
+                                    <img src="@portrait" alt="" width="28" height="28" loading="lazy" />
+                                }
+                                @if (Model.MembersAvailable)
+                                {
+                                    <span>@T["News_Subscribers", portraits.Length]</span>
+                                }
+                                else
+                                {
+                                    <span>@T["News_MembersUnavailable"]</span>
+                                }
+                            </div>
+                            <div class="hm-news-card__actions">
+                                @if (subscription.Deleting)
+                                {
+                                    <span class="hm-badge hm-certainty--tentative">@T["GameNews_Deleting"]</span>
+                                }
+                                else
+                                {
+                                    <form method="post" action="@url">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="game" value="@subscription.AppId" />
+                                        <button class="hm-btn hm-btn--sm @(joined ? "" : "hm-btn--primary")" name="action" value="@(joined ? "unsubscribe" : "subscribe")">
+                                            @DashboardIcons.Render(joined ? "minus" : "bell")@T[joined ? "GameNews_Unsubscribe" : "GameNews_Subscribe"]
+                                        </button>
+                                    </form>
+                                }
+                                @if (canDelete && !subscription.Deleting)
+                                {
+                                    var delete = new ConfirmModel(T["GameNews_Delete"], T["News_Delete_question_Arg0", subscription.Name], url, T["GameNews_Delete"],
+                                        Fields: new Dictionary<string, string> { ["action"] = "delete", ["game"] = subscription.AppId.ToString(System.Globalization.CultureInfo.InvariantCulture) },
+                                        TriggerLabel: T["GameNews_Delete"] + " · " + subscription.Name, Inline: true);
+                                    <partial name="_Confirm" model="delete" />
+                                }
+                            </div>
+                        </div>
+                    </li>
+                }
+            </ul>
+            <p class="hm-empty-note" data-news-none hidden>@T["News_No_match"]</p>
         }
     </section>
+
+    <form class="hm-card hm-news-add" id="news-add" method="post" action="@url" aria-labelledby="news-add-title">
+        @Html.AntiForgeryToken()
+        <div class="hm-card__head">
+            <div>
+                <h2 id="news-add-title">@T["GameNews_Create"]</h2>
+                <p>@T["News_Add_help"]</p>
+            </div>
+        </div>
+        <div class="hm-news-add__fields">
+            <div class="hm-field">
+                <label class="hm-label" for="game-news-game">@T["GameNews_App"]</label>
+                <input class="hm-input" id="game-news-game" name="game" required maxlength="350" placeholder="store.steampowered.com/app/730" autocomplete="off" spellcheck="false" />
+            </div>
+            <div class="hm-field">
+                <label class="hm-label" for="game-news-name">@T["Game_name"]</label>
+                <input class="hm-input" id="game-news-name" name="name" required maxlength="65" placeholder="Counter-Strike 2" />
+            </div>
+            <button class="hm-btn hm-btn--primary" name="action" value="create">@DashboardIcons.Render("plus")@T["GameNews_Create"]</button>
+        </div>
+    </form>
 </div>

@@ -158,6 +158,58 @@ public sealed class AvailabilityScheduleTests
         Assert.Equal(["timetable", "today"], set.SlashCommands.Select(command => command.Name).Order());
     }
 
+    [Fact]
+    public async Task CopyingAWeeklyDayReplacesTheTargetDaysAndKeepsThemOnFailure()
+    {
+        using var database = await SqliteTestDatabase.CreateAsync();
+        using var services = CreateServices(database.Services);
+        var sender = services.GetRequiredService<ISender>();
+        Assert.True((await sender.Send(new SetWeeklyDayCommand(1, 2, DayOfWeek.Monday,
+            [new("18", "20"), new("21", "23", Tentative: true)], "UTC", "UTC"))).IsSuccess);
+        Assert.True((await sender.Send(new SetWeeklyDayCommand(1, 2, DayOfWeek.Wednesday, [new("09", "11")], "UTC", "UTC"))).IsSuccess);
+
+        var copied = await sender.Send(new CopyWeeklyDayCommand(1, 2, DayOfWeek.Monday, [DayOfWeek.Wednesday, DayOfWeek.Friday]));
+
+        Assert.True(copied.IsSuccess, copied.Error.Description);
+        Assert.Equal(2, copied.Value);
+        var weekly = (await sender.Send(new GetWeeklyAvailabilityQuery(1, 2))).Value;
+        foreach (var day in new[] { DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday })
+            Assert.Equal([(new TimeOnly(18, 0), false), (new TimeOnly(21, 0), true)],
+                weekly.Where(item => item.Day == day).OrderBy(item => item.Start).Select(item => (item.Start, item.Tentative)).ToArray());
+
+        // Thursday 22:00–08:00 can't be copied onto Wednesday: it would run into Thursday's morning. Wednesday stays.
+        Assert.True((await sender.Send(new SetWeeklyDayCommand(1, 2, DayOfWeek.Tuesday, [new("22", "08")], "UTC", "UTC"))).IsSuccess);
+        Assert.True((await sender.Send(new SetWeeklyDayCommand(1, 2, DayOfWeek.Thursday, [new("06", "09")], "UTC", "UTC"))).IsSuccess);
+        Assert.True((await sender.Send(new CopyWeeklyDayCommand(1, 2, DayOfWeek.Tuesday, [DayOfWeek.Wednesday]))).IsFailure);
+        Assert.Equal(2, (await sender.Send(new GetWeeklyAvailabilityQuery(1, 2))).Value.Count(item => item.Day == DayOfWeek.Wednesday));
+        Assert.True((await sender.Send(new CopyWeeklyDayCommand(1, 2, DayOfWeek.Monday, [DayOfWeek.Monday]))).IsFailure);
+    }
+
+    [Fact]
+    public async Task CopyingADateMovesItsWindowsAndReplacesTheTargetDate()
+    {
+        using var database = await SqliteTestDatabase.CreateAsync();
+        var settings = database.Services.GetRequiredService<IGuildSettingsStore>();
+        await settings.SaveAsync(new GuildSettings(1, 0, "Europe/Kyiv"));
+        using var services = CreateServices(database.Services);
+        var sender = services.GetRequiredService<ISender>();
+        var from = new DateOnly(2026, 11, 20);
+        var to = new DateOnly(2026, 11, 24);
+        Assert.True((await sender.Send(new SetDateAvailabilityCommand(1, 2, from, from, "18", "01", null, "UTC", false, true))).IsSuccess);
+        Assert.True((await sender.Send(new SetDateAvailabilityCommand(1, 2, to, to, "10", "12", null, "UTC", false, false))).IsSuccess);
+
+        var copied = await sender.Send(new CopyDateAvailabilityCommand(1, 2, from, to, "UTC"));
+
+        Assert.True(copied.IsSuccess, copied.Error.Description);
+        var windows = (await sender.Send(new GetUpcomingAvailabilityQuery(1, 2))).Value.OrderBy(item => item.Start).ToArray();
+        Assert.Equal(2, windows.Length);
+        // 24 Nov 18:00–01:00 in Kyiv (UTC+2), tentative like the original; the 10:00–12:00 window is gone.
+        Assert.Equal(new DateTimeOffset(2026, 11, 24, 16, 0, 0, TimeSpan.Zero), windows[1].Start);
+        Assert.Equal(new DateTimeOffset(2026, 11, 24, 23, 0, 0, TimeSpan.Zero), windows[1].End);
+        Assert.True(windows[1].Tentative);
+        Assert.True((await sender.Send(new CopyDateAvailabilityCommand(1, 2, from, from, "UTC"))).IsFailure);
+    }
+
     private static ServiceProvider CreateServices(IServiceProvider storage) => new ServiceCollection()
         .AddLogging().AddApplication()
         .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())

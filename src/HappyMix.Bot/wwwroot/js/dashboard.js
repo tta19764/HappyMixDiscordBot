@@ -101,7 +101,7 @@
 })();
 
 // Confirmation panels: reveal the Cancel button and let Escape close an open panel.
-for (const details of document.querySelectorAll("details.hm-confirm")) {
+for (const details of document.querySelectorAll("details.hm-confirm, details.hm-copyto")) {
     const cancel = details.querySelector("[data-close-details]");
     if (cancel) {
         cancel.hidden = false;
@@ -472,45 +472,6 @@ for (const editor of document.querySelectorAll("[data-week-editor]")) {
 
     list.addEventListener("input", render);
     list.addEventListener("change", render);
-
-    const clipboard = editor.querySelector("[data-schedule-clipboard]");
-    const copyStatus = editor.querySelector("[data-copy-status]");
-    editor.querySelector("[data-copy-schedule]")?.addEventListener("click", async () => {
-        const fields = ["rangeStartHour", "rangeStartMinute", "rangeEndHour", "rangeEndMinute", "rangeKind"];
-        const ranges = items().map(item => fields.map(name => item.querySelector(`[name="${name}"]`).value));
-        clipboard.value = JSON.stringify({ format: "happymix-day-v1", zone: editor.elements.offset.value || editor.elements.offset.placeholder, ranges });
-        clipboard.focus();
-        clipboard.select();
-        try { await navigator.clipboard.writeText(clipboard.value); } catch { /* Selected text supports Ctrl+C. */ }
-    });
-    editor.querySelector("[data-paste-schedule]")?.addEventListener("click", () => {
-        try {
-            const data = JSON.parse(clipboard.value);
-            const validTime = (value, max) => typeof value === "string" && /^\d{2}$/.test(value) && Number(value) < max;
-            if (data.format !== "happymix-day-v1" || typeof data.zone !== "string" || data.zone.length > 100 ||
-                !Array.isArray(data.ranges) || data.ranges.length > 8 || !data.ranges.every(row =>
-                    Array.isArray(row) && row.length === 5 && validTime(row[0], 24) && validTime(row[1], 60) &&
-                    validTime(row[2], 24) && validTime(row[3], 60) && ["definite", "tentative"].includes(row[4]))) throw new Error();
-            for (const item of items()) item.remove();
-            const fields = ["rangeStartHour", "rangeStartMinute", "rangeEndHour", "rangeEndMinute", "rangeKind"];
-            for (const row of data.ranges) {
-                const fragment = editor.querySelector("[data-range-template]").content.cloneNode(true);
-                const item = fragment.querySelector("[data-range-item]");
-                fields.forEach((name, index) => {
-                    const select = item.querySelector(`[name="${name}"]`);
-                    if (![...select.options].some(option => option.value === row[index])) select.add(new Option(row[index], row[index]));
-                    select.value = row[index];
-                });
-                prepare(item);
-                editor.querySelector("[data-range-list]").append(item);
-            }
-            editor.elements.offset.value = data.zone;
-            selected = items()[0] ?? null;
-            render();
-            editor.dispatchEvent(new Event("change", { bubbles: true }));
-            copyStatus.textContent = copyStatus.dataset.ready;
-        } catch { copyStatus.textContent = copyStatus.dataset.invalid; }
-    });
 
     // Enhance: drop the empty fallback row, show the track and tools, and collapse unselected ranges.
     for (const item of items()) {
@@ -1049,3 +1010,100 @@ for (const form of document.querySelectorAll("[data-event-form]")) {
 for (const image of document.querySelectorAll("[data-game-art]")) {
     image.addEventListener("error", () => { image.hidden = true; });
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Availability copying: drag a weekly day onto another day, or a marked calendar date onto another date. The day you
+// drop on is replaced; a dialog says so first. "Copy to" menus also get quick picks.
+(() => {
+    const dialog = document.querySelector("[data-drop-dialog]");
+    for (const form of document.querySelectorAll("[data-drop-form]")) {
+        const scope = form.closest(".hm-card") ?? document;
+        const targets = [...scope.querySelectorAll("[data-drop-day], [data-drop-date]")];
+        if (!targets.length) continue;
+        const key = target => target.dataset.dropDay ?? target.dataset.dropDate;
+        scope.querySelectorAll("[data-drag-tip]").forEach(tip => { tip.hidden = false; });
+        let source = null;
+        const clear = () => targets.forEach(target => target.classList.remove("is-drop-target", "is-dragging"));
+        const submit = (from, to) => {
+            form.querySelector("[data-drop-from]").value = key(from);
+            form.querySelectorAll("[data-drop-to]").forEach(input => { input.value = key(to); });
+            if (!dialog?.showModal) { form.submit(); return; }
+            const replace = to.dataset.hasHours === "true";
+            const mode = replace ? "replace" : "copy";
+            dialog.querySelector("[data-drop-message]").textContent = dialog.dataset[mode]
+                .replaceAll("{0}", from.dataset.dayName).replaceAll("{1}", to.dataset.dayName);
+            const ok = dialog.querySelector("[data-drop-ok]");
+            const label = ok.querySelector("[data-drop-ok-label]");
+            label.textContent = label.dataset[mode];
+            ok.classList.toggle("hm-btn--danger", replace);
+            ok.classList.toggle("hm-btn--primary", !replace);
+            dialog.returnValue = "";
+            dialog.onclose = () => { if (dialog.returnValue === "ok") form.submit(); };
+            dialog.showModal();
+        };
+        for (const target of targets) {
+            target.addEventListener("dragstart", event => {
+                if (target.getAttribute("draggable") !== "true") { event.preventDefault(); return; }
+                source = target;
+                target.classList.add("is-dragging");
+                event.dataTransfer.effectAllowed = "copy";
+                event.dataTransfer.setData("text/plain", key(target));
+            });
+            target.addEventListener("dragend", () => { source = null; clear(); });
+            target.addEventListener("dragover", event => {
+                if (!source || source === target) return;
+                event.preventDefault();
+                event.dataTransfer.dropEffect = "copy";
+                target.classList.add("is-drop-target");
+            });
+            target.addEventListener("dragleave", event => {
+                if (!target.contains(event.relatedTarget)) target.classList.remove("is-drop-target");
+            });
+            target.addEventListener("drop", event => {
+                event.preventDefault();
+                const from = source;
+                clear();
+                if (from && from !== target) submit(from, target);
+            });
+        }
+    }
+
+    for (const menu of document.querySelectorAll("[data-copy-to]")) {
+        const quick = menu.querySelector("[data-copy-quick]");
+        quick.hidden = false;
+        const boxes = [...menu.querySelectorAll('input[name="copyTo"]')];
+        const submit = menu.querySelector('button[value="copy-weekly"]');
+        const sync = () => { submit.disabled = !boxes.some(box => box.checked); };
+        quick.addEventListener("click", event => {
+            const pick = event.target.closest("[data-pick]")?.dataset.pick;
+            if (!pick) return;
+            for (const box of boxes)
+                box.checked = pick === "all" || (pick === "weekend") === (box.dataset.weekend === "true");
+            sync();
+        });
+        menu.addEventListener("change", sync);
+        sync();
+    }
+
+    // "Repeat through" is only posted while its checkbox is ticked.
+    for (const toggle of document.querySelectorAll("[data-repeat-toggle]")) {
+        const input = toggle.form?.querySelector('[name="through"]');
+        if (!input) continue;
+        const sync = () => { input.disabled = !toggle.checked; };
+        toggle.addEventListener("change", () => { sync(); if (toggle.checked) input.focus(); });
+        sync();
+    }
+
+    // Game news: filter the cards by name.
+    const search = document.querySelector("[data-news-search]");
+    if (search) {
+        search.hidden = false;
+        const cards = [...document.querySelectorAll("[data-news-name]")];
+        search.querySelector("input").addEventListener("input", event => {
+            const query = event.target.value.trim().toLowerCase();
+            for (const card of cards) card.hidden = query !== "" && !card.dataset.newsName.includes(query);
+            const none = document.querySelector("[data-news-none]");
+            if (none) none.hidden = cards.some(card => !card.hidden);
+        });
+    }
+})();

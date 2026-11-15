@@ -1922,6 +1922,30 @@
 <data name="Calendar_Availability" xml:space="preserve"><value>За датою</value></data>
 <data name="Calendar_Date" xml:space="preserve"><value>Початкова дата</value></data>
 <data name="Calendar_Through" xml:space="preserve"><value>Повторювати до (необов’язково)</value></data>
-<data name="Calendar_RangeHelp" xml:space="preserve"><value>Ці години буде додано на кожен день до кінцевої дати включно, також на вихідні. Для одного дня залиште поле порожнім.</value></data>
+<data name="Calendar_RangeHelp" xml:space="preserve"><value>Ті самі години буде додано на кожну дату від першої до цієї включно, разом із вихідними.</value></data>
 <data name="Calendar_Configured" xml:space="preserve"><value>Окремо налаштована доступність</value></data>
+<data name="Couldn_t_copy_Arg0" xml:space="preserve"><value>Не вдалося скопіювати: {0}</value></data>
+<data name="Copied_Arg0" xml:space="preserve"><value>Скопійовано: {0}</value></data>
+<data name="Now_also_on_Arg0" xml:space="preserve"><value>Ті самі години тепер також: {0}.</value></data>
+<data name="Drag_onto_another_day_to_copy" xml:space="preserve"><value>Перетягніть на інший день, щоб скопіювати</value></data>
+<data name="Copy_Arg0_to_other_days" xml:space="preserve"><value>Копіювати «{0}» на інші дні</value></data>
+<data name="Copy_to" xml:space="preserve"><value>Копіювати на…</value></data>
+<data name="Weekdays" xml:space="preserve"><value>Будні</value></data>
+<data name="Weekend" xml:space="preserve"><value>Вихідні</value></data>
+<data name="Every_day" xml:space="preserve"><value>Усі дні</value></data>
+<data name="Replace" xml:space="preserve"><value>Замінити</value></data>
+<data name="Copy_hours" xml:space="preserve"><value>Копіювати години</value></data>
+<data name="Replaces_the_hours_on_the_days_you_pick" xml:space="preserve"><value>Вибрані дні отримають саме ці години; те, що там було, буде замінено.</value></data>
+<data name="Tip_drag_a_day_onto_another_to_copy_its_hours_The_day_you_drop_on_is_replaced" xml:space="preserve"><value>Порада: перетягніть день за назву на інший день, щоб скопіювати години. День, на який ви його кинете, буде замінено.</value></data>
+<data name="Drag_a_marked_date_onto_another_to_copy_its_hours_there" xml:space="preserve"><value>Перетягніть позначену дату на іншу, щоб скопіювати туди години</value></data>
+<data name="Replace_the_hours_on_Arg1_with_the_hours_from_Arg0" xml:space="preserve"><value>Замінити години «{1}» годинами з «{0}»? Поточні години «{1}» буде видалено.</value></data>
+<data name="Copy_the_hours_from_Arg0_to_Arg1" xml:space="preserve"><value>Скопіювати години з «{0}» у «{1}»?</value></data>
+<data name="Repeat_on_the_following_days" xml:space="preserve"><value>Повторювати в наступні дні</value></data>
+<data name="Repeat_through" xml:space="preserve"><value>Повторювати до</value></data>
+<data name="News_Following_Arg0_of_Arg1" xml:space="preserve"><value>Ви стежите за {0} з {1} ігор. Підписка дає роль гри та доступ до її каналу новин.</value></data>
+<data name="News_Find_a_game" xml:space="preserve"><value>Знайти гру</value></data>
+<data name="News_Subscribed" xml:space="preserve"><value>Підписано</value></data>
+<data name="News_Delete_question_Arg0" xml:space="preserve"><value>Видалити {0} для всіх? Канал новин і роль буде видалено.</value></data>
+<data name="News_No_match" xml:space="preserve"><value>Немає гри з такою назвою.</value></data>
+<data name="News_Add_help" xml:space="preserve"><value>Вставте посилання на Steam або ID застосунку. HappyMix створить канал новин і роль, на яку можна підписатися.</value></data>
 </root>

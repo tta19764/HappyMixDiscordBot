@@ -1167,3 +1167,154 @@ form[data-dirty="true"] .hm-savebar__clean { display: none; }
 .hm-calendar__day[aria-current] { outline:2px solid currentColor; font-weight:700; }
 .hm-calendar__day.is-configured { font-weight:700; }
 .hm-calendar__day span { font-size:8px; }
+
+/* ---------- 28. Colour: section accents, copying availability, game news ---------- */
+/* A small accent palette. Each server tab has its own hue, and the page picks it up as --hm-accent, so pages stop
+   being one violet: Availability is sky, Events amber, Game news coral, Groups pink, Linked accounts mint. */
+:root {
+    --hm-c-sky: #7cc8ff;     --hm-c-sky-tint: #14304a;
+    --hm-c-pink: #ff9bd2;    --hm-c-pink-tint: #3d1a33;
+    --hm-c-amber: #ffc46b;   --hm-c-amber-tint: #3a2a10;
+    --hm-c-coral: #ff9a7a;   --hm-c-coral-tint: #3d1d16;
+    --hm-c-mint: #8ef2cd;    --hm-c-mint-tint: #12352e;
+    --hm-c-violet: #c9bfff;  --hm-c-violet-tint: #2a2452;
+    --hm-accent: var(--hm-c-violet);
+    --hm-accent-tint: var(--hm-c-violet-tint);
+    --hm-glow-a: rgb(124 200 255 / .10);
+    --hm-glow-b: rgb(255 155 210 / .08);
+    --hm-primary-grad: linear-gradient(135deg, #c9bfff, #f0b4ff);
+}
+:root[data-theme="light"] {
+    --hm-c-sky: #1765a8;     --hm-c-sky-tint: #e3f0fc;
+    --hm-c-pink: #b02a72;    --hm-c-pink-tint: #fbe6f1;
+    --hm-c-amber: #8a5300;   --hm-c-amber-tint: #fdf0d8;
+    --hm-c-coral: #b23d1e;   --hm-c-coral-tint: #fde8e1;
+    --hm-c-mint: #0a7352;    --hm-c-mint-tint: #ddf5ea;
+    --hm-c-violet: #5a45cf;  --hm-c-violet-tint: #ece9fd;
+    --hm-glow-a: rgb(23 101 168 / .08);
+    --hm-glow-b: rgb(176 42 114 / .06);
+    --hm-primary-grad: linear-gradient(135deg, #5a45cf, #8b3fc4);
+}
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme]) {
+        --hm-c-sky: #1765a8;     --hm-c-sky-tint: #e3f0fc;
+        --hm-c-pink: #b02a72;    --hm-c-pink-tint: #fbe6f1;
+        --hm-c-amber: #8a5300;   --hm-c-amber-tint: #fdf0d8;
+        --hm-c-coral: #b23d1e;   --hm-c-coral-tint: #fde8e1;
+        --hm-c-mint: #0a7352;    --hm-c-mint-tint: #ddf5ea;
+        --hm-c-violet: #5a45cf;  --hm-c-violet-tint: #ece9fd;
+        --hm-glow-a: rgb(23 101 168 / .08);
+        --hm-glow-b: rgb(176 42 114 / .06);
+        --hm-primary-grad: linear-gradient(135deg, #5a45cf, #8b3fc4);
+    }
+}
+
+/* The active server tab sets the page accent. */
+.hm-main:has(.hm-tabs a[href^="/availability/"][aria-current="page"]) { --hm-accent: var(--hm-c-sky); --hm-accent-tint: var(--hm-c-sky-tint); }
+.hm-main:has(.hm-tabs a[href^="/events/"][aria-current="page"]) { --hm-accent: var(--hm-c-amber); --hm-accent-tint: var(--hm-c-amber-tint); }
+.hm-main:has(.hm-tabs a[href^="/game-news/"][aria-current="page"]) { --hm-accent: var(--hm-c-coral); --hm-accent-tint: var(--hm-c-coral-tint); }
+.hm-main:has(.hm-tabs a[href^="/groups/"][aria-current="page"]) { --hm-accent: var(--hm-c-pink); --hm-accent-tint: var(--hm-c-pink-tint); }
+.hm-main:has(.hm-tabs a[href^="/links/"][aria-current="page"]) { --hm-accent: var(--hm-c-mint); --hm-accent-tint: var(--hm-c-mint-tint); }
+
+body { background: radial-gradient(60rem 28rem at 8% -6rem, var(--hm-glow-a), transparent 70%),
+    radial-gradient(50rem 26rem at 96% -4rem, var(--hm-glow-b), transparent 70%), var(--hm-bg); background-repeat: no-repeat; }
+.hm-header { box-shadow: 0 1px 0 var(--hm-border), 0 2px 0 -1px var(--hm-accent); border-bottom-color: transparent; }
+
+.hm-page-head { position: relative; padding: var(--hm-space-4) var(--hm-space-5); border-radius: var(--hm-radius-lg);
+    background: linear-gradient(110deg, var(--hm-accent-tint), transparent 75%); border-left: 4px solid var(--hm-accent); }
+
+/* Tabs: a coloured dot per tab, and the underline in that tab's colour. */
+.hm-tabs a::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--tab, var(--hm-c-violet)); opacity: .55; flex: none; }
+.hm-tabs a[href^="/availability/"] { --tab: var(--hm-c-sky); }
+.hm-tabs a[href^="/events/"] { --tab: var(--hm-c-amber); }
+.hm-tabs a[href^="/game-news/"] { --tab: var(--hm-c-coral); }
+.hm-tabs a[href^="/groups/"] { --tab: var(--hm-c-pink); }
+.hm-tabs a[href^="/links/"] { --tab: var(--hm-c-mint); }
+.hm-tabs a:hover::before, .hm-tabs a[aria-current="page"]::before { opacity: 1; }
+.hm-tabs a[aria-current="page"] { border-bottom-color: var(--tab, var(--hm-brand)); border-bottom-width: 3px; }
+
+/* Cards: an accent edge and a marker beside each card title. */
+.hm-main .hm-card { border-top: 3px solid var(--hm-accent); }
+.hm-card__head h2::before { content: ""; display: inline-block; width: .3rem; height: .95em; margin-right: var(--hm-space-2); border-radius: 2px; background: var(--hm-accent); vertical-align: -.08em; }
+
+.hm-btn--primary { background: var(--hm-primary-grad); border-color: transparent; }
+.hm-btn--primary:hover { background: var(--hm-primary-grad); filter: brightness(1.08); border-color: transparent; }
+.hm-badge { background: var(--hm-accent-tint); color: var(--hm-text); border-color: transparent; }
+.hm-segment a[aria-current="page"] .hm-icon { color: inherit; }
+
+/* Weekly timetable rows: weekend names in pink, today in the accent. */
+.hm-day--weekend .hm-day__name { color: var(--hm-c-pink); }
+.hm-day--today { background: linear-gradient(90deg, var(--hm-accent-tint), transparent 60%); box-shadow: inset 4px 0 0 var(--hm-accent); }
+.hm-day--saved { background: linear-gradient(90deg, var(--hm-mint-tint), transparent 80%); }
+
+/* Drag a day or a date onto another to copy it. */
+.hm-day[draggable="true"] .hm-day__label { cursor: grab; }
+.hm-day__grip { display: inline-flex; vertical-align: -.2em; margin-left: -.35rem; margin-right: .1rem; color: var(--hm-text-subtle); }
+.hm-day__grip .hm-icon { width: 1rem; height: 1rem; }
+.hm-day[draggable="true"]:hover .hm-day__grip { color: var(--hm-accent); }
+.is-dragging { opacity: .45; }
+.hm-day.is-drop-target, .hm-calendar__day.is-drop-target { outline: 2px dashed var(--hm-accent); outline-offset: -2px; background: var(--hm-accent-tint); }
+.hm-week__tip { display: flex; align-items: center; gap: var(--hm-space-2); padding: var(--hm-space-3) var(--hm-space-5) 0; }
+.hm-week__tip .hm-icon { color: var(--hm-accent); flex: none; }
+
+/* "Copy to" menu on each weekly day. */
+.hm-copyto { position: relative; display: inline-block; }
+.hm-copyto > summary { list-style: none; }
+.hm-copyto > summary::-webkit-details-marker { display: none; }
+.hm-copyto[open] > summary { background: var(--hm-accent-tint); border-color: var(--hm-accent); }
+.hm-copyto__panel { position: absolute; right: 0; z-index: 25; width: min(23rem, calc(100vw - 2rem)); margin-top: var(--hm-space-2); padding: var(--hm-space-4);
+    border: 1px solid var(--hm-accent); border-radius: var(--hm-radius-md); background: var(--hm-surface); box-shadow: var(--hm-shadow); display: grid; gap: var(--hm-space-3); }
+.hm-copyto__title { font-weight: 650; }
+.hm-copyto .hm-days { gap: var(--hm-space-1); }
+.hm-copyto .hm-day-chip { min-width: 2.6rem; min-height: 2.25rem; padding: 0 var(--hm-space-2); }
+.hm-copyto .hm-day-chip:has(input[data-weekend="true"]):not(:has(input:checked)) { color: var(--hm-c-pink); }
+.hm-copyto__quick { gap: var(--hm-space-2); }
+.hm-copyto__quick .hm-chip { min-height: 2rem; padding: 0 var(--hm-space-3); font-size: var(--hm-fs-xs); }
+@media (max-width: 47.99rem) { .hm-copyto__panel { position: fixed; left: 1rem; right: 1rem; width: auto; bottom: 1rem; } }
+
+/* Drop confirmation. */
+.hm-dialog { width: min(26rem, calc(100vw - 2rem)); padding: var(--hm-space-5); border: 1px solid var(--hm-border-strong); border-top: 3px solid var(--hm-accent);
+    border-radius: var(--hm-radius-lg); background: var(--hm-surface); color: var(--hm-text); box-shadow: var(--hm-shadow); }
+.hm-dialog::backdrop { background: rgb(8 9 20 / .55); backdrop-filter: blur(2px); }
+.hm-dialog h2 { font-size: var(--hm-fs-lg); }
+.hm-dialog p { color: var(--hm-text-muted); }
+
+/* Calendar: weekends tinted, marked dates filled, today's selection in the accent. */
+.hm-calendar__grid > span:nth-child(7n+6), .hm-calendar__grid > span:nth-child(7n) { color: var(--hm-c-pink); }
+.hm-calendar__day { border: 1px solid transparent; color: var(--hm-text); }
+.hm-calendar__day.is-weekend { background: color-mix(in srgb, var(--hm-c-pink-tint) 45%, transparent); }
+.hm-calendar__day.is-configured { background: var(--hm-mint-tint); color: var(--hm-c-mint); border-color: var(--hm-mint-line); cursor: grab; }
+.hm-calendar__day[aria-current] { outline: 2px solid var(--hm-accent); outline-offset: 1px; }
+.hm-calendar__day:hover { border-color: var(--hm-border-strong); }
+
+/* "Repeat through": the date only shows once its box is ticked. */
+.hm-repeat-toggle { padding-inline: 0; }
+form:has([data-repeat-toggle]:not(:checked)) [data-repeat-through] { display: none; }
+
+/* Game news: a grid of cover cards. */
+.hm-news-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr)); gap: var(--hm-space-4); }
+.hm-news-grid .hm-news-card { display: flex; flex-direction: column; gap: 0; padding: 0; border-radius: var(--hm-radius-lg); background: var(--hm-surface-2);
+    transition: transform var(--hm-ease), border-color var(--hm-ease); }
+.hm-news-grid .hm-news-card:hover { transform: translateY(-2px); border-color: var(--hm-accent); }
+.hm-news-card.is-joined { border-color: var(--hm-mint-line); box-shadow: 0 0 0 1px var(--hm-mint-line); }
+.hm-news-card.is-deleting { opacity: .6; }
+.hm-news-grid .hm-news-card__art { position: relative; border-radius: 0; min-height: 0; background: linear-gradient(135deg, var(--hm-accent-tint), var(--hm-c-pink-tint)); aspect-ratio: 460 / 215; }
+.hm-news-card__flag { position: absolute; top: var(--hm-space-2); left: var(--hm-space-2); display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;
+    border-radius: var(--hm-radius-pill); background: var(--hm-mint-fill); color: var(--hm-mint-ink); font-size: var(--hm-fs-xs); font-weight: 700; }
+.hm-news-card__flag .hm-icon { width: .8rem; height: .8rem; stroke-width: 3; }
+.hm-news-grid .hm-news-card__body { padding: var(--hm-space-4); gap: var(--hm-space-3); flex: 1; align-content: start; }
+.hm-news-card h3 a { color: var(--hm-text); text-decoration: none; }
+.hm-news-card h3 a:hover { color: var(--hm-accent); text-decoration: underline; }
+.hm-news-members { font-size: var(--hm-fs-sm); color: var(--hm-text-muted); }
+.hm-news-members img + img { margin-left: -12px; }
+.hm-news-card__actions { display: flex; flex-wrap: wrap; align-items: start; gap: var(--hm-space-2); margin-top: auto; }
+.hm-news-card__actions .hm-confirm > summary { min-height: 2.25rem; padding: 0 var(--hm-space-3); font-size: var(--hm-fs-sm); }
+.hm-news-card__actions .hm-confirm--inline { flex-basis: 100%; }
+.hm-news-card__actions .hm-confirm--inline:not([open]) { flex-basis: auto; }
+.hm-news-search { position: relative; display: inline-flex; align-items: center; }
+.hm-news-search .hm-icon { position: absolute; left: .75rem; color: var(--hm-text-subtle); pointer-events: none; }
+.hm-news-search .hm-input { padding-left: 2.25rem; min-height: var(--hm-target); width: 13rem; }
+.hm-news-add__fields { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; gap: var(--hm-space-4); align-items: end; }
+@media (max-width: 47.99rem) { .hm-news-add__fields { grid-template-columns: 1fr; } .hm-news-search .hm-input { width: 100%; } }
+.hm-news-card__actions .hm-badge { white-space: normal; min-height: 0; padding-block: 2px; line-height: 1.35; }
+.hm-week .hm-day__actions .hm-copyto__panel .hm-btn { width: auto; padding: 0 var(--hm-space-3); }

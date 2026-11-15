@@ -21,7 +21,9 @@
         {
             var date = new DateOnly(first.Year, first.Month, number);
             bool configured = Model.ConfiguredDates.Contains(date);
-            <a class="hm-calendar__day @(configured ? "is-configured" : "")" href="@Url(date)"
+            <a class="hm-calendar__day @(configured ? "is-configured" : "") @(date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday ? "is-weekend" : "")" href="@Url(date)"
+               data-drop-date="@date.ToString("yyyy-MM-dd")" data-day-name="@date.ToString("d MMMM", culture)" data-has-hours="@(configured ? "true" : "false")"
+               draggable="@(configured ? "true" : "false")"
                aria-current="@(date == Model.SelectedDate ? "date" : null)"
                aria-label="@(date.ToString("D", culture) + (configured ? " · " + T["Calendar_Configured"] : ""))">
                 @number
@@ -29,5 +31,12 @@
             </a>
         }
     </div>
-    <p class="hm-help">● @T["Calendar_Configured"]</p>
+    <p class="hm-help">● @T["Calendar_Configured"]<span data-drag-tip hidden> · @T["Drag_a_marked_date_onto_another_to_copy_its_hours_there"]</span></p>
+    <form method="post" action="/availability/@Model.GuildId" asp-antiforgery="false" data-drop-form hidden>
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="action" value="copy-date">
+        <input type="hidden" name="fromDate" data-drop-from>
+        <input type="hidden" name="toDate" data-drop-to>
+        <input type="hidden" name="date" data-drop-to>
+    </form>
 </section>

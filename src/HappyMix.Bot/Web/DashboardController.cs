@@ -102,7 +102,8 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
         DayOfWeek? day, string? offset, Guid? windowId, string? startHour, string? startMinute,
         string? endHour, string? endMinute, bool allDay = false, bool tentative = false,
         string[]? rangeStartHour = null, string[]? rangeStartMinute = null, string[]? rangeEndHour = null,
-        string[]? rangeEndMinute = null, string[]? rangeKind = null)
+        string[]? rangeEndMinute = null, string[]? rangeKind = null, DayOfWeek[]? copyTo = null,
+        string? fromDate = null, string? toDate = null)
     {
         if (await GetDiscordMemberAsync(guildId) is not { } member)
             return NotMember();
@@ -122,6 +123,11 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
         if (action == "weekly-day" && day is { } editedDay)
             return await SaveWeeklyDayAsync(guildId, member, editedDay, offset, Times(rangeStartHour, rangeStartMinute),
                 Times(rangeEndHour, rangeEndMinute), rangeKind ?? []);
+
+        if (action == "copy-weekly" && day is { } copyFrom)
+            return await CopyWeeklyAsync(guildId, member, copyFrom, copyTo ?? []);
+        if (action == "copy-date")
+            return await CopyDateAsync(guildId, member, fromDate, toDate);
 
         switch (action)
         {
@@ -290,6 +296,32 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
         return ranges.Count == 0
             ? Saved(text["Arg0_cleared", name], null, guildId, "weekly", day, false)
             : Saved(text["Arg0_saved", name], text["Arg0_ranges", ranges.Count], guildId, "weekly", day);
+    }
+
+    private async Task<IActionResult> CopyWeeklyAsync(ulong guildId, Discord.Rest.RestGuildUser member, DayOfWeek from, DayOfWeek[] to)
+    {
+        var names = CultureInfo.CurrentUICulture.DateTimeFormat;
+        var result = await sender.Send(new CopyWeeklyDayCommand(guildId, member.Id, from, to), HttpContext.RequestAborted);
+        if (result.IsFailure)
+            return await RenderAvailabilityAsync(guildId, member, "weekly", null, null,
+                Error(text["Couldn_t_copy_Arg0", names.GetDayName(from)], text.Message(result.Error.Description)), new AvailabilityForm());
+        var targets = to.Distinct().Where(day => day != from).OrderBy(day => ((int)day + 6) % 7).Select(names.GetDayName).ToArray();
+        return Saved(text["Copied_Arg0", names.GetDayName(from)], text["Now_also_on_Arg0", string.Join(", ", targets)],
+            guildId, "weekly", to.Length == 1 ? to[0] : null);
+    }
+
+    private async Task<IActionResult> CopyDateAsync(ulong guildId, Discord.Rest.RestGuildUser member, string? fromText, string? toText)
+    {
+        if (!DateOnly.TryParseExact(fromText, "yyyy-MM-dd", Culture, DateTimeStyles.None, out var from) ||
+            !DateOnly.TryParseExact(toText, "yyyy-MM-dd", Culture, DateTimeStyles.None, out var to))
+            return BadRequest("Use valid dates in YYYY-MM-DD format.");
+        var result = await sender.Send(new CopyDateAvailabilityCommand(guildId, member.Id, from, to, options.Value.TimeZoneId),
+            HttpContext.RequestAborted);
+        var culture = CultureInfo.CurrentUICulture;
+        if (result.IsFailure)
+            return await RenderAvailabilityAsync(guildId, member, "today", null, null,
+                Error(text["Couldn_t_copy_Arg0", from.ToString("d MMMM", culture)], text.Message(result.Error.Description)), new AvailabilityForm());
+        return Saved(text["Copied_Arg0", from.ToString("d MMMM", culture)], text["Now_also_on_Arg0", to.ToString("dddd d MMMM", culture)], guildId, "today");
     }
 
     private static AvailabilityPreset[] GetPresets(DateTimeOffset now, WeeklyAvailability? todayWeekly)

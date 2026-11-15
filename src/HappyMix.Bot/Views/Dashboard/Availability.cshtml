@@ -69,9 +69,16 @@
 
             <label for="availability-date">@T["Calendar_Date"]</label>
             <input class="hm-input" id="availability-date" type="date" name="date" required value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
-            <label for="availability-through">@T["Calendar_Through"]</label>
-            <input class="hm-input" id="availability-through" type="date" name="through" value="@(Context.Request.HasFormContentType ? Context.Request.Form["through"].ToString() : "")" />
-            <p class="hm-help">@T["Calendar_RangeHelp"]</p>
+            @{ string through = Context.Request.HasFormContentType ? Context.Request.Form["through"].ToString() : ""; }
+            <label class="hm-check hm-repeat-toggle">
+                <input type="checkbox" data-repeat-toggle checked="@(through.Length > 0)">
+                <span>@T["Repeat_on_the_following_days"]</span>
+            </label>
+            <div class="hm-stack hm-stack--sm hm-repeat-through" data-repeat-through>
+                <label for="availability-through">@T["Repeat_through"]</label>
+                <input class="hm-input" id="availability-through" type="date" name="through" value="@through" min="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+                <p class="hm-help">@T["Calendar_RangeHelp"]</p>
+            </div>
             <partial name="_TimeRange" model="todayRange" />
             <partial name="_Certainty" model="Model.Form.Tentative" />
             <p class="hm-help">@T["Save_a_range_then_add_another_Each_range_has_its_own_certainty"]</p>
@@ -173,9 +180,15 @@ else
                     continue;
                 }
 
-                <div class="hm-day @(row.IsToday ? "hm-day--today" : "") @(row.IsSaved ? "hm-day--saved" : "")" id="@row.Anchor">
+                bool hasHours = row.Windows.Count > 0;
+                <div class="hm-day @(row.IsToday ? "hm-day--today" : "") @(row.IsSaved ? "hm-day--saved" : "") @(row.Day is DayOfWeek.Saturday or DayOfWeek.Sunday ? "hm-day--weekend" : "")" id="@row.Anchor"
+                     data-drop-day="@row.Day" data-day-name="@row.Name" data-has-hours="@(hasHours ? "true" : "false")" draggable="@(hasHours ? "true" : null)">
                     <div class="hm-day__label">
-                        <span class="hm-day__name">@row.Name
+                        <span class="hm-day__name">@if (hasHours)
+                            {
+                                <span class="hm-day__grip" aria-hidden="true" title="@T["Drag_onto_another_day_to_copy"]">@DashboardIcons.Render("grip")</span>
+                            }
+                            @row.Name
                             @if (row.IsSaved)
                             {
                                 <small style="color: var(--hm-mint)">@T["Saved"]</small>
@@ -225,8 +238,32 @@ else
                     </a>
                     <div class="hm-day__actions">
                         <a class="hm-btn" href="@editUrl" aria-label="@T["Edit_Arg0", row.Name]">@DashboardIcons.Render(row.Windows.Count == 0 ? "plus" : "pencil")<span class="hm-btn__label">@T.Message(row.Windows.Count == 0 ? "Add hours" : "Edit")</span></a>
-                        @if (row.Windows.Count > 0)
+                        @if (hasHours)
                         {
+                            <details class="hm-copyto" data-copy-to>
+                                <summary class="hm-btn" aria-label="@T["Copy_Arg0_to_other_days", row.Name]">@DashboardIcons.Render("copy")<span class="hm-btn__label">@T["Copy_to"]</span></summary>
+                                <form class="hm-copyto__panel" method="post" action="@baseUrl" asp-antiforgery="false">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="day" value="@row.Day">
+                                    <p class="hm-copyto__title">@T["Copy_Arg0_to_other_days", row.Name]</p>
+                                    <div class="hm-days" role="group" aria-label="@T["Copy_Arg0_to_other_days", row.Name]">
+                                        @foreach (var other in Model.Week.Where(other => other.Day != row.Day))
+                                        {
+                                            <label class="hm-day-chip"><input type="checkbox" name="copyTo" value="@other.Day" data-weekend="@(other.Day is DayOfWeek.Saturday or DayOfWeek.Sunday ? "true" : "false")">@other.ShortName</label>
+                                        }
+                                    </div>
+                                    <div class="hm-row hm-copyto__quick" data-copy-quick hidden>
+                                        <button class="hm-chip" type="button" data-pick="weekdays">@T["Weekdays"]</button>
+                                        <button class="hm-chip" type="button" data-pick="weekend">@T["Weekend"]</button>
+                                        <button class="hm-chip" type="button" data-pick="all">@T["Every_day"]</button>
+                                    </div>
+                                    <p class="hm-help">@T["Replaces_the_hours_on_the_days_you_pick"]</p>
+                                    <div class="hm-row" style="justify-content: flex-end">
+                                        <button class="hm-btn hm-btn--ghost hm-btn--sm" type="button" data-close-details hidden>@T["Cancel"]</button>
+                                        <button class="hm-btn hm-btn--primary hm-btn--sm" name="action" value="copy-weekly">@DashboardIcons.Render("copy")@T["Copy"]</button>
+                                    </div>
+                                </form>
+                            </details>
                             var clear = new ConfirmModel(T["Clear"], T["Remove_every_weekly_range_on_Arg0", row.Name], baseUrl, T["Clear_Arg0", row.Name],
                                 Fields: new Dictionary<string, string> { ["action"] = "clear", ["day"] = row.Day.ToString() }, TriggerLabel: T["Clear_Arg0", row.Name]);
                             <partial name="_Confirm" model="clear" />
@@ -235,6 +272,13 @@ else
                 </div>
             }
         </div>
+        <form method="post" action="@baseUrl" asp-antiforgery="false" data-drop-form hidden>
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="action" value="copy-weekly">
+            <input type="hidden" name="day" data-drop-from>
+            <input type="hidden" name="copyTo" data-drop-to>
+        </form>
+        <p class="hm-help hm-week__tip" data-drag-tip hidden>@DashboardIcons.Render("grip")<span>@T["Tip_drag_a_day_onto_another_to_copy_its_hours_The_day_you_drop_on_is_replaced"]</span></p>
         <div class="hm-row hm-week__legend">
             <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg hm-legend-swatch"></span>@T["Definite"]</span>
             <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg hm-dayline__seg--tentative hm-legend-swatch"></span>@T["Tentative"]</span>
@@ -242,6 +286,18 @@ else
         </div>
     </section>
 }
+
+<dialog class="hm-dialog" data-drop-dialog aria-labelledby="drop-dialog-title"
+        data-replace="@T["Replace_the_hours_on_Arg1_with_the_hours_from_Arg0"]" data-copy="@T["Copy_the_hours_from_Arg0_to_Arg1"]">
+    <form method="dialog" class="hm-stack">
+        <h2 id="drop-dialog-title">@T["Copy_hours"]</h2>
+        <p data-drop-message></p>
+        <div class="hm-row" style="justify-content: flex-end">
+            <button class="hm-btn hm-btn--ghost" value="cancel">@T["Cancel"]</button>
+            <button class="hm-btn hm-btn--primary" value="ok" data-drop-ok>@DashboardIcons.Render("copy")<span data-drop-ok-label data-replace="@T["Replace"]" data-copy="@T["Copy"]">@T["Copy"]</span></button>
+        </div>
+    </form>
+</dialog>
 
 <datalist id="time-zones">
     @foreach (var zone in HappyMix.Bot.Interactions.AvailabilityTimeZoneAutocomplete.Names)
