@@ -4,12 +4,15 @@ using MediatR;
 
 namespace HappyMix.Bot.Interactions;
 
-public sealed class GeneralModule(ISender sender, InteractionService interactions) : InteractionModuleBase<SocketInteractionContext>
+public sealed class GeneralModule(ISender sender, InteractionService interactions, IConfiguration configuration) : InteractionModuleBase<SocketInteractionContext>
 {
     /// <summary>Shows a private guide to the commands available in this server.</summary>
     [SlashCommand("help", "Show how to use HappyMix.")]
     public async Task HelpAsync(string? topic = null)
     {
+        string guide = "";
+        if (Uri.TryCreate(configuration["Dashboard:PublicUrl"], UriKind.Absolute, out var origin) && origin.Scheme == "https")
+            guide = $"\n[HappyMix feature guide]({new Uri(origin, "/info")})";
         var catalog = CommandHelp.Read(interactions);
         string key = string.Join(' ', (topic ?? "").Trim().TrimStart('/').Split(' ', StringSplitOptions.RemoveEmptyEntries));
         var exact = catalog.FirstOrDefault(command => command.Path.Equals(key, StringComparison.OrdinalIgnoreCase));
@@ -17,7 +20,7 @@ public sealed class GeneralModule(ISender sender, InteractionService interaction
         {
             string options = string.Join("\n", exact.Options.Select(option =>
                 $"• `{option.Name}` ({(option.IsRequired ? "required" : "optional")}) — {option.Description}"));
-            await RespondAsync($"**/{exact.Path}**\n{exact.Description}\n{exact.Flow}\n{options}", ephemeral: true);
+            await RespondAsync($"**/{exact.Path}**\n{exact.Description}\n{exact.Flow}\n{options}{guide}", ephemeral: true);
             return;
         }
 

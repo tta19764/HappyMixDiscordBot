@@ -2,7 +2,7 @@
 @model InfoPage
 @{
     Layout = "_DashboardLayout";
-    ViewData["Title"] = T["Command_guide"];
+    ViewData["Title"] = T["Guide_Title"];
     ViewData["NavGuildName"] = Model.GuildName;
     var modules = Model.Commands.GroupBy(command => command.Path.Contains(' ') ? command.Path.Split(' ')[0] : "general");
 }
@@ -12,10 +12,10 @@
     {
         <a href="/availability/@guildId">@Model.GuildName</a><span aria-hidden="true">/</span>
     }
-    <span>@T["Command_guide"]</span>
+    <span>@T["Guide_Title"]</span>
 </nav>
 <header class="hm-page-head">
-    <div><h1>@T["Command_guide"]</h1><p>@T["Browse_Discord_commands_workflows_and_options"]</p></div>
+    <div><h1>@T["Guide_Title"]</h1><p>@T["Browse_Discord_commands_workflows_and_options"]</p></div>
     @if (Model.GuildId is { } backId)
     {
         <a class="hm-btn" href="/availability/@backId">@DashboardIcons.Render("back")<span>@T["Back_to_Arg0", Model.GuildName!]</span></a>
@@ -25,6 +25,21 @@
         <a class="hm-btn" href="/">@DashboardIcons.Render("back")<span>@T["Choose_a_server"]</span></a>
     }
 </header>
+<nav class="hm-card hm-row" style="flex-wrap:wrap;margin-bottom:24px" aria-label="@T["Guide_Title"]">
+    @foreach (string feature in new[] { "overview", "availability", "vacation", "weekly", "groups", "events", "game-news", "links", "settings" })
+    {
+        <a href="#feature-@feature">@T[$"Guide_{feature}_Title"]</a>
+    }
+</nav>
+<div class="hm-stack" style="margin-bottom:24px">
+    @foreach (string feature in new[] { "overview", "availability", "vacation", "weekly", "groups", "events", "game-news", "links", "settings" })
+    {
+        <section class="hm-card hm-stack" id="feature-@feature">
+            <h2>@T[$"Guide_{feature}_Title"]</h2>
+            <p>@T[$"Guide_{feature}_Body"]</p>
+        </section>
+    }
+</div>
 <div class="hm-guide">
     <nav class="hm-card hm-sidenav hm-guide__nav" aria-label="@T["Command_modules"]">
         @foreach (var module in modules)

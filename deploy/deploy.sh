@@ -6,6 +6,8 @@ umask 077
 image=${1:?Usage: deploy.sh IMAGE_DIGEST COMMIT_SHA}
 commit=${2:?Usage: deploy.sh IMAGE_DIGEST COMMIT_SHA RUN_NUMBER}
 revision=${3:?Usage: deploy.sh IMAGE_DIGEST COMMIT_SHA RUN_NUMBER}
+release_tag=${4:-}
+[[ -z $release_tag || $release_tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid release tag' >&2; exit 2; }
 root=${HAPPYMIX_ROOT:-/opt/happymix}
 release=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 [[ $image =~ ^ghcr\.io/[a-z0-9._/-]+@sha256:[a-f0-9]{64}$ ]] || { echo 'Invalid image digest' >&2; exit 2; }
@@ -88,3 +90,10 @@ if [[ -L $root/current ]]; then readlink "$root/current" >"$release/previous-rel
 ln -sfn "$release" "$root/current"
 finished=true
 printf 'Deployed commit %s successfully. Database backup: %s\n' "$commit" "$backup"
+
+# Publish release notes only after the deployment health checks and current link succeed.
+release_tag=${4:-}
+if [[ -n $release_tag ]]; then
+  [[ $release_tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid release tag' >&2; exit 1; }
+  docker exec "$container" sh -c 'printf "%s" "$1" > /app/data/ready-release.tmp && mv /app/data/ready-release.tmp /app/data/ready-release.txt' sh "$release_tag"
+fi

@@ -99,6 +99,11 @@ public static class DependencyInjection
             scheduler.AddTrigger(trigger => trigger.ForJob(newsKey).StartNow()
                 .WithSimpleSchedule(schedule => schedule.WithIntervalInMinutes(10).RepeatForever()));
 
+            JobKey releasesKey = new("publish-release-notes");
+            scheduler.AddJob<PublishReleaseNotesJob>(job => job.WithIdentity(releasesKey));
+            scheduler.AddTrigger(trigger => trigger.ForJob(releasesKey).StartNow()
+                .WithSimpleSchedule(schedule => schedule.WithIntervalInMinutes(1).RepeatForever()));
+
             JobKey eventsKey = new("dispatch-event-messages");
             scheduler.AddJob<DispatchEventMessagesJob>(job => job.WithIdentity(eventsKey));
             scheduler.AddTrigger(trigger => trigger

@@ -309,3 +309,14 @@ Both values must be positive. Restart the bot after changing them. Dashboard lis
 controls and server validation, plus slash commands, use these settings. Existing
 saved lists remain intact. The dashboard also enforces text-input lengths of
 4,000 characters for teams and 1,000 for Twitch channels.
+
+### Feature guides and releases
+
+The Info page explains availability, vacations, weekly copying, groups, events,
+Steam subscriptions, linked accounts and settings in English, Ukrainian and Russian.
+Each server tab links to its guide section; /help links to the full guide.
+
+Version tags trigger tested production deployments. After health verification,
+HappyMix publishes Ukrainian notes in bot-releases on server 887398817404694548.
+The channel is reused or created automatically. See CONTRIBUTING.md for feature/fix
+branches, release-note files and the release process.

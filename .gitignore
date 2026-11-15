@@ -74,3 +74,6 @@ data/
 
 # Production runtime credentials are maintained only on the server
 bot.env
+
+!src/HappyMix.Bot/Releases/
+!src/HappyMix.Bot/Releases/*.json

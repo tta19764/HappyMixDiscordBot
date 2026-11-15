@@ -4,6 +4,7 @@
     <div>
         <h1>@T.Message(Model.Title)</h1>
         <p>@Model.Lead</p>
+        <a href="/info?guildId=@Model.GuildId#feature-@(Model.Active == "availability" && Context.Request.Query["view"] == "weekly" ? "weekly" : Model.Active)">@T["Guide_PageHelp"]</a>
     </div>
 </div>
 <nav class="hm-tabs" aria-label="Server">
