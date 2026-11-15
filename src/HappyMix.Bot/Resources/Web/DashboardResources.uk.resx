@@ -1970,4 +1970,7 @@
 <data name="The_organizer_changed_in_the_meantime_Reload_and_try_again" xml:space="preserve"><value>Тим часом організатора змінили. Оновіть сторінку й спробуйте ще раз.</value></data>
 <data name="Busy_event" xml:space="preserve"><value>Зайнятий · подія</value></data>
 <data name="Confirmed_event" xml:space="preserve"><value>Підтверджена подія</value></data>
+<data name="Settings_TwitchLimit" xml:space="preserve"><value>Додайте від 1 до {0} каналів Twitch або виберіть «Немає».</value></data>
+<data name="Settings_TeamLimit" xml:space="preserve"><value>Додайте від 1 до {0} команд або виберіть «Немає».</value></data>
+<data name="Settings_TwitchHelp" xml:space="preserve"><value>Один канал Twitch або посилання на рядок, до {0}.</value></data>
 </root>

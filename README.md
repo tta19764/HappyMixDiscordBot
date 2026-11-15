@@ -145,7 +145,7 @@ Discord server administrators can manage these SQLite-backed settings with `/set
 | `/settings reminder` | Set the reminder lead time from 1 to 1,440 minutes. The default is 30 minutes. |
 | `/settings organizer-role` | Add, remove, or clear roles saved for future group commands. |
 | `/settings ping-role` | Choose a role for one game's reminders. Omit the role to clear it. The role must be mentionable or the bot must have permission to mention it. |
-| `/settings twitch` | Set up to five comma-separated Twitch handles or HTTPS channel links for one game. Use `default` to reset or `none` to hide links. |
+| `/settings twitch` | Set comma-separated Twitch handles within the configured limit or HTTPS channel links for one game. Use `default` to reset or `none` to hide links. |
 | `/settings show` | View the settings privately. |
 
 `/settings set` continues to save the channel and time zone together. If a server has no saved announcement channel, the deployment channel remains the fallback for its own server. Reminder mentions are limited to the configured role for that game.
@@ -299,3 +299,13 @@ Silent builds and unannounced store or playtest state changes are outside this f
 `/dashboard` opens the dashboard. Use `/event list`, `/event groups` and `/event show`
 to find IDs and dates, then `/event create`, `/event respond`, `/event confirm` or
 `/event cancel` to manage events in Discord.
+
+### Settings list limits
+
+Set `Discord:MaxFollowedTeamsPerGame` and `Discord:MaxTwitchChannelsPerGame` in
+`appsettings.json` (defaults 20 and 5). Environment overrides use
+`Discord__MaxFollowedTeamsPerGame` and `Discord__MaxTwitchChannelsPerGame`.
+Both values must be positive. Restart the bot after changing them. Dashboard list
+controls and server validation, plus slash commands, use these settings. Existing
+saved lists remain intact. The dashboard also enforces text-input lengths of
+4,000 characters for teams and 1,000 for Twitch channels.

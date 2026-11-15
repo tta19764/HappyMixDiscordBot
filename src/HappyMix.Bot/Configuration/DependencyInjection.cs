@@ -41,7 +41,10 @@ public static class DependencyInjection
         // Discord__Token overrides Discord:Token without placing a secret in source control.
         services
             .AddOptions<DiscordOptions>()
-            .Bind(configuration.GetSection(DiscordOptions.SectionName));
+            .Bind(configuration.GetSection(DiscordOptions.SectionName))
+            .Validate(options => options.MaxFollowedTeamsPerGame > 0 && options.MaxTwitchChannelsPerGame > 0,
+                "Discord subscription limits must be positive.")
+            .ValidateOnStart();
 
         // Guilds is the minimum gateway intent required by the current slash-command-only bot.
         // Add privileged intents here only when a feature actually needs them.

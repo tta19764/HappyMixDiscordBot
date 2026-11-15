@@ -27,6 +27,14 @@ internal sealed partial class TwitchLiveStreams(
         if (handles.Length == 0 || string.IsNullOrWhiteSpace(clientId) || string.IsNullOrWhiteSpace(secret))
             return [];
 
+        if (handles.Length > 100)
+        {
+            var liveChannels = new List<string>();
+            foreach (var batch in handles.Chunk(100))
+                liveChannels.AddRange(await GetLiveAsync(batch, game, cancellationToken, teams));
+            return liveChannels;
+        }
+
         using var client = clients.CreateClient("Twitch");
         try
         {

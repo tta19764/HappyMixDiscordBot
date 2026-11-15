@@ -263,8 +263,8 @@ public sealed partial class DashboardController
             string? invalid = items.FirstOrDefault(item => TwitchChannels.GetHandle(item) is null);
             if (invalid is not null)
                 ModelState.AddModelError($"{prefix}.Twitch", text["Arg0_isn_t_a_Twitch_channel_Use_a_handle_like_shroud_or", invalid]);
-            else if (items.Length is 0 or > 5)
-                ModelState.AddModelError($"{prefix}.Twitch", text["Add_one_to_five_Twitch_channels_or_choose_None"]);
+            else if (items.Length == 0 || items.Length > discordOptions.Value.MaxTwitchChannelsPerGame)
+                ModelState.AddModelError($"{prefix}.Twitch", text["Settings_TwitchLimit", discordOptions.Value.MaxTwitchChannelsPerGame]);
             twitch = items.Select(TwitchChannels.GetHandle).OfType<string>().Distinct(StringComparer.Ordinal).ToArray();
         }
 
@@ -294,8 +294,8 @@ public sealed partial class DashboardController
             var aliases = catalog ?? new Dictionary<string, long>(defaultCatalog, StringComparer.OrdinalIgnoreCase);
             var items = Lines(form.Teams);
             var ids = new List<long>();
-            if (items.Length is 0 or > 20)
-                ModelState.AddModelError($"{prefix}.Teams", text["Add_1_to_20_teams_or_choose_None"]);
+            if (items.Length == 0 || items.Length > discordOptions.Value.MaxFollowedTeamsPerGame)
+                ModelState.AddModelError($"{prefix}.Teams", text["Settings_TeamLimit", discordOptions.Value.MaxFollowedTeamsPerGame]);
             else
             {
                 // A catalog alias wins, then the provider's team search, so a plain name like "Vitality" is enough.

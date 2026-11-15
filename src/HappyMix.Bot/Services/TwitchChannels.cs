@@ -26,7 +26,7 @@ internal static class TwitchChannels
     internal static string Format(EsportsMatch match, IReadOnlyList<string> preferredChannels)
     {
         var channels = preferredChannels.Select(GetHandle).OfType<string>()
-            .Distinct(StringComparer.Ordinal).Take(5).ToArray();
+            .Distinct(StringComparer.Ordinal).ToArray();
         if (match.IsFinished || channels.Length == 0)
             return string.Empty;
 

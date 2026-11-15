@@ -129,9 +129,9 @@ public sealed class GuildSettingsModule(ISender sender, IOptions<PandaScoreOptio
         else if (!string.Equals(teams, "default", StringComparison.OrdinalIgnoreCase))
         {
             var parts = teams.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length is 0 or > 20)
+            if (parts.Length == 0 || parts.Length > discord.Value.MaxFollowedTeamsPerGame)
             {
-                await RespondAsync("Enter 1 to 20 teams, default, or none.", ephemeral: true);
+                await RespondAsync($"Enter 1 to {discord.Value.MaxFollowedTeamsPerGame} teams, default, or none.", ephemeral: true);
                 return;
             }
 
@@ -213,7 +213,7 @@ public sealed class GuildSettingsModule(ISender sender, IOptions<PandaScoreOptio
 
     [SlashCommand("twitch", "Set preferred Twitch channels for one game.")]
     public async Task TwitchAsync(Esport game,
-        [Summary(description: "Up to five comma-separated Twitch handles or links, default, or none")] string channels)
+        [Summary(description: "Comma-separated Twitch handles or links, default, or none")] string channels)
     {
         channels = channels.Trim();
         string[]? saved = null;
@@ -224,9 +224,9 @@ public sealed class GuildSettingsModule(ISender sender, IOptions<PandaScoreOptio
         else if (!string.Equals(channels, "default", StringComparison.OrdinalIgnoreCase))
         {
             var handles = channels.Split(',').Select(TwitchChannels.GetHandle).ToArray();
-            if (handles.Length > 5 || handles.Any(handle => handle is null))
+            if (handles.Length > discord.Value.MaxTwitchChannelsPerGame || handles.Any(handle => handle is null))
             {
-                await RespondAsync("Enter up to five Twitch channel names or HTTPS links separated by commas. Use default to reset or none to hide links.",
+                await RespondAsync($"Enter up to {discord.Value.MaxTwitchChannelsPerGame} Twitch channel names or HTTPS links separated by commas. Use default to reset or none to hide links.",
                     ephemeral: true);
                 return;
             }
@@ -239,7 +239,8 @@ public sealed class GuildSettingsModule(ISender sender, IOptions<PandaScoreOptio
     }
 
     private static string FormatTwitchChannels(string[] channels) =>
-        channels.Length == 0 ? "None" : string.Join(", ", channels.Take(5));
+        channels.Length == 0 ? "None" : string.Join(", ", channels.Take(5)) +
+            (channels.Length > 5 ? $" (+{channels.Length - 5} more)" : "");
 
     [SlashCommand("reset-channel", "Restore the deployment default announcement channel.")]
     public Task ResetChannelAsync() =>

@@ -1,3 +1,4 @@
+@inject Microsoft.Extensions.Options.IOptions<HappyMix.Bot.Configuration.DiscordOptions> Limits
 @model GameSettingsForm
 @{
     var settingsPage = (SettingsPage)ViewData["Settings"]!;
@@ -15,16 +16,16 @@
     string knownJson = System.Text.Json.JsonSerializer.Serialize(settingsPage.KnownTeams.Select(team => new
         { id = team.Id, name = team.Name, acronym = team.Acronym, location = team.Location, image = team.ImageUrl }));
 
-    var teams = new ListEditorModel("teams", Id("Teams"), Key("Teams"), Model.Teams, 20, 4000,
+    var teams = new ListEditorModel("teams", Id("Teams"), Key("Teams"), Model.Teams, Limits.Value.MaxFollowedTeamsPerGame, 4000,
         T["Arg0_followed_teams", game], T["No_teams_yet_Search_for_a_team_by_name_to_add_it"],
         T["Search_for_a_team_by_name"], "Team Vitality\nNatus Vincere #3216",
         T["One_team_per_line_A_name_is_enough_if_several_teams_share"],
         defaults.TeamLines, FormErrors.Invalid(state, Key("Teams")),
         FormErrors.DescribedBy(state, Key("Teams"), Id("Teams") + "-help"),
         $"/settings/{settingsPage.GuildId}/teams?game={searchGame}", knownJson);
-    var twitch = new ListEditorModel("twitch", Id("Twitch"), Key("Twitch"), Model.Twitch, 5, 1000,
+    var twitch = new ListEditorModel("twitch", Id("Twitch"), Key("Twitch"), Model.Twitch, Limits.Value.MaxTwitchChannelsPerGame, 1000,
         T["Arg0_Twitch_channels", game], T["No_channels_yet"], T["Twitch_handle_or_twitch_tv_link"], "shroud\nhttps://twitch.tv/esl_csgo",
-        T["One_Twitch_handle_or_twitch_tv_link_per_line_up_to_five"], defaults.TwitchLines,
+        T["Settings_TwitchHelp", Limits.Value.MaxTwitchChannelsPerGame], defaults.TwitchLines,
         FormErrors.Invalid(state, Key("Twitch")), FormErrors.DescribedBy(state, Key("Twitch"), Id("Twitch") + "-help"));
 }
 <section class="hm-card hm-section" id="@sectionId" aria-labelledby="@sectionId-title">
