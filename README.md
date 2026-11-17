@@ -341,4 +341,6 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 
 Pull requests targeting main run validation. New PR commits cancel older in-progress checks. Main pushes do not repeat those checks; version tags run validation plus image publication and deployment. Completed checks for earlier PR commits remain in history because they validated different code.
 
-Failed deployments collect bounded container status and the last 200 log lines, with runtime environment values redacted. The **Production diagnostics (manual)** workflow can inspect an existing stopped or running container without rebuilding, redeploying, or modifying the database. Existing tags are immutable; retrying a tag does not incorporate newer workflow/source changes.
+Failed deployments collect bounded container status and up to 200 diagnostic lines selected from the last 5,000 log lines, with runtime environment values redacted. The **Production diagnostics (manual)** workflow can inspect an existing stopped or running container without rebuilding, redeploying, or modifying the database. Existing tags are immutable; retrying a tag does not incorporate newer workflow/source changes.
+
+The v0.0.2 Linux startup failed during Discord command registration because two choice labels used a legacy source encoding. The corrective v0.0.3 release uses UTF-8 explicitly on every build platform and validates slash-command text. v0.0.2 remains an immutable tag on its original merge commit.

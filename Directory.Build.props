@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
+    <CodePage>65001</CodePage>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
   </PropertyGroup>
