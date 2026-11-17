@@ -2,10 +2,15 @@ name: HappyMix CI and deployment
 
 on:
   pull_request:
-  push:
     branches: [main]
+  push:
     tags: ['v*']
   workflow_dispatch:
+
+# New commits supersede PR checks; tagged releases are never canceled by this policy.
+concurrency:
+  group: happymix-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -38,6 +43,7 @@ jobs:
           bash -n deploy/deploy.sh deploy/backup.sh
           bash tests/deploy/deploy-tests.sh
           python3 tools/build_progress.py --check
+          python3 -m unittest discover -s tests/deploy -p "*_test.py"
           HAPPYMIX_ENV_FILE=./deploy/bot.env.example \
             HAPPYMIX_IMAGE=ghcr.io/tta19764/happymixdiscordbot@sha256:$(printf 'a%.0s' {1..64}) \
             docker compose -f compose.production.yaml config --quiet
@@ -138,6 +144,9 @@ jobs:
           scp compose.production.yaml deploy/deploy.sh deploy/backup.sh "happymix-production:$release/"
           printf '%s' "$GHCR_TOKEN" | ssh happymix-production "docker --config '$registry' login ghcr.io --username '$GHCR_USER' --password-stdin"
           ssh happymix-production "DOCKER_CONFIG='$registry' bash '$release/deploy.sh' '$IMAGE' '$GITHUB_SHA' '$GITHUB_RUN_NUMBER' '$GITHUB_REF_NAME'"
+      - name: Collect sanitized startup diagnostics
+        if: failure()
+        run: ssh happymix-production python3 - < deploy/diagnose.py
       - name: Remove local SSH material
         if: always()
         run: rm -f ~/.ssh/happymix ~/.ssh/known_hosts ~/.ssh/config

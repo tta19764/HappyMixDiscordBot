@@ -30,6 +30,9 @@ public sealed class GuildSettingsModuleTests
             .BuildServiceProvider();
         var module = await interactions.AddModuleAsync<GuildSettingsModule>(services);
 
+        var languages = module.SlashCommands.Single(command => command.Name == "broadcasts").Parameters
+            .Single(parameter => parameter.Name == "language").Choices.Select(choice => choice.Name);
+        Assert.Equal(["English", "Українська", "Русский"], languages);
         Assert.Equal(SettingsCommands, module.SlashCommands.Select(command => command.Name).Order());
         Assert.Equal(GuildPermission.Administrator, module.DefaultMemberPermissions);
         Assert.Contains(module.Preconditions.OfType<RequireUserPermissionAttribute>(),

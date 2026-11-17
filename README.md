@@ -336,3 +336,9 @@ branches, release-note files and the release process.
 - All newly created text channels use **Bot Notifications**. Existing channels retain their location. The bot needs Manage Channels to create them and View Channel, Send Messages, and Embed Links to post. Voice-state gateway intent is enabled; this does not require the privileged member intent.
 
 API references: [Steam news pagination](https://partner.steamgames.com/doc/webapi/ISteamNews), [Twitch stream metadata](https://dev.twitch.tv/docs/api/reference/streams).
+
+### CI runs and deployment diagnostics
+
+Pull requests targeting main run validation. New PR commits cancel older in-progress checks. Main pushes do not repeat those checks; version tags run validation plus image publication and deployment. Completed checks for earlier PR commits remain in history because they validated different code.
+
+Failed deployments collect bounded container status and the last 200 log lines, with runtime environment values redacted. The **Production diagnostics (manual)** workflow can inspect an existing stopped or running container without rebuilding, redeploying, or modifying the database. Existing tags are immutable; retrying a tag does not incorporate newer workflow/source changes.
