@@ -42,9 +42,13 @@ public interface IEventStore
 
     Task<EventDetails?> GetAsync(ulong guildId, Guid eventId);
 
-    /// <summary>Events the user organizes or is invited to, with occurrences ending at or after <paramref name="from"/>.</summary>
+    /// <summary>
+    /// Events the user organizes or is invited to, with occurrences ending at or after <paramref name="from"/>. Canceled
+    /// events and canceled dates are left out.
+    /// </summary>
     Task<IReadOnlyList<EventDetails>> ListForUserAsync(ulong guildId, ulong userId, DateTimeOffset from);
 
+    /// <summary>Events of a group, like <see cref="ListForUserAsync"/>: canceled events and dates are left out.</summary>
     Task<IReadOnlyList<EventDetails>> ListForGroupAsync(ulong guildId, Guid groupId, DateTimeOffset from);
 
     /// <summary>Events of the server with a confirmed date overlapping <paramref name="from"/>–<paramref name="until"/>.</summary>
@@ -58,6 +62,19 @@ public interface IEventStore
 
     /// <summary>Records an answer. Answering the same way twice changes nothing.</summary>
     Task<EventResponseChange> RespondAsync(Guid eventId, DateOnly day, ulong userId, bool accepted, DateTimeOffset now);
+
+    /// <summary>
+    /// Answers every date of a repeating event at once. Accepting joins all dates (clearing earlier per-date declines of
+    /// future dates); declining leaves all future dates, so no more invitations are sent. Returns null when the person isn't invited.
+    /// </summary>
+    Task<EventResponseChange?> RespondSeriesAsync(Guid eventId, ulong userId, bool accepted, DateTimeOffset now);
+
+    /// <summary>
+    /// Permanently deletes canceled events (with every date, answer and message) and canceled dates that were canceled
+    /// at or before <paramref name="canceledBefore"/> and have no messages still waiting to be sent. Events left without
+    /// any date are deleted too. Returns how many events and dates were removed.
+    /// </summary>
+    Task<int> PurgeCanceledAsync(DateTimeOffset canceledBefore);
 
     /// <summary>Moves an occurrence from <paramref name="from"/> to <paramref name="target"/>; false when it wasn't in an allowed state.</summary>
     Task<bool> SetStatusAsync(Guid eventId, DateOnly day, IReadOnlyCollection<OccurrenceStatus> from, OccurrenceStatus target, DateTimeOffset now);
@@ -75,7 +92,10 @@ public interface IEventStore
     /// <summary>Queues messages; one already queued for the same person, date and kind is left alone.</summary>
     Task EnqueueAsync(IEnumerable<(Guid EventId, DateOnly Date, ulong UserId, EventNotificationKind Kind)> messages, DateTimeOffset now);
 
-    /// <summary>Queues invitations for occurrences that start before <paramref name="windowEnd"/>, once per person and date.</summary>
+    /// <summary>
+    /// Queues invitations for occurrences that start before <paramref name="windowEnd"/>: once per person and date for a
+    /// one-off event, and once per person for a repeating event (its next date), unless they already answered.
+    /// </summary>
     Task<int> EnqueueDueInvitesAsync(DateTimeOffset now, DateTimeOffset windowEnd);
 
     Task<IReadOnlyList<EventOutboxItem>> DueMessagesAsync(DateTimeOffset now, int limit);

@@ -345,6 +345,11 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 - **Optional command options.** `/settings broadcasts` and `/notify set` change only the options supplied. In list options `-` clears a list and `default` returns to the community lists; `/settings broadcasts` with only a game shows the current values. `/notify` targets come from autocomplete instead of pasted IDs.
 - **Group and event channels.** Notification pages show where settings come from (own, group, not set up) with a message preview. Routes gain a per-route reminder lead time and an opt-in for updates when events are scheduled, dates are confirmed or canceled, or a series is canceled (changes from the last six hours only, each posted once). Created channels are named after the group or event, reminders show the start time, attendee count and a dashboard link, and footers carry a short reference instead of the internal delivery key. Migration `20261123000100_AddNotificationRouteOptions` adds the columns; existing routes stay reminder-only.
 
+### v0.0.5 event invitations and canceled events
+
+- Repeating events send each invitee one invitation (for the next date inside the three-day window) with **Accept all dates** / **Decline all dates**. A series decline is stored (`EventInvitees.SeriesDeclinedUtc`, migration `20261124000100_AddSeriesDecline`) and stops further invitations; accepting the series again clears earlier per-date declines of future dates. Single dates can still be skipped on the event page. One-off events keep per-date invitations.
+- Canceled events and dates are hidden from event, group and availability lists immediately and permanently deleted `EventRules.CanceledRetention` (15 minutes) after cancellation, once no messages for them are waiting. A canceled series is deleted with all its dates, answers, messages and its event notification route. Earlier cancellations are cleaned up on the first run.
+
 ### CI runs and deployment diagnostics
 
 Pull requests targeting main run validation. New PR commits cancel older in-progress checks. Main pushes do not repeat those checks; version tags run validation plus image publication and deployment. Completed checks for earlier PR commits remain in history because they validated different code.

@@ -159,6 +159,72 @@ public sealed class EventSchedulingTests
     }
 
     [Fact]
+    public async Task RepeatingEventsSendOneInvitationAndOneAnswerCoversEveryDate()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var id = (await fixture.Sender.Send(Create(Organizer) with { Invitees = [Kai, Mira],
+            Recurrence = EventRecurrence.Daily, Until = Thursday.AddDays(4) })).Value.EventId;
+        await fixture.Sender.Send(new DispatchEventMessagesCommand(100));
+        // A repeating event invites each person once, not once per date.
+        Assert.Equal([Kai, Mira], fixture.Notifier.Sent.Select(item => item.UserId).Order());
+
+        await fixture.Sender.Send(new RespondToEventCommand(Guild, Kai, id, Thursday, true, Series: true));
+        var mira = await fixture.Sender.Send(new RespondToEventCommand(Guild, Mira, id, Thursday, false, Series: true));
+        Assert.False(mira.Value.Accepted);
+        var details = (await fixture.Sender.Send(new GetEventQuery(Guild, Organizer, id))).Value.Details;
+        Assert.All(details.Occurrences, date =>
+        {
+            Assert.True(details.Responses.Single(item => item.Date == date.Date && item.UserId == Kai).Accepted);
+            Assert.False(details.Responses.Single(item => item.Date == date.Date && item.UserId == Mira).Accepted);
+        });
+
+        fixture.Notifier.Sent.Clear();
+        fixture.Clock.Advance(TimeSpan.FromDays(3));
+        await fixture.Sender.Send(new DispatchEventMessagesCommand(100));
+        Assert.DoesNotContain(fixture.Notifier.Sent, item => item.Kind == EventNotificationKind.Invite);
+
+        // A per-date decline is undone by accepting the whole series again.
+        await fixture.Sender.Send(new RespondToEventCommand(Guild, Kai, id, Thursday.AddDays(4), false));
+        await fixture.Sender.Send(new RespondToEventCommand(Guild, Kai, id, Thursday.AddDays(4), true, Series: true));
+        details = (await fixture.Sender.Send(new GetEventQuery(Guild, Organizer, id))).Value.Details;
+        Assert.True(details.Responses.Single(item => item.Date == Thursday.AddDays(4) && item.UserId == Kai).Accepted);
+    }
+
+    [Fact]
+    public async Task CanceledEventsAndDatesDisappearFromListsAndAreErasedOnceTheirMessagesAreOut()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var weekly = (await fixture.Sender.Send(Create(Organizer) with { Invitees = [Kai],
+            Recurrence = EventRecurrence.Weekly, Weekdays = [DayOfWeek.Thursday], Until = Thursday.AddDays(14) })).Value.EventId;
+        var once = (await fixture.Sender.Send(Create(Organizer) with { RequestId = Guid.NewGuid() })).Value.EventId;
+        await fixture.Sender.Send(new DispatchEventMessagesCommand(100));
+        await fixture.Sender.Send(new RespondToEventCommand(Guild, Kai, weekly, Thursday, true, Series: true));
+
+        await fixture.Sender.Send(new CancelEventCommand(Guild, Organizer, weekly, Thursday));
+        await fixture.Sender.Send(new CancelEventCommand(Guild, Organizer, once, null));
+        var listed = (await fixture.Sender.Send(new GetMemberEventsQuery(Guild, Organizer))).Value.Events;
+        Assert.Equal([weekly], listed.Select(item => item.Event.Id));
+        Assert.DoesNotContain(listed.Single().Occurrences, item => item.Date == Thursday);
+
+        await fixture.Sender.Send(new DispatchEventMessagesCommand(100)); // cancellation messages go out; still within retention
+        Assert.NotNull((await fixture.Sender.Send(new GetEventQuery(Guild, Organizer, once))).Value);
+
+        fixture.Clock.Advance(EventRules.CanceledRetention + TimeSpan.FromMinutes(1));
+        await fixture.Sender.Send(new DispatchEventMessagesCommand(100));
+        Assert.True((await fixture.Sender.Send(new GetEventQuery(Guild, Organizer, once))).IsFailure);
+        var remaining = (await fixture.Sender.Send(new GetEventQuery(Guild, Organizer, weekly))).Value.Details;
+        Assert.DoesNotContain(remaining.Occurrences, item => item.Date == Thursday);
+        Assert.DoesNotContain(remaining.Responses, item => item.Date == Thursday);
+        Assert.Equal(2, remaining.Occurrences.Count);
+
+        await fixture.Sender.Send(new CancelEventCommand(Guild, Organizer, weekly, null));
+        fixture.Clock.Advance(EventRules.CanceledRetention + TimeSpan.FromMinutes(1));
+        await fixture.Sender.Send(new DispatchEventMessagesCommand(100));
+        await fixture.Sender.Send(new DispatchEventMessagesCommand(100));
+        Assert.True((await fixture.Sender.Send(new GetEventQuery(Guild, Organizer, weekly))).IsFailure);
+    }
+
+    [Fact]
     public async Task RecurrenceProducesTheRightDatesAndKeepsTheLocalTimeAcrossDaylightSaving()
     {
         using var fixture = await Fixture.CreateAsync();

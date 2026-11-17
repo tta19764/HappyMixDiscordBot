@@ -31,12 +31,14 @@ internal sealed class DiscordEventNotifier(DiscordSocketClient client, IConfigur
         switch (item.Kind)
         {
             case EventNotificationKind.Invite:
-                string repeat = guildEvent.Recurrence == EventRecurrence.Once ? "" : "\nAccept once to join this repeating event. You can withdraw from individual dates in the dashboard.";
-                text = $"{organizer} invited you to **{title}** in **{Format.Sanitize(server)}**.\n{when}{repeat}{Description(guildEvent)}{footer}";
+                bool repeats = guildEvent.Recurrence != EventRecurrence.Once;
+                string repeat = repeats ? $"\n🔁 {Schedule(guildEvent)}. One answer covers every date; you can skip single dates in the dashboard." : "";
+                text = $"{organizer} invited you to **{title}** in **{Format.Sanitize(server)}**.\n{(repeats ? "First date: " : "")}{when}{repeat}{Description(guildEvent)}{footer}";
                 string date = item.Occurrence.Date.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
+                // A repeating event gets one invitation whose buttons answer every date.
                 buttons = new ComponentBuilder()
-                    .WithButton("Accept", $"event:accept:{guildEvent.GuildId}:{guildEvent.Id:N}:{date}", ButtonStyle.Success)
-                    .WithButton("Decline", $"event:decline:{guildEvent.GuildId}:{guildEvent.Id:N}:{date}", ButtonStyle.Secondary)
+                    .WithButton(repeats ? "Accept all dates" : "Accept", $"event:{(repeats ? "acceptall" : "accept")}:{guildEvent.GuildId}:{guildEvent.Id:N}:{date}", ButtonStyle.Success)
+                    .WithButton(repeats ? "Decline all dates" : "Decline", $"event:{(repeats ? "declineall" : "decline")}:{guildEvent.GuildId}:{guildEvent.Id:N}:{date}", ButtonStyle.Secondary)
                     .Build();
                 break;
             case EventNotificationKind.Confirmed:
@@ -68,6 +70,13 @@ internal sealed class DiscordEventNotifier(DiscordSocketClient client, IConfigur
         {
             return EventDeliveryOutcome.RetryLater;
         }
+    }
+
+    private static string Schedule(GuildEvent guildEvent)
+    {
+        string days = guildEvent.Recurrence == EventRecurrence.Daily ? "Every day"
+            : "Every " + string.Join(", ", guildEvent.Weekdays.OrderBy(day => ((int)day + 6) % 7).Select(day => CultureInfo.InvariantCulture.DateTimeFormat.GetDayName(day)));
+        return guildEvent.Until is { } until ? $"{days} until {until.ToString("d MMMM yyyy", CultureInfo.InvariantCulture)}" : days;
     }
 
     private static string Description(GuildEvent guildEvent) =>
