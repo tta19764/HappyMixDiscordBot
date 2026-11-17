@@ -23,10 +23,29 @@
         defaults.TeamLines, FormErrors.Invalid(state, Key("Teams")),
         FormErrors.DescribedBy(state, Key("Teams"), Id("Teams") + "-help"),
         $"/settings/{settingsPage.GuildId}/teams?game={searchGame}", knownJson);
+    string channelName = sectionId == "dota2" ? "dota2-announcements" : "cs2-announcements";
+    var selected = HappyMix.Application.Abstractions.Guilds.StreamDiscoveryPreferences.Split(Model.StreamPriority)
+        .Select(item => item.ToLowerInvariant()).Where(item => HappyMix.Application.Abstractions.Guilds.StreamDiscoveryPreferences.Criteria.Contains(item)).Distinct().ToArray();
+    var priority = selected.Concat(HappyMix.Application.Abstractions.Guilds.StreamDiscoveryPreferences.Criteria.Except(selected)).ToArray();
     var twitch = new ListEditorModel("twitch", Id("Twitch"), Key("Twitch"), Model.Twitch, Limits.Value.MaxTwitchChannelsPerGame, 1000,
         T["Arg0_Twitch_channels", game], T["No_channels_yet"], T["Twitch_handle_or_twitch_tv_link"], "shroud\nhttps://twitch.tv/esl_csgo",
         T["Settings_TwitchHelp", Limits.Value.MaxTwitchChannelsPerGame], defaults.TwitchLines,
         FormErrors.Invalid(state, Key("Twitch")), FormErrors.DescribedBy(state, Key("Twitch"), Id("Twitch") + "-help"));
+}
+@functions {
+    private Microsoft.AspNetCore.Html.IHtmlContent Chips(string values)
+    {
+        var items = HappyMix.Application.Abstractions.Guilds.StreamDiscoveryPreferences.Split(values);
+        if (items.Length == 0) return new Microsoft.AspNetCore.Html.HtmlString("<span class=\"hm-subtle\">—</span>");
+        var builder = new Microsoft.AspNetCore.Html.HtmlContentBuilder();
+        foreach (var item in items)
+        {
+            builder.AppendHtml("<span class=\"hm-tag\">");
+            builder.Append(item);
+            builder.AppendHtml("</span>");
+        }
+        return builder;
+    }
 }
 <section class="hm-card hm-section" id="@sectionId" aria-labelledby="@sectionId-title">
     <div class="hm-section__head">
@@ -34,20 +53,73 @@
         <div><h2 id="@sectionId-title">@game</h2><p>@T["Leave_a_value_on_Inherit_to_follow_Server_defaults"]</p></div>
     </div>
     <div class="hm-fields">
-        <div class="hm-field">
-            <label asp-for="Language">@T["Notifications_Language"]</label>
-            <select asp-for="Language" class="hm-select"><option value="en">English</option><option value="uk">Українська</option><option value="ru">Русский</option></select>
+        <div class="hm-field @(string.IsNullOrEmpty(Model.Language) ? "hm-field--inherited" : "")" data-source>
+            <div class="hm-row hm-row--between">
+                <label class="hm-label" asp-for="Language">@T["Notifications_Language"]</label>
+                @FormErrors.SourceBadge(string.IsNullOrEmpty(Model.Language) ? GameSettingsForm.Inherit : GameSettingsForm.Custom, T)
+            </div>
+            <select asp-for="Language" class="hm-select" data-source-control>
+                <option value="">@T["Language_CommunityDefault", settingsPage.Community.Language]</option>
+                <option value="en">English</option><option value="uk">Українська</option><option value="ru">Русский</option>
+            </select>
+            <p class="hm-help">@T["Language_GameHelp", game]</p>
         </div>
-        <div class="hm-field hm-field--wide">
-            <label><input asp-for="DiscoverStreams" /> @T["Streams_Enable"]</label>
-            <p class="hm-help">@T["Streams_Help"]</p>
-            <label asp-for="StreamLanguages">@T["Streams_Languages"]</label><input asp-for="StreamLanguages" class="hm-input" placeholder="uk,en" />
-            <label asp-for="StreamCountries">@T["Streams_Countries"]</label><input asp-for="StreamCountries" class="hm-input" placeholder="Ukraine,Poland" />
-            <label asp-for="StreamTags">@T["Streams_Tags"]</label><input asp-for="StreamTags" class="hm-input" />
-            <label asp-for="StreamPriority">@T["Streams_Priority"]</label><input asp-for="StreamPriority" class="hm-input" />
-            <p class="hm-help">@T["Streams_PriorityHelp"]</p>
-            @FormErrors.Render(state, Key("StreamPriority"))
-        </div>
+
+        <fieldset class="hm-field hm-field--wide hm-streams" data-streams>
+            <legend class="hm-label">@T["Streams_Title"]</legend>
+            <label class="hm-check hm-check--switch"><input asp-for="DiscoverStreams" data-streams-toggle /><span>@T["Streams_Enable"]<small>@T["Streams_Help"]</small></span></label>
+            <div class="hm-streams__body hm-mode-field" data-streams-body>
+                <div class="hm-mode" role="radiogroup" aria-label="@T["Streams_ListsSource"]">
+                    <label><input type="radio" name="@Key("StreamListsMode")" value="@GameSettingsForm.Inherit" checked="@(Model.StreamListsMode != GameSettingsForm.Custom)">@T["Streams_ListsCommunity"]</label>
+                    <label><input type="radio" name="@Key("StreamListsMode")" value="@GameSettingsForm.Custom" checked="@(Model.StreamListsMode == GameSettingsForm.Custom)">@T["Custom"]</label>
+                </div>
+                <dl class="hm-inherited hm-mode-inherit hm-streams__summary">
+                    <div><dt>@T["Streams_Languages"]</dt><dd>@Chips(settingsPage.Community.StreamLanguages)</dd></div>
+                    <div><dt>@T["Streams_Countries"]</dt><dd>@Chips(settingsPage.Community.StreamCountries)</dd></div>
+                    <div><dt>@T["Streams_Tags"]</dt><dd>@Chips(settingsPage.Community.StreamTags)</dd></div>
+                </dl>
+                <div class="hm-mode-custom hm-streams__lists">
+                    <div class="hm-field">
+                        <label class="hm-label" asp-for="StreamLanguages">@T["Streams_Languages"]</label>
+                        <input asp-for="StreamLanguages" class="hm-input" placeholder="uk, en" spellcheck="false" autocomplete="off" />
+                        <p class="hm-help">@T["Streams_LanguagesHelp"]</p>
+                    </div>
+                    <div class="hm-field">
+                        <label class="hm-label" asp-for="StreamCountries">@T["Streams_Countries"]</label>
+                        <input asp-for="StreamCountries" class="hm-input" placeholder="Ukraine, UA" autocomplete="off" />
+                        <p class="hm-help">@T["Streams_CountriesHelp"]</p>
+                    </div>
+                    <div class="hm-field">
+                        <label class="hm-label" asp-for="StreamTags">@T["Streams_Tags"]</label>
+                        <input asp-for="StreamTags" class="hm-input" placeholder="Ukrainian" autocomplete="off"
+                               aria-invalid="@FormErrors.Invalid(state, Key("StreamTags"))" />
+                        @FormErrors.Render(state, Key("StreamTags"))
+                    </div>
+                    <button type="button" class="hm-btn hm-btn--ghost hm-btn--sm" data-fill-defaults
+                            data-languages="@settingsPage.Community.StreamLanguages" data-countries="@settingsPage.Community.StreamCountries"
+                            data-tags="@settingsPage.Community.StreamTags">@DashboardIcons.Render("copy")@T["Streams_FillCommunity"]</button>
+                </div>
+                <div class="hm-field hm-priority" data-priority>
+                    <label class="hm-label" asp-for="StreamPriority">@T["Streams_Priority"]</label>
+                    <input asp-for="StreamPriority" class="hm-input" data-priority-input spellcheck="false"
+                           aria-invalid="@FormErrors.Invalid(state, Key("StreamPriority"))" />
+                    <ol class="hm-priority__list" data-priority-list hidden>
+                        @foreach (var criterion in priority)
+                        {
+                            <li class="hm-priority__item" data-criterion="@criterion">
+                                <label class="hm-check"><input type="checkbox" checked="@selected.Contains(criterion)" /><span>@T["Streams_Criterion_" + criterion]<small>@T["Streams_CriterionHelp_" + criterion]</small></span></label>
+                                <span class="hm-priority__moves">
+                                    <button type="button" class="hm-btn hm-btn--ghost hm-btn--sm" data-move="-1" aria-label="@T["Move_up"]">↑</button>
+                                    <button type="button" class="hm-btn hm-btn--ghost hm-btn--sm" data-move="1" aria-label="@T["Move_down"]">↓</button>
+                                </span>
+                            </li>
+                        }
+                    </ol>
+                    <p class="hm-help">@T["Streams_PriorityHelp"]</p>
+                    @FormErrors.Render(state, Key("StreamPriority"))
+                </div>
+            </div>
+        </fieldset>
 
         <div class="hm-field @(Model.Channel is null ? "hm-field--inherited" : "")" data-source>
             <div class="hm-row hm-row--between">
@@ -60,7 +132,7 @@
                 <option value="">@T["Server_default_Arg0", settingsPage.ServerChannel]</option>
             </select>
             @FormErrors.Render(state, Key("Channel"))
-            <label><input asp-for="CreateChannel" /> @T["Notifications_CreateChannel"]</label>
+            <label class="hm-check"><input asp-for="CreateChannel" data-create-channel /><span>@T["Notifications_CreateChannelNamed", channelName]</span></label>
         </div>
 
         <div class="hm-field">

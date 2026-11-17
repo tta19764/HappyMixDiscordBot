@@ -1247,3 +1247,71 @@ for (const image of document.querySelectorAll("[data-game-art]")) {
     });
     load();
 })();
+
+// Settings: live broadcast preferences, channel creation and announcement routing fixes.
+(() => {
+    // Ranking criteria: a checkable, reorderable list that writes "language,country,…" into the plain text field.
+    for (const box of document.querySelectorAll("[data-priority]")) {
+        const input = box.querySelector("[data-priority-input]");
+        const list = box.querySelector("[data-priority-list]");
+        if (!input || !list) continue;
+        const sync = () => {
+            input.value = [...list.children].filter(item => item.querySelector("input").checked)
+                .map(item => item.dataset.criterion).join(",");
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+        };
+        list.hidden = false;
+        input.type = "hidden";
+        list.addEventListener("change", sync);
+        list.addEventListener("click", event => {
+            const button = event.target.closest("[data-move]");
+            if (!button) return;
+            const item = button.closest("li");
+            const target = button.dataset.move === "-1" ? item.previousElementSibling : item.nextElementSibling?.nextElementSibling;
+            if (button.dataset.move === "-1" && !target) return;
+            list.insertBefore(item, target ?? null);
+            button.focus();
+            sync();
+        });
+    }
+
+    // "Start from the community preferences" copies the shared lists into the custom fields.
+    for (const button of document.querySelectorAll("[data-fill-defaults]")) {
+        button.addEventListener("click", () => {
+            const scope = button.closest(".hm-streams__lists");
+            const fields = { StreamLanguages: button.dataset.languages, StreamCountries: button.dataset.countries, StreamTags: button.dataset.tags };
+            for (const [name, value] of Object.entries(fields)) {
+                const field = scope.querySelector(`[name$=".${name}"]`);
+                if (!field) continue;
+                field.value = value.split(",").join(", ");
+                field.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+        });
+    }
+
+    // Creating a channel replaces the channel choice, so the picker is disabled while it's ticked.
+    for (const box of document.querySelectorAll("[data-create-channel]")) {
+        const select = box.closest(".hm-field")?.querySelector("select");
+        if (!select) continue;
+        const sync = () => {
+            select.disabled = box.checked;
+            select.closest(".hm-field")?.classList.toggle("is-creating", box.checked);
+        };
+        box.addEventListener("change", sync);
+        sync();
+    }
+
+    // Routing fixes tick the game's "create a channel" box and take you there.
+    for (const button of document.querySelectorAll("[data-route-fix]")) {
+        button.addEventListener("click", () => {
+            const box = document.getElementById(button.dataset.routeFix);
+            if (!box) return;
+            box.checked = true;
+            box.dispatchEvent(new Event("input", { bubbles: true }));
+            box.dispatchEvent(new Event("change", { bubbles: true }));
+            box.closest(".hm-field")?.scrollIntoView({ behavior: "smooth", block: "center" });
+            box.focus({ preventScroll: true });
+            button.disabled = true;
+        });
+    }
+})();

@@ -1,23 +1,118 @@
+@using HappyMix.Bot.Services
 @model EventNotificationForm
-@{ Layout = "_DashboardLayout"; ViewData["Title"] = T["Notifications_Settings"]; }
-<a href="/@(Model.Scope == "group" ? "groups" : "events")/@Model.GuildId/@Model.Target">@T["Notifications_Back"]</a>
-<section class="hm-card hm-section">
-<h1>@T["Notifications_Settings"]</h1>
-<p>@T["Notifications_Help"]</p>
-@if (Model.Error is not null) { <p role="alert">@Model.Error</p> }
-<form method="post" action="/notifications/@Model.GuildId/@Model.Scope/@Model.Target">
-@Html.AntiForgeryToken()
-@if (Model.Scope == "event") { <label><input type="checkbox" name="inherit" value="true" checked="@(Model.Route is null)" /> @T["Notifications_Inherit"]</label> }
-<div class="hm-field"><label><input type="checkbox" name="enabled" value="true" checked="@(Model.Route?.Enabled == true)" /> @T["Notifications_Enable"]</label></div>
-<div class="hm-field"><label for="channelId">@T["Announcement_channel"]</label>
-<select class="hm-select" id="channelId" name="channelId"><option value="">@T["Notifications_ChooseChannel"]</option>
-@foreach (var channel in Model.Channels) { <option value="@channel.Id" selected="@(Model.Route?.ChannelId == channel.Id.ToString(System.Globalization.CultureInfo.InvariantCulture))">#@channel.Name</option> }
-</select></div>
-<label><input type="checkbox" name="create" value="true" /> @T["Notifications_CreateDedicated"]</label>
-<div class="hm-field"><label for="language">@T["Notifications_Language"]</label><select class="hm-select" name="language" id="language">
-@foreach (var language in new[] { ("en", "English"), ("uk", "Українська"), ("ru", "Русский") }) { <option value="@language.Item1" selected="@((Model.Route?.Language ?? "en") == language.Item1)">@language.Item2</option> }
-</select></div>
-<button class="hm-btn hm-btn--primary" type="submit">@T["Save"]</button>
-</form>
-<a href="/info?guildId=@Model.GuildId#feature-events">@T["Notifications_HelpLink"]</a>
-</section>
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = T["Notifications_Settings"];
+    var route = Model.Effective.Route;
+    bool isEvent = Model.Scope == "event";
+    string title = Model.Effective.Target.Title;
+    ulong current = route.Channel();
+    string sourceText = T["Notifications_Source_" + Model.Effective.Source];
+    int lead = route.ReminderMinutes ?? Model.DefaultReminderMinutes;
+    string? channelName = Model.Channels.FirstOrDefault(channel => channel.Id == current)?.Name;
+    string previewLanguage = route.Language;
+}
+
+<nav class="hm-crumbs" aria-label="@T["Breadcrumb"]">
+    <a href="/">@T["Servers"]</a><span aria-hidden="true">/</span>
+    <a href="/@(isEvent ? "events" : "groups")/@Model.GuildId">@T[isEvent ? "Events" : "Groups"]</a><span aria-hidden="true">/</span>
+    <a href="@Model.BackUrl">@title</a><span aria-hidden="true">/</span>
+    <span>@T["Notifications_Settings"]</span>
+</nav>
+<div class="hm-page-head">
+    <div>
+        <h1>@DashboardIcons.Render("bell")@T["Notifications_Settings"]</h1>
+        <p>@T[isEvent ? "Notifications_HelpEvent" : "Notifications_HelpGroup", title]</p>
+    </div>
+    <span class="hm-badge hm-notify__state @(route.Enabled ? "hm-notify__state--on" : "")">@T[route.Enabled ? "Notifications_On" : "Notifications_Off"] · @sourceText</span>
+</div>
+
+@if (Model.Error is not null)
+{
+    <partial name="_Banner" model="@(new BannerModel("error", T["Notifications_NotSaved"], Model.Error))" />
+}
+else if (Model.Saved)
+{
+    <partial name="_Banner" model="@(new BannerModel("success", T["Notifications_Saved"], null))" />
+}
+
+<div class="hm-notify">
+    <form class="hm-card hm-stack hm-notify__form" method="post" action="/notifications/@Model.GuildId/@Model.Scope/@Model.Target" asp-antiforgery="false" data-notify-form>
+        @Html.AntiForgeryToken()
+        @if (isEvent)
+        {
+            <fieldset class="hm-field hm-notify__source">
+                <legend class="hm-label">@T["Notifications_SettingsFrom"]</legend>
+                <div class="hm-mode" role="radiogroup">
+                    <label><input type="radio" name="inherit" value="true" checked="@Model.Inherits" data-notify-inherit>@T["Notifications_UseGroup"]</label>
+                    <label><input type="radio" name="inherit" value="false" checked="@(!Model.Inherits)">@T["Notifications_OwnSettings"]</label>
+                </div>
+                <p class="hm-help">@T[Model.Effective.Target.GroupId is null ? "Notifications_NoGroup" : "Notifications_InheritHelp"]</p>
+            </fieldset>
+        }
+        <div class="hm-stack hm-notify__own" data-notify-own>
+            <label class="hm-check hm-check--switch"><input type="checkbox" name="enabled" value="true" checked="@route.Enabled" /><span>@T["Notifications_Enable"]<small>@T["Notifications_EnableHelp"]</small></span></label>
+
+            <div class="hm-field">
+                <label class="hm-label" for="channelId">@T["Announcement_channel"]</label>
+                <select class="hm-select" id="channelId" name="channelId" data-picker data-picker-search="@T["Find_a_channel"]" data-picker-empty="@T["No_channels_match"]">
+                    <option value="">@T["Notifications_ChooseChannel"]</option>
+                    @foreach (var channel in Model.Channels)
+                    {
+                        <option value="@channel.Id" selected="@(channel.Id == current)">#@channel.Name</option>
+                    }
+                </select>
+                <label class="hm-check"><input type="checkbox" name="create" value="true" data-create-channel /><span>@T["Notifications_CreateNamed", Model.SuggestedChannel]<small>@T["Notifications_CreateHelp"]</small></span></label>
+            </div>
+
+            <div class="hm-fields hm-notify__row">
+                <div class="hm-field">
+                    <label class="hm-label" for="language">@T["Notifications_Language"]</label>
+                    <select class="hm-select" name="language" id="language">
+                        @foreach (var (code, name) in new[] { ("uk", "Українська"), ("en", "English"), ("ru", "Русский") })
+                        {
+                            <option value="@code" selected="@(route.Language == code)">@name</option>
+                        }
+                    </select>
+                </div>
+                <div class="hm-field">
+                    <label class="hm-label" for="reminderMinutes">@T["Notifications_LeadTime"]</label>
+                    <div class="hm-affix" style="max-width: 14rem">
+                        <input class="hm-input hm-tnum" type="number" id="reminderMinutes" name="reminderMinutes" min="1" max="1440" inputmode="numeric"
+                               value="@route.ReminderMinutes" placeholder="@Model.DefaultReminderMinutes" />
+                        <span class="hm-affix__text">@T["Minutes"]</span>
+                    </div>
+                    <p class="hm-help">@T["Notifications_LeadTimeHelp", Model.DefaultReminderMinutes]</p>
+                </div>
+            </div>
+
+            <fieldset class="hm-field" style="border: 0; padding: 0; margin: 0">
+                <legend class="hm-label">@T["Notifications_WhatToPost"]</legend>
+                <div class="hm-checks">
+                    <label class="hm-check"><input type="checkbox" checked disabled /><span>@T["Notifications_Reminders"]<small>@T["Notifications_RemindersHelp"]</small></span></label>
+                    <label class="hm-check"><input type="checkbox" name="updates" value="true" checked="@route.Updates" /><span>@T["Notifications_Updates"]<small>@T[isEvent ? "Notifications_UpdatesHelpEvent" : "Notifications_UpdatesHelpGroup"]</small></span></label>
+                </div>
+            </fieldset>
+        </div>
+        <div class="hm-row">
+            <button class="hm-btn hm-btn--primary" type="submit">@DashboardIcons.Render("check")@T["Save"]</button>
+            <a class="hm-btn hm-btn--ghost" href="@Model.BackUrl">@T["Notifications_Back"]</a>
+        </div>
+    </form>
+
+    <aside class="hm-card hm-notify__preview" aria-label="@T["Notifications_Preview"]">
+        <h2>@T["Notifications_Preview"]</h2>
+        <p class="hm-help">@(channelName is null ? T["Notifications_PreviewNoChannel"] : T["Notifications_PreviewIn", "#" + channelName])</p>
+        <div class="hm-discord">
+            <div class="hm-discord__mention">@@member</div>
+            <div class="hm-discord__embed">
+                <b>⏰ @NotificationText.Get(previewLanguage, "Notify_EventReminderTitle", title)</b>
+                <p>@NotificationText.Get(previewLanguage, "Notify_EventStartsIn", lead)</p>
+                <p class="hm-discord__field"><span>@NotificationText.Get(previewLanguage, "Notify_EventGoing")</span> 4</p>
+                <small>@NotificationText.Get(previewLanguage, "Notify_EventFooter")</small>
+            </div>
+        </div>
+        <p class="hm-help">@T["Notifications_MentionHelp"]</p>
+        <a href="/info?guildId=@Model.GuildId#feature-events">@T["Notifications_HelpLink"]</a>
+    </aside>
+</div>

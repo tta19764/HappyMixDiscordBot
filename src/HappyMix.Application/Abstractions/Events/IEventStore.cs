@@ -50,6 +50,12 @@ public interface IEventStore
     /// <summary>Events of the server with a confirmed date overlapping <paramref name="from"/>–<paramref name="until"/>.</summary>
     Task<IReadOnlyList<EventDetails>> ListConfirmedAsync(ulong guildId, DateTimeOffset from, DateTimeOffset until);
 
+    /// <summary>
+    /// Events of the server created, or with a date confirmed or canceled, at or after <paramref name="since"/>.
+    /// Occurrences that ended before <paramref name="since"/> are left out.
+    /// </summary>
+    Task<IReadOnlyList<EventDetails>> ListChangedAsync(ulong guildId, DateTimeOffset since);
+
     /// <summary>Records an answer. Answering the same way twice changes nothing.</summary>
     Task<EventResponseChange> RespondAsync(Guid eventId, DateOnly day, ulong userId, bool accepted, DateTimeOffset now);
 

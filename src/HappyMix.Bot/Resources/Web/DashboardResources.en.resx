@@ -1986,23 +1986,23 @@
 <data name="Guide_groups_Title" xml:space="preserve"><value>Groups and shared availability</value></data>
 <data name="Guide_groups_Body" xml:space="preserve"><value>Create a group, add its description and games, and invite server members. Invitees accept in Discord or the dashboard to join and receive the group role. The group board shows members’ availability. Organizers and moderators manage the group. Role repair restores roles from saved membership. Leaving removes your group role. Closing a group deletes its membership records and role.</value></data>
 <data name="Guide_events_Title" xml:space="preserve"><value>Events and invitations</value></data>
-<data name="Guide_events_Body" xml:space="preserve"><value>Create an event for a group or choose individual members. Set its dates, hours and time zone. For a recurring event, accept once to join the series; decline or withdraw from individual dates without changing the others. The organizer confirms each date when enough people can attend, and can cancel one date or the remaining series. Confirmed events appear in availability. Open Channel notifications to choose or create a channel and enable reminders. Events inherit group notification settings until overridden. Reminders mention accepted participants and the organizer only when they are absent from every server voice channel, including linked accounts.</value></data>
+<data name="Guide_events_Body" xml:space="preserve"><value>Create an event for a group or choose individual members. Set its dates, hours and time zone. For a recurring event, accept once to join the series; decline or withdraw from individual dates without changing the others. The organizer confirms each date when enough people can attend, and can cancel one date or the remaining series. Confirmed events appear in availability. Open Channel notifications on a group or event to choose or create a channel named after it, set the language and reminder lead time, and optionally post updates when events are scheduled, confirmed or canceled. Events use their group’s settings until they get their own. Reminders mention accepted participants and the organizer only when they are absent from every server voice channel, including linked accounts.</value></data>
 <data name="Guide_game-news_Title" xml:space="preserve"><value>Game news subscriptions</value></data>
 <data name="Guide_game-news_Body" xml:space="preserve"><value>Create a subscription using a Steam App ID or store link and game name. HappyMix creates a channel and notification role. Members can join existing subscriptions or unsubscribe to remove their role. Creators and administrators can delete a subscription, its channel and role. Steam news is checked every ten minutes. Release, update and playtest headings are inferred from announcements. Member portraits require access to the Discord member list. All news feeds returned by Steam are included, including general announcements. New channels are created under Bot Notifications.</value></data>
 <data name="Guide_links_Title" xml:space="preserve"><value>Linked accounts</value></data>
 <data name="Guide_links_Body" xml:space="preserve"><value>Create a linking request from your primary account and open the approval link while signed in as the alternate. Both accounts must belong to the server. Review schedule conflicts before approving. Linked accounts share group membership and availability. Discord permissions remain attached to each account. Review the unlink preview before separating accounts. Administrators can manage links from their account tools.</value></data>
 <data name="Guide_settings_Title" xml:space="preserve"><value>Server settings and esports</value></data>
-<data name="Guide_settings_Body" xml:space="preserve"><value>Administrators configure announcement channels, time zone, reminders and notification types. CS2 and Dota 2 each have their own notification language, followed teams, Twitch channels and ping role. Create a game channel directly from settings. Optional stream discovery finds live broadcasts naming both teams. Rank by language, broadcaster country tags, other tags or viewer count; order criteria by importance and omit unused ones. Country tags are self-declared, not verified location. Discovered streams appear on a separate line alongside chosen channels in reminders, match starts and map results. Twitch credentials are required. Newly created channels use Bot Notifications.</value></data>
+<data name="Guide_settings_Body" xml:space="preserve"><value>Administrators configure announcement channels, time zone, reminders and notification types. “Where match posts go” shows which channel each game posts to and in which language, and warns when a channel mixes languages or is named for the other game; one click gives that game its own channel. CS2 and Dota 2 each have their own notification language, followed teams, Twitch channels and ping role; a new server starts with Ukrainian. Optional stream discovery links other live broadcasts naming both teams. By default it prefers Ukrainian-language streams and Ukrainian country and community tags; switch to custom lists to change them. Tick and order the ranking criteria. Country tags are self-declared, not verified location. Twitch credentials are required. Newly created channels use Bot Notifications.</value></data>
 <data name="Notifications_CreateChannel" xml:space="preserve"><value>Create a channel in Bot Notifications (reuses the game channel if it exists)</value></data>
 <data name="Notifications_ChannelError" xml:space="preserve"><value>Could not create the channel. Check the bot’s Manage Channels permission.</value></data>
 <data name="Notifications_Language" xml:space="preserve"><value>Notification language</value></data>
 <data name="Streams_Enable" xml:space="preserve"><value>Find other live broadcasts of this match</value></data>
-<data name="Streams_Help" xml:space="preserve"><value>Only live streams naming both teams are included. Country preferences match broadcaster tags, not verified locations. Values below are ordered preferences, separated by commas.</value></data>
-<data name="Streams_Languages" xml:space="preserve"><value>Preferred language codes</value></data>
-<data name="Streams_Countries" xml:space="preserve"><value>Preferred country tags</value></data>
-<data name="Streams_Tags" xml:space="preserve"><value>Other preferred tags</value></data>
-<data name="Streams_Priority" xml:space="preserve"><value>Ranking criteria, highest priority first</value></data>
-<data name="Streams_PriorityHelp" xml:space="preserve"><value>Use language,country,tags,viewers in your preferred order. Omit unused criteria; do not repeat a criterion.</value></data>
+<data name="Streams_Help" xml:space="preserve"><value>Only live streams whose titles name both teams are linked. Country tags are chosen by streamers, not verified locations.</value></data>
+<data name="Streams_Languages" xml:space="preserve"><value>Stream languages</value></data>
+<data name="Streams_Countries" xml:space="preserve"><value>Country tags</value></data>
+<data name="Streams_Tags" xml:space="preserve"><value>Other tags</value></data>
+<data name="Streams_Priority" xml:space="preserve"><value>Ranking, highest priority first</value></data>
+<data name="Streams_PriorityHelp" xml:space="preserve"><value>Tick the criteria to use and move them into order. Without JavaScript, type language,country,tags,viewers in your order and leave out unused ones.</value></data>
 <data name="Notify_NoMatches" xml:space="preserve"><value>No followed main-team CS2 or Dota 2 matches are scheduled today.</value></data>
 <data name="Notify_ScheduleFooter" xml:space="preserve"><value>{0} • Main teams • Page {1}/{2}</value></data>
 <data name="Notify_Soon" xml:space="preserve"><value>Match starts within {0} minutes</value></data>
@@ -2020,7 +2020,7 @@
 <data name="Events_SeriesHelp" xml:space="preserve"><value>Accept once to join all dates. Declining or withdrawing applies only to the selected date.</value></data>
 <data name="Notifications_Settings" xml:space="preserve"><value>Channel notifications</value></data>
 <data name="Notifications_Back" xml:space="preserve"><value>Back to details</value></data>
-<data name="Notifications_Enable" xml:space="preserve"><value>Enable event reminders</value></data>
+<data name="Notifications_Enable" xml:space="preserve"><value>Post channel notifications</value></data>
 <data name="Notifications_ChooseChannel" xml:space="preserve"><value>Choose a text channel</value></data>
 <data name="Notifications_Inherit" xml:space="preserve"><value>Use the group’s notification settings (overrides the controls below)</value></data>
 <data name="Notifications_CreateDedicated" xml:space="preserve"><value>Create a dedicated channel in Bot Notifications</value></data>
@@ -2028,10 +2028,109 @@
 <data name="Notifications_Help" xml:space="preserve"><value>Confirmed events get a reminder before they start. Only accepted participants and the organizer who are absent from all server voice channels are mentioned. Event settings override group settings; groups default to disabled.</value></data>
 <data name="Notifications_HelpLink" xml:space="preserve"><value>How event notifications work</value></data>
 <data name="Notify_EventReminder" xml:space="preserve"><value>**{0}** starts {1}. Join your server voice channel when ready.</value></data>
-<data name="HelpV002_0" xml:space="preserve"><value>Organizers and administrators use /notify set to choose or create a group or event channel. Enable reminders, or inherit the group settings for an event.</value></data>
+<data name="HelpV002_0" xml:space="preserve"><value>Organizers and administrators use /notify set to pick a group or event from the list and change only the options they supply. Events use their group's channel notifications until they get their own.</value></data>
 <data name="HelpV002_1" xml:space="preserve"><value>Accept once for a recurring series. Declining or withdrawing affects only the supplied date; other dates stay accepted.</value></data>
 <data name="HelpV002_2" xml:space="preserve"><value>Choose CS2 or Dota 2 to create or reuse its announcement channel under Bot Notifications.</value></data>
-<data name="HelpV002_3" xml:space="preserve"><value>Choose a game and notification language. Enable discovery and list preferred languages, country tags and other tags. Priority uses language,country,tags,viewers in your chosen order; omit unused criteria. Country tags are not verified locations.</value></data>
-<data name="HelpV002_4" xml:space="preserve"><value>Copy a group or event ID. Choose a text channel or create one, then enable reminders. For events, inherit clears the override and uses group settings. Only the organizer or an administrator can change these settings.</value></data>
-<data name="HelpV002_5" xml:space="preserve"><value>Review the saved route. An event with no override uses its group settings; a group with no settings is disabled.</value></data>
+<data name="HelpV002_3" xml:space="preserve"><value>Choose a game and change only the options you supply. Leave the language on Community default to follow the server's community (Ukrainian by default). Lists are ordered, comma-separated: - clears a list, default returns to the community lists. Priority orders language,country,tags,viewers; leave out unused criteria. Run with only the game to review the current values.</value></data>
+<data name="HelpV002_4" xml:space="preserve"><value>Pick a group or event from the suggestions. Omitted options keep their current values. Choose a channel or create one named after the group or event; supplying a channel turns notifications on. Set the reminder lead time (0 for the server default) and turn on updates for scheduled, confirmed and canceled dates. For events, inherit returns to the group's settings.</value></data>
+<data name="HelpV002_5" xml:space="preserve"><value>Shows the settings in force and where they come from: the event's own, its group's, or not set up yet.</value></data>
+<data name="Notify_NoMatchesGame" xml:space="preserve"><value>No matches of your followed {0} teams are scheduled today.</value></data>
+<data name="Notify_ScheduleTitle" xml:space="preserve"><value>Followed teams · {0}</value></data>
+<data name="Notify_Watch" xml:space="preserve"><value>Watch</value></data>
+<data name="Notify_TwitchChannels" xml:space="preserve"><value>Twitch channels</value></data>
+<data name="Language_CommunityDefault" xml:space="preserve"><value>Community default ({0})</value></data>
+<data name="Language_GameHelp" xml:space="preserve"><value>Every {0} post uses this language, even in a channel it shares with another game.</value></data>
+<data name="Streams_Title" xml:space="preserve"><value>Live broadcasts</value></data>
+<data name="Streams_ListsSource" xml:space="preserve"><value>Preferred languages and tags</value></data>
+<data name="Streams_ListsCommunity" xml:space="preserve"><value>Community preferences</value></data>
+<data name="Streams_LanguagesHelp" xml:space="preserve"><value>Twitch language codes, most preferred first: uk, en, pl…</value></data>
+<data name="Streams_CountriesHelp" xml:space="preserve"><value>Broadcaster tags such as Ukraine or UA, separated by commas.</value></data>
+<data name="Streams_ListHelp" xml:space="preserve"><value>Use up to {0} comma-separated values per list, each up to 25 characters; language codes use letters only.</value></data>
+<data name="Streams_FillCommunity" xml:space="preserve"><value>Start from the community preferences</value></data>
+<data name="Streams_Criterion_language" xml:space="preserve"><value>Language</value></data>
+<data name="Streams_Criterion_country" xml:space="preserve"><value>Country tags</value></data>
+<data name="Streams_Criterion_tags" xml:space="preserve"><value>Other tags</value></data>
+<data name="Streams_Criterion_viewers" xml:space="preserve"><value>Viewers</value></data>
+<data name="Streams_CriterionHelp_language" xml:space="preserve"><value>Earlier languages in the list rank higher</value></data>
+<data name="Streams_CriterionHelp_country" xml:space="preserve"><value>Matches the country tags</value></data>
+<data name="Streams_CriterionHelp_tags" xml:space="preserve"><value>Matches the other tags</value></data>
+<data name="Streams_CriterionHelp_viewers" xml:space="preserve"><value>Bigger audiences first</value></data>
+<data name="Move_up" xml:space="preserve"><value>Move up</value></data>
+<data name="Move_down" xml:space="preserve"><value>Move down</value></data>
+<data name="Notifications_CreateChannelNamed" xml:space="preserve"><value>Create #{0} in Bot Notifications (reused if it already exists)</value></data>
+<data name="Routes_Title" xml:space="preserve"><value>Where match posts go</value></data>
+<data name="Routes_Help" xml:space="preserve"><value>As currently saved. Changes apply after you save.</value></data>
+<data name="Routes_MixedLanguages" xml:space="preserve"><value>Posts in this channel arrive in more than one language. Use one language for both games or give one game its own channel.</value></data>
+<data name="Routes_NamedForOtherGame" xml:space="preserve"><value>{0} is named for {1}, but {2} posts arrive here too.</value></data>
+<data name="Routes_OwnChannel" xml:space="preserve"><value>Give {0} its own channel</value></data>
+<data name="Notifications_HelpEvent" xml:space="preserve"><value>Post reminders for “{0}” in a server channel, and optionally news when dates are confirmed or canceled.</value></data>
+<data name="Notifications_HelpGroup" xml:space="preserve"><value>Every event of “{0}” uses these channel notifications unless the event chooses its own.</value></data>
+<data name="Notifications_On" xml:space="preserve"><value>On</value></data>
+<data name="Notifications_Off" xml:space="preserve"><value>Off</value></data>
+<data name="Notifications_Source_Own" xml:space="preserve"><value>own settings</value></data>
+<data name="Notifications_Source_Group" xml:space="preserve"><value>from the group</value></data>
+<data name="Notifications_Source_Default" xml:space="preserve"><value>not set up yet</value></data>
+<data name="Notifications_Saved" xml:space="preserve"><value>Notification settings saved.</value></data>
+<data name="Notifications_NotSaved" xml:space="preserve"><value>Notification settings not saved</value></data>
+<data name="Notifications_SettingsFrom" xml:space="preserve"><value>Settings for this event</value></data>
+<data name="Notifications_UseGroup" xml:space="preserve"><value>Use the group’s settings</value></data>
+<data name="Notifications_OwnSettings" xml:space="preserve"><value>Own settings</value></data>
+<data name="Notifications_InheritHelp" xml:space="preserve"><value>With the group’s settings, changes to the group apply to this event too.</value></data>
+<data name="Notifications_NoGroup" xml:space="preserve"><value>This event has no group, so it has nothing to inherit: use own settings to turn notifications on.</value></data>
+<data name="Notifications_EnableHelp" xml:space="preserve"><value>Turn off to pause them without losing the channel and options.</value></data>
+<data name="Notifications_CreateNamed" xml:space="preserve"><value>Create #{0} in Bot Notifications</value></data>
+<data name="Notifications_CreateHelp" xml:space="preserve"><value>Reused if it already exists.</value></data>
+<data name="Notifications_ChannelTopic" xml:space="preserve"><value>HappyMix notifications for {0}</value></data>
+<data name="Notifications_LeadTime" xml:space="preserve"><value>Reminder lead time</value></data>
+<data name="Notifications_LeadTimeHelp" xml:space="preserve"><value>Leave empty for the server default ({0} minutes).</value></data>
+<data name="Notifications_LanguageError" xml:space="preserve"><value>Choose English, Ukrainian or Russian.</value></data>
+<data name="Notifications_LeadTimeError" xml:space="preserve"><value>Enter a lead time between 1 and 1440 minutes.</value></data>
+<data name="Notifications_WhatToPost" xml:space="preserve"><value>What to post</value></data>
+<data name="Notifications_Reminders" xml:space="preserve"><value>Reminders</value></data>
+<data name="Notifications_RemindersHelp" xml:space="preserve"><value>Before every confirmed date</value></data>
+<data name="Notifications_Updates" xml:space="preserve"><value>Event updates</value></data>
+<data name="Notifications_UpdatesHelpEvent" xml:space="preserve"><value>When a date is confirmed or canceled</value></data>
+<data name="Notifications_UpdatesHelpGroup" xml:space="preserve"><value>When an event is scheduled, and when its dates are confirmed or canceled</value></data>
+<data name="Notifications_Preview" xml:space="preserve"><value>Preview</value></data>
+<data name="Notifications_PreviewIn" xml:space="preserve"><value>A reminder in {0}:</value></data>
+<data name="Notifications_PreviewNoChannel" xml:space="preserve"><value>Choose a channel to see where reminders go.</value></data>
+<data name="Notifications_MentionHelp" xml:space="preserve"><value>Only people going who aren’t in a server voice channel are mentioned.</value></data>
+<data name="Notifications_Summary" xml:space="preserve"><value>**{0}** · {1}
+Notifications: {2} · Channel: {3} · Language: {4}
+Reminder: {5} min before · Updates: {6}</value></data>
+<data name="Notify_EventReminderTitle" xml:space="preserve"><value>{0} starts soon</value></data>
+<data name="Notify_EventStarts" xml:space="preserve"><value>Starts {0} · {1} – {2}</value></data>
+<data name="Notify_EventStartsIn" xml:space="preserve"><value>Starts in {0} minutes</value></data>
+<data name="Notify_EventVoiceHint" xml:space="preserve"><value>Join a server voice channel when you’re ready.</value></data>
+<data name="Notify_EventGoing" xml:space="preserve"><value>Going</value></data>
+<data name="Notify_EventInvited" xml:space="preserve"><value>Invited</value></data>
+<data name="Notify_EventFooter" xml:space="preserve"><value>HappyMix event reminder</value></data>
+<data name="Notify_EventUpdateFooter" xml:space="preserve"><value>HappyMix event update</value></data>
+<data name="Notify_EventScheduledTitle" xml:space="preserve"><value>New event: {0}</value></data>
+<data name="Notify_EventScheduled" xml:space="preserve"><value>{1} scheduled it for {0}. Invitations are in your DMs.</value></data>
+<data name="Notify_EventScheduledSeries" xml:space="preserve"><value>{1} scheduled a repeating event, first on {0}. Accept once in your DMs to join every date.</value></data>
+<data name="Notify_EventConfirmedTitle" xml:space="preserve"><value>{0} is confirmed</value></data>
+<data name="Notify_EventConfirmed" xml:space="preserve"><value>See you on {0}.</value></data>
+<data name="Notify_EventCanceledTitle" xml:space="preserve"><value>{0} was canceled</value></data>
+<data name="Notify_EventCanceled" xml:space="preserve"><value>{1} canceled the date {0}.</value></data>
+<data name="Notify_EventSeriesCanceled" xml:space="preserve"><value>{1} canceled every remaining date.</value></data>
+<data name="HelpV004_0" xml:space="preserve"><value>Change stream discovery and notification language. Omitted options keep their values.</value></data>
+<data name="HelpV004_1" xml:space="preserve"><value>Find other live broadcasts naming both teams</value></data>
+<data name="HelpV004_2" xml:space="preserve"><value>Language of this game's posts</value></data>
+<data name="HelpV004_3" xml:space="preserve"><value>Twitch language codes, best first, e.g. uk,en. - clears, default = community</value></data>
+<data name="HelpV004_4" xml:space="preserve"><value>Country tags, best first, e.g. Ukraine,UA. - clears, default = community</value></data>
+<data name="HelpV004_5" xml:space="preserve"><value>Other tags, best first. - clears, default = community lists</value></data>
+<data name="HelpV004_6" xml:space="preserve"><value>Criteria in order: language,country,tags,viewers. default restores it</value></data>
+<data name="HelpV004_7" xml:space="preserve"><value>Configure group or event channel notifications.</value></data>
+<data name="HelpV004_8" xml:space="preserve"><value>Change channel notifications. Omitted options keep their current values.</value></data>
+<data name="HelpV004_9" xml:space="preserve"><value>Group or event to configure</value></data>
+<data name="HelpV004_10" xml:space="preserve"><value>Turn channel notifications on or off</value></data>
+<data name="HelpV004_11" xml:space="preserve"><value>Channel for reminders and updates</value></data>
+<data name="HelpV004_12" xml:space="preserve"><value>Create a channel named after the group or event in Bot Notifications</value></data>
+<data name="HelpV004_13" xml:space="preserve"><value>Language of the posts</value></data>
+<data name="HelpV004_14" xml:space="preserve"><value>Minutes before the start to remind; 0 uses the server default</value></data>
+<data name="HelpV004_15" xml:space="preserve"><value>Also post when events are scheduled, confirmed or canceled</value></data>
+<data name="HelpV004_16" xml:space="preserve"><value>Events only: drop own settings and use the group's again</value></data>
+<data name="HelpV004_17" xml:space="preserve"><value>Show the channel notifications that apply to a group or event.</value></data>
+<data name="HelpV004_18" xml:space="preserve"><value>Group or event</value></data>
 </root>

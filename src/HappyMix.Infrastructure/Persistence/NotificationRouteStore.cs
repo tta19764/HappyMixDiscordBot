@@ -3,7 +3,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HappyMix.Infrastructure.Persistence;
 
-public sealed record NotificationRoute(string GuildId, string Scope, string TargetId, bool Enabled, string ChannelId, string Language);
+/// <summary>
+/// Channel notifications for a group or event. <see cref="ReminderMinutes"/> null uses the deployment's lead time;
+/// <see cref="Updates"/> also posts when events are scheduled, confirmed or canceled.
+/// </summary>
+public sealed record NotificationRoute(string GuildId, string Scope, string TargetId, bool Enabled, string ChannelId, string Language,
+    int? ReminderMinutes = null, bool Updates = false)
+{
+    public ulong Channel() => ulong.TryParse(ChannelId, NumberStyles.None, CultureInfo.InvariantCulture, out ulong id) ? id : 0;
+}
 
 public sealed class NotificationRouteStore
 {
@@ -13,14 +21,18 @@ public sealed class NotificationRouteStore
     {
         await using var db = await _factory.CreateDbContextAsync();
         string guild = guildId.ToString(CultureInfo.InvariantCulture), id = target.ToString();
-        return await db.Database.SqlQuery<NotificationRoute>($"SELECT * FROM NotificationRoutes WHERE GuildId={guild} AND Scope={scope} AND TargetId={id}").SingleOrDefaultAsync();
+        return await db.Database.SqlQuery<NotificationRoute>(
+            $"SELECT GuildId, Scope, TargetId, Enabled, ChannelId, Language, ReminderMinutes, Updates FROM NotificationRoutes WHERE GuildId={guild} AND Scope={scope} AND TargetId={id}")
+            .SingleOrDefaultAsync();
     }
     public async Task SaveAsync(NotificationRoute route)
     {
         await using var db = await _factory.CreateDbContextAsync();
         await db.Database.ExecuteSqlInterpolatedAsync($"""
-            INSERT INTO NotificationRoutes VALUES ({route.GuildId}, {route.Scope}, {route.TargetId}, {route.Enabled}, {route.ChannelId}, {route.Language})
-            ON CONFLICT (GuildId, Scope, TargetId) DO UPDATE SET Enabled=excluded.Enabled, ChannelId=excluded.ChannelId, Language=excluded.Language
+            INSERT INTO NotificationRoutes (GuildId, Scope, TargetId, Enabled, ChannelId, Language, ReminderMinutes, Updates)
+            VALUES ({route.GuildId}, {route.Scope}, {route.TargetId}, {route.Enabled}, {route.ChannelId}, {route.Language}, {route.ReminderMinutes}, {route.Updates})
+            ON CONFLICT (GuildId, Scope, TargetId) DO UPDATE SET Enabled=excluded.Enabled, ChannelId=excluded.ChannelId, Language=excluded.Language,
+                ReminderMinutes=excluded.ReminderMinutes, Updates=excluded.Updates
             """);
     }
     public async Task ResetAsync(ulong guildId, string scope, Guid target)

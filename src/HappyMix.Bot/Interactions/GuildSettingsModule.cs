@@ -16,7 +16,7 @@ namespace HappyMix.Bot.Interactions;
 [RequireUserPermission(GuildPermission.Administrator)]
 [DefaultMemberPermissions(GuildPermission.Administrator)]
 public sealed class GuildSettingsModule(ISender sender, IOptions<PandaScoreOptions> pandaScore,
-    IOptions<DiscordOptions> discord, NotificationChannels channels)
+    IOptions<DiscordOptions> discord, NotificationChannels channels, IOptions<CommunityDefaults> community)
     : InteractionModuleBase<SocketInteractionContext>
 {
     [SlashCommand("create-channel", "Create or reuse an announcement channel under Bot Notifications.")]
@@ -33,20 +33,54 @@ public sealed class GuildSettingsModule(ISender sender, IOptions<PandaScoreOptio
         await FollowupAsync($"Announcements will use <#{channel.Id}>.", ephemeral: true);
     }
 
-    [SlashCommand("broadcasts", "Configure automatic match stream discovery and notification language.")]
-    public async Task BroadcastsAsync(Esport game, bool enabled,
-        [Choice("English", "en"), Choice("Українська", "uk"), Choice("Русский", "ru")] string language = "en",
-        string languages = "", string countries = "", string tags = "", string priority = "language,country,tags,viewers")
+    [SlashCommand("broadcasts", "Change stream discovery and notification language. Omitted options keep their values.")]
+    public async Task BroadcastsAsync(Esport game,
+        [Summary(description: "Find other live broadcasts naming both teams")] bool? enabled = null,
+        [Summary(description: "Language of this game's posts"),
+         Choice("Community default", "default"), Choice("English", "en"), Choice("Українська", "uk"), Choice("Русский", "ru")] string? language = null,
+        [Summary(description: "Twitch language codes, best first, e.g. uk,en. - clears, default = community")] string? languages = null,
+        [Summary(description: "Country tags, best first, e.g. Ukraine,UA. - clears, default = community")] string? countries = null,
+        [Summary(description: "Other tags, best first. - clears, default = community lists")] string? tags = null,
+        [Summary(description: "Criteria in order: language,country,tags,viewers. default restores it")] string? priority = null)
     {
-        var discovery = new StreamDiscoveryPreferences(enabled, languages, countries, tags, priority);
-        if (!discovery.IsValid || language is not ("en" or "uk" or "ru"))
+        var settings = (await sender.Send(new GetGuildSettingsQuery(Context.Guild.Id))).Value;
+        var preferences = settings?.Preferences ?? GuildEsportsPreferences.Default;
+        var discovery = preferences.DiscoveryFor(game, community.Value).Merge(enabled, languages, countries, tags, priority);
+        if (!discovery.IsValid)
         {
-            await RespondAsync("Use each criterion at most once: language,country,tags,viewers. List them in priority order; omit unused criteria.", ephemeral: true);
+            await RespondAsync($"Use each criterion at most once: language,country,tags,viewers, in priority order. Lists take up to {StreamDiscoveryPreferences.MaxItems} comma-separated values of up to 25 characters.",
+                ephemeral: true);
             return;
         }
-        await SavePreferencesAsync(preferences => game == Esport.CounterStrike2
-            ? preferences with { CounterStrikeLanguage = language, CounterStrikeDiscovery = discovery }
-            : preferences with { Dota2Language = language, Dota2Discovery = discovery }, "Broadcast settings saved.");
+        if (new object?[] { enabled, language, languages, countries, tags, priority }.All(value => value is null))
+        {
+            await RespondAsync(DescribeBroadcasts(game, preferences), ephemeral: true);
+            return;
+        }
+
+        var updated = preferences.WithDiscovery(game, discovery);
+        if (language is not null)
+            updated = updated.WithLanguage(game, language == "default" ? null : CommunityDefaults.Normalize(language));
+        await SavePreferencesAsync(_ => updated, "Saved.\n" + DescribeBroadcasts(game, updated));
+    }
+
+    /// <summary>The effective language and discovery settings of one game, marking values that follow the community defaults.</summary>
+    private string DescribeBroadcasts(Esport game, GuildEsportsPreferences preferences)
+    {
+        var defaults = community.Value;
+        var discovery = preferences.DiscoveryFor(game, defaults);
+        bool ownLanguage = (game == Esport.CounterStrike2 ? preferences.CounterStrikeLanguage : preferences.Dota2Language) is not null;
+        string List(string value) => value.Length == 0 ? "none" : value.Replace(",", ", ", StringComparison.Ordinal);
+        string source = discovery.CommunityLists ? " (community default)" : "";
+        return $"""
+            **{game.DisplayName()}**
+            Language: {Web.DashboardController.LanguageName(preferences.LanguageFor(game, defaults))}{(ownLanguage ? "" : " (community default)")}
+            Stream discovery: {(discovery.Enabled ? "on" : "off")}
+            Stream languages: {List(discovery.Languages)}{source}
+            Country tags: {List(discovery.Countries)}{source}
+            Other tags: {List(discovery.Tags)}{source}
+            Ranking: {List(discovery.Priority)}
+            """;
     }
 
     [SlashCommand("show", "Show saved server settings.")]
@@ -60,8 +94,9 @@ public sealed class GuildSettingsModule(ISender sender, IOptions<PandaScoreOptio
                 (roles.Length > 20 ? $" (+{roles.Length - 20} more)" : "") : "None";
         await RespondAsync($"""
             Default esports channel: {channel}
-            CS2 channel: {FormatChannel(preferences.CounterStrikeChannelId)}
-            Dota 2 channel: {FormatChannel(preferences.Dota2ChannelId)}
+            CS2 channel: {FormatChannel(preferences.CounterStrikeChannelId)} · language {Web.DashboardController.LanguageName(preferences.LanguageFor(Esport.CounterStrike2, community.Value))}
+            Dota 2 channel: {FormatChannel(preferences.Dota2ChannelId)} · language {Web.DashboardController.LanguageName(preferences.LanguageFor(Esport.Dota2, community.Value))}
+            CS2 stream discovery: {(preferences.DiscoveryFor(Esport.CounterStrike2, community.Value).Enabled ? "on" : "off")} · Dota 2 stream discovery: {(preferences.DiscoveryFor(Esport.Dota2, community.Value).Enabled ? "on" : "off")}
             Time zone: {settings?.TimeZoneId ?? pandaScore.Value.TimeZoneId}
             CS2 teams: {FormatTeams(preferences.CounterStrikeTeamIds, GetCatalog(preferences, Esport.CounterStrike2))}
             Dota 2 teams: {FormatTeams(preferences.Dota2TeamIds, GetCatalog(preferences, Esport.Dota2))}

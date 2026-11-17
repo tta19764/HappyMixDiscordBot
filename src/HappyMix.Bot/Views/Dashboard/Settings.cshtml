@@ -91,6 +91,43 @@
                 </div>
             }
 
+            @if (settingsPage.Routes.Length > 0)
+            {
+                <section class="hm-card hm-routes" id="routes" aria-labelledby="routes-title">
+                    <div class="hm-row hm-row--between">
+                        <h2 id="routes-title">@DashboardIcons.Render("bell")@T["Routes_Title"]</h2>
+                        <span class="hm-help">@T["Routes_Help"]</span>
+                    </div>
+                    <ul class="hm-routes__list">
+                        @foreach (var route in settingsPage.Routes)
+                        {
+                            <li class="hm-routes__item @(route.Warnings.Length > 0 ? "hm-routes__item--warn" : "")">
+                                <span class="hm-routes__channel">@route.Channel</span>
+                                <span class="hm-routes__games">
+                                    @foreach (var game in route.Games)
+                                    {
+                                        <a class="hm-tag hm-tag--@game.Section" href="#@game.Section">@game.Name<small>@game.Language</small></a>
+                                    }
+                                </span>
+                                @foreach (var warning in route.Warnings)
+                                {
+                                    <p class="hm-routes__warning">@DashboardIcons.Render("bang")<span>@warning</span></p>
+                                }
+                                @if (route.Fixes.Length > 0)
+                                {
+                                    <span class="hm-routes__fixes">
+                                        @foreach (var fix in route.Fixes)
+                                        {
+                                            <button type="button" class="hm-btn hm-btn--sm" data-route-fix="@fix.CheckboxId">@T["Routes_OwnChannel", fix.Game]</button>
+                                        }
+                                    </span>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </section>
+            }
+
             <section class="hm-card hm-section" id="defaults" aria-labelledby="defaults-title">
                 <div class="hm-section__head">
                     <span class="hm-game-mark" aria-hidden="true">@DashboardIcons.Render("sliders")</span>

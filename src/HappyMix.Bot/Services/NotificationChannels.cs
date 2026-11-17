@@ -7,7 +7,7 @@ public sealed class NotificationChannels : IDisposable
 {
     private readonly SemaphoreSlim _creation = new(1);
 
-    public Task<ITextChannel> FindOrCreateAsync(IGuild guild, string name) => CreateCoreAsync(guild, name, null, true);
+    public Task<ITextChannel> FindOrCreateAsync(IGuild guild, string name, string? topic = null) => CreateCoreAsync(guild, name, topic, true);
     public Task<ITextChannel> CreateAsync(IGuild guild, string name, string? topic = null) => CreateCoreAsync(guild, name, topic, false);
 
     private async Task<ITextChannel> CreateCoreAsync(IGuild guild, string name, string? topic, bool reuse)

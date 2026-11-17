@@ -81,6 +81,18 @@ internal sealed class SqliteEventStore(IDbContextFactory<HappyMixDbContext> fact
         return await LoadAsync(context, rows, since);
     }
 
+    public async Task<IReadOnlyList<EventDetails>> ListChangedAsync(ulong guildId, DateTimeOffset since)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        long after = since.ToUnixTimeSeconds();
+        var changed = context.Set<EventOccurrenceRecord>()
+            .Where(item => item.ConfirmedUtc >= after || item.CanceledUtc >= after)
+            .Select(item => item.EventId);
+        var rows = await context.Set<EventRecord>().Where(item => item.GuildId == Id(guildId) &&
+            (item.CreatedUtc >= after || item.CanceledUtc >= after || changed.Contains(item.Id))).ToListAsync();
+        return await LoadAsync(context, rows, after);
+    }
+
     public async Task<EventResponseChange> RespondAsync(Guid eventId, DateOnly day, ulong userId, bool accepted, DateTimeOffset now)
     {
         await using var context = await factory.CreateDbContextAsync();

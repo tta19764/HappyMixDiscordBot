@@ -16,15 +16,24 @@ internal sealed class DiscordMatchAnnouncementPublisher(
     DiscordSocketClient client,
     IOptions<DiscordOptions> options,
     TwitchLiveStreams twitch,
+    IOptions<CommunityDefaults> community,
     GuildSettings? settings = null) : IMatchAnnouncementPublisher, IGuildAnnouncementPublisher
 {
     private readonly DiscordOptions _options = options.Value;
-    private string Language(Esport game) => (game == Esport.CounterStrike2 ? settings?.Preferences?.CounterStrikeLanguage : settings?.Preferences?.Dota2Language) ?? "en";
+    private GuildEsportsPreferences Preferences => settings?.Preferences ?? GuildEsportsPreferences.Default;
+    /// <summary>Each game posts in its own language, even when several games share one channel.</summary>
+    private string Language(Esport game) => Preferences.LanguageFor(game, community.Value);
     private string Text(Esport game, string key, params object[] values) => NotificationText.Get(Language(game), key, values);
     private ulong ChannelId => settings?.ChannelId ?? _options.AnnouncementChannelId;
 
+    /// <summary>The games whose posts go to this publisher's channel.</summary>
+    private IReadOnlyList<Esport> ChannelGames => settings is null
+        ? [Esport.CounterStrike2, Esport.Dota2]
+        : Preferences.Routes(settings.ChannelId).FirstOrDefault(route => route.ChannelId == settings.ChannelId)?.Games
+          ?? [Esport.CounterStrike2, Esport.Dota2];
+
     internal DiscordMatchAnnouncementPublisher ForGuild(GuildSettings destination) =>
-        new(client, options, twitch, destination);
+        new(client, options, twitch, community, destination);
 
     IMatchAnnouncementPublisher IGuildAnnouncementPublisher.ForGuild(GuildSettings destination) => ForGuild(destination);
 
@@ -34,8 +43,10 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         IReadOnlyCollection<EsportsMatch> matches,
         CancellationToken cancellationToken)
     {
+        // An empty day gets one note per language used in this channel, naming only the games that post here.
         var embeds = matches.Count == 0
-            ? BuildDailyScheduleEmbeds(matchDate, matches, FormatTwitchLinks, Language(Esport.CounterStrike2))
+            ? ChannelGames.GroupBy(Language).SelectMany(group =>
+                BuildDailyScheduleEmbeds(matchDate, matches, FormatTwitchLinks, group.Key, group.ToArray()))
             : matches.GroupBy(match => match.Game).SelectMany(group =>
                 BuildDailyScheduleEmbeds(matchDate, group.ToArray(), FormatTwitchLinks, Language(group.Key)));
         foreach (Embed embed in embeds)
@@ -48,11 +59,18 @@ internal sealed class DiscordMatchAnnouncementPublisher(
     internal static IReadOnlyList<Embed> BuildDailyScheduleEmbeds(
         DateOnly matchDate,
         IReadOnlyCollection<EsportsMatch> matches,
-        Func<EsportsMatch, string>? formatTwitchLinks = null, string language = "en")
+        Func<EsportsMatch, string, string>? formatTwitchLinks = null, string language = "en",
+        IReadOnlyCollection<Esport>? games = null)
     {
         if (matches.Count == 0)
         {
-            return BuildTournamentScheduleEmbeds(matchDate, [], "Followed main teams - CS2 / Dota 2", formatTwitchLinks, language);
+            games = games is { Count: > 0 } ? games : [Esport.CounterStrike2, Esport.Dota2];
+            string names = string.Join(" / ", games.Select(ShortName));
+            string empty = games.Count > 1
+                ? NotificationText.Get(language, "Notify_NoMatches")
+                : NotificationText.Get(language, "Notify_NoMatchesGame", names);
+            return BuildTournamentScheduleEmbeds(matchDate, [], NotificationText.Get(language, "Notify_ScheduleTitle", names),
+                formatTwitchLinks, language, empty);
         }
 
         return matches.OrderBy(match => match.BeginAt)
@@ -68,12 +86,12 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         DateOnly matchDate,
         EsportsMatch[] matches,
         string tournamentTitle,
-        Func<EsportsMatch, string>? formatTwitchLinks = null, string language = "en")
+        Func<EsportsMatch, string, string>? formatTwitchLinks = null, string language = "en", string? empty = null)
     {
         const int descriptionLimit = 4096;
         IEnumerable<string> lines = matches.Length == 0
-            ? [NotificationText.Get(language, "Notify_NoMatches")]
-            : matches.Select(match => FormatScheduledMatch(match, language) + formatTwitchLinks?.Invoke(match));
+            ? [empty ?? NotificationText.Get(language, "Notify_NoMatches")]
+            : matches.Select(match => FormatScheduledMatch(match, language) + formatTwitchLinks?.Invoke(match, language));
         var descriptions = new List<string>();
         string current = string.Empty;
         foreach (string line in lines)
@@ -106,7 +124,7 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         return descriptions.Select((description, index) => new EmbedBuilder()
             .WithTitle(tournamentTitle.Length <= 256 ? tournamentTitle : tournamentTitle[..253] + "...")
             .WithDescription(description)
-            .WithFooter($"{matchDate:yyyy-MM-dd} • Main teams • Page {index + 1}/{descriptions.Count}")
+            .WithFooter(NotificationText.Get(language, "Notify_ScheduleFooter", matchDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture), index + 1, descriptions.Count))
             .WithColor(Color.Blue)
             .WithCurrentTimestamp()
             .Build()).ToArray();
@@ -118,7 +136,7 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         CancellationToken cancellationToken)
     {
         var embed = new EmbedBuilder()
-            .WithTitle($"{match.Game.DisplayName()} • Match starts within {settings?.Preferences?.ReminderMinutes ?? 30} minutes")
+            .WithTitle($"{match.Game.DisplayName()} • {Text(match.Game, "Notify_Soon", Preferences.ReminderMinutes)}")
             .WithDescription(FormatMatchDetails(match, Language(match.Game)) + await FormatLiveTwitchLinksAsync(match, cancellationToken))
             .WithColor(Color.Orange)
             .WithCurrentTimestamp()
@@ -134,7 +152,7 @@ internal sealed class DiscordMatchAnnouncementPublisher(
     {
         string streams = await FormatLiveTwitchLinksAsync(match, cancellationToken);
         var embed = new EmbedBuilder()
-            .WithTitle($"{match.Game.DisplayName()} • Match started")
+            .WithTitle($"{match.Game.DisplayName()} • {Text(match.Game, "Notify_Started")}")
             .WithDescription(FormatMatchDetails(match, Language(match.Game)) + streams)
             .WithColor(Color.Green)
             .WithCurrentTimestamp()
@@ -161,7 +179,7 @@ internal sealed class DiscordMatchAnnouncementPublisher(
     {
         string winner = GetTeamName(match, game.WinnerId) ?? NotificationText.Get(language, "Notify_UnknownWinner");
         var embed = new EmbedBuilder()
-            .WithTitle($"{match.Game.DisplayName()} • {(match.Game == Esport.CounterStrike2 ? "Map" : "Game")} {game.Position} finished")
+            .WithTitle($"{match.Game.DisplayName()} • {NotificationText.Get(language, match.Game == Esport.CounterStrike2 ? "Notify_MapFinished" : "Notify_GameFinished", game.Position)}")
             .WithDescription(NotificationText.Get(language, match.Game == Esport.CounterStrike2 ? "Notify_MapWinner" : "Notify_GameWinner", winner) + "\n" + FormatScore(match))
             .WithFooter($"{match.LeagueName} • {match.TournamentName}")
             .WithColor(Color.Gold)
@@ -178,7 +196,7 @@ internal sealed class DiscordMatchAnnouncementPublisher(
     {
         string winner = GetTeamName(match, match.WinnerId) ?? Text(match.Game, "Notify_UnknownWinner");
         var embed = new EmbedBuilder()
-            .WithTitle($"{match.Game.DisplayName()} • Match finished")
+            .WithTitle($"{match.Game.DisplayName()} • {Text(match.Game, "Notify_Finished")}")
             .WithDescription(Text(match.Game, "Notify_Winner", winner) + "\n" + FormatScore(match))
             .WithFooter($"{match.LeagueName} • {match.TournamentName}")
             .WithColor(Color.Green)
@@ -241,17 +259,34 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         return resolvedChannel;
     }
 
+    /// <summary>
+    /// Live broadcast lines: the server's selected channels first, then (when discovery is on) other live streams
+    /// whose titles name both teams, ranked by the server's preferences. Each line is in the game's language.
+    /// </summary>
     private async Task<string> FormatLiveTwitchLinksAsync(EsportsMatch match, CancellationToken cancellationToken)
     {
         var preferred = GetTwitchChannels(match).Select(TwitchChannels.GetHandle).OfType<string>()
             .Distinct(StringComparer.Ordinal).ToArray();
         // A channel in the right category may be showing another match; only link streams whose title names both teams.
         var live = await twitch.GetLiveAsync(preferred, match.Game, cancellationToken, match.Opponents);
-        var links = live.Select(handle => $"[{handle}](https://www.twitch.tv/{handle})");
-        return live.Count == 0 ? string.Empty : $"\nLive on Twitch: {string.Join(" · ", links)}";
+        var discovery = Preferences.DiscoveryFor(match.Game, community.Value);
+        var discovered = discovery.Enabled
+            ? (await twitch.DiscoverAsync(match.Game, match.Opponents, discovery, cancellationToken))
+                .Where(handle => !live.Contains(handle, StringComparer.OrdinalIgnoreCase)).ToArray()
+            : [];
+        return StreamLines(Language(match.Game), live, discovered);
     }
 
-    private string FormatTwitchLinks(EsportsMatch match) => TwitchChannels.Format(match, GetTwitchChannels(match));
+    internal static string StreamLines(string language, IReadOnlyCollection<string> selected, IReadOnlyCollection<string> discovered)
+    {
+        static string Links(IEnumerable<string> handles) => string.Join(" · ", handles.Select(handle => $"[{handle}](https://www.twitch.tv/{handle})"));
+        string text = selected.Count == 0 ? "" : $"\n{NotificationText.Get(language, "Notify_SelectedStreams")}: {Links(selected)}";
+        return discovered.Count == 0 ? text : $"{text}\n{NotificationText.Get(language, "Notify_DiscoveredStreams")}: {Links(discovered)}";
+    }
+
+    private string FormatTwitchLinks(EsportsMatch match, string language) => TwitchChannels.Format(match, GetTwitchChannels(match), language);
+
+    private static string ShortName(Esport game) => game == Esport.CounterStrike2 ? "CS2" : "Dota 2";
 
     private string[] GetTwitchChannels(EsportsMatch match) => match.Game == Esport.CounterStrike2
             ? settings?.Preferences?.CounterStrikeTwitchChannels ?? _options.CounterStrikeTwitchChannels

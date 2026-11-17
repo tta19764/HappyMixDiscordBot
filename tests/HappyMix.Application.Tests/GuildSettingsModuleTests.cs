@@ -32,7 +32,7 @@ public sealed class GuildSettingsModuleTests
 
         var languages = module.SlashCommands.Single(command => command.Name == "broadcasts").Parameters
             .Single(parameter => parameter.Name == "language").Choices.Select(choice => choice.Name);
-        Assert.Equal(["English", "Українська", "Русский"], languages);
+        Assert.Equal(["Community default", "English", "Українська", "Русский"], languages);
         Assert.Equal(SettingsCommands, module.SlashCommands.Select(command => command.Name).Order());
         Assert.Equal(GuildPermission.Administrator, module.DefaultMemberPermissions);
         Assert.Contains(module.Preconditions.OfType<RequireUserPermissionAttribute>(),
