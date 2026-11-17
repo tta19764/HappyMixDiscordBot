@@ -7,7 +7,7 @@ namespace HappyMix.Bot.Jobs;
 
 [DisallowConcurrentExecution]
 public sealed class PublishReleaseNotesJob(DiscordSocketClient discord, IConfiguration config,
-    IWebHostEnvironment environment, ILogger<PublishReleaseNotesJob> logger) : IJob
+    IWebHostEnvironment environment, ILogger<PublishReleaseNotesJob> logger, HappyMix.Bot.Services.NotificationChannels notificationChannels) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
     {
@@ -34,7 +34,7 @@ public sealed class PublishReleaseNotesJob(DiscordSocketClient discord, IConfigu
         var channels = await ((IGuild)guild).GetTextChannelsAsync();
         var channel = channels.FirstOrDefault(item => item.Id == channelId)
             ?? (channelId == 0 ? channels.FirstOrDefault(item => item.Name == "bot-releases") : null);
-        channel ??= await guild.CreateTextChannelAsync("bot-releases");
+        channel ??= await notificationChannels.CreateAsync(guild, "bot-releases");
         state["channel"] = channel.Id;
         await SaveAsync(stateFile, state, context.CancellationToken);
         var messages = await channel.GetMessagesAsync(100).FlattenAsync();

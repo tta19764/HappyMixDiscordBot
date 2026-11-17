@@ -38,6 +38,14 @@ public sealed class GameSettingsForm
     public const string None = "none";
 
     public ulong? Channel { get; set; }
+    public bool CreateChannel { get; set; }
+    [RegularExpression("en|uk|ru")] public string Language { get; set; } = "en";
+    public bool DiscoverStreams { get; set; }
+    [StringLength(200)] public string StreamLanguages { get; set; } = "";
+    [StringLength(200)] public string StreamCountries { get; set; } = "";
+    [StringLength(200)] public string StreamTags { get; set; } = "";
+    [StringLength(100)] public string StreamPriority { get; set; } = "language,country,tags,viewers";
+    public StreamDiscoveryPreferences Discovery() => new(DiscoverStreams, StreamLanguages ?? "", StreamCountries ?? "", StreamTags ?? "", StreamPriority ?? "");
     public ulong? PingRole { get; set; }
     public string TeamsMode { get; set; } = Inherit;
     /// <summary>One team per line: a name, or "Name #123" where the number is the team's ID.</summary>
@@ -77,6 +85,8 @@ public sealed partial class DashboardController
             Dota = ToGameForm(prefs.Dota2ChannelId, prefs.Dota2PingRoleId, prefs.Dota2TeamIds,
                 prefs.Dota2TwitchChannels, prefs.Dota2TeamAliases, names)
         };
+        ApplyDiscovery(form.Cs, prefs.CounterStrikeLanguage, prefs.CounterStrikeDiscovery);
+        ApplyDiscovery(form.Dota, prefs.Dota2Language, prefs.Dota2Discovery);
         var banner = TempData["SettingsMessage"] is string message
             ? new BannerModel("success", message, text["New_announcements_use_these_settings_right_away"])
             : null;
@@ -102,7 +112,7 @@ public sealed partial class DashboardController
     }
 
     [HttpPost("/settings/{guildId}")]
-    public async Task<IActionResult> SaveSettings(ulong guildId, ServerSettingsForm form)
+    public async Task<IActionResult> SaveSettings(ulong guildId, ServerSettingsForm form, [FromServices] NotificationChannels channels)
     {
         if (await GetAdministratorAsync(guildId) is not { } guild)
             return await SettingsForbiddenAsync(guildId);
@@ -131,15 +141,28 @@ public sealed partial class DashboardController
 
         var cs = await ParseGameAsync(form.Cs, "Cs", Esport.CounterStrike2, options.Value.CounterStrikeTeamAliases);
         var dota = await ParseGameAsync(form.Dota, "Dota", Esport.Dota2, options.Value.Dota2TeamAliases);
+        foreach (var (key, gameForm) in new[] { ("Cs", form.Cs), ("Dota", form.Dota) })
+            if (!gameForm.Discovery().IsValid)
+                ModelState.AddModelError(key + ".StreamPriority", text["Streams_PriorityHelp"]);
         if (!ModelState.IsValid || zone is null)
             return await SettingsViewAsync(guild, form, null);
 
+        try
+        {
+            if (form.Cs.CreateChannel) form.Cs.Channel = (await channels.FindOrCreateAsync(guild, "cs2-announcements")).Id;
+            if (form.Dota.CreateChannel) form.Dota.Channel = (await channels.FindOrCreateAsync(guild, "dota2-announcements")).Id;
+        }
+        catch (Discord.Net.HttpException)
+        {
+            ModelState.AddModelError("", text["Notifications_ChannelError"]);
+            return await SettingsViewAsync(guild, form, null);
+        }
         var notifications = (form.Schedule ? EsportsNotifications.Schedule : 0) |
             (form.Reminders ? EsportsNotifications.Reminders : 0) |
             (form.Maps ? EsportsNotifications.Maps : 0) | (form.Results ? EsportsNotifications.Results : 0);
         var preferences = new GuildEsportsPreferences(cs.Teams, dota.Teams, notifications, form.ReminderMinutes,
             form.OrganizerRoles.Distinct().ToArray(), form.Cs.PingRole, form.Dota.PingRole, cs.Catalog, dota.Catalog,
-            cs.Twitch, dota.Twitch, form.Cs.Channel, form.Dota.Channel, form.MatchStarts);
+            cs.Twitch, dota.Twitch, form.Cs.Channel, form.Dota.Channel, form.MatchStarts, form.Cs.Language, form.Dota.Language, form.Cs.Discovery(), form.Dota.Discovery());
 
         var result = await sender.Send(new UpdateGuildSettingsCommand(guildId, options.Value.TimeZoneId,
             saved => saved with { ChannelId = form.ChannelId, TimeZoneId = zone.Id, Preferences = preferences }),
@@ -151,6 +174,17 @@ public sealed partial class DashboardController
         }
         TempData["SettingsMessage"] = text["Server_settings_saved"].Value;
         return RedirectToAction(nameof(Settings), new { guildId });
+    }
+
+    private static void ApplyDiscovery(GameSettingsForm form, string language, StreamDiscoveryPreferences? discovery)
+    {
+        form.Language = language;
+        discovery ??= new();
+        form.DiscoverStreams = discovery.Enabled;
+        form.StreamLanguages = discovery.Languages;
+        form.StreamCountries = discovery.Countries;
+        form.StreamTags = discovery.Tags;
+        form.StreamPriority = discovery.Priority;
     }
 
     private async Task<ViewResult> SettingsViewAsync(SocketGuild guild, ServerSettingsForm form, BannerModel? banner)

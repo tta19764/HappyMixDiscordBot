@@ -50,7 +50,7 @@ public static class DependencyInjection
         // Add privileged intents here only when a feature actually needs them.
         services.AddSingleton(new DiscordSocketConfig
         {
-            GatewayIntents = GatewayIntents.Guilds,
+            GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildVoiceStates,
             LogGatewayIntentWarnings = true
         });
 
@@ -67,6 +67,8 @@ public static class DependencyInjection
         services.AddSingleton<TwitchLiveStreams>();
         services.AddHttpClient("SteamNews", client => client.Timeout = TimeSpan.FromSeconds(10));
         services.AddSingleton<GameNewsService>();
+        services.AddSingleton<NotificationChannels>();
+        services.AddSingleton<EventNotificationSettings>();
         services.AddSingleton<DiscordMatchAnnouncementPublisher>();
         services.AddSingleton<IGuildAnnouncementPublisher>(provider =>
             provider.GetRequiredService<DiscordMatchAnnouncementPublisher>());
@@ -102,6 +104,11 @@ public static class DependencyInjection
             JobKey releasesKey = new("publish-release-notes");
             scheduler.AddJob<PublishReleaseNotesJob>(job => job.WithIdentity(releasesKey));
             scheduler.AddTrigger(trigger => trigger.ForJob(releasesKey).StartNow()
+                .WithSimpleSchedule(schedule => schedule.WithIntervalInMinutes(1).RepeatForever()));
+
+            JobKey channelEventsKey = new("publish-event-channels");
+            scheduler.AddJob<PublishEventChannelsJob>(job => job.WithIdentity(channelEventsKey));
+            scheduler.AddTrigger(trigger => trigger.ForJob(channelEventsKey).StartNow()
                 .WithSimpleSchedule(schedule => schedule.WithIntervalInMinutes(1).RepeatForever()));
 
             JobKey eventsKey = new("dispatch-event-messages");

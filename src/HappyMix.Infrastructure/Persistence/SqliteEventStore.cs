@@ -86,10 +86,14 @@ internal sealed class SqliteEventStore(IDbContextFactory<HappyMixDbContext> fact
         await using var context = await factory.CreateDbContextAsync();
         await using var transaction = await context.Database.BeginTransactionAsync();
         var row = await context.Set<EventResponseRecord>().FindAsync(eventId, Date(day), Id(userId));
-        bool? previous = row?.Accepted;
+        var invitee = await context.Set<EventInviteeRecord>().FindAsync(eventId, Id(userId));
+        var guildEvent = await context.Set<EventRecord>().FindAsync(eventId);
+        bool? previous = row?.Accepted ?? (invitee?.SeriesAcceptedUtc is not null ? true : null);
+        if (accepted && invitee is not null && guildEvent?.Recurrence != (int)EventRecurrence.Once)
+            invitee.SeriesAcceptedUtc ??= now.ToUnixTimeSeconds();
         if (row is null)
             context.Add(row = new EventResponseRecord { EventId = eventId, Date = Date(day), UserId = Id(userId) });
-        if (previous != accepted)
+        if (row.RespondedUtc == 0 || previous != accepted)
         {
             // Declining after accepting is a withdrawal; accepting again clears it.
             row.Withdrawn = previous == true && !accepted;
@@ -97,6 +101,9 @@ internal sealed class SqliteEventStore(IDbContextFactory<HappyMixDbContext> fact
             row.RespondedUtc = now.ToUnixTimeSeconds();
         }
         await context.SaveChangesAsync();
+        if (invitee?.SeriesAcceptedUtc is not null)
+            await context.Set<EventNotificationRecord>().Where(item => item.EventId == eventId && item.UserId == Id(userId) && item.Kind == 0 && !item.Sent)
+                .ExecuteDeleteAsync();
         await transaction.CommitAsync();
         return new EventResponseChange(previous, accepted, row.Withdrawn);
     }
@@ -188,6 +195,7 @@ internal sealed class SqliteEventStore(IDbContextFactory<HappyMixDbContext> fact
             JOIN Events e ON e.Id = o.EventId
             JOIN EventInvitees i ON i.EventId = o.EventId
             WHERE o.Status <> 2 AND e.CanceledUtc IS NULL AND o.StartUtc > {stamp} AND o.StartUtc <= {until}
+              AND i.SeriesAcceptedUtc IS NULL
               AND NOT EXISTS (SELECT 1 FROM EventResponses r WHERE r.EventId = o.EventId AND r.Date = o.Date AND r.UserId = i.UserId)
             """);
     }
@@ -232,6 +240,15 @@ internal sealed class SqliteEventStore(IDbContextFactory<HappyMixDbContext> fact
         var occurrences = await context.Set<EventOccurrenceRecord>().Where(item => ids.Contains(item.EventId) && (since == null || item.EndUtc >= since))
             .OrderBy(item => item.StartUtc).ToListAsync();
         var responses = await context.Set<EventResponseRecord>().Where(item => ids.Contains(item.EventId)).ToListAsync();
+        foreach (var invitee in invitees.Where(item => item.SeriesAcceptedUtc is not null))
+        {
+            foreach (var occurrence in occurrences.Where(item => item.EventId == invitee.EventId && item.EndUtc > invitee.SeriesAcceptedUtc))
+            {
+                if (!responses.Any(item => item.EventId == invitee.EventId && item.UserId == invitee.UserId && item.Date == occurrence.Date))
+                    responses.Add(new EventResponseRecord { EventId = invitee.EventId, UserId = invitee.UserId, Date = occurrence.Date,
+                        Accepted = true, RespondedUtc = invitee.SeriesAcceptedUtc!.Value });
+            }
+        }
         var deliveries = await context.Set<EventNotificationRecord>().Where(item => ids.Contains(item.EventId)).ToListAsync();
         return rows.Select(row => new EventDetails(ToEvent(row),
             invitees.Where(item => item.EventId == row.Id).Select(item => ulong.Parse(item.UserId, CultureInfo.InvariantCulture)).ToArray(),
@@ -291,6 +308,7 @@ internal sealed class EventRecord
 
 internal sealed class EventInviteeRecord
 {
+    public long? SeriesAcceptedUtc { get; set; }
     public Guid EventId { get; set; }
     public required string UserId { get; set; }
 }

@@ -16,9 +16,39 @@ namespace HappyMix.Bot.Interactions;
 [RequireUserPermission(GuildPermission.Administrator)]
 [DefaultMemberPermissions(GuildPermission.Administrator)]
 public sealed class GuildSettingsModule(ISender sender, IOptions<PandaScoreOptions> pandaScore,
-    IOptions<DiscordOptions> discord)
+    IOptions<DiscordOptions> discord, NotificationChannels channels)
     : InteractionModuleBase<SocketInteractionContext>
 {
+    [SlashCommand("create-channel", "Create or reuse an announcement channel under Bot Notifications.")]
+    public async Task CreateChannelAsync(Esport game)
+    {
+        await DeferAsync(ephemeral: true);
+        var channel = await channels.FindOrCreateAsync(Context.Guild, game == Esport.CounterStrike2 ? "cs2-announcements" : "dota2-announcements");
+        await sender.Send(new UpdateGuildSettingsCommand(Context.Guild.Id, pandaScore.Value.TimeZoneId, settings => settings with
+        {
+            Preferences = game == Esport.CounterStrike2
+                ? (settings.Preferences ?? GuildEsportsPreferences.Default) with { CounterStrikeChannelId = channel.Id }
+                : (settings.Preferences ?? GuildEsportsPreferences.Default) with { Dota2ChannelId = channel.Id }
+        }));
+        await FollowupAsync($"Announcements will use <#{channel.Id}>.", ephemeral: true);
+    }
+
+    [SlashCommand("broadcasts", "Configure automatic match stream discovery and notification language.")]
+    public async Task BroadcastsAsync(Esport game, bool enabled,
+        [Choice("English", "en"), Choice("Українська", "uk"), Choice("Русский", "ru")] string language = "en",
+        string languages = "", string countries = "", string tags = "", string priority = "language,country,tags,viewers")
+    {
+        var discovery = new StreamDiscoveryPreferences(enabled, languages, countries, tags, priority);
+        if (!discovery.IsValid || language is not ("en" or "uk" or "ru"))
+        {
+            await RespondAsync("Use each criterion at most once: language,country,tags,viewers. List them in priority order; omit unused criteria.", ephemeral: true);
+            return;
+        }
+        await SavePreferencesAsync(preferences => game == Esport.CounterStrike2
+            ? preferences with { CounterStrikeLanguage = language, CounterStrikeDiscovery = discovery }
+            : preferences with { Dota2Language = language, Dota2Discovery = discovery }, "Broadcast settings saved.");
+    }
+
     [SlashCommand("show", "Show saved server settings.")]
     public async Task ShowAsync()
     {

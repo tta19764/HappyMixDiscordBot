@@ -1,0 +1,23 @@
+@model EventNotificationForm
+@{ Layout = "_DashboardLayout"; ViewData["Title"] = T["Notifications_Settings"]; }
+<a href="/@(Model.Scope == "group" ? "groups" : "events")/@Model.GuildId/@Model.Target">@T["Notifications_Back"]</a>
+<section class="hm-card hm-section">
+<h1>@T["Notifications_Settings"]</h1>
+<p>@T["Notifications_Help"]</p>
+@if (Model.Error is not null) { <p role="alert">@Model.Error</p> }
+<form method="post" action="/notifications/@Model.GuildId/@Model.Scope/@Model.Target">
+@Html.AntiForgeryToken()
+@if (Model.Scope == "event") { <label><input type="checkbox" name="inherit" value="true" checked="@(Model.Route is null)" /> @T["Notifications_Inherit"]</label> }
+<div class="hm-field"><label><input type="checkbox" name="enabled" value="true" checked="@(Model.Route?.Enabled == true)" /> @T["Notifications_Enable"]</label></div>
+<div class="hm-field"><label for="channelId">@T["Announcement_channel"]</label>
+<select class="hm-select" id="channelId" name="channelId"><option value="">@T["Notifications_ChooseChannel"]</option>
+@foreach (var channel in Model.Channels) { <option value="@channel.Id" selected="@(Model.Route?.ChannelId == channel.Id.ToString(System.Globalization.CultureInfo.InvariantCulture))">#@channel.Name</option> }
+</select></div>
+<label><input type="checkbox" name="create" value="true" /> @T["Notifications_CreateDedicated"]</label>
+<div class="hm-field"><label for="language">@T["Notifications_Language"]</label><select class="hm-select" name="language" id="language">
+@foreach (var language in new[] { ("en", "English"), ("uk", "Українська"), ("ru", "Русский") }) { <option value="@language.Item1" selected="@((Model.Route?.Language ?? "en") == language.Item1)">@language.Item2</option> }
+</select></div>
+<button class="hm-btn hm-btn--primary" type="submit">@T["Save"]</button>
+</form>
+<a href="/info?guildId=@Model.GuildId#feature-events">@T["Notifications_HelpLink"]</a>
+</section>

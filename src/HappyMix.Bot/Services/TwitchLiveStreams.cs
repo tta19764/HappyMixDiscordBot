@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using HappyMix.Domain.Esports;
+using HappyMix.Application.Abstractions.Guilds;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -63,6 +64,71 @@ internal sealed partial class TwitchLiveStreams(
         }
     }
 
+    public async Task<string[]> DiscoverAsync(Esport game, IReadOnlyCollection<EsportsOpponent> teams,
+        StreamDiscoveryPreferences? preferences, CancellationToken ct)
+    {
+        if (preferences is not { Enabled: true } || teams.Count < 2) return [];
+        string? clientId = config["Twitch:ClientId"], secret = config["Twitch:ClientSecret"];
+        if (string.IsNullOrWhiteSpace(clientId) || string.IsNullOrWhiteSpace(secret)) return [];
+        using var client = clients.CreateClient("Twitch");
+        try
+        {
+            var token = await GetTokenAsync(client, clientId, secret, ct);
+            var found = new List<Stream>();
+            string? cursor = null;
+            var matcher = new StreamTitleMatcher(teams);
+            int pages = Math.Clamp(config.GetValue("Twitch:DiscoveryMaxPages", 10), 1, 100);
+            for (int page = 0; page < pages; page++)
+            {
+                string category = game == Esport.CounterStrike2 ? "32399" : "29595";
+                using var request = new HttpRequestMessage(HttpMethod.Get,
+                    $"https://api.twitch.tv/helix/streams?first=100&game_id={category}" +
+                    (cursor is null ? "" : "&after=" + Uri.EscapeDataString(cursor)));
+                request.Headers.Add("Client-Id", clientId);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                using var response = await client.SendAsync(request, ct);
+                if (response.StatusCode == HttpStatusCode.Unauthorized) await InvalidateTokenAsync(token, ct);
+                response.EnsureSuccessStatusCode();
+                var body = await response.Content.ReadFromJsonAsync<StreamResponse>(ct);
+                found.AddRange((body?.Data ?? []).Where(stream => stream.Type == "live" && matcher.Matches(stream.Title)));
+                string? next = body?.Pagination?.Cursor;
+                if (string.IsNullOrEmpty(next) || next == cursor) break;
+                cursor = next;
+            }
+            return Rank(found, preferences).Select(stream => stream.User_Login).Distinct(StringComparer.OrdinalIgnoreCase).Take(Math.Clamp(config.GetValue("Twitch:DiscoveryMaxResults", 5), 1, 10)).ToArray();
+        }
+        catch (Exception exception) when (!ct.IsCancellationRequested &&
+            exception is HttpRequestException or OperationCanceledException or System.Text.Json.JsonException)
+        {
+            LogLookupFailed(logger, exception.GetType().Name);
+            return [];
+        }
+    }
+
+    internal static IOrderedEnumerable<Stream> Rank(IEnumerable<Stream> streams, StreamDiscoveryPreferences preferences)
+    {
+        IOrderedEnumerable<Stream> ordered = streams.OrderBy(_ => 0);
+        foreach (string criterion in StreamDiscoveryPreferences.Split(preferences.Priority))
+        {
+            ordered = criterion switch
+            {
+                "language" => ordered.ThenBy(stream => PreferenceIndex(preferences.Languages, [stream.Language])),
+                "country" => ordered.ThenBy(stream => PreferenceIndex(preferences.Countries, stream.Tags ?? [])),
+                "tags" => ordered.ThenBy(stream => PreferenceIndex(preferences.Tags, stream.Tags ?? [])),
+                "viewers" => ordered.ThenByDescending(stream => stream.Viewer_Count),
+                _ => ordered
+            };
+        }
+        return ordered.ThenBy(stream => stream.User_Login, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static int PreferenceIndex(string preferences, string[] values)
+    {
+        var ordered = StreamDiscoveryPreferences.Split(preferences);
+        int index = Array.FindIndex(ordered, value => values.Contains(value, StringComparer.OrdinalIgnoreCase));
+        return index < 0 ? int.MaxValue : index;
+    }
+
     private async Task<string> GetTokenAsync(HttpClient client, string clientId, string secret, CancellationToken ct)
     {
         await _tokenLock.WaitAsync(ct);
@@ -113,6 +179,7 @@ internal sealed partial class TwitchLiveStreams(
     private static partial void LogLookupFailed(ILogger logger, string failureType);
 
     private sealed record TokenResponse(string Access_Token, int Expires_In);
-    private sealed record StreamResponse(Stream[] Data);
-    private sealed record Stream(string User_Login, string Type, string? Title);
+    private sealed record StreamResponse(Stream[] Data, Pagination? Pagination);
+    private sealed record Pagination(string? Cursor);
+    internal sealed record Stream(string User_Login, string Type, string? Title, string Language = "", string[]? Tags = null, int Viewer_Count = 0);
 }

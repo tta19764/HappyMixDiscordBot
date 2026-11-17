@@ -32,6 +32,7 @@ public static class DependencyInjection
         // A single stateless clock is sufficient for the lifetime of the process.
         services.AddSingleton<IClock, SystemClock>();
         services.AddSingleton(provider => new GameNewsStore(provider.GetRequiredService<IDbContextFactory<HappyMixDbContext>>()));
+        services.AddSingleton(provider => new NotificationRouteStore(provider.GetRequiredService<IDbContextFactory<HappyMixDbContext>>()));
         services.AddSingleton<IGuildSettingsStore, SqliteGuildSettingsStore>();
         services.AddSingleton<IGuildGroupStore, SqliteGuildGroupStore>();
         services.AddSingleton<IAvailabilityStore, SqliteAvailabilityStore>();

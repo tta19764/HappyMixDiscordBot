@@ -34,6 +34,21 @@
         <div><h2 id="@sectionId-title">@game</h2><p>@T["Leave_a_value_on_Inherit_to_follow_Server_defaults"]</p></div>
     </div>
     <div class="hm-fields">
+        <div class="hm-field">
+            <label asp-for="Language">@T["Notifications_Language"]</label>
+            <select asp-for="Language" class="hm-select"><option value="en">English</option><option value="uk">Українська</option><option value="ru">Русский</option></select>
+        </div>
+        <div class="hm-field hm-field--wide">
+            <label><input asp-for="DiscoverStreams" /> @T["Streams_Enable"]</label>
+            <p class="hm-help">@T["Streams_Help"]</p>
+            <label asp-for="StreamLanguages">@T["Streams_Languages"]</label><input asp-for="StreamLanguages" class="hm-input" placeholder="uk,en" />
+            <label asp-for="StreamCountries">@T["Streams_Countries"]</label><input asp-for="StreamCountries" class="hm-input" placeholder="Ukraine,Poland" />
+            <label asp-for="StreamTags">@T["Streams_Tags"]</label><input asp-for="StreamTags" class="hm-input" />
+            <label asp-for="StreamPriority">@T["Streams_Priority"]</label><input asp-for="StreamPriority" class="hm-input" />
+            <p class="hm-help">@T["Streams_PriorityHelp"]</p>
+            @FormErrors.Render(state, Key("StreamPriority"))
+        </div>
+
         <div class="hm-field @(Model.Channel is null ? "hm-field--inherited" : "")" data-source>
             <div class="hm-row hm-row--between">
                 <label class="hm-label" asp-for="Channel">@T["Announcement_channel"]</label>
@@ -45,6 +60,7 @@
                 <option value="">@T["Server_default_Arg0", settingsPage.ServerChannel]</option>
             </select>
             @FormErrors.Render(state, Key("Channel"))
+            <label><input asp-for="CreateChannel" /> @T["Notifications_CreateChannel"]</label>
         </div>
 
         <div class="hm-field">
