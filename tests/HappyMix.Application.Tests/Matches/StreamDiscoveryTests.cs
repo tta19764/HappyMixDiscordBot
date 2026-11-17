@@ -6,6 +6,13 @@ namespace HappyMix.Application.Tests.Matches;
 public sealed class StreamDiscoveryTests
 {
     [Fact]
+    public void EmptyScheduleKeepsItsLocalizedNotification()
+    {
+        var embeds = DiscordMatchAnnouncementPublisher.BuildDailyScheduleEmbeds(new DateOnly(2026, 11, 17), [], language: "uk");
+        Assert.Equal(NotificationText.Get("uk", "Notify_NoMatches"), Assert.Single(embeds).Description);
+    }
+
+    [Fact]
     public void EnabledCriteriaAndTheirOrderChangeRanking()
     {
         TwitchLiveStreams.Stream[] streams = [new("english", "live", "A vs B", "en", ["Poland"], 900),

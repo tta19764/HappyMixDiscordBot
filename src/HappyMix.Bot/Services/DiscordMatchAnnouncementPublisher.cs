@@ -34,7 +34,11 @@ internal sealed class DiscordMatchAnnouncementPublisher(
         IReadOnlyCollection<EsportsMatch> matches,
         CancellationToken cancellationToken)
     {
-        foreach (Embed embed in matches.GroupBy(match => match.Game).SelectMany(group => BuildDailyScheduleEmbeds(matchDate, group.ToArray(), FormatTwitchLinks, Language(group.Key))))
+        var embeds = matches.Count == 0
+            ? BuildDailyScheduleEmbeds(matchDate, matches, FormatTwitchLinks, Language(Esport.CounterStrike2))
+            : matches.GroupBy(match => match.Game).SelectMany(group =>
+                BuildDailyScheduleEmbeds(matchDate, group.ToArray(), FormatTwitchLinks, Language(group.Key)));
+        foreach (Embed embed in embeds)
         {
             await SendAsync(embed, cancellationToken);
         }
@@ -48,7 +52,7 @@ internal sealed class DiscordMatchAnnouncementPublisher(
     {
         if (matches.Count == 0)
         {
-            return BuildTournamentScheduleEmbeds(matchDate, [], "Followed main teams - CS2 / Dota 2");
+            return BuildTournamentScheduleEmbeds(matchDate, [], "Followed main teams - CS2 / Dota 2", formatTwitchLinks, language);
         }
 
         return matches.OrderBy(match => match.BeginAt)

@@ -23,4 +23,4 @@ Work branch: `feature/v0.0.2-notifications`; submit a PR to main before tagging.
 
 Implemented: shared category-aware creation, per-game channels/language/discovery, recurring-series acceptance with per-date withdrawals, group/event notification routes and voice-aware reminders, all-feed Steam pagination, dashboard and command controls, localized guides and regression coverage.
 
-Validation: 209 tests pass in Release configuration, including migration upgrade/restart coverage, route isolation, stream ranking, and localization. Release manifests and generated progress checks pass. Pull-request CI and deployment verification remain. The v0.0.2 tag must point to the PR merge commit on main, never the feature-branch head. No existing version tag will be moved.
+Validation: 210 tests pass in Release configuration, including migration upgrade/restart coverage, route isolation, stream ranking, and localization. Release manifests and generated progress checks pass. Pull-request CI and deployment verification remain. The v0.0.2 tag must point to the PR merge commit on main, never the feature-branch head. No existing version tag will be moved.
