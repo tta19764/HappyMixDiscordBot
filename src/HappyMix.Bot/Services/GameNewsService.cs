@@ -9,7 +9,7 @@ using HappyMix.Infrastructure.Persistence;
 namespace HappyMix.Bot.Services;
 
 public sealed partial class GameNewsService(GameNewsStore store, DiscordSocketClient discord, IHttpClientFactory clients,
-    ILogger<GameNewsService> logger) : IDisposable
+    ILogger<GameNewsService> logger, NotificationChannels notificationChannels) : IDisposable
 {
     private readonly SemaphoreSlim _changes = new(1);
 
@@ -65,8 +65,8 @@ public sealed partial class GameNewsService(GameNewsStore store, DiscordSocketCl
         try
         {
             role = await guild.CreateRoleAsync($"News · {name}", GuildPermissions.None, isMentionable: false);
-            channel = await guild.CreateTextChannelAsync($"{ChannelName(name)}-{appId}", settings =>
-                settings.Topic = $"Steam news for {name} · https://store.steampowered.com/app/{appId}/");
+            channel = await notificationChannels.CreateAsync(guild, $"{ChannelName(name)}-{appId}",
+                $"Steam news for {name} · https://store.steampowered.com/app/{appId}/");
             var bot = await guild.GetCurrentUserAsync(CacheMode.AllowDownload);
             var permissions = bot.GetPermissions(channel);
             if (!permissions.ViewChannel || !permissions.SendMessages || !permissions.EmbedLinks || !permissions.MentionEveryone)
@@ -116,11 +116,10 @@ public sealed partial class GameNewsService(GameNewsStore store, DiscordSocketCl
         {
             try
             {
-                var result = await client.GetFromJsonAsync<NewsResponse>(
-                    $"https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid={group.Key}&count=50&maxlength=400&feeds=steam_community_announcements,steam_updates", ct);
+                var posts = await ReadNewsAsync(client, group.Key, group.Min(item => item.CreatedAt), ct);
                 foreach (var subscription in group)
                 {
-                    try { await PublishSubscriptionAsync(subscription, result?.AppNews?.Items ?? [], ct); }
+                    try { await PublishSubscriptionAsync(subscription, posts, ct); }
                     catch (Exception error) when (!ct.IsCancellationRequested)
                     {
                         LogPublishFailure(logger, subscription.GuildId, error);
@@ -132,6 +131,27 @@ public sealed partial class GameNewsService(GameNewsStore store, DiscordSocketCl
                 LogFeedFailure(logger, group.Key, error);
             }
         }
+    }
+
+    internal static async Task<NewsItem[]> ReadNewsAsync(HttpClient client, uint appId, long since, CancellationToken ct)
+    {
+        var posts = new Dictionary<string, NewsItem>(StringComparer.Ordinal);
+        long? before = null;
+        while (true)
+        {
+            string endpoint = FormattableString.Invariant(
+                $"https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid={appId}&count=100&maxlength=400");
+            if (before is { } cursor) endpoint += FormattableString.Invariant($"&enddate={cursor}");
+            var result = await client.GetFromJsonAsync<NewsResponse>(endpoint, ct);
+            var page = result?.AppNews?.Items ?? [];
+            foreach (var post in page.Where(post => post.Date > since)) posts.TryAdd(post.Gid, post);
+            if (page.Length < 100 || page.Min(post => post.Date) <= since) break;
+            long oldest = page.Min(post => post.Date);
+            if (before is { } previous && oldest >= previous)
+                throw new InvalidOperationException("Steam news pagination did not advance.");
+            before = oldest;
+        }
+        return posts.Values.OrderBy(post => post.Date).ToArray();
     }
 
     private async Task PublishSubscriptionAsync(GameNewsSubscription item, NewsItem[] posts, CancellationToken ct)
@@ -198,5 +218,5 @@ public sealed partial class GameNewsService(GameNewsStore store, DiscordSocketCl
 
     private sealed record NewsResponse([property: JsonPropertyName("appnews")] AppNews? AppNews);
     private sealed record AppNews([property: JsonPropertyName("newsitems")] NewsItem[] Items);
-    private sealed record NewsItem(string Gid, string Title, string Url, long Date);
+    internal sealed record NewsItem(string Gid, string Title, string Url, long Date);
 }

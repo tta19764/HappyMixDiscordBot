@@ -16,6 +16,33 @@ public sealed class EventSchedulingTests
     private static readonly DateOnly Thursday = new(2026, 11, 19);
 
     [Fact]
+    public async Task NotificationManagementRequiresOrganizerOrAdministratorInTheSameGuild()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var id = (await fixture.Sender.Send(Create(Organizer))).Value.EventId;
+        Assert.True((await fixture.Sender.Send(new CanManageNotificationsQuery(Guild, Organizer, false, "event", id))).Value);
+        Assert.False((await fixture.Sender.Send(new CanManageNotificationsQuery(Guild, Kai, false, "event", id))).Value);
+        Assert.True((await fixture.Sender.Send(new CanManageNotificationsQuery(Guild, Kai, true, "event", id))).Value);
+        Assert.False((await fixture.Sender.Send(new CanManageNotificationsQuery(999, Kai, true, "event", id))).Value);
+    }
+
+    [Fact]
+    public async Task RecurringAcceptanceCoversSeriesAndWithdrawalsOnlyAffectOneDate()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var id = (await fixture.Sender.Send(Create(Organizer) with { Invitees = [Kai],
+            Recurrence = EventRecurrence.Daily, Until = Thursday.AddDays(2) })).Value.EventId;
+        await fixture.Sender.Send(new RespondToEventCommand(Guild, Kai, id, Thursday, true));
+        var details = (await fixture.Sender.Send(new GetEventQuery(Guild, Organizer, id))).Value.Details;
+        Assert.Equal(3, details.Responses.Count(item => item.Accepted));
+        await fixture.Sender.Send(new RespondToEventCommand(Guild, Kai, id, Thursday.AddDays(1), false));
+        await fixture.Sender.Send(new RespondToEventCommand(Guild, Kai, id, Thursday, true));
+        details = (await fixture.Sender.Send(new GetEventQuery(Guild, Organizer, id))).Value.Details;
+        Assert.Equal(2, details.Responses.Count(item => item.Accepted));
+        Assert.True(details.Responses.Single(item => item.Date == Thursday.AddDays(1)).Withdrawn);
+    }
+
+    [Fact]
     public async Task GroupEventsInviteEveryOtherMemberAndAppearPendingForEveryone()
     {
         using var fixture = await Fixture.CreateAsync();

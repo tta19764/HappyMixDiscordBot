@@ -110,7 +110,7 @@ public sealed class EventModule(ISender sender, IOptions<PandaScoreOptions> opti
         await ReplyAsync(result.IsSuccess ? $"Event saved. ID: `{result.Value.EventId}`" : result.Error.Description);
     }
 
-    [SlashCommand("respond", "Accept, decline, or withdraw from an event date.")]
+    [SlashCommand("respond", "Accept a series once; decline or withdraw from one date.")]
     public async Task RespondToEventAsync(string id, string date, bool attending)
     {
         if (!Guid.TryParse(id, out var eventId) || !ParseDate(date, out var day))

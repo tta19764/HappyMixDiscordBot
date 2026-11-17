@@ -14,7 +14,7 @@ namespace HappyMix.Application.Tests;
 public sealed class GuildSettingsModuleTests
 {
     private static readonly string[] SettingsCommands =
-        ["add-team", "channel", "notifications", "organizer-role", "ping-role", "reminder", "remove-team", "reset-catalog", "reset-channel", "set", "show",
+        ["add-team", "broadcasts", "channel", "create-channel", "notifications", "organizer-role", "ping-role", "reminder", "remove-team", "reset-catalog", "reset-channel", "set", "show",
             "team-catalog", "teams", "timezone", "twitch"];
 
     [Fact]
@@ -26,6 +26,7 @@ public sealed class GuildSettingsModuleTests
         using var services = new ServiceCollection().AddLogging().AddApplication()
             .AddSingleton(database.Services.GetRequiredService<IOptions<PandaScoreOptions>>())
             .AddSingleton(database.Services.GetRequiredService<IOptions<DiscordOptions>>())
+            .AddSingleton<HappyMix.Bot.Services.NotificationChannels>()
             .BuildServiceProvider();
         var module = await interactions.AddModuleAsync<GuildSettingsModule>(services);
 

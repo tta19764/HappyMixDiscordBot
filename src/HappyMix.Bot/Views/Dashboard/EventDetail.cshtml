@@ -87,6 +87,7 @@
                     <input type="hidden" name="returnUrl" value="@self">
                     @if (Model.MyAnswer != true)
                     {
+                        @if (Model.Repeats) { <p class="hm-help">@T["Events_SeriesHelp"]</p> }
                         <button class="hm-btn hm-btn--primary" name="answer" value="accept">@DashboardIcons.Render("check")@T["Accept"]</button>
                     }
                     @if (Model.MyAnswer == true)
@@ -203,3 +204,5 @@
         }
     </aside>
 </div>
+
+@if (Model.View.IsOrganizer) { <a class="hm-btn" href="/notifications/@Model.GuildId/event/@Model.View.Details.Event.Id">@T["Notifications_Settings"]</a> }

@@ -283,6 +283,10 @@ stable-key lookups and an entry in each language file.
 
 ### Steam game news and Discord commands
 
+News subscriptions include all feeds returned by Steam, including general announcements. The reader paginates back to the subscription creation time and retains per-post delivery deduplication. Newly created news and release channels are placed in the `Bot Notifications` category. Existing channels retain their locations.
+
+The next release implementation plan and current status are in [docs/V0_0_2_PLAN.md](docs/V0_0_2_PLAN.md).
+
 Use the dashboard's **Game news** tab or `/game-news create` with a Steam App ID or
 store link and a display name. HappyMix creates one channel and role per game per
 server. Any member can join or leave the role. The creator and administrators can
@@ -320,3 +324,15 @@ Version tags trigger tested production deployments. After health verification,
 HappyMix publishes Ukrainian notes in bot-releases on server 887398817404694548.
 The channel is reused or created automatically. See CONTRIBUTING.md for feature/fix
 branches, release-note files and the release process.
+
+### v0.0.2 notification workflows
+
+- In each game's settings, choose an existing announcement channel or create one. `/settings create-channel` provides the same action.
+- CS2 and Dota 2 notification languages are independent. `/settings broadcasts` configures language and optional live match discovery. Language, country tags, other tags and viewer count can be enabled by including them in the priority list. Values within each preference list are ordered. Country tags are broadcaster-supplied, not geolocation.
+- Twitch discovery examines at most `Twitch:DiscoveryMaxPages` pages of 100 live streams (default 10) and returns up to `Twitch:DiscoveryMaxResults` links (default 5). Discovery is best effort: both teams must be identifiable in the title. Chosen streamers are checked separately. Credentials remain required.
+- Accept a recurring event once to join its future dates. A dated decline/withdrawal overrides only that date. Earlier date-specific responses remain explicit overrides. Organizers still confirm each occurrence separately.
+- Group and event detail pages link to **Channel notifications**. Choose/create a channel, enable reminders, and select a language. Event settings override group defaults; select inheritance to reset them. `/notify set` and `/notify show` expose the same configuration to organizers and administrators.
+- Confirmed-event reminders run every minute, `EventNotifications:ReminderMinutes` before start (default 15), with a five-minute late recovery window. Mentions include accepted participants and the organizer only when absent from all guild voice channels. Linked alternate accounts count as voice presence. Delivery receipts persist across restarts; footer markers recover recent sends if a crash occurs before recording the receipt. This is not a guarantee of exactly-once Discord delivery.
+- All newly created text channels use **Bot Notifications**. Existing channels retain their location. The bot needs Manage Channels to create them and View Channel, Send Messages, and Embed Links to post. Voice-state gateway intent is enabled; this does not require the privileged member intent.
+
+API references: [Steam news pagination](https://partner.steamgames.com/doc/webapi/ISteamNews), [Twitch stream metadata](https://dev.twitch.tv/docs/api/reference/streams).

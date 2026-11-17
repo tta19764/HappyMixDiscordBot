@@ -1986,11 +1986,52 @@
 <data name="Guide_groups_Title" xml:space="preserve"><value>Groups and shared availability</value></data>
 <data name="Guide_groups_Body" xml:space="preserve"><value>Create a group, add its description and games, and invite server members. Invitees accept in Discord or the dashboard to join and receive the group role. The group board shows members’ availability. Organizers and moderators manage the group. Role repair restores roles from saved membership. Leaving removes your group role. Closing a group deletes its membership records and role.</value></data>
 <data name="Guide_events_Title" xml:space="preserve"><value>Events and invitations</value></data>
-<data name="Guide_events_Body" xml:space="preserve"><value>Create an event for a group or choose individual members. Set the date, hours and time zone. Choose one-off, daily or weekly recurrence and its end date. Invitees respond for each occurrence. The organizer reviews responses and confirms when enough people can attend. Participants can withdraw before or after confirmation. Organizers can cancel one occurrence or the remaining series. Confirmed events appear in availability.</value></data>
+<data name="Guide_events_Body" xml:space="preserve"><value>Create an event for a group or choose individual members. Set its dates, hours and time zone. For a recurring event, accept once to join the series; decline or withdraw from individual dates without changing the others. The organizer confirms each date when enough people can attend, and can cancel one date or the remaining series. Confirmed events appear in availability. Open Channel notifications to choose or create a channel and enable reminders. Events inherit group notification settings until overridden. Reminders mention accepted participants and the organizer only when they are absent from every server voice channel, including linked accounts.</value></data>
 <data name="Guide_game-news_Title" xml:space="preserve"><value>Game news subscriptions</value></data>
-<data name="Guide_game-news_Body" xml:space="preserve"><value>Create a subscription using a Steam App ID or store link and game name. HappyMix creates a channel and notification role. Members can join existing subscriptions or unsubscribe to remove their role. Creators and administrators can delete a subscription, its channel and role. Steam news is checked every ten minutes. Release, update and playtest headings are inferred from announcements. Member portraits require access to the Discord member list.</value></data>
+<data name="Guide_game-news_Body" xml:space="preserve"><value>Create a subscription using a Steam App ID or store link and game name. HappyMix creates a channel and notification role. Members can join existing subscriptions or unsubscribe to remove their role. Creators and administrators can delete a subscription, its channel and role. Steam news is checked every ten minutes. Release, update and playtest headings are inferred from announcements. Member portraits require access to the Discord member list. All news feeds returned by Steam are included, including general announcements. New channels are created under Bot Notifications.</value></data>
 <data name="Guide_links_Title" xml:space="preserve"><value>Linked accounts</value></data>
 <data name="Guide_links_Body" xml:space="preserve"><value>Create a linking request from your primary account and open the approval link while signed in as the alternate. Both accounts must belong to the server. Review schedule conflicts before approving. Linked accounts share group membership and availability. Discord permissions remain attached to each account. Review the unlink preview before separating accounts. Administrators can manage links from their account tools.</value></data>
 <data name="Guide_settings_Title" xml:space="preserve"><value>Server settings and esports</value></data>
-<data name="Guide_settings_Body" xml:space="preserve"><value>Administrators choose the default announcement channel, named time zone, reminder timing and notification types. CS2 and Dota 2 have separate team lists, Twitch channels and reminder roles. Choose defaults, custom values or none where offered, then save. List limits come from deployment configuration. Channels require View Channel, Send Messages and Embed Links. Twitch links need configured credentials and live-stream verification.</value></data>
+<data name="Guide_settings_Body" xml:space="preserve"><value>Administrators configure announcement channels, time zone, reminders and notification types. CS2 and Dota 2 each have their own notification language, followed teams, Twitch channels and ping role. Create a game channel directly from settings. Optional stream discovery finds live broadcasts naming both teams. Rank by language, broadcaster country tags, other tags or viewer count; order criteria by importance and omit unused ones. Country tags are self-declared, not verified location. Discovered streams appear on a separate line alongside chosen channels in reminders, match starts and map results. Twitch credentials are required. Newly created channels use Bot Notifications.</value></data>
+<data name="Notifications_CreateChannel" xml:space="preserve"><value>Create a channel in Bot Notifications (reuses the game channel if it exists)</value></data>
+<data name="Notifications_ChannelError" xml:space="preserve"><value>Could not create the channel. Check the bot’s Manage Channels permission.</value></data>
+<data name="Notifications_Language" xml:space="preserve"><value>Notification language</value></data>
+<data name="Streams_Enable" xml:space="preserve"><value>Find other live broadcasts of this match</value></data>
+<data name="Streams_Help" xml:space="preserve"><value>Only live streams naming both teams are included. Country preferences match broadcaster tags, not verified locations. Values below are ordered preferences, separated by commas.</value></data>
+<data name="Streams_Languages" xml:space="preserve"><value>Preferred language codes</value></data>
+<data name="Streams_Countries" xml:space="preserve"><value>Preferred country tags</value></data>
+<data name="Streams_Tags" xml:space="preserve"><value>Other preferred tags</value></data>
+<data name="Streams_Priority" xml:space="preserve"><value>Ranking criteria, highest priority first</value></data>
+<data name="Streams_PriorityHelp" xml:space="preserve"><value>Use language,country,tags,viewers in your preferred order. Omit unused criteria; do not repeat a criterion.</value></data>
+<data name="Notify_NoMatches" xml:space="preserve"><value>No followed main-team CS2 or Dota 2 matches are scheduled today.</value></data>
+<data name="Notify_ScheduleFooter" xml:space="preserve"><value>{0} • Main teams • Page {1}/{2}</value></data>
+<data name="Notify_Soon" xml:space="preserve"><value>Match starts within {0} minutes</value></data>
+<data name="Notify_Started" xml:space="preserve"><value>Match started</value></data>
+<data name="Notify_Finished" xml:space="preserve"><value>Match finished</value></data>
+<data name="Notify_UnknownWinner" xml:space="preserve"><value>Unknown winner</value></data>
+<data name="Notify_MapFinished" xml:space="preserve"><value>Map {0} finished</value></data>
+<data name="Notify_GameFinished" xml:space="preserve"><value>Game {0} finished</value></data>
+<data name="Notify_MapWinner" xml:space="preserve"><value>**{0}** won the map.</value></data>
+<data name="Notify_GameWinner" xml:space="preserve"><value>**{0}** won the game.</value></data>
+<data name="Notify_Winner" xml:space="preserve"><value>**{0}** won the match.</value></data>
+<data name="Notify_SelectedStreams" xml:space="preserve"><value>Live on Twitch</value></data>
+<data name="Notify_DiscoveredStreams" xml:space="preserve"><value>More live broadcasts</value></data>
+<data name="Notify_Tbd" xml:space="preserve"><value>Start time TBD</value></data>
+<data name="Events_SeriesHelp" xml:space="preserve"><value>Accept once to join all dates. Declining or withdrawing applies only to the selected date.</value></data>
+<data name="Notifications_Settings" xml:space="preserve"><value>Channel notifications</value></data>
+<data name="Notifications_Back" xml:space="preserve"><value>Back to details</value></data>
+<data name="Notifications_Enable" xml:space="preserve"><value>Enable event reminders</value></data>
+<data name="Notifications_ChooseChannel" xml:space="preserve"><value>Choose a text channel</value></data>
+<data name="Notifications_Inherit" xml:space="preserve"><value>Use the group’s notification settings (overrides the controls below)</value></data>
+<data name="Notifications_CreateDedicated" xml:space="preserve"><value>Create a dedicated channel in Bot Notifications</value></data>
+<data name="Notifications_Forbidden" xml:space="preserve"><value>Only the organizer or a server administrator can manage these notifications.</value></data>
+<data name="Notifications_Help" xml:space="preserve"><value>Confirmed events get a reminder before they start. Only accepted participants and the organizer who are absent from all server voice channels are mentioned. Event settings override group settings; groups default to disabled.</value></data>
+<data name="Notifications_HelpLink" xml:space="preserve"><value>How event notifications work</value></data>
+<data name="Notify_EventReminder" xml:space="preserve"><value>**{0}** starts {1}. Join your server voice channel when ready.</value></data>
+<data name="HelpV002_0" xml:space="preserve"><value>Organizers and administrators use /notify set to choose or create a group or event channel. Enable reminders, or inherit the group settings for an event.</value></data>
+<data name="HelpV002_1" xml:space="preserve"><value>Accept once for a recurring series. Declining or withdrawing affects only the supplied date; other dates stay accepted.</value></data>
+<data name="HelpV002_2" xml:space="preserve"><value>Choose CS2 or Dota 2 to create or reuse its announcement channel under Bot Notifications.</value></data>
+<data name="HelpV002_3" xml:space="preserve"><value>Choose a game and notification language. Enable discovery and list preferred languages, country tags and other tags. Priority uses language,country,tags,viewers in your chosen order; omit unused criteria. Country tags are not verified locations.</value></data>
+<data name="HelpV002_4" xml:space="preserve"><value>Copy a group or event ID. Choose a text channel or create one, then enable reminders. For events, inherit clears the override and uses group settings. Only the organizer or an administrator can change these settings.</value></data>
+<data name="HelpV002_5" xml:space="preserve"><value>Review the saved route. An event with no override uses its group settings; a group with no settings is disabled.</value></data>
 </root>

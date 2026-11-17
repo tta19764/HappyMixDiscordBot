@@ -31,7 +31,7 @@ internal sealed class DiscordEventNotifier(DiscordSocketClient client, IConfigur
         switch (item.Kind)
         {
             case EventNotificationKind.Invite:
-                string repeat = guildEvent.Recurrence == EventRecurrence.Once ? "" : "\nThis is one date of a repeating event; each date is answered on its own.";
+                string repeat = guildEvent.Recurrence == EventRecurrence.Once ? "" : "\nAccept once to join this repeating event. You can withdraw from individual dates in the dashboard.";
                 text = $"{organizer} invited you to **{title}** in **{Format.Sanitize(server)}**.\n{when}{repeat}{Description(guildEvent)}{footer}";
                 string date = item.Occurrence.Date.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
                 buttons = new ComponentBuilder()

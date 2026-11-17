@@ -1986,11 +1986,52 @@
 <data name="Guide_groups_Title" xml:space="preserve"><value>Групи та спільний розклад</value></data>
 <data name="Guide_groups_Body" xml:space="preserve"><value>Створіть групу, додайте опис та ігри й запросіть учасників сервера. Запрошені приймають запрошення в Discord або на сайті й отримують роль групи. На дошці групи видно доступність учасників. Організатори й модератори керують групою. Відновлення ролей призначає їх за збереженим складом. Вихід знімає роль групи. Закриття видаляє склад і роль.</value></data>
 <data name="Guide_events_Title" xml:space="preserve"><value>Події та запрошення</value></data>
-<data name="Guide_events_Body" xml:space="preserve"><value>Створіть подію для групи або виберіть окремих учасників. Вкажіть дату, години й часовий пояс. Виберіть одноразову, щоденну чи щотижневу подію та кінцеву дату повторень. Учасники відповідають на кожну дату окремо. Організатор переглядає відповіді та підтверджує подію, коли охочих достатньо. Від участі можна відмовитися до або після підтвердження. Організатор може скасувати одну дату або решту серії. Підтверджені події відображаються в розкладі.</value></data>
+<data name="Guide_events_Body" xml:space="preserve"><value>Створіть подію для групи або оберіть окремих учасників. Укажіть дати, години й часовий пояс. Для повторюваної події достатньо погодитися один раз на всю серію; відмова чи скасування участі в окремій даті не змінює інші. Організатор підтверджує кожну дату, коли учасників достатньо, і може скасувати одну дату або решту серії. Підтверджені події відображаються в доступності. У розділі «Сповіщення в каналі» оберіть або створіть канал і ввімкніть нагадування. Подія використовує налаштування групи, доки ви не задасте окремі. Нагадування згадують організатора й учасників, які погодилися та відсутні в усіх голосових каналах сервера, з урахуванням пов’язаних акаунтів.</value></data>
 <data name="Guide_game-news_Title" xml:space="preserve"><value>Підписки на новини ігор</value></data>
-<data name="Guide_game-news_Body" xml:space="preserve"><value>Створіть підписку за ID гри Steam або посиланням на магазин і назвою гри. HappyMix створить канал і роль для сповіщень. Учасники можуть приєднатися до наявної підписки або відписатися, щоб зняти роль. Автори й адміністратори можуть видалити підписку, канал і роль. Новини Steam перевіряються кожні десять хвилин. Тип новини визначається за оголошенням. Для портретів потрібен доступ до списку учасників Discord.</value></data>
+<data name="Guide_game-news_Body" xml:space="preserve"><value>Створіть підписку за ID гри Steam або посиланням на магазин і назвою гри. HappyMix створить канал і роль для сповіщень. Учасники можуть приєднатися до наявної підписки або відписатися, щоб зняти роль. Автори й адміністратори можуть видалити підписку, канал і роль. Новини Steam перевіряються кожні десять хвилин. Тип новини визначається за оголошенням. Для портретів потрібен доступ до списку учасників Discord. Публікуються новини з усіх джерел, які повертає Steam, зокрема загальні оголошення. Нові канали створюються в категорії Bot Notifications.</value></data>
 <data name="Guide_links_Title" xml:space="preserve"><value>Пов’язані акаунти</value></data>
 <data name="Guide_links_Body" xml:space="preserve"><value>Створіть запит з основного акаунта й відкрийте посилання підтвердження, увійшовши з додаткового. Обидва акаунти мають бути на сервері. Перед підтвердженням перегляньте конфлікти розкладів. Пов’язані акаунти мають спільне членство в групах і доступність. Права Discord належать кожному акаунту окремо. Перед роз’єднанням перегляньте наслідки. Адміністратори можуть керувати зв’язками у своїх інструментах.</value></data>
 <data name="Guide_settings_Title" xml:space="preserve"><value>Налаштування сервера й кіберспорт</value></data>
-<data name="Guide_settings_Body" xml:space="preserve"><value>Адміністратори вибирають канал оголошень, часовий пояс, час нагадувань і типи сповіщень. CS2 і Dota 2 мають окремі списки команд, Twitch-канали й ролі нагадувань. Виберіть стандартні або власні значення чи вимкніть потрібний пункт і збережіть. Ліміти списків задаються в конфігурації бота. Для каналів потрібні права перегляду, надсилання повідомлень і вбудованих посилань. Twitch-посилання потребують налаштованих облікових даних і перевірки трансляції.</value></data>
+<data name="Guide_settings_Body" xml:space="preserve"><value>Адміністратори налаштовують канали оголошень, часовий пояс, нагадування й типи сповіщень. CS2 та Dota 2 мають окремі мови сповіщень, списки команд, канали Twitch і ролі для згадування. Канал гри можна створити прямо в налаштуваннях. Додатковий пошук знаходить прямі трансляції з назвами обох команд. Сортуйте за мовою, тегами країн, іншими тегами або кількістю глядачів: розташуйте критерії за важливістю та приберіть непотрібні. Теги країн задає автор — це не перевірене місцеперебування. Знайдені трансляції показуються окремим рядком поряд з обраними каналами в нагадуваннях, повідомленнях про початок матчу й результати мап. Потрібні облікові дані Twitch API. Нові канали створюються в Bot Notifications.</value></data>
+<data name="Notifications_CreateChannel" xml:space="preserve"><value>Створити канал у Bot Notifications (наявний канал гри буде використано повторно)</value></data>
+<data name="Notifications_ChannelError" xml:space="preserve"><value>Не вдалося створити канал. Перевірте дозвіл бота на керування каналами.</value></data>
+<data name="Notifications_Language" xml:space="preserve"><value>Мова сповіщень</value></data>
+<data name="Streams_Enable" xml:space="preserve"><value>Шукати інші прямі трансляції цього матчу</value></data>
+<data name="Streams_Help" xml:space="preserve"><value>Показуємо лише прямі трансляції, у назві яких є обидві команди. Країни визначаються за тегами автора, а не перевіреним місцеперебуванням. Укажіть бажані значення через кому в порядку пріоритету.</value></data>
+<data name="Streams_Languages" xml:space="preserve"><value>Бажані коди мов</value></data>
+<data name="Streams_Countries" xml:space="preserve"><value>Бажані теги країн</value></data>
+<data name="Streams_Tags" xml:space="preserve"><value>Інші бажані теги</value></data>
+<data name="Streams_Priority" xml:space="preserve"><value>Критерії сортування: найважливіший першим</value></data>
+<data name="Streams_PriorityHelp" xml:space="preserve"><value>Укажіть language,country,tags,viewers у бажаному порядку. Приберіть непотрібні критерії; не повторюйте їх.</value></data>
+<data name="Notify_NoMatches" xml:space="preserve"><value>Сьогодні немає запланованих матчів обраних основних команд CS2 чи Dota 2.</value></data>
+<data name="Notify_ScheduleFooter" xml:space="preserve"><value>{0} • Основні команди • Сторінка {1}/{2}</value></data>
+<data name="Notify_Soon" xml:space="preserve"><value>Матч почнеться протягом {0} хвилин</value></data>
+<data name="Notify_Started" xml:space="preserve"><value>Матч розпочався</value></data>
+<data name="Notify_Finished" xml:space="preserve"><value>Матч завершився</value></data>
+<data name="Notify_UnknownWinner" xml:space="preserve"><value>Переможець невідомий</value></data>
+<data name="Notify_MapFinished" xml:space="preserve"><value>Мапа {0} завершилася</value></data>
+<data name="Notify_GameFinished" xml:space="preserve"><value>Гра {0} завершилася</value></data>
+<data name="Notify_MapWinner" xml:space="preserve"><value>**{0}** перемогли на мапі.</value></data>
+<data name="Notify_GameWinner" xml:space="preserve"><value>**{0}** виграли гру.</value></data>
+<data name="Notify_Winner" xml:space="preserve"><value>**{0}** виграли матч.</value></data>
+<data name="Notify_SelectedStreams" xml:space="preserve"><value>Наживо на Twitch</value></data>
+<data name="Notify_DiscoveredStreams" xml:space="preserve"><value>Інші прямі трансляції</value></data>
+<data name="Notify_Tbd" xml:space="preserve"><value>Час початку уточнюється</value></data>
+<data name="Events_SeriesHelp" xml:space="preserve"><value>Погодьтеся один раз, щоб приєднатися до всіх дат. Відмова чи скасування участі стосується лише обраної дати.</value></data>
+<data name="Notifications_Settings" xml:space="preserve"><value>Сповіщення в каналі</value></data>
+<data name="Notifications_Back" xml:space="preserve"><value>Назад до деталей</value></data>
+<data name="Notifications_Enable" xml:space="preserve"><value>Увімкнути нагадування про події</value></data>
+<data name="Notifications_ChooseChannel" xml:space="preserve"><value>Оберіть текстовий канал</value></data>
+<data name="Notifications_Inherit" xml:space="preserve"><value>Використовувати налаштування сповіщень групи (параметри нижче ігноруються)</value></data>
+<data name="Notifications_CreateDedicated" xml:space="preserve"><value>Створити окремий канал у Bot Notifications</value></data>
+<data name="Notifications_Forbidden" xml:space="preserve"><value>Лише організатор або адміністратор сервера може керувати цими сповіщеннями.</value></data>
+<data name="Notifications_Help" xml:space="preserve"><value>Перед початком підтвердженої події бот надішле нагадування. Згадуються лише організатор та учасники, які погодилися й не перебувають у жодному голосовому каналі сервера. Налаштування події мають перевагу над налаштуваннями групи; у групах сповіщення початково вимкнені.</value></data>
+<data name="Notifications_HelpLink" xml:space="preserve"><value>Як працюють сповіщення про події</value></data>
+<data name="Notify_EventReminder" xml:space="preserve"><value>**{0}** починається {1}. Приєднайтеся до голосового каналу сервера, коли будете готові.</value></data>
+<data name="HelpV002_0" xml:space="preserve"><value>Організатори й адміністратори використовують /notify set, щоб обрати або створити канал групи чи події, увімкнути нагадування або застосувати налаштування групи до події.</value></data>
+<data name="HelpV002_1" xml:space="preserve"><value>Погодьтеся один раз на повторювану серію. Відмова чи скасування участі стосується лише вказаної дати; інші дати залишаються прийнятими.</value></data>
+<data name="HelpV002_2" xml:space="preserve"><value>Оберіть CS2 або Dota 2, щоб створити або повторно використати канал оголошень у Bot Notifications.</value></data>
+<data name="HelpV002_3" xml:space="preserve"><value>Оберіть гру й мову сповіщень. Увімкніть пошук і вкажіть бажані мови, теги країн та інші теги. У полі priority розташуйте language,country,tags,viewers за важливістю; приберіть непотрібні. Теги країн не є перевіреним місцеперебуванням.</value></data>
+<data name="HelpV002_4" xml:space="preserve"><value>Скопіюйте ID групи чи події. Оберіть текстовий канал або створіть новий і ввімкніть нагадування. Для подій inherit скидає окремі налаштування й застосовує налаштування групи. Зміни доступні лише організатору або адміністратору.</value></data>
+<data name="HelpV002_5" xml:space="preserve"><value>Перегляньте збережені налаштування. Подія без окремих налаштувань використовує налаштування групи; у групі без налаштувань сповіщення вимкнені.</value></data>
 </root>
