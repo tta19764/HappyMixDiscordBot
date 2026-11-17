@@ -15,7 +15,7 @@ public sealed class EventInvitationModule(ISender sender) : InteractionModuleBas
     public async Task AnswerAsync(string action, string server, string eventText, string dateText)
     {
         if (Context.Interaction is not SocketMessageComponent component || Context.Guild is not null ||
-            action is not ("accept" or "decline") || !ulong.TryParse(server, out var guildId) ||
+            action is not ("accept" or "decline" or "acceptall" or "declineall") || !ulong.TryParse(server, out var guildId) ||
             !Guid.TryParseExact(eventText, "N", out var eventId) ||
             !DateOnly.TryParseExact(dateText, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
         {
@@ -24,10 +24,14 @@ public sealed class EventInvitationModule(ISender sender) : InteractionModuleBas
         }
 
         await component.DeferAsync();
-        bool accept = action == "accept";
-        var result = await sender.Send(new RespondToEventCommand(guildId, Context.User.Id, eventId, date, accept));
+        bool accept = action is "accept" or "acceptall";
+        bool series = action.EndsWith("all", StringComparison.Ordinal);
+        var result = await sender.Send(new RespondToEventCommand(guildId, Context.User.Id, eventId, date, accept, series));
         string original = component.Message?.Content ?? "";
         string status = result.IsFailure ? $"⚠️ {result.Error.Description}"
+            : series
+                ? result.Value.Accepted ? "✅ You joined every date. Skip a single date in the dashboard if you can't make it."
+                    : result.Value.Withdrawn ? "↩️ You left every remaining date. The organizer can see that you can't make it." : "You declined every date. No more invitations for this event."
             : result.Value.Accepted
                 ? result.Value.Status == OccurrenceStatus.Confirmed ? "✅ You're going. This date is confirmed." : "✅ You accepted. The organizer hasn't confirmed this date yet."
                 : result.Value.Withdrawn ? "↩️ You withdrew. The organizer can see that you can't make it." : "You declined this date.";
@@ -39,9 +43,9 @@ public sealed class EventInvitationModule(ISender sender) : InteractionModuleBas
         {
             string id = $"{guildId}:{eventId:N}:{dateText}";
             if (result.Value.Accepted)
-                buttons.WithButton("Withdraw", $"event:decline:{id}", ButtonStyle.Danger);
+                buttons.WithButton(series ? "Leave all dates" : "Withdraw", $"event:{(series ? "declineall" : "decline")}:{id}", ButtonStyle.Danger);
             else
-                buttons.WithButton("Accept", $"event:accept:{id}", ButtonStyle.Success);
+                buttons.WithButton(series ? "Join all dates" : "Accept", $"event:{(series ? "acceptall" : "accept")}:{id}", ButtonStyle.Success);
         }
         await component.ModifyOriginalResponseAsync(message =>
         {

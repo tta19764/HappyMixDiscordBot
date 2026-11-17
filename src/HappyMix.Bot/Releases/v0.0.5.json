@@ -1,0 +1,14 @@
+{
+  "en": [
+    "**v0.0.5 · One invitation per series, no canceled clutter**\nRepeating events now send each person a single invitation with **Accept all dates** and **Decline all dates**, instead of a new invitation for every date. One answer covers the whole series; you can still skip a single date from the event page, and the event page also offers both whole-series answers. Declining the series stops further invitations for that event.",
+    "**Canceled events are erased**\nCanceled events and canceled dates disappear from event lists, group pages and availability right away, and are permanently deleted a few minutes later, once their cancellation messages have been delivered. Canceling a whole series removes the event entirely, past dates included. Events canceled before this release are cleaned up automatically."
+  ],
+  "uk": [
+    "**v0.0.5 · Одне запрошення на серію, без скасованого мотлоху**\nПовторювані події тепер надсилають кожному одне запрошення з кнопками **Прийняти всі дати** та **Відхилити всі дати** замість нового запрошення на кожну дату. Одна відповідь діє для всієї серії; окрему дату можна пропустити на сторінці події, де також є обидві відповіді для всієї серії. Відмова від серії припиняє подальші запрошення на цю подію.",
+    "**Скасовані події видаляються**\nСкасовані події та дати одразу зникають зі списків подій, сторінок груп і доступності, а через кілька хвилин, коли повідомлення про скасування доставлено, видаляються остаточно. Скасування всієї серії видаляє подію повністю, разом із минулими датами. Події, скасовані до цього випуску, буде очищено автоматично."
+  ],
+  "ru": [
+    "**v0.0.5 · Одно приглашение на серию, без отменённого мусора**\nПовторяющиеся события теперь отправляют каждому одно приглашение с кнопками **Принять все даты** и **Отклонить все даты** вместо нового приглашения на каждую дату. Один ответ действует для всей серии; отдельную дату можно пропустить на странице события, где также есть оба ответа для всей серии. Отказ от серии прекращает дальнейшие приглашения на это событие.",
+    "**Отменённые события удаляются**\nОтменённые события и даты сразу исчезают из списков событий, страниц групп и доступности, а через несколько минут, когда уведомления об отмене доставлены, удаляются окончательно. Отмена всей серии удаляет событие полностью, вместе с прошедшими датами. События, отменённые до этого выпуска, будут очищены автоматически."
+  ]
+}

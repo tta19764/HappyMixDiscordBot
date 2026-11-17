@@ -1635,9 +1635,7 @@
   <data name="Cancel_the_whole_series" xml:space="preserve">
     <value>Отменить всю серию</value>
   </data>
-  <data name="Cancel_every_remaining_date_of_Arg0_Past_dates_stay_in_history_Invitees" xml:space="preserve">
-    <value>Отменить все оставшиеся даты «{0}»? Прошедшие даты останутся в истории. Приглашённые, ждавшие дату, получат одно сообщение в Discord.</value>
-  </data>
+<data name="Cancel_every_remaining_date_of_Arg0_Past_dates_stay_in_history_Invitees" xml:space="preserve"><value>Отменить все оставшиеся даты {0}? После этого событие будет удалено вместе с прошедшими датами. Приглашённые, ожидавшие дату, получат одно сообщение в Discord.</value></data>
   <data name="Cancel_series" xml:space="preserve">
     <value>Отменить серию</value>
   </data>
@@ -1986,7 +1984,7 @@
 <data name="Guide_groups_Title" xml:space="preserve"><value>Группы и общее расписание</value></data>
 <data name="Guide_groups_Body" xml:space="preserve"><value>Создайте группу, добавьте описание и игры, пригласите участников сервера. Приглашённые принимают приглашение в Discord или на сайте и получают роль группы. На доске группы видна доступность участников. Организаторы и модераторы управляют группой. Восстановление ролей назначает их по сохранённому составу. Выход снимает роль группы. Закрытие удаляет состав и роль.</value></data>
 <data name="Guide_events_Title" xml:space="preserve"><value>События и приглашения</value></data>
-<data name="Guide_events_Body" xml:space="preserve"><value>Создайте событие для группы или выберите отдельных участников. Задайте даты, часы и часовой пояс. Для повторяющегося события согласитесь один раз, чтобы присоединиться к серии; отказывайтесь или отменяйте участие в отдельных датах, не меняя остальных. Организатор подтверждает каждую дату, когда достаточно людей могут прийти, и может отменить одну дату или оставшуюся серию. Подтверждённые события отображаются в доступности. Откройте «Уведомления в канале» группы или события, чтобы выбрать канал или создать канал с её названием, задать язык и время напоминания и при желании публиковать обновления о запланированных, подтверждённых или отменённых событиях. События используют настройки группы, пока не получат собственные. Напоминания упоминают согласившихся участников и организатора, только если их нет ни в одном голосовом канале сервера, с учётом связанных аккаунтов.</value></data>
+<data name="Guide_events_Body" xml:space="preserve"><value>Создайте событие для группы или выберите отдельных участников. Задайте даты, часы и часовой пояс. Для повторяющегося события согласитесь один раз, чтобы присоединиться к серии; отказывайтесь или отменяйте участие в отдельных датах, не меняя остальных. Организатор подтверждает каждую дату, когда достаточно людей могут прийти, и может отменить одну дату или оставшуюся серию. Подтверждённые события отображаются в доступности. Откройте «Уведомления в канале» группы или события, чтобы выбрать канал или создать канал с её названием, задать язык и время напоминания и при желании публиковать обновления о запланированных, подтверждённых или отменённых событиях. События используют настройки группы, пока не получат собственные. Напоминания упоминают согласившихся участников и организатора, только если их нет ни в одном голосовом канале сервера, с учётом связанных аккаунтов. Повторяющееся событие отправляет каждому одно приглашение: «Принять все даты» или «Отклонить все даты» отвечает за всю серию. Отменённые события и даты удаляются через несколько минут после отмены.</value></data>
 <data name="Guide_game-news_Title" xml:space="preserve"><value>Подписки на новости игр</value></data>
 <data name="Guide_game-news_Body" xml:space="preserve"><value>Создайте подписку по ID игры Steam или ссылке на магазин и названию игры. HappyMix создаст канал и роль для уведомлений. Участники могут присоединиться к существующей подписке или отписаться, чтобы снять роль. Авторы и администраторы могут удалить подписку, канал и роль. Новости Steam проверяются каждые десять минут. Тип новости определяется по объявлению. Для портретов нужен доступ к списку участников Discord. Публикуются новости из всех источников, которые возвращает Steam, включая общие объявления. Новые каналы создаются в категории Bot Notifications.</value></data>
 <data name="Guide_links_Title" xml:space="preserve"><value>Связанные аккаунты</value></data>
@@ -2017,7 +2015,7 @@
 <data name="Notify_SelectedStreams" xml:space="preserve"><value>В прямом эфире на Twitch</value></data>
 <data name="Notify_DiscoveredStreams" xml:space="preserve"><value>Другие прямые трансляции</value></data>
 <data name="Notify_Tbd" xml:space="preserve"><value>Время начала уточняется</value></data>
-<data name="Events_SeriesHelp" xml:space="preserve"><value>Согласитесь один раз, чтобы присоединиться ко всем датам. Отказ или отмена участия относится только к выбранной дате.</value></data>
+<data name="Events_SeriesHelp" xml:space="preserve"><value>Приняв, вы присоединяетесь ко всем датам этого повторяющегося события; отдельные даты можно пропустить.</value></data>
 <data name="Notifications_Settings" xml:space="preserve"><value>Уведомления в канале</value></data>
 <data name="Notifications_Back" xml:space="preserve"><value>Назад к подробностям</value></data>
 <data name="Notifications_Enable" xml:space="preserve"><value>Публиковать уведомления в канале</value></data>
@@ -2133,4 +2131,15 @@
 <data name="HelpV004_16" xml:space="preserve"><value>Только для событий: сбросить собственные настройки и снова использовать групповые</value></data>
 <data name="HelpV004_17" xml:space="preserve"><value>Показать уведомления в канале, действующие для группы или события.</value></data>
 <data name="HelpV004_18" xml:space="preserve"><value>Группа или событие</value></data>
+<data name="Events_JoinedAll" xml:space="preserve"><value>Вы присоединились ко всем датам</value></data>
+<data name="Events_LeftAll" xml:space="preserve"><value>Вы отказались от всех оставшихся дат</value></data>
+<data name="Events_DeclinedAll" xml:space="preserve"><value>Вы отклонили все даты</value></data>
+<data name="Events_AcceptAll" xml:space="preserve"><value>Принять все даты</value></data>
+<data name="Events_DeclineAll" xml:space="preserve"><value>Отклонить все даты</value></data>
+<data name="Events_SkipThisDate" xml:space="preserve"><value>Пропустить эту дату</value></data>
+<data name="Events_DeclineThisDate" xml:space="preserve"><value>Отклонить эту дату</value></data>
+<data name="Events_AllDatesHelp" xml:space="preserve"><value>Или ответьте для всей серии:</value></data>
+<data name="Events_CanceledErased" xml:space="preserve"><value>Отменённые события и даты удаляются через несколько минут после отмены.</value></data>
+<data name="Events_NoDatesLeft" xml:space="preserve"><value>У этого события не осталось дат.</value></data>
+<data name="Events_WasCanceled" xml:space="preserve"><value>Это событие отменено.</value></data>
 </root>

@@ -1635,9 +1635,7 @@
   <data name="Cancel_the_whole_series" xml:space="preserve">
     <value>Cancel the whole series</value>
   </data>
-  <data name="Cancel_every_remaining_date_of_Arg0_Past_dates_stay_in_history_Invitees" xml:space="preserve">
-    <value>Cancel every remaining date of {0}? Past dates stay in history. Invitees who were expecting a date get one Discord message.</value>
-  </data>
+<data name="Cancel_every_remaining_date_of_Arg0_Past_dates_stay_in_history_Invitees" xml:space="preserve"><value>Cancel every remaining date of {0}? The event is then erased, past dates included. Invitees who were expecting a date get one Discord message.</value></data>
   <data name="Cancel_series" xml:space="preserve">
     <value>Cancel series</value>
   </data>
@@ -1986,7 +1984,7 @@
 <data name="Guide_groups_Title" xml:space="preserve"><value>Groups and shared availability</value></data>
 <data name="Guide_groups_Body" xml:space="preserve"><value>Create a group, add its description and games, and invite server members. Invitees accept in Discord or the dashboard to join and receive the group role. The group board shows members’ availability. Organizers and moderators manage the group. Role repair restores roles from saved membership. Leaving removes your group role. Closing a group deletes its membership records and role.</value></data>
 <data name="Guide_events_Title" xml:space="preserve"><value>Events and invitations</value></data>
-<data name="Guide_events_Body" xml:space="preserve"><value>Create an event for a group or choose individual members. Set its dates, hours and time zone. For a recurring event, accept once to join the series; decline or withdraw from individual dates without changing the others. The organizer confirms each date when enough people can attend, and can cancel one date or the remaining series. Confirmed events appear in availability. Open Channel notifications on a group or event to choose or create a channel named after it, set the language and reminder lead time, and optionally post updates when events are scheduled, confirmed or canceled. Events use their group’s settings until they get their own. Reminders mention accepted participants and the organizer only when they are absent from every server voice channel, including linked accounts.</value></data>
+<data name="Guide_events_Body" xml:space="preserve"><value>Create an event for a group or choose individual members. Set its dates, hours and time zone. For a recurring event, accept once to join the series; decline or withdraw from individual dates without changing the others. The organizer confirms each date when enough people can attend, and can cancel one date or the remaining series. Confirmed events appear in availability. Open Channel notifications on a group or event to choose or create a channel named after it, set the language and reminder lead time, and optionally post updates when events are scheduled, confirmed or canceled. Events use their group’s settings until they get their own. Reminders mention accepted participants and the organizer only when they are absent from every server voice channel, including linked accounts. A repeating event sends each person one invitation: Accept all dates or Decline all dates answers the whole series. Canceled events and dates are erased a few minutes after cancellation.</value></data>
 <data name="Guide_game-news_Title" xml:space="preserve"><value>Game news subscriptions</value></data>
 <data name="Guide_game-news_Body" xml:space="preserve"><value>Create a subscription using a Steam App ID or store link and game name. HappyMix creates a channel and notification role. Members can join existing subscriptions or unsubscribe to remove their role. Creators and administrators can delete a subscription, its channel and role. Steam news is checked every ten minutes. Release, update and playtest headings are inferred from announcements. Member portraits require access to the Discord member list. All news feeds returned by Steam are included, including general announcements. New channels are created under Bot Notifications.</value></data>
 <data name="Guide_links_Title" xml:space="preserve"><value>Linked accounts</value></data>
@@ -2017,7 +2015,7 @@
 <data name="Notify_SelectedStreams" xml:space="preserve"><value>Live on Twitch</value></data>
 <data name="Notify_DiscoveredStreams" xml:space="preserve"><value>More live broadcasts</value></data>
 <data name="Notify_Tbd" xml:space="preserve"><value>Start time TBD</value></data>
-<data name="Events_SeriesHelp" xml:space="preserve"><value>Accept once to join all dates. Declining or withdrawing applies only to the selected date.</value></data>
+<data name="Events_SeriesHelp" xml:space="preserve"><value>Accepting joins every date of this repeating event; you can still skip single dates.</value></data>
 <data name="Notifications_Settings" xml:space="preserve"><value>Channel notifications</value></data>
 <data name="Notifications_Back" xml:space="preserve"><value>Back to details</value></data>
 <data name="Notifications_Enable" xml:space="preserve"><value>Post channel notifications</value></data>
@@ -2133,4 +2131,15 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="HelpV004_16" xml:space="preserve"><value>Events only: drop own settings and use the group's again</value></data>
 <data name="HelpV004_17" xml:space="preserve"><value>Show the channel notifications that apply to a group or event.</value></data>
 <data name="HelpV004_18" xml:space="preserve"><value>Group or event</value></data>
+<data name="Events_JoinedAll" xml:space="preserve"><value>You joined every date</value></data>
+<data name="Events_LeftAll" xml:space="preserve"><value>You left every remaining date</value></data>
+<data name="Events_DeclinedAll" xml:space="preserve"><value>You declined every date</value></data>
+<data name="Events_AcceptAll" xml:space="preserve"><value>Accept all dates</value></data>
+<data name="Events_DeclineAll" xml:space="preserve"><value>Decline all dates</value></data>
+<data name="Events_SkipThisDate" xml:space="preserve"><value>Skip this date</value></data>
+<data name="Events_DeclineThisDate" xml:space="preserve"><value>Decline this date</value></data>
+<data name="Events_AllDatesHelp" xml:space="preserve"><value>Or answer for the whole series:</value></data>
+<data name="Events_CanceledErased" xml:space="preserve"><value>Canceled events and dates are erased a few minutes after cancellation.</value></data>
+<data name="Events_NoDatesLeft" xml:space="preserve"><value>This event has no dates left.</value></data>
+<data name="Events_WasCanceled" xml:space="preserve"><value>This event was canceled.</value></data>
 </root>

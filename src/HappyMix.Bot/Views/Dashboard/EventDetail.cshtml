@@ -92,13 +92,25 @@
                     }
                     @if (Model.MyAnswer == true)
                     {
-                        <button class="hm-btn" name="answer" value="decline">@T["Withdraw"]</button>
+                        <button class="hm-btn" name="answer" value="decline">@T[Model.Repeats ? "Events_SkipThisDate" : "Withdraw"]</button>
                     }
                     else if (Model.MyAnswer is null)
                     {
-                        <button class="hm-btn" name="answer" value="decline">@T["Decline"]</button>
+                        <button class="hm-btn" name="answer" value="decline">@T[Model.Repeats ? "Events_DeclineThisDate" : "Decline"]</button>
                     }
                 </form>
+                @if (Model.Repeats)
+                {
+                    <form class="hm-row hm-event-series" method="post" action="@baseUrl/respond" asp-antiforgery="false">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="date" value="@date">
+                        <input type="hidden" name="returnUrl" value="@self">
+                        <input type="hidden" name="scope" value="series">
+                        <span class="hm-help">@T["Events_AllDatesHelp"]</span>
+                        <button class="hm-btn hm-btn--ghost" name="answer" value="accept">@T["Events_AcceptAll"]</button>
+                        <button class="hm-btn hm-btn--ghost" name="answer" value="decline">@T["Events_DeclineAll"]</button>
+                    </form>
+                }
             </section>
         }
 

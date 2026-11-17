@@ -53,21 +53,23 @@ internal sealed class SqliteEventStore(IDbContextFactory<HappyMixDbContext> fact
         string guild = Id(guildId), user = Id(userId);
         long since = from.ToUnixTimeSeconds();
         var invited = context.Set<EventInviteeRecord>().Where(item => item.UserId == user).Select(item => item.EventId);
-        var active = context.Set<EventOccurrenceRecord>().Where(item => item.EndUtc >= since).Select(item => item.EventId);
+        var active = context.Set<EventOccurrenceRecord>().Where(item => item.EndUtc >= since && item.Status != (int)OccurrenceStatus.Canceled)
+            .Select(item => item.EventId);
         var rows = await context.Set<EventRecord>()
-            .Where(item => item.GuildId == guild && (item.OrganizerId == user || invited.Contains(item.Id)) && active.Contains(item.Id))
+            .Where(item => item.GuildId == guild && item.CanceledUtc == null && (item.OrganizerId == user || invited.Contains(item.Id)) && active.Contains(item.Id))
             .ToListAsync();
-        return await LoadAsync(context, rows, since);
+        return await LoadAsync(context, rows, since, includeCanceled: false);
     }
 
     public async Task<IReadOnlyList<EventDetails>> ListForGroupAsync(ulong guildId, Guid groupId, DateTimeOffset from)
     {
         await using var context = await factory.CreateDbContextAsync();
         long since = from.ToUnixTimeSeconds();
-        var active = context.Set<EventOccurrenceRecord>().Where(item => item.EndUtc >= since).Select(item => item.EventId);
+        var active = context.Set<EventOccurrenceRecord>().Where(item => item.EndUtc >= since && item.Status != (int)OccurrenceStatus.Canceled)
+            .Select(item => item.EventId);
         var rows = await context.Set<EventRecord>()
-            .Where(item => item.GuildId == Id(guildId) && item.GroupId == groupId && active.Contains(item.Id)).ToListAsync();
-        return await LoadAsync(context, rows, since);
+            .Where(item => item.GuildId == Id(guildId) && item.GroupId == groupId && item.CanceledUtc == null && active.Contains(item.Id)).ToListAsync();
+        return await LoadAsync(context, rows, since, includeCanceled: false);
     }
 
     public async Task<IReadOnlyList<EventDetails>> ListConfirmedAsync(ulong guildId, DateTimeOffset from, DateTimeOffset until)
@@ -100,9 +102,12 @@ internal sealed class SqliteEventStore(IDbContextFactory<HappyMixDbContext> fact
         var row = await context.Set<EventResponseRecord>().FindAsync(eventId, Date(day), Id(userId));
         var invitee = await context.Set<EventInviteeRecord>().FindAsync(eventId, Id(userId));
         var guildEvent = await context.Set<EventRecord>().FindAsync(eventId);
-        bool? previous = row?.Accepted ?? (invitee?.SeriesAcceptedUtc is not null ? true : null);
+        bool? previous = row?.Accepted ?? (invitee?.SeriesAcceptedUtc is not null ? true : invitee?.SeriesDeclinedUtc is not null ? false : null);
         if (accepted && invitee is not null && guildEvent?.Recurrence != (int)EventRecurrence.Once)
+        {
             invitee.SeriesAcceptedUtc ??= now.ToUnixTimeSeconds();
+            invitee.SeriesDeclinedUtc = null;
+        }
         if (row is null)
             context.Add(row = new EventResponseRecord { EventId = eventId, Date = Date(day), UserId = Id(userId) });
         if (row.RespondedUtc == 0 || previous != accepted)
@@ -118,6 +123,73 @@ internal sealed class SqliteEventStore(IDbContextFactory<HappyMixDbContext> fact
                 .ExecuteDeleteAsync();
         await transaction.CommitAsync();
         return new EventResponseChange(previous, accepted, row.Withdrawn);
+    }
+
+    public async Task<EventResponseChange?> RespondSeriesAsync(Guid eventId, ulong userId, bool accepted, DateTimeOffset now)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        await using var transaction = await context.Database.BeginTransactionAsync();
+        var invitee = await context.Set<EventInviteeRecord>().FindAsync(eventId, Id(userId));
+        if (invitee is null)
+            return null;
+        long stamp = now.ToUnixTimeSeconds();
+        bool? previous = invitee.SeriesAcceptedUtc is not null ? true : invitee.SeriesDeclinedUtc is not null ? false : null;
+        // Answers for dates still to come give way to the series answer; past dates keep what happened.
+        var future = context.Set<EventOccurrenceRecord>().Where(item => item.EventId == eventId && item.EndUtc > stamp).Select(item => item.Date);
+        await context.Set<EventResponseRecord>().Where(item => item.EventId == eventId && item.UserId == Id(userId) && future.Contains(item.Date))
+            .ExecuteDeleteAsync();
+        if (previous != accepted)
+        {
+            invitee.SeriesAcceptedUtc = accepted ? stamp : null;
+            invitee.SeriesDeclinedUtc = accepted ? null : stamp;
+        }
+        await context.SaveChangesAsync();
+        await context.Set<EventNotificationRecord>().Where(item => item.EventId == eventId && item.UserId == Id(userId) && item.Kind == 0 && !item.Sent)
+            .ExecuteDeleteAsync();
+        await transaction.CommitAsync();
+        return new EventResponseChange(previous, accepted, previous == true && !accepted);
+    }
+
+    public async Task<int> PurgeCanceledAsync(DateTimeOffset canceledBefore)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        await using var transaction = await context.Database.BeginTransactionAsync();
+        long before = canceledBefore.ToUnixTimeSeconds();
+        var pending = await context.Set<EventNotificationRecord>().Where(item => !item.Sent && !item.Failed)
+            .Select(item => new { item.EventId, item.Date }).Distinct().ToListAsync();
+        var busyEvents = pending.Select(item => item.EventId).ToHashSet();
+        var busyDates = pending.Select(item => (item.EventId, item.Date)).ToHashSet();
+
+        var dates = (await context.Set<EventOccurrenceRecord>()
+                .Where(item => item.Status == (int)OccurrenceStatus.Canceled && item.CanceledUtc != null && item.CanceledUtc <= before)
+                .Select(item => new { item.EventId, item.Date }).ToListAsync())
+            .Where(item => !busyDates.Contains((item.EventId, item.Date))).ToArray();
+        foreach (var group in dates.GroupBy(item => item.EventId))
+        {
+            var days = group.Select(item => item.Date).ToArray();
+            await context.Set<EventResponseRecord>().Where(item => item.EventId == group.Key && days.Contains(item.Date)).ExecuteDeleteAsync();
+            await context.Set<EventNotificationRecord>().Where(item => item.EventId == group.Key && days.Contains(item.Date)).ExecuteDeleteAsync();
+            await context.Set<EventOccurrenceRecord>().Where(item => item.EventId == group.Key && days.Contains(item.Date)).ExecuteDeleteAsync();
+        }
+
+        // Canceled series (past dates included) and events that no longer have any date.
+        var withDates = context.Set<EventOccurrenceRecord>().Select(item => item.EventId);
+        var events = (await context.Set<EventRecord>()
+                .Where(item => (item.CanceledUtc != null && item.CanceledUtc <= before) || !withDates.Contains(item.Id))
+                .Select(item => item.Id).ToListAsync())
+            .Where(id => !busyEvents.Contains(id)).ToArray();
+        if (events.Length > 0)
+        {
+            await context.Set<EventResponseRecord>().Where(item => events.Contains(item.EventId)).ExecuteDeleteAsync();
+            await context.Set<EventNotificationRecord>().Where(item => events.Contains(item.EventId)).ExecuteDeleteAsync();
+            await context.Set<EventOccurrenceRecord>().Where(item => events.Contains(item.EventId)).ExecuteDeleteAsync();
+            await context.Set<EventInviteeRecord>().Where(item => events.Contains(item.EventId)).ExecuteDeleteAsync();
+            await context.Set<EventRecord>().Where(item => events.Contains(item.Id)).ExecuteDeleteAsync();
+            foreach (var id in events)
+                await context.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM NotificationRoutes WHERE Scope = 'event' AND TargetId = {id.ToString()}");
+        }
+        await transaction.CommitAsync();
+        return dates.Length + events.Length;
     }
 
     public async Task<bool> SetStatusAsync(Guid eventId, DateOnly day, IReadOnlyCollection<OccurrenceStatus> from, OccurrenceStatus target, DateTimeOffset now)
@@ -198,8 +270,9 @@ internal sealed class SqliteEventStore(IDbContextFactory<HappyMixDbContext> fact
     {
         await using var context = await factory.CreateDbContextAsync();
         long stamp = now.ToUnixTimeSeconds(), until = windowEnd.ToUnixTimeSeconds();
-        // One invitation per invitee and date, only for dates about to happen, so a long series doesn't send every
-        // invitation at once. People who already answered (on the dashboard) don't need one.
+        // Only dates about to happen are invited, so a long series doesn't send everything at once. A one-off event gets
+        // one invitation per person and date; a repeating event gets a single invitation per person, for its next date,
+        // whose buttons answer every date. People who already answered (in Discord or the dashboard) don't need one.
         return await context.Database.ExecuteSqlInterpolatedAsync($"""
             INSERT OR IGNORE INTO EventNotifications (EventId, Date, UserId, Kind, CreatedUtc, NextAttemptUtc, Attempts, Sent, Failed)
             SELECT o.EventId, o.Date, i.UserId, 0, {stamp}, {stamp}, 0, 0, 0
@@ -207,8 +280,12 @@ internal sealed class SqliteEventStore(IDbContextFactory<HappyMixDbContext> fact
             JOIN Events e ON e.Id = o.EventId
             JOIN EventInvitees i ON i.EventId = o.EventId
             WHERE o.Status <> 2 AND e.CanceledUtc IS NULL AND o.StartUtc > {stamp} AND o.StartUtc <= {until}
-              AND i.SeriesAcceptedUtc IS NULL
+              AND i.SeriesAcceptedUtc IS NULL AND i.SeriesDeclinedUtc IS NULL
               AND NOT EXISTS (SELECT 1 FROM EventResponses r WHERE r.EventId = o.EventId AND r.Date = o.Date AND r.UserId = i.UserId)
+              AND (e.Recurrence = 0 OR (
+                  NOT EXISTS (SELECT 1 FROM EventNotifications n WHERE n.EventId = o.EventId AND n.UserId = i.UserId AND n.Kind = 0)
+                  AND NOT EXISTS (SELECT 1 FROM EventResponses r WHERE r.EventId = o.EventId AND r.UserId = i.UserId)
+                  AND o.StartUtc = (SELECT MIN(x.StartUtc) FROM EventOccurrences x WHERE x.EventId = o.EventId AND x.Status <> 2 AND x.StartUtc > {stamp})))
             """);
     }
 
@@ -245,11 +322,13 @@ internal sealed class SqliteEventStore(IDbContextFactory<HappyMixDbContext> fact
         await context.SaveChangesAsync();
     }
 
-    private static async Task<IReadOnlyList<EventDetails>> LoadAsync(HappyMixDbContext context, List<EventRecord> rows, long? since)
+    private static async Task<IReadOnlyList<EventDetails>> LoadAsync(HappyMixDbContext context, List<EventRecord> rows, long? since,
+        bool includeCanceled = true)
     {
         var ids = rows.Select(row => row.Id).ToArray();
         var invitees = await context.Set<EventInviteeRecord>().Where(item => ids.Contains(item.EventId)).ToListAsync();
-        var occurrences = await context.Set<EventOccurrenceRecord>().Where(item => ids.Contains(item.EventId) && (since == null || item.EndUtc >= since))
+        var occurrences = await context.Set<EventOccurrenceRecord>().Where(item => ids.Contains(item.EventId) && (since == null || item.EndUtc >= since)
+                && (includeCanceled || item.Status != (int)OccurrenceStatus.Canceled))
             .OrderBy(item => item.StartUtc).ToListAsync();
         var responses = await context.Set<EventResponseRecord>().Where(item => ids.Contains(item.EventId)).ToListAsync();
         foreach (var invitee in invitees.Where(item => item.SeriesAcceptedUtc is not null))
@@ -259,6 +338,15 @@ internal sealed class SqliteEventStore(IDbContextFactory<HappyMixDbContext> fact
                 if (!responses.Any(item => item.EventId == invitee.EventId && item.UserId == invitee.UserId && item.Date == occurrence.Date))
                     responses.Add(new EventResponseRecord { EventId = invitee.EventId, UserId = invitee.UserId, Date = occurrence.Date,
                         Accepted = true, RespondedUtc = invitee.SeriesAcceptedUtc!.Value });
+            }
+        }
+        foreach (var invitee in invitees.Where(item => item.SeriesDeclinedUtc is not null))
+        {
+            foreach (var occurrence in occurrences.Where(item => item.EventId == invitee.EventId && item.EndUtc > invitee.SeriesDeclinedUtc))
+            {
+                if (!responses.Any(item => item.EventId == invitee.EventId && item.UserId == invitee.UserId && item.Date == occurrence.Date))
+                    responses.Add(new EventResponseRecord { EventId = invitee.EventId, UserId = invitee.UserId, Date = occurrence.Date,
+                        Accepted = false, RespondedUtc = invitee.SeriesDeclinedUtc!.Value });
             }
         }
         var deliveries = await context.Set<EventNotificationRecord>().Where(item => ids.Contains(item.EventId)).ToListAsync();
@@ -321,6 +409,8 @@ internal sealed class EventRecord
 internal sealed class EventInviteeRecord
 {
     public long? SeriesAcceptedUtc { get; set; }
+    /// <summary>When the invitee declined every date of a repeating event; future dates count as declined.</summary>
+    public long? SeriesDeclinedUtc { get; set; }
     public Guid EventId { get; set; }
     public required string UserId { get; set; }
 }

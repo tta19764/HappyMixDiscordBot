@@ -19,8 +19,12 @@ public sealed record CreateEventCommand(ulong GuildId, ulong UserId, Guid Reques
 
 public sealed record EventCreated(Guid EventId, int Invited, int Dates, bool AlreadyExisted);
 
-/// <summary>Accepts or declines one date. Declining after accepting is a withdrawal.</summary>
-public sealed record RespondToEventCommand(ulong GuildId, ulong UserId, Guid EventId, DateOnly Date, bool Accept) : ICommand<EventAnswer>;
+/// <summary>
+/// Accepts or declines one date. Declining after accepting is a withdrawal. With <paramref name="Series"/> on a repeating
+/// event the answer covers every remaining date; <paramref name="Date"/> then only picks the date the reply describes.
+/// </summary>
+public sealed record RespondToEventCommand(ulong GuildId, ulong UserId, Guid EventId, DateOnly Date, bool Accept, bool Series = false)
+    : ICommand<EventAnswer>;
 
 public sealed record EventAnswer(string Title, DateTimeOffset Start, string TimeZone, OccurrenceStatus Status, bool Accepted, bool Withdrawn, bool Changed);
 
@@ -63,6 +67,11 @@ public static class EventRules
     public const int DescriptionLength = 1000;
     /// <summary>Invitations go out this long before each date, so a long series doesn't send everything at once.</summary>
     public static readonly TimeSpan InviteLead = TimeSpan.FromDays(3);
+    /// <summary>
+    /// Canceled events and dates are erased this long after cancellation (and once their cancellation messages are out),
+    /// leaving time for Discord DMs and channel updates.
+    /// </summary>
+    public static readonly TimeSpan CanceledRetention = TimeSpan.FromMinutes(15);
 
     public static EventCounts Count(EventDetails details, DateOnly date)
     {
@@ -168,6 +177,19 @@ internal sealed class EventHandlers(IEventStore store, IGuildGroupStore groups, 
         var (details, viewer) = await LoadAsync(command.GuildId, command.UserId, command.EventId);
         if (!details.Invitees.Contains(viewer))
             throw new EventRuleException("You aren't invited to this event.");
+        if (command.Series && details.Event.Recurrence != EventRecurrence.Once)
+        {
+            if (details.Event.CanceledAt is not null)
+                throw new EventRuleException("This event was canceled.");
+            var open = details.Occurrences.Where(item => item.Status != OccurrenceStatus.Canceled && item.End > clock.UtcNow).ToArray();
+            if (open.Length == 0)
+                throw new EventRuleException("This event has no dates left.");
+            var shown = open.FirstOrDefault(item => item.Date == command.Date) ?? open[0];
+            var series = await store.RespondSeriesAsync(command.EventId, viewer, command.Accept, clock.UtcNow)
+                ?? throw new EventRuleException("You aren't invited to this event.");
+            return new EventAnswer(details.Event.Title, shown.Start, details.Event.TimeZone, shown.Status, series.Accepted,
+                series.Withdrawn, series.PreviouslyAccepted != series.Accepted);
+        }
         var occurrence = Occurrence(details, command.Date);
         if (occurrence.Status == OccurrenceStatus.Canceled)
             throw new EventRuleException("This date was canceled.");
@@ -303,6 +325,8 @@ internal sealed class EventHandlers(IEventStore store, IGuildGroupStore groups, 
                     break;
             }
         }
+        // Canceled events and dates are erased, not kept as history, once their cancellation messages are out.
+        await store.PurgeCanceledAsync(now - EventRules.CanceledRetention);
         return Result.Success(sent);
     }
 

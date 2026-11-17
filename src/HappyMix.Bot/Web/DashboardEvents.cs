@@ -156,9 +156,12 @@ public sealed partial class DashboardController
     }
 
     [HttpPost("/events/{guildId}/{eventId:guid}/respond")]
-    public Task<IActionResult> RespondToEvent(ulong guildId, Guid eventId, string date, string answer) =>
-        RunEventActionAsync(guildId, eventId, date, (userId, day) => sender.Send(new RespondToEventCommand(guildId, userId, eventId, day, answer == "accept")),
-            value => (value.Accepted ? text["You_re_going"] : value.Withdrawn ? text["You_withdrew"] : text["You_declined"]).Value,
+    public Task<IActionResult> RespondToEvent(ulong guildId, Guid eventId, string date, string answer, string? scope) =>
+        RunEventActionAsync(guildId, eventId, date, (userId, day) => sender.Send(new RespondToEventCommand(guildId, userId, eventId, day,
+                answer == "accept", scope == "series")),
+            value => (scope == "series"
+                ? value.Accepted ? text["Events_JoinedAll"] : value.Withdrawn ? text["Events_LeftAll"] : text["Events_DeclinedAll"]
+                : value.Accepted ? text["You_re_going"] : value.Withdrawn ? text["You_withdrew"] : text["You_declined"]).Value,
             value => value.Withdrawn ? text["The_organizer_can_see_that_you_can_t_make_it"].Value : null);
 
     [HttpPost("/events/{guildId}/{eventId:guid}/confirm")]
