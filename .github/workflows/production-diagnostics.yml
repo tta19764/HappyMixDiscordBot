@@ -1,0 +1,42 @@
+name: Production diagnostics (manual)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      SSH_HOST: ${{ secrets.ORACLE_SSH_HOST }}
+      SSH_USER: ${{ secrets.ORACLE_SSH_USER }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: tailscale/github-action@6cae46e2d796f265265cfcf628b72a32b4d7cade # v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:happymix-ci
+      - name: Configure verified SSH access
+        env:
+          PRIVATE_KEY: ${{ secrets.ORACLE_SSH_PRIVATE_KEY }}
+          KNOWN_HOSTS: ${{ secrets.ORACLE_SSH_KNOWN_HOSTS }}
+        run: |
+          test -n "$SSH_HOST" && test -n "$SSH_USER"
+          [[ "$SSH_HOST" =~ ^[a-zA-Z0-9.:-]+$ ]] && [[ "$SSH_USER" =~ ^[a-zA-Z0-9_-]+$ ]]
+          test -n "$PRIVATE_KEY" && test -n "$KNOWN_HOSTS"
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$PRIVATE_KEY" | tr -d '\r' > ~/.ssh/happymix
+          printf '%s\n' "$KNOWN_HOSTS" | tr -d '\r' > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/happymix ~/.ssh/known_hosts
+          printf 'Host happymix-production\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/happymix\n  IdentitiesOnly yes\n  BatchMode yes\n  StrictHostKeyChecking yes\n  ConnectTimeout 20\n' "$SSH_HOST" "$SSH_USER" > ~/.ssh/config
+      - name: Verify deployment SSH connectivity
+        run: ssh happymix-production true
+      - name: Read sanitized container status and recent logs
+        run: ssh happymix-production python3 - < deploy/diagnose.py
+      - name: Remove local SSH material
+        if: always()
+        run: rm -f ~/.ssh/happymix ~/.ssh/known_hosts ~/.ssh/config

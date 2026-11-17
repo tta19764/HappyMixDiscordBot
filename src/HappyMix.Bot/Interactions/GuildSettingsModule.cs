@@ -35,7 +35,7 @@ public sealed class GuildSettingsModule(ISender sender, IOptions<PandaScoreOptio
 
     [SlashCommand("broadcasts", "Configure automatic match stream discovery and notification language.")]
     public async Task BroadcastsAsync(Esport game, bool enabled,
-        [Choice("English", "en"), Choice("Óêðà¿íñüêà", "uk"), Choice("Ðóññêèé", "ru")] string language = "en",
+        [Choice("English", "en"), Choice("Ð£ÐºÑ€Ð°Ñ—Ð½ÑÑŒÐºÐ°", "uk"), Choice("Ð ÑƒÑÑÐºÐ¸Ð¹", "ru")] string language = "en",
         string languages = "", string countries = "", string tags = "", string priority = "language,country,tags,viewers")
     {
         var discovery = new StreamDiscoveryPreferences(enabled, languages, countries, tags, priority);
