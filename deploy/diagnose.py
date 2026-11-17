@@ -1,5 +1,6 @@
 """Read-only Docker diagnostics. Never print container environment or runtime configuration."""
 import json
+import re
 import subprocess
 from urllib.parse import quote
 
@@ -16,6 +17,17 @@ def redact(text, environment):
     return text
 
 
+def select_logs(text):
+    lines = text.splitlines()
+    selected = set()
+    for index, line in enumerate(lines):
+        if re.search(r"warn:|fail:|exception|invalid|error|Connected to Discord|Gateway:|Ready", line, re.IGNORECASE):
+            selected.update(range(max(0, index - 1), min(len(lines), index + 6)))
+    indices = sorted(selected)[:160]
+    indices = sorted(set(indices).union(range(max(0, len(lines) - 40), len(lines))))
+    return "\n".join(lines[index] for index in indices)
+
+
 def main():
     ids = subprocess.check_output(["docker", "ps", "-aq", "--filter", "label=com.docker.compose.project=happymix",
                                    "--filter", "label=com.docker.compose.service=bot"], text=True).split()
@@ -29,10 +41,10 @@ def main():
         summary = {"container": container, "image": metadata.get("Config", {}).get("Image"),
                    "status": state.get("Status"), "exit_code": state.get("ExitCode"),
                    "oom_killed": state.get("OOMKilled"), "restart_count": metadata.get("RestartCount")}
-        print(redact(json.dumps(summary), environment))
-        logs = subprocess.run(["docker", "logs", "--tail", "200", container], text=True,
+        print(json.dumps(summary))
+        logs = subprocess.run(["docker", "logs", "--tail", "5000", container], text=True,
                               stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False).stdout
-        print(redact(logs, environment))
+        print(redact(select_logs(logs), environment))
 
 
 if __name__ == "__main__":
