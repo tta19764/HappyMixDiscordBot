@@ -90,7 +90,21 @@ public sealed record SettingsPage(
     GameDefaults CounterStrike,
     GameDefaults Dota,
     BannerModel? Banner,
-    HappyMix.Application.Abstractions.Esports.EsportsTeam[] KnownTeams);
+    HappyMix.Application.Abstractions.Esports.EsportsTeam[] KnownTeams)
+{
+    public CommunityView Community { get; init; } = new("English", "", "", "");
+    /// <summary>Where match posts go with the values on the page, one entry per channel.</summary>
+    public RouteSummary[] Routes { get; init; } = [];
+}
+
+/// <summary>The deployment's community defaults, as shown next to "use community preferences".</summary>
+public sealed record CommunityView(string Language, string StreamLanguages, string StreamCountries, string StreamTags);
+
+/// <summary>One announcement channel, the games that post there, and anything worth fixing about it.</summary>
+public sealed record RouteSummary(string Channel, RouteGame[] Games, string[] Warnings, RouteFix[] Fixes);
+public sealed record RouteGame(string Name, string Section, string Language);
+/// <summary>A one-click fix: tick <see cref="CheckboxId"/> to give <see cref="Game"/> its own channel.</summary>
+public sealed record RouteFix(string Game, string CheckboxId);
 
 /// <summary>What a game inherits: summaries for display, and the lines a "Custom" list starts from.</summary>
 public sealed record GameDefaults(string Teams, string Twitch, string Catalog, string[] TeamLines, string[] TwitchLines);

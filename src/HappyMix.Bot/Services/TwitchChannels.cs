@@ -23,7 +23,7 @@ internal static class TwitchChannels
             : null;
     }
 
-    internal static string Format(EsportsMatch match, IReadOnlyList<string> preferredChannels)
+    internal static string Format(EsportsMatch match, IReadOnlyList<string> preferredChannels, string language = "en")
     {
         var channels = preferredChannels.Select(GetHandle).OfType<string>()
             .Distinct(StringComparer.Ordinal).ToArray();
@@ -33,7 +33,7 @@ internal static class TwitchChannels
         var matchChannels = (match.StreamUrls ?? []).Select(GetHandle).OfType<string>()
             .ToHashSet(StringComparer.Ordinal);
         var matching = channels.Where(matchChannels.Contains).ToArray();
-        string label = matching.Length > 0 ? "Watch" : "Twitch channels";
+        string label = NotificationText.Get(language, matching.Length > 0 ? "Notify_Watch" : "Notify_TwitchChannels");
         var links = (matching.Length > 0 ? matching : channels)
             .Select(handle => $"[{handle}](https://www.twitch.tv/{handle})");
         return $"\n{label}: {string.Join(" · ", links)}";

@@ -22,7 +22,8 @@ namespace HappyMix.Bot.Web;
 public sealed partial class DashboardController(ISender sender, DiscordSocketClient discord,
     IOptions<PandaScoreOptions> options, IOptions<DiscordOptions> discordOptions, IClock clock,
     HappyMix.Bot.Services.IMemberDirectory memberDirectory,
-    Microsoft.Extensions.Localization.IStringLocalizer<DashboardResources> text)
+    Microsoft.Extensions.Localization.IStringLocalizer<DashboardResources> text,
+    IOptions<HappyMix.Application.Abstractions.Guilds.CommunityDefaults> community)
     : Controller
 {
     private const string LastServerCookie = "hm_last_server";

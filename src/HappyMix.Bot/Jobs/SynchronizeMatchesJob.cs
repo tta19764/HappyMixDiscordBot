@@ -99,15 +99,10 @@ internal sealed partial class SynchronizeMatchesJob(
         LogSynchronizationCompleted(logger);
     }
 
-    internal static IReadOnlyList<IGrouping<ulong, Esport>> GetRoutes(GuildSettings settings)
-    {
-        var routes = new[]
-        {
-            (Game: Esport.CounterStrike2, Channel: settings.Preferences?.CounterStrikeChannelId ?? settings.ChannelId),
-            (Game: Esport.Dota2, Channel: settings.Preferences?.Dota2ChannelId ?? settings.ChannelId)
-        };
-        return routes.Where(route => route.Channel != 0).GroupBy(route => route.Channel, route => route.Game).ToArray();
-    }
+    internal static IReadOnlyList<IGrouping<ulong, Esport>> GetRoutes(GuildSettings settings) =>
+        (settings.Preferences ?? GuildEsportsPreferences.Default).Routes(settings.ChannelId)
+            .SelectMany(route => route.Games.Select(game => (route.ChannelId, Game: game)))
+            .GroupBy(route => route.ChannelId, route => route.Game).ToArray();
 
     [LoggerMessage(
         EventId = 4,

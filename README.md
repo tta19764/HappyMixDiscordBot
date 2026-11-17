@@ -337,6 +337,14 @@ branches, release-note files and the release process.
 
 API references: [Steam news pagination](https://partner.steamgames.com/doc/webapi/ISteamNews), [Twitch stream metadata](https://dev.twitch.tv/docs/api/reference/streams).
 
+### v0.0.4 quality-of-life updates
+
+- **Community defaults.** `CommunityDefaults` in configuration sets the starting language and Twitch preferences for servers that haven't chosen their own. The built-in values target Ukrainian users: notifications in Ukrainian, stream language `uk`, country tags `Ukraine,UA,Україна` and tags `Ukrainian,Українська,УкраїнськоюМовою`. Saved choices are never replaced; settings saved by v0.0.2/v0.0.3 keep their explicit language.
+- **Match posts per channel.** Titles, footers, schedule labels and stream lines now use each game's language, so a shared channel never mixes English headings into Ukrainian posts. An empty day posts one note per language, naming only the games routed to that channel. Discovered broadcasts now appear on their own line (the v0.0.2 discovery setting was saved but not yet used in posts).
+- **Settings page.** "Where match posts go" lists each channel with its games and languages, warns about mixed languages or a channel named for the other game (for example `#cs2-tournaments` receiving Dota 2), and offers a one-click own channel. Language can follow the community default; live broadcast options open only when enabled, can follow the community lists, and ranking criteria are ticked and ordered instead of typed.
+- **Optional command options.** `/settings broadcasts` and `/notify set` change only the options supplied. In list options `-` clears a list and `default` returns to the community lists; `/settings broadcasts` with only a game shows the current values. `/notify` targets come from autocomplete instead of pasted IDs.
+- **Group and event channels.** Notification pages show where settings come from (own, group, not set up) with a message preview. Routes gain a per-route reminder lead time and an opt-in for updates when events are scheduled, dates are confirmed or canceled, or a series is canceled (changes from the last six hours only, each posted once). Created channels are named after the group or event, reminders show the start time, attendee count and a dashboard link, and footers carry a short reference instead of the internal delivery key. Migration `20261123000100_AddNotificationRouteOptions` adds the columns; existing routes stay reminder-only.
+
 ### CI runs and deployment diagnostics
 
 Pull requests targeting main run validation. New PR commits cancel older in-progress checks. Main pushes do not repeat those checks; version tags run validation plus image publication and deployment. Completed checks for earlier PR commits remain in history because they validated different code.

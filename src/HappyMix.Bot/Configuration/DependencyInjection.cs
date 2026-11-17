@@ -1,3 +1,4 @@
+using HappyMix.Application.Abstractions.Guilds;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
@@ -44,6 +45,13 @@ public static class DependencyInjection
             .Bind(configuration.GetSection(DiscordOptions.SectionName))
             .Validate(options => options.MaxFollowedTeamsPerGame > 0 && options.MaxTwitchChannelsPerGame > 0,
                 "Discord subscription limits must be positive.")
+            .ValidateOnStart();
+
+        // Starting values for servers that haven't chosen their own language or broadcast preferences.
+        services.AddOptions<CommunityDefaults>()
+            .Bind(configuration.GetSection("CommunityDefaults"))
+            .Validate(options => CommunityDefaults.Normalize(options.Language) is not null && options.Discovery().IsValid,
+                "CommunityDefaults needs Language en, uk or ru and valid stream preference lists.")
             .ValidateOnStart();
 
         // Guilds is the minimum gateway intent required by the current slash-command-only bot.

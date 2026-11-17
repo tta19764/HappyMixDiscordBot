@@ -1406,3 +1406,70 @@ form:has([data-repeat-toggle]:not(:checked)) [data-repeat-through] { display: no
 .hm-dayline--events .hm-dayline__seg--short > span { position: absolute; left: calc(100% + 4px); top: 50%; transform: translateY(-50%); max-width: 12rem; padding: 1px 6px;
     border-radius: 4px; background: var(--hm-event-tint); color: var(--hm-text); box-shadow: inset 0 0 0 1px var(--hm-event); }
 .hm-dayline--events .hm-dayline__seg--short.hm-dayline__seg--late > span { left: auto; right: calc(100% + 4px); }
+
+/* ---------- 31. Settings: announcement routes, live broadcasts, ranking ---------- */
+.hm-tag { display: inline-flex; align-items: center; gap: var(--hm-space-1); padding: 2px 8px; border-radius: var(--hm-radius-pill);
+    background: var(--hm-brand-tint); color: var(--hm-text); font-size: var(--hm-fs-xs); font-weight: 700; text-decoration: none; white-space: nowrap; }
+.hm-tag small { color: var(--hm-text-subtle); font-weight: 600; }
+.hm-tag small::before { content: "· "; }
+.hm-tag--cs2 { background: color-mix(in srgb, var(--hm-amber, #f59e0b) 22%, transparent); }
+.hm-tag--dota2 { background: color-mix(in srgb, var(--hm-danger) 20%, transparent); }
+.hm-routes { display: grid; gap: var(--hm-space-3); }
+.hm-routes h2 { display: flex; align-items: center; gap: var(--hm-space-2); margin: 0; font-size: var(--hm-fs-lg); }
+.hm-routes__list { display: grid; gap: var(--hm-space-2); margin: 0; padding: 0; list-style: none; }
+.hm-routes__item { display: flex; flex-wrap: wrap; align-items: center; gap: var(--hm-space-2) var(--hm-space-3); padding: var(--hm-space-3);
+    border: 1px solid var(--hm-border); border-left: 4px solid var(--hm-mint); border-radius: var(--hm-radius-md); background: var(--hm-surface-2); }
+.hm-routes__item--warn { border-left-color: var(--hm-warn, #f59e0b); }
+.hm-routes__channel { font-weight: 800; }
+.hm-routes__games { display: flex; flex-wrap: wrap; gap: var(--hm-space-1); }
+.hm-routes__warning { display: flex; gap: var(--hm-space-2); align-items: flex-start; flex-basis: 100%; margin: 0; color: var(--hm-text-muted, var(--hm-text)); font-size: var(--hm-fs-sm); }
+.hm-routes__warning svg { flex: none; color: var(--hm-warn, #f59e0b); }
+.hm-routes__fixes { display: flex; flex-wrap: wrap; gap: var(--hm-space-2); flex-basis: 100%; }
+
+.hm-streams { display: grid; gap: var(--hm-space-3); border: 1px solid var(--hm-border); border-radius: var(--hm-radius-md); padding: var(--hm-space-4); margin: 0; }
+.hm-streams legend { padding: 0 var(--hm-space-2); }
+.hm-streams:has([data-streams-toggle]:not(:checked)) [data-streams-body] { display: none; }
+.hm-streams__body { display: grid; gap: var(--hm-space-3); }
+.hm-streams__summary { display: grid; gap: var(--hm-space-2); margin: 0; }
+.hm-streams__summary > div { display: flex; flex-wrap: wrap; gap: var(--hm-space-2); align-items: center; }
+.hm-streams__summary dt { min-width: 9rem; color: var(--hm-text-subtle); font-size: var(--hm-fs-sm); }
+.hm-streams__summary dd { display: flex; flex-wrap: wrap; gap: var(--hm-space-1); margin: 0; }
+.hm-streams__lists { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: var(--hm-space-3); }
+.hm-mode-field:has(input[value="custom"]:checked) .hm-streams__lists { display: grid; }
+.hm-streams__lists > .hm-btn { justify-self: start; align-self: end; }
+.hm-priority__list { display: grid; gap: var(--hm-space-1); margin: 0; padding: 0; list-style: none; counter-reset: rank; }
+.hm-priority__item { display: flex; align-items: center; justify-content: space-between; gap: var(--hm-space-2); padding: var(--hm-space-1) var(--hm-space-2);
+    border: 1px solid var(--hm-border); border-radius: var(--hm-radius-md); background: var(--hm-surface); counter-increment: rank; }
+.hm-priority__item:has(input:not(:checked)) { opacity: .6; counter-increment: none; }
+.hm-priority__item:has(input:checked) .hm-check > span::before { content: counter(rank) ". "; color: var(--hm-brand); font-weight: 800; }
+.hm-priority__moves { display: flex; gap: 2px; }
+.hm-priority__item:first-child [data-move="-1"], .hm-priority__item:last-child [data-move="1"] { visibility: hidden; }
+.hm-field.is-creating select, .hm-field.is-creating .hm-picker { opacity: .5; }
+@media (max-width: 640px) {
+    .hm-streams__summary dt { min-width: 0; flex-basis: 100%; }
+}
+
+/* Group/event channel notifications */
+.hm-notify { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(16rem, 1fr); gap: var(--hm-space-5); align-items: start; }
+.hm-notify__form { gap: var(--hm-space-5); }
+.hm-notify__row { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
+.hm-notify__source { border: 0; padding: 0; margin: 0; }
+.hm-notify__form:has([data-notify-inherit]:checked) [data-notify-own] { display: none; }
+.hm-notify__state { align-self: center; }
+.hm-notify__state--on { background: color-mix(in srgb, var(--hm-mint) 25%, transparent); }
+.hm-page-head h1 { display: flex; align-items: center; gap: var(--hm-space-2); }
+.hm-notify__preview { position: sticky; top: var(--hm-space-5); display: grid; gap: var(--hm-space-3); }
+.hm-notify__preview h2 { margin: 0; font-size: var(--hm-fs-lg); }
+.hm-discord { display: grid; gap: var(--hm-space-2); padding: var(--hm-space-3); border-radius: var(--hm-radius-md); background: #313338; color: #dbdee1; font-size: var(--hm-fs-sm); }
+.hm-discord__mention { justify-self: start; padding: 0 4px; border-radius: 3px; background: rgba(88, 101, 242, .3); color: #c9cdfb; font-weight: 600; }
+.hm-discord__embed { display: grid; gap: var(--hm-space-1); padding: var(--hm-space-3); border-left: 4px solid #e67e22; border-radius: 4px; background: #2b2d31; }
+.hm-discord__embed b { color: #f2f3f5; }
+.hm-discord__embed p { margin: 0; }
+.hm-discord__field span { display: block; color: #f2f3f5; font-weight: 700; font-size: var(--hm-fs-xs); }
+.hm-discord__embed small { color: #949ba4; font-size: var(--hm-fs-xs); }
+.hm-check--switch { padding: var(--hm-space-3); border: 1px solid var(--hm-border); border-radius: var(--hm-radius-md); background: var(--hm-surface-2); }
+.hm-check--switch:has(input:checked) { border-color: var(--hm-brand); background: var(--hm-brand-tint); }
+@media (max-width: 900px) {
+    .hm-notify { grid-template-columns: 1fr; }
+    .hm-notify__preview { position: static; }
+}

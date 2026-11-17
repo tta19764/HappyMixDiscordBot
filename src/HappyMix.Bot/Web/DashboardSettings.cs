@@ -39,13 +39,28 @@ public sealed class GameSettingsForm
 
     public ulong? Channel { get; set; }
     public bool CreateChannel { get; set; }
-    [RegularExpression("en|uk|ru")] public string Language { get; set; } = "en";
+    /// <summary>en, uk or ru; empty follows the community default language.</summary>
+    [RegularExpression("^(en|uk|ru)?$")] public string? Language { get; set; }
     public bool DiscoverStreams { get; set; }
-    [StringLength(200)] public string StreamLanguages { get; set; } = "";
-    [StringLength(200)] public string StreamCountries { get; set; } = "";
-    [StringLength(200)] public string StreamTags { get; set; } = "";
-    [StringLength(100)] public string StreamPriority { get; set; } = "language,country,tags,viewers";
-    public StreamDiscoveryPreferences Discovery() => new(DiscoverStreams, StreamLanguages ?? "", StreamCountries ?? "", StreamTags ?? "", StreamPriority ?? "");
+    /// <summary><see cref="Inherit"/> uses the community language, country and tag lists; <see cref="Custom"/> the fields below.</summary>
+    public string StreamListsMode { get; set; } = Inherit;
+    [StringLength(200)] public string? StreamLanguages { get; set; }
+    [StringLength(200)] public string? StreamCountries { get; set; }
+    [StringLength(200)] public string? StreamTags { get; set; }
+    [StringLength(100)] public string? StreamPriority { get; set; } = StreamDiscoveryPreferences.DefaultPriority;
+
+    /// <summary>
+    /// The discovery settings to save. Untouched defaults stay unsaved (null), so the server keeps following the
+    /// community preferences; anything the admin changed is saved as given.
+    /// </summary>
+    public StreamDiscoveryPreferences? Discovery()
+    {
+        string priority = StreamDiscoveryPreferences.NormalizeList(StreamPriority, true);
+        if (StreamListsMode != Custom)
+            return !DiscoverStreams && priority == StreamDiscoveryPreferences.DefaultPriority ? null
+                : new StreamDiscoveryPreferences(DiscoverStreams, Priority: priority, CommunityLists: true);
+        return new StreamDiscoveryPreferences(DiscoverStreams, StreamLanguages ?? "", StreamCountries ?? "", StreamTags ?? "", priority).Normalize();
+    }
     public ulong? PingRole { get; set; }
     public string TeamsMode { get; set; } = Inherit;
     /// <summary>One team per line: a name, or "Name #123" where the number is the team's ID.</summary>
@@ -142,8 +157,15 @@ public sealed partial class DashboardController
         var cs = await ParseGameAsync(form.Cs, "Cs", Esport.CounterStrike2, options.Value.CounterStrikeTeamAliases);
         var dota = await ParseGameAsync(form.Dota, "Dota", Esport.Dota2, options.Value.Dota2TeamAliases);
         foreach (var (key, gameForm) in new[] { ("Cs", form.Cs), ("Dota", form.Dota) })
-            if (!gameForm.Discovery().IsValid)
+        {
+            var discovery = gameForm.Discovery();
+            if (discovery is null || discovery.IsValid)
+                continue;
+            if (!new StreamDiscoveryPreferences(Priority: discovery.Priority).IsValid)
                 ModelState.AddModelError(key + ".StreamPriority", text["Streams_PriorityHelp"]);
+            else
+                ModelState.AddModelError(key + ".StreamTags", text["Streams_ListHelp", StreamDiscoveryPreferences.MaxItems]);
+        }
         if (!ModelState.IsValid || zone is null)
             return await SettingsViewAsync(guild, form, null);
 
@@ -162,7 +184,9 @@ public sealed partial class DashboardController
             (form.Maps ? EsportsNotifications.Maps : 0) | (form.Results ? EsportsNotifications.Results : 0);
         var preferences = new GuildEsportsPreferences(cs.Teams, dota.Teams, notifications, form.ReminderMinutes,
             form.OrganizerRoles.Distinct().ToArray(), form.Cs.PingRole, form.Dota.PingRole, cs.Catalog, dota.Catalog,
-            cs.Twitch, dota.Twitch, form.Cs.Channel, form.Dota.Channel, form.MatchStarts, form.Cs.Language, form.Dota.Language, form.Cs.Discovery(), form.Dota.Discovery());
+            cs.Twitch, dota.Twitch, form.Cs.Channel, form.Dota.Channel, form.MatchStarts,
+            CommunityDefaults.Normalize(form.Cs.Language), CommunityDefaults.Normalize(form.Dota.Language),
+            form.Cs.Discovery(), form.Dota.Discovery());
 
         var result = await sender.Send(new UpdateGuildSettingsCommand(guildId, options.Value.TimeZoneId,
             saved => saved with { ChannelId = form.ChannelId, TimeZoneId = zone.Id, Preferences = preferences }),
@@ -176,15 +200,65 @@ public sealed partial class DashboardController
         return RedirectToAction(nameof(Settings), new { guildId });
     }
 
-    private static void ApplyDiscovery(GameSettingsForm form, string language, StreamDiscoveryPreferences? discovery)
+    private void ApplyDiscovery(GameSettingsForm form, string? language, StreamDiscoveryPreferences? discovery)
     {
-        form.Language = language;
-        discovery ??= new();
-        form.DiscoverStreams = discovery.Enabled;
-        form.StreamLanguages = discovery.Languages;
-        form.StreamCountries = discovery.Countries;
-        form.StreamTags = discovery.Tags;
-        form.StreamPriority = discovery.Priority;
+        form.Language = CommunityDefaults.Normalize(language) ?? "";
+        form.DiscoverStreams = discovery?.Enabled == true;
+        form.StreamPriority = discovery?.Priority ?? StreamDiscoveryPreferences.DefaultPriority;
+        bool custom = discovery is { CommunityLists: false };
+        form.StreamListsMode = custom ? GameSettingsForm.Custom : GameSettingsForm.Inherit;
+        // Custom lists start from the community values, so switching to Custom only needs the changes.
+        var lists = custom ? discovery! : community.Value.Discovery();
+        form.StreamLanguages = lists.Languages;
+        form.StreamCountries = lists.Countries;
+        form.StreamTags = lists.Tags;
+    }
+
+    internal static string LanguageName(string code) => code switch { "uk" => "Українська", "ru" => "Русский", _ => "English" };
+
+    /// <summary>The game a channel name points at ("cs2-tournaments" → CS2), or null when it names neither or both.</summary>
+    internal static Esport? GameNamed(string channelName)
+    {
+        string name = channelName.TrimStart('#').ToLowerInvariant();
+        bool dota = name.Contains("dota", StringComparison.Ordinal);
+        bool cs = System.Text.RegularExpressions.Regex.IsMatch(name, @"(^|[^a-z])(cs|cs2|csgo)([^a-z]|$)|counter",
+            System.Text.RegularExpressions.RegexOptions.None, TimeSpan.FromMilliseconds(50));
+        return dota == cs ? null : dota ? Esport.Dota2 : Esport.CounterStrike2;
+    }
+
+    /// <summary>Where each game's match posts go with the values in <paramref name="form"/>, with warnings for shared channels.</summary>
+    private RouteSummary[] SummarizeRoutes(ServerSettingsForm form, SelectListItem[] channels, string deployment)
+    {
+        string Language(GameSettingsForm game) => CommunityDefaults.Normalize(game.Language) ?? community.Value.LanguageCode;
+        string ChannelName(ulong id) => id == 0 ? deployment
+            : channels.FirstOrDefault(item => item.Value == id.ToString(CultureInfo.InvariantCulture))?.Text ?? text["A_channel_HappyMix_can_t_post_in"];
+        var games = new[]
+        {
+            (Game: Esport.CounterStrike2, Form: form.Cs, Section: "cs2", Prefix: "Cs"),
+            (Game: Esport.Dota2, Form: form.Dota, Section: "dota2", Prefix: "Dota")
+        };
+        return games
+            .Select(game => (game.Game, game.Section, game.Prefix, Language: Language(game.Form),
+                Key: game.Form.CreateChannel ? "new:" + game.Section : (game.Form.Channel ?? form.ChannelId).ToString(CultureInfo.InvariantCulture),
+                Name: game.Form.CreateChannel ? "#" + (game.Game == Esport.CounterStrike2 ? "cs2" : "dota2") + "-announcements"
+                    : ChannelName(game.Form.Channel ?? form.ChannelId),
+                Own: game.Form.Channel is not null || game.Form.CreateChannel))
+            .GroupBy(item => item.Key)
+            .Select(group =>
+            {
+                var items = group.ToArray();
+                var warnings = new List<string>();
+                if (items.Select(item => item.Language).Distinct().Count() > 1)
+                    warnings.Add(text["Routes_MixedLanguages"]);
+                if (GameNamed(items[0].Name) is { } named)
+                    foreach (var item in items.Where(item => item.Game != named))
+                        warnings.Add(text["Routes_NamedForOtherGame", items[0].Name, named.DisplayName(), item.Game.DisplayName()]);
+                var fixes = warnings.Count == 0 ? [] : items.Where(item => !item.Own)
+                    .Select(item => new RouteFix(item.Game.DisplayName(), item.Prefix + "_CreateChannel")).ToArray();
+                return new RouteSummary(items[0].Name,
+                    items.Select(item => new RouteGame(item.Game.DisplayName(), item.Section, LanguageName(item.Language))).ToArray(),
+                    warnings.ToArray(), fixes);
+            }).ToArray();
     }
 
     private async Task<ViewResult> SettingsViewAsync(SocketGuild guild, ServerSettingsForm form, BannerModel? banner)
@@ -210,10 +284,15 @@ public sealed partial class DashboardController
         var typed = new[] { form.Cs.Teams, form.Dota.Teams }.SelectMany(Lines)
             .Select(line => TeamText.TryGetId(line, out long id) ? id : 0).Where(id => id > 0);
         var known = await GetTeamNamesAsync([.. csDefaults, .. dotaDefaults, .. typed]);
+        var shared = community.Value.Discovery();
         ViewData["Settings"] = new SettingsPage(guild.Id, guild.Name, channels, roles, deployment, server,
             GetGameDefaults(csDefaults, options.Value.CounterStrikeTeamAliases, discordOptions.Value.CounterStrikeTwitchChannels, known),
             GetGameDefaults(dotaDefaults, options.Value.Dota2TeamAliases, discordOptions.Value.Dota2TwitchChannels, known),
-            banner, known.Values.ToArray());
+            banner, known.Values.ToArray())
+        {
+            Community = new CommunityView(LanguageName(community.Value.LanguageCode), shared.Languages, shared.Countries, shared.Tags),
+            Routes = SummarizeRoutes(form, channels, deployment)
+        };
         return View("Settings", form);
     }
 
