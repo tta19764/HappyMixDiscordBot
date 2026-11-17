@@ -21,7 +21,7 @@ def select_logs(text):
     lines = text.splitlines()
     selected = set()
     for index, line in enumerate(lines):
-        if re.search(r"warn:|fail:|exception|invalid|error|Connected to Discord|Gateway:|Ready", line, re.IGNORECASE):
+        if re.search(r"warn:|fail:|exception|Invalid Form Body|BASE_TYPE_|Connected to Discord|Gateway:|Ready handler", line, re.IGNORECASE):
             selected.update(range(max(0, index - 1), min(len(lines), index + 6)))
     indices = sorted(selected)[:160]
     indices = sorted(set(indices).union(range(max(0, len(lines) - 40), len(lines))))

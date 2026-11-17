@@ -77,3 +77,6 @@ bot.env
 
 !src/HappyMix.Bot/Releases/
 !src/HappyMix.Bot/Releases/*.json
+
+# Python validation helpers
+__pycache__/
