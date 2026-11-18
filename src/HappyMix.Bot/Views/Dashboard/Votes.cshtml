@@ -1,0 +1,13 @@
+@model VotesPage
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = T["Polls_Title"];
+    var nav = new ServerNavModel(Model.GuildId, Model.GuildName, "votes", Model.CanConfigure, "Polls_Title", T["Polls_PageLead"]);
+    string? saved = TempData["GroupBannerTitle"] as string;
+}
+<partial name="_ServerNav" model="nav" />
+@if (saved is not null)
+{
+    <div style="margin-bottom: var(--hm-space-4)"><partial name="_Banner" model="@(new BannerModel("success", saved, null))" /></div>
+}
+<partial name="_Polls" model="Model.Polls" />

@@ -37,6 +37,7 @@ public static class DependencyInjection
         services.AddSingleton<IGuildGroupStore, SqliteGuildGroupStore>();
         services.AddSingleton<IAvailabilityStore, SqliteAvailabilityStore>();
         services.AddSingleton<IAccountLinkStore, SqliteAccountLinkStore>();
+        services.AddSingleton<HappyMix.Application.Abstractions.Polls.IPollStore, SqlitePollStore>();
         services.AddSingleton<HappyMix.Application.Abstractions.Events.IEventStore, SqliteEventStore>();
         services.AddSingleton<IMatchAnnouncementStateFactory, SqliteMatchAnnouncementStateFactory>();
         services.AddOptions<StorageOptions>()

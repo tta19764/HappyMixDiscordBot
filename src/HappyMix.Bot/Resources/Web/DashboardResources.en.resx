@@ -2142,4 +2142,99 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Events_CanceledErased" xml:space="preserve"><value>Canceled events and dates are erased a few minutes after cancellation.</value></data>
 <data name="Events_NoDatesLeft" xml:space="preserve"><value>This event has no dates left.</value></data>
 <data name="Events_WasCanceled" xml:space="preserve"><value>This event was canceled.</value></data>
+<data name="Group_settings" xml:space="preserve"><value>Settings</value></data>
+<data name="Group_settings_help" xml:space="preserve"><value>Only the organizer, moderators and administrators see this section.</value></data>
+<data name="Group_notifications_off_help" xml:space="preserve"><value>Reminders and updates for this group’s events aren’t posted to a channel yet. Events can still have their own.</value></data>
+<data name="Group_notifications_manage" xml:space="preserve"><value>Change channel notifications</value></data>
+<data name="Arg0_min" xml:space="preserve"><value>{0} min</value></data>
+<data name="Polls_Title" xml:space="preserve"><value>Votes</value></data>
+<data name="Polls_PageLead" xml:space="preserve"><value>Ask the server, or just a few people, what to play or watch next.</value></data>
+<data name="Polls_HelpGroup" xml:space="preserve"><value>Members vote on what to play or watch. Suggestions come from the group’s tags, games and earlier votes.</value></data>
+<data name="Polls_HelpServer" xml:space="preserve"><value>Start a vote for chosen members or the whole server; no group or tags needed. Only the people it’s for see it.</value></data>
+<data name="Polls_AddTags" xml:space="preserve"><value>Add tags</value></data>
+<data name="Polls_EditTags" xml:space="preserve"><value>Edit tags</value></data>
+<data name="Polls_By" xml:space="preserve"><value>by {0}</value></data>
+<data name="Polls_ClosesIn" xml:space="preserve"><value>closes in {0}</value></data>
+<data name="Polls_Span_dh" xml:space="preserve"><value>{0} d {1} h</value></data>
+<data name="Polls_Span_hm" xml:space="preserve"><value>{0} h {1} min</value></data>
+<data name="Polls_Span_m" xml:space="preserve"><value>{0} min</value></data>
+<data name="Polls_Today" xml:space="preserve"><value>today</value></data>
+<data name="Polls_VotedOf" xml:space="preserve"><value>{0} of {1} voted</value></data>
+<data name="Polls_Voted_Count" xml:space="preserve"><value>{0} voted</value></data>
+<data name="Polls_Multiple" xml:space="preserve"><value>several choices</value></data>
+<data name="Polls_OpenLink" xml:space="preserve"><value>Open the link for {0}</value></data>
+<data name="Polls_Vote" xml:space="preserve"><value>Vote</value></data>
+<data name="Polls_ChangeVote" xml:space="preserve"><value>Change my vote</value></data>
+<data name="Polls_ClearVote" xml:space="preserve"><value>Take back my vote</value></data>
+<data name="Polls_EndNow" xml:space="preserve"><value>End voting now</value></data>
+<data name="Polls_Start" xml:space="preserve"><value>Start a vote</value></data>
+<data name="Polls_StartButton" xml:space="preserve"><value>Start the vote</value></data>
+<data name="Polls_Question" xml:space="preserve"><value>Question</value></data>
+<data name="Polls_Question_games" xml:space="preserve"><value>What are we playing?</value></data>
+<data name="Polls_Question_series" xml:space="preserve"><value>Which series are we watching?</value></data>
+<data name="Polls_Question_films" xml:space="preserve"><value>Which film are we watching?</value></data>
+<data name="Polls_Question_anime" xml:space="preserve"><value>Which anime are we watching?</value></data>
+<data name="Polls_Question_watch" xml:space="preserve"><value>What are we watching?</value></data>
+<data name="Polls_Question_mixed" xml:space="preserve"><value>What are we doing next?</value></data>
+<data name="Polls_Question_default" xml:space="preserve"><value>What should we pick?</value></data>
+<data name="Polls_Suggestions" xml:space="preserve"><value>Suggestions</value></data>
+<data name="Polls_SuggestionsHelp" xml:space="preserve"><value>Tap to add or remove. Things nobody picked lately come first.</value></data>
+<data name="Polls_LastPicked" xml:space="preserve"><value>picked {0}</value></data>
+<data name="Polls_FromGroup" xml:space="preserve"><value>group game</value></data>
+<data name="Polls_OfferedBefore" xml:space="preserve"><value>offered {0}×</value></data>
+<data name="Polls_Options" xml:space="preserve"><value>Options</value></data>
+<data name="Polls_OptionN" xml:space="preserve"><value>Option {0}</value></data>
+<data name="Polls_OptionPlaceholder" xml:space="preserve"><value>Title, or a Steam / IMDb / MyAnimeList link</value></data>
+<data name="Polls_AddOption" xml:space="preserve"><value>Add an option</value></data>
+<data name="Polls_OptionsHelp" xml:space="preserve"><value>2 to 10 options. Steam and MyAnimeList links fill in the title; add a title before an IMDb link, like “Arcane https://www.imdb.com/title/tt11126994”.</value></data>
+<data name="Polls_Closes" xml:space="preserve"><value>Voting ends</value></data>
+<data name="Polls_In_1h" xml:space="preserve"><value>in 1 hour</value></data>
+<data name="Polls_In_3h" xml:space="preserve"><value>in 3 hours</value></data>
+<data name="Polls_In_12h" xml:space="preserve"><value>in 12 hours</value></data>
+<data name="Polls_In_1d" xml:space="preserve"><value>in 1 day</value></data>
+<data name="Polls_In_3d" xml:space="preserve"><value>in 3 days</value></data>
+<data name="Polls_In_1w" xml:space="preserve"><value>in 1 week</value></data>
+<data name="Polls_AllowMultiple" xml:space="preserve"><value>Allow several choices</value></data>
+<data name="Polls_AllowMultipleHelp" xml:space="preserve"><value>Each person can tick more than one</value></data>
+<data name="Polls_Who" xml:space="preserve"><value>Who votes</value></data>
+<data name="Polls_WhoChosen" xml:space="preserve"><value>People I choose</value></data>
+<data name="Polls_WhoEveryone" xml:space="preserve"><value>Everyone on the server</value></data>
+<data name="Polls_FindMember" xml:space="preserve"><value>Find a member</value></data>
+<data name="Polls_WhoHelp" xml:space="preserve"><value>You’re included automatically. Pick at least one other person, up to 100.</value></data>
+<data name="Polls_Earlier" xml:space="preserve"><value>Earlier votes ({0})</value></data>
+<data name="Polls_VotesOf" xml:space="preserve"><value>{0} of {1} votes</value></data>
+<data name="Polls_NoVotes" xml:space="preserve"><value>Nobody voted</value></data>
+<data name="Polls_Started" xml:space="preserve"><value>Vote started</value></data>
+<data name="Polls_Voted" xml:space="preserve"><value>Your vote is in</value></data>
+<data name="Polls_VoteRemoved" xml:space="preserve"><value>Your vote was taken back</value></data>
+<data name="Polls_Ended" xml:space="preserve"><value>Voting ended</value></data>
+<data name="Polls_QuestionError" xml:space="preserve"><value>Write a question of up to 120 characters.</value></data>
+<data name="Polls_EmptyOption" xml:space="preserve"><value>An option is empty.</value></data>
+<data name="Polls_LinkNeedsTitle" xml:space="preserve"><value>Add a title before that link, like “Arcane https://…”.</value></data>
+<data name="Polls_BadLink" xml:space="preserve"><value>That link isn’t a web address.</value></data>
+<data name="Polls_OptionCount" xml:space="preserve"><value>Give 2 to 10 different options.</value></data>
+<data name="Polls_Duration" xml:space="preserve"><value>Pick when voting ends.</value></data>
+<data name="Polls_Audience" xml:space="preserve"><value>Choose at least one other person (up to 100), or everyone on the server.</value></data>
+<data name="Polls_Err_NotFound" xml:space="preserve"><value>That vote doesn't exist or isn't for you.</value></data>
+<data name="Polls_Err_Tags" xml:space="preserve"><value>Only the organizer or a moderator can change the tags.</value></data>
+<data name="Polls_Err_TagLimit" xml:space="preserve"><value>Use up to 8 tags of up to 24 characters.</value></data>
+<data name="Polls_Err_Closed" xml:space="preserve"><value>Voting has ended.</value></data>
+<data name="Polls_Err_Choices" xml:space="preserve"><value>Pick options from this vote.</value></data>
+<data name="Polls_Err_One" xml:space="preserve"><value>Pick one option.</value></data>
+<data name="Polls_Err_Close" xml:space="preserve"><value>Only whoever started the vote can end it early.</value></data>
+<data name="Group_tags" xml:space="preserve"><value>Tags</value></data>
+<data name="Group_tags_help" xml:space="preserve"><value>Tags say what the group is for. Each built-in tag adds its own suggestions when starting a vote; your own tags are just labels.</value></data>
+<data name="Group_tags_custom" xml:space="preserve"><value>Your own tags, separated by commas</value></data>
+<data name="Group_tags_save" xml:space="preserve"><value>Save tags</value></data>
+<data name="Group_tags_saved" xml:space="preserve"><value>Tags saved</value></data>
+<data name="Tag_games" xml:space="preserve"><value>Games</value></data>
+<data name="Tag_series" xml:space="preserve"><value>Series</value></data>
+<data name="Tag_films" xml:space="preserve"><value>Films</value></data>
+<data name="Tag_anime" xml:space="preserve"><value>Anime</value></data>
+<data name="Tag_games_help" xml:space="preserve"><value>Suggests the group’s games and games from earlier votes</value></data>
+<data name="Tag_series_help" xml:space="preserve"><value>Remembers series from earlier votes; IMDb links</value></data>
+<data name="Tag_films_help" xml:space="preserve"><value>Remembers films from earlier votes; IMDb links</value></data>
+<data name="Tag_anime_help" xml:space="preserve"><value>Remembers anime from earlier votes; MyAnimeList links</value></data>
+<data name="Guide_votes_Title" xml:space="preserve"><value>Votes</value></data>
+<data name="Guide_votes_Body" xml:space="preserve"><value>Vote on what to play or watch. In a group, open Votes and start a vote: built-in tags (Games, Series, Films, Anime, chosen in the group’s Settings) add suggestions from the group’s games and earlier votes, and options nobody picked lately are listed first. Type a title or paste a Steam, IMDb or MyAnimeList link; Steam and MyAnimeList links fill in the title. Without a group, use the Votes tab to ask chosen members or everyone on the server. Choose when voting ends and whether several choices are allowed; the person who started it can end it early. Ended votes stay in the history with their winner.</value></data>
 </root>
