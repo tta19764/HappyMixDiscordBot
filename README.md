@@ -350,6 +350,13 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 - Repeating events send each invitee one invitation (for the next date inside the three-day window) with **Accept all dates** / **Decline all dates**. A series decline is stored (`EventInvitees.SeriesDeclinedUtc`, migration `20261124000100_AddSeriesDecline`) and stops further invitations; accepting the series again clears earlier per-date declines of future dates. Single dates can still be skipped on the event page. One-off events keep per-date invitations.
 - Canceled events and dates are hidden from event, group and availability lists immediately and permanently deleted `EventRules.CanceledRetention` (15 minutes) after cancellation, once no messages for them are waiting. A canceled series is deleted with all its dates, answers, messages and its event notification route. Earlier cancellations are cleaned up on the first run.
 
+### v0.0.6 group tags and votes
+
+- Groups have up to 8 tags (Settings section). Built-in `games`, `series`, `films` and `anime` decide vote suggestions; other tags are labels. Tables `GroupTags`, `Polls`, `PollOptions`, `PollAudience` and `PollVotes` come from migration `20261125000100_AddGroupTagsAndPolls`.
+- Group votes are open to members who can see the roster. Server votes (Votes tab) go to chosen members (2–100 including the creator) or everyone on the server and are listed only to them.
+- Options are titles or Steam/IMDb/MyAnimeList/AniList links; Steam and MyAnimeList slugs fill in titles, IMDb links need a title. Suggestions combine the group's games (games tag) with options from the last 30 votes, least recently won first.
+- Votes close at the chosen time (1 hour to 1 week) or earlier by their creator or the group's organizer/moderators. Winners are the most-voted option, ties going to the first listed.
+
 ### CI runs and deployment diagnostics
 
 Pull requests targeting main run validation. New PR commits cancel older in-progress checks. Main pushes do not repeat those checks; version tags run validation plus image publication and deployment. Completed checks for earlier PR commits remain in history because they validated different code.

@@ -1315,3 +1315,62 @@ for (const image of document.querySelectorAll("[data-game-art]")) {
         });
     }
 })();
+
+// Votes: suggestion chips fill option fields, extra option fields appear on demand, and the member list filters.
+(() => {
+    for (const form of document.querySelectorAll("[data-poll-form]")) {
+        const fields = [...form.querySelectorAll("[data-poll-option]")];
+        const more = form.querySelector("[data-poll-more]");
+        const visible = () => fields.filter(field => !field.hidden);
+        const tidy = () => {
+            // Keep the filled fields plus one empty one in view, at least four in total.
+            const lastFilled = fields.reduce((last, field, index) => field.value.trim() ? index : last, -1);
+            const show = Math.max(4, lastFilled + 2);
+            fields.forEach((field, index) => { field.hidden = index >= show && !field.value.trim(); });
+            if (more) more.hidden = visible().length >= fields.length;
+        };
+        more?.addEventListener("click", () => {
+            const next = fields.find(field => field.hidden);
+            if (next) { next.hidden = false; next.focus(); }
+            if (more) more.hidden = visible().length >= fields.length;
+        });
+        form.addEventListener("input", event => { if (event.target.matches("[data-poll-option]")) tidy(); });
+
+        for (const chip of form.querySelectorAll("[data-suggest]")) {
+            chip.addEventListener("click", () => {
+                const value = chip.dataset.suggest;
+                const existing = fields.find(field => field.value.trim() === value);
+                if (existing) {
+                    existing.value = "";
+                    chip.setAttribute("aria-pressed", "false");
+                } else {
+                    const empty = fields.find(field => !field.value.trim());
+                    if (!empty) return;
+                    empty.value = value;
+                    chip.setAttribute("aria-pressed", "true");
+                }
+                // Close gaps so the options stay in the order they were picked.
+                const values = fields.map(field => field.value.trim()).filter(Boolean);
+                fields.forEach((field, index) => { field.value = values[index] ?? ""; });
+                tidy();
+            });
+        }
+        tidy();
+
+        const audience = form.querySelector("[data-poll-audience]");
+        if (audience) {
+            const filter = audience.querySelector("[data-member-filter]");
+            const people = [...audience.querySelectorAll("[data-member-name]")];
+            const count = audience.querySelector("[data-member-count]");
+            const template = count ? count.textContent : "";
+            filter?.addEventListener("input", () => {
+                const query = filter.value.trim().toLowerCase();
+                for (const person of people) person.hidden = query !== "" && !person.dataset.memberName.includes(query);
+            });
+            audience.addEventListener("change", () => {
+                const chosen = people.filter(person => person.querySelector("input").checked).length;
+                if (count) count.textContent = chosen > 0 ? template + " · " + chosen + " ✓" : template;
+            });
+        }
+    }
+})();

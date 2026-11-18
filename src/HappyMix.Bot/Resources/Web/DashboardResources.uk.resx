@@ -2142,4 +2142,99 @@
 <data name="Events_CanceledErased" xml:space="preserve"><value>Скасовані події та дати видаляються за кілька хвилин після скасування.</value></data>
 <data name="Events_NoDatesLeft" xml:space="preserve"><value>У цієї події не залишилося дат.</value></data>
 <data name="Events_WasCanceled" xml:space="preserve"><value>Цю подію скасовано.</value></data>
+<data name="Group_settings" xml:space="preserve"><value>Налаштування</value></data>
+<data name="Group_settings_help" xml:space="preserve"><value>Цей розділ бачать лише організатор, модератори й адміністратори.</value></data>
+<data name="Group_notifications_off_help" xml:space="preserve"><value>Нагадування й оновлення подій цієї групи поки не публікуються в каналі. Події можуть мати власні налаштування.</value></data>
+<data name="Group_notifications_manage" xml:space="preserve"><value>Змінити сповіщення в каналі</value></data>
+<data name="Arg0_min" xml:space="preserve"><value>{0} хв</value></data>
+<data name="Polls_Title" xml:space="preserve"><value>Голосування</value></data>
+<data name="Polls_PageLead" xml:space="preserve"><value>Запитайте сервер або кількох людей, у що грати чи що дивитися далі.</value></data>
+<data name="Polls_HelpGroup" xml:space="preserve"><value>Учасники голосують, у що грати чи що дивитися. Підказки беруться з тегів групи, її ігор і попередніх голосувань.</value></data>
+<data name="Polls_HelpServer" xml:space="preserve"><value>Створіть голосування для обраних учасників або всього сервера — без групи й тегів. Його бачать лише ті, для кого воно.</value></data>
+<data name="Polls_AddTags" xml:space="preserve"><value>Додати теги</value></data>
+<data name="Polls_EditTags" xml:space="preserve"><value>Змінити теги</value></data>
+<data name="Polls_By" xml:space="preserve"><value>від {0}</value></data>
+<data name="Polls_ClosesIn" xml:space="preserve"><value>завершиться через {0}</value></data>
+<data name="Polls_Span_dh" xml:space="preserve"><value>{0} д {1} год</value></data>
+<data name="Polls_Span_hm" xml:space="preserve"><value>{0} год {1} хв</value></data>
+<data name="Polls_Span_m" xml:space="preserve"><value>{0} хв</value></data>
+<data name="Polls_Today" xml:space="preserve"><value>сьогодні</value></data>
+<data name="Polls_VotedOf" xml:space="preserve"><value>проголосували {0} з {1}</value></data>
+<data name="Polls_Voted_Count" xml:space="preserve"><value>проголосували: {0}</value></data>
+<data name="Polls_Multiple" xml:space="preserve"><value>кілька варіантів</value></data>
+<data name="Polls_OpenLink" xml:space="preserve"><value>Відкрити посилання для {0}</value></data>
+<data name="Polls_Vote" xml:space="preserve"><value>Проголосувати</value></data>
+<data name="Polls_ChangeVote" xml:space="preserve"><value>Змінити голос</value></data>
+<data name="Polls_ClearVote" xml:space="preserve"><value>Відкликати голос</value></data>
+<data name="Polls_EndNow" xml:space="preserve"><value>Завершити зараз</value></data>
+<data name="Polls_Start" xml:space="preserve"><value>Нове голосування</value></data>
+<data name="Polls_StartButton" xml:space="preserve"><value>Почати голосування</value></data>
+<data name="Polls_Question" xml:space="preserve"><value>Питання</value></data>
+<data name="Polls_Question_games" xml:space="preserve"><value>У що граємо?</value></data>
+<data name="Polls_Question_series" xml:space="preserve"><value>Який серіал дивимося?</value></data>
+<data name="Polls_Question_films" xml:space="preserve"><value>Який фільм дивимося?</value></data>
+<data name="Polls_Question_anime" xml:space="preserve"><value>Яке аніме дивимося?</value></data>
+<data name="Polls_Question_watch" xml:space="preserve"><value>Що дивимося?</value></data>
+<data name="Polls_Question_mixed" xml:space="preserve"><value>Чим займемося далі?</value></data>
+<data name="Polls_Question_default" xml:space="preserve"><value>Що оберемо?</value></data>
+<data name="Polls_Suggestions" xml:space="preserve"><value>Підказки</value></data>
+<data name="Polls_SuggestionsHelp" xml:space="preserve"><value>Натисніть, щоб додати чи прибрати. Спершу те, що давно не обирали.</value></data>
+<data name="Polls_LastPicked" xml:space="preserve"><value>обрано {0}</value></data>
+<data name="Polls_FromGroup" xml:space="preserve"><value>гра групи</value></data>
+<data name="Polls_OfferedBefore" xml:space="preserve"><value>пропонували {0}×</value></data>
+<data name="Polls_Options" xml:space="preserve"><value>Варіанти</value></data>
+<data name="Polls_OptionN" xml:space="preserve"><value>Варіант {0}</value></data>
+<data name="Polls_OptionPlaceholder" xml:space="preserve"><value>Назва або посилання на Steam / IMDb / MyAnimeList</value></data>
+<data name="Polls_AddOption" xml:space="preserve"><value>Додати варіант</value></data>
+<data name="Polls_OptionsHelp" xml:space="preserve"><value>Від 2 до 10 варіантів. Посилання Steam і MyAnimeList підставляють назву; перед посиланням IMDb додайте назву, наприклад «Arcane https://www.imdb.com/title/tt11126994».</value></data>
+<data name="Polls_Closes" xml:space="preserve"><value>Голосування завершиться</value></data>
+<data name="Polls_In_1h" xml:space="preserve"><value>через 1 годину</value></data>
+<data name="Polls_In_3h" xml:space="preserve"><value>через 3 години</value></data>
+<data name="Polls_In_12h" xml:space="preserve"><value>через 12 годин</value></data>
+<data name="Polls_In_1d" xml:space="preserve"><value>через 1 день</value></data>
+<data name="Polls_In_3d" xml:space="preserve"><value>через 3 дні</value></data>
+<data name="Polls_In_1w" xml:space="preserve"><value>через тиждень</value></data>
+<data name="Polls_AllowMultiple" xml:space="preserve"><value>Дозволити кілька варіантів</value></data>
+<data name="Polls_AllowMultipleHelp" xml:space="preserve"><value>Кожен може позначити більше одного</value></data>
+<data name="Polls_Who" xml:space="preserve"><value>Хто голосує</value></data>
+<data name="Polls_WhoChosen" xml:space="preserve"><value>Обрані мною люди</value></data>
+<data name="Polls_WhoEveryone" xml:space="preserve"><value>Усі на сервері</value></data>
+<data name="Polls_FindMember" xml:space="preserve"><value>Знайти учасника</value></data>
+<data name="Polls_WhoHelp" xml:space="preserve"><value>Вас додано автоматично. Оберіть щонайменше ще одну людину, до 100.</value></data>
+<data name="Polls_Earlier" xml:space="preserve"><value>Попередні голосування ({0})</value></data>
+<data name="Polls_VotesOf" xml:space="preserve"><value>{0} з {1} голосів</value></data>
+<data name="Polls_NoVotes" xml:space="preserve"><value>Ніхто не проголосував</value></data>
+<data name="Polls_Started" xml:space="preserve"><value>Голосування розпочато</value></data>
+<data name="Polls_Voted" xml:space="preserve"><value>Ваш голос враховано</value></data>
+<data name="Polls_VoteRemoved" xml:space="preserve"><value>Ваш голос відкликано</value></data>
+<data name="Polls_Ended" xml:space="preserve"><value>Голосування завершено</value></data>
+<data name="Polls_QuestionError" xml:space="preserve"><value>Напишіть питання до 120 символів.</value></data>
+<data name="Polls_EmptyOption" xml:space="preserve"><value>Один із варіантів порожній.</value></data>
+<data name="Polls_LinkNeedsTitle" xml:space="preserve"><value>Додайте назву перед посиланням, наприклад «Arcane https://…».</value></data>
+<data name="Polls_BadLink" xml:space="preserve"><value>Це посилання не є веб-адресою.</value></data>
+<data name="Polls_OptionCount" xml:space="preserve"><value>Вкажіть від 2 до 10 різних варіантів.</value></data>
+<data name="Polls_Duration" xml:space="preserve"><value>Оберіть, коли завершиться голосування.</value></data>
+<data name="Polls_Audience" xml:space="preserve"><value>Оберіть щонайменше ще одну людину (до 100) або всіх на сервері.</value></data>
+<data name="Polls_Err_NotFound" xml:space="preserve"><value>Цього голосування не існує або воно не для вас.</value></data>
+<data name="Polls_Err_Tags" xml:space="preserve"><value>Змінювати теги може лише організатор або модератор.</value></data>
+<data name="Polls_Err_TagLimit" xml:space="preserve"><value>До 8 тегів, кожен до 24 символів.</value></data>
+<data name="Polls_Err_Closed" xml:space="preserve"><value>Голосування завершено.</value></data>
+<data name="Polls_Err_Choices" xml:space="preserve"><value>Оберіть варіанти з цього голосування.</value></data>
+<data name="Polls_Err_One" xml:space="preserve"><value>Оберіть один варіант.</value></data>
+<data name="Polls_Err_Close" xml:space="preserve"><value>Достроково завершити може лише той, хто почав голосування.</value></data>
+<data name="Group_tags" xml:space="preserve"><value>Теги</value></data>
+<data name="Group_tags_help" xml:space="preserve"><value>Теги показують, для чого група. Кожен вбудований тег додає власні підказки під час створення голосування; ваші теги — просто мітки.</value></data>
+<data name="Group_tags_custom" xml:space="preserve"><value>Власні теги через кому</value></data>
+<data name="Group_tags_save" xml:space="preserve"><value>Зберегти теги</value></data>
+<data name="Group_tags_saved" xml:space="preserve"><value>Теги збережено</value></data>
+<data name="Tag_games" xml:space="preserve"><value>Ігри</value></data>
+<data name="Tag_series" xml:space="preserve"><value>Серіали</value></data>
+<data name="Tag_films" xml:space="preserve"><value>Фільми</value></data>
+<data name="Tag_anime" xml:space="preserve"><value>Аніме</value></data>
+<data name="Tag_games_help" xml:space="preserve"><value>Підказує ігри групи та з попередніх голосувань</value></data>
+<data name="Tag_series_help" xml:space="preserve"><value>Пам’ятає серіали з попередніх голосувань; посилання IMDb</value></data>
+<data name="Tag_films_help" xml:space="preserve"><value>Пам’ятає фільми з попередніх голосувань; посилання IMDb</value></data>
+<data name="Tag_anime_help" xml:space="preserve"><value>Пам’ятає аніме з попередніх голосувань; посилання MyAnimeList</value></data>
+<data name="Guide_votes_Title" xml:space="preserve"><value>Голосування</value></data>
+<data name="Guide_votes_Body" xml:space="preserve"><value>Голосуйте, у що грати чи що дивитися. У групі відкрийте «Голосування» й почніть нове: вбудовані теги («Ігри», «Серіали», «Фільми», «Аніме», обираються в налаштуваннях групи) додають підказки з ігор групи та попередніх голосувань, а те, що давно не обирали, показується першим. Введіть назву або вставте посилання Steam, IMDb чи MyAnimeList; посилання Steam і MyAnimeList підставляють назву. Без групи скористайтеся вкладкою «Голосування», щоб запитати обраних учасників або весь сервер. Оберіть, коли завершиться голосування й чи можна кілька варіантів; автор може завершити його достроково. Завершені голосування залишаються в історії разом із переможцем.</value></data>
 </root>

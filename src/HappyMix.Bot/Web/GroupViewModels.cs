@@ -37,6 +37,9 @@ public sealed record GroupsPage(
 public sealed record GroupFormState(string Section, string? Error, string? Name = null, string? Steam = null,
     string? Description = null, string? Member = null);
 
+/// <summary>Channel notifications of a group as shown in its Settings section.</summary>
+public sealed record GroupNotificationSummary(bool Enabled, string? Channel, string Language, int LeadMinutes, bool Updates, string Url);
+
 public sealed record GroupPage(
     ulong GuildId,
     string GuildName,
@@ -56,6 +59,12 @@ public sealed record GroupPage(
 
     /// <summary>Upcoming dates of this group's events; empty for people who can't see the roster.</summary>
     public IReadOnlyList<EventRow> Events { get; init; } = [];
+
+    /// <summary>Votes of the group, for people who can see the roster.</summary>
+    public PollsModel? Polls { get; init; }
+
+    /// <summary>The group's channel notifications, for people who may change them (the organizer or an administrator).</summary>
+    public GroupNotificationSummary? Notifications { get; init; }
 
     /// <summary>Availability is the default Members tab when the board is visible; invite errors open the roster.</summary>
     public bool ShowRoster => Board is null || Tab == "roster" || Form?.Section == "members";

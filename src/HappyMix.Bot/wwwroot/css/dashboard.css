@@ -1473,3 +1473,67 @@ form:has([data-repeat-toggle]:not(:checked)) [data-repeat-through] { display: no
     .hm-notify { grid-template-columns: 1fr; }
     .hm-notify__preview { position: static; }
 }
+
+/* Group settings section */
+.hm-group-settings h2 { display: flex; align-items: center; gap: var(--hm-space-2); }
+.hm-group-settings__block { display: grid; gap: var(--hm-space-3); padding: var(--hm-space-4); border: 1px solid var(--hm-border); border-radius: var(--hm-radius-md); background: var(--hm-surface-2); }
+.hm-group-settings__block h3, .hm-group-settings__title { display: flex; align-items: center; gap: var(--hm-space-2); margin: 0; font-size: var(--hm-fs-md); font-weight: 700; }
+.hm-group-notify__facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: var(--hm-space-3); margin: 0; }
+.hm-group-notify__facts dt { color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); }
+.hm-group-notify__facts dd { margin: 0; font-weight: 700; }
+.hm-group-settings .hm-danger-zone { padding: var(--hm-space-4); border-radius: var(--hm-radius-md); }
+.hm-group-settings .hm-danger-zone h3 { margin: 0; font-size: var(--hm-fs-md); }
+
+/* ---------- 32. Group tags and votes ---------- */
+.hm-tag--games { background: color-mix(in srgb, #6ee7b7 22%, transparent); }
+.hm-tag--series { background: color-mix(in srgb, #93c5fd 24%, transparent); }
+.hm-tag--films { background: color-mix(in srgb, #fca5a5 22%, transparent); }
+.hm-tag--anime { background: color-mix(in srgb, #f9a8d4 24%, transparent); }
+.hm-tag-picker { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: var(--hm-space-2); }
+.hm-tag-picker__item { display: flex; gap: var(--hm-space-2); align-items: flex-start; padding: var(--hm-space-3); border: 1px solid var(--hm-border);
+    border-radius: var(--hm-radius-md); background: var(--hm-surface); cursor: pointer; }
+.hm-tag-picker__item:has(input:checked) { border-color: var(--hm-brand); background: var(--hm-brand-tint); }
+.hm-tag-picker__item span { display: grid; gap: 2px; }
+.hm-tag-picker__item small { color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); }
+.hm-polls h2 { margin: 0; }
+.hm-polls__tags { display: flex; flex-wrap: wrap; gap: var(--hm-space-1); align-items: center; }
+.hm-poll { display: grid; gap: var(--hm-space-3); padding: var(--hm-space-4); border: 1px solid var(--hm-border); border-left: 4px solid var(--hm-brand);
+    border-radius: var(--hm-radius-md); background: var(--hm-surface-2); }
+.hm-poll__head h3 { margin: 0; font-size: var(--hm-fs-lg); }
+.hm-poll__head p { margin: var(--hm-space-1) 0 0; }
+.hm-poll__options { display: grid; gap: var(--hm-space-2); }
+.hm-poll__option { position: relative; display: flex; align-items: center; gap: var(--hm-space-3); min-height: var(--hm-target); padding: var(--hm-space-2) var(--hm-space-3);
+    border: 1px solid var(--hm-border); border-radius: var(--hm-radius-md); background: var(--hm-surface); cursor: pointer; overflow: hidden; isolation: isolate; }
+.hm-poll__option::before { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--share, 0%); background: color-mix(in srgb, var(--hm-brand) 18%, transparent); z-index: -1; transition: width .2s; }
+.hm-poll__option.is-mine, .hm-poll__option:has(input:checked) { border-color: var(--hm-brand); }
+.hm-poll__label { flex: 1; min-width: 0; font-weight: 600; }
+.hm-poll__link { margin-left: var(--hm-space-1); text-decoration: none; }
+.hm-poll__count { font-variant-numeric: tabular-nums; }
+.hm-poll__close { justify-self: start; }
+.hm-poll-new > summary { list-style: none; width: max-content; }
+.hm-poll-new > summary::-webkit-details-marker { display: none; }
+.hm-poll-new[open] > summary { margin-bottom: var(--hm-space-4); }
+.hm-poll-new > form { padding: var(--hm-space-4); border: 1px dashed var(--hm-border-strong); border-radius: var(--hm-radius-md); }
+.hm-poll-suggest { display: flex; flex-wrap: wrap; gap: var(--hm-space-2); }
+.hm-poll-suggest__item { display: inline-flex; flex-direction: column; align-items: flex-start; padding: var(--hm-space-1) var(--hm-space-3);
+    border: 1px solid var(--hm-border); border-radius: var(--hm-radius-md); background: var(--hm-surface); color: var(--hm-text); font: inherit; font-weight: 600; cursor: pointer; text-align: left; }
+.hm-poll-suggest__item small { color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); font-weight: 500; }
+.hm-poll-suggest__item[aria-pressed="true"] { border-color: var(--hm-brand); background: var(--hm-brand-tint); }
+.hm-poll-options { display: grid; gap: var(--hm-space-2); border: 0; padding: 0; margin: 0; }
+.hm-poll-options [data-poll-more] { justify-self: start; }
+.hm-poll-new__row { grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.hm-poll-audience { border: 0; padding: 0; margin: 0; display: grid; gap: var(--hm-space-2); }
+.hm-poll-audience:has(input[value="everyone"]:checked) .hm-poll-audience__pick { display: none; }
+.hm-poll-audience__pick { display: grid; gap: var(--hm-space-2); }
+.hm-poll-audience__list { max-height: 16rem; overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: var(--hm-space-1); }
+.hm-poll-audience__list .hm-check { display: flex; align-items: center; gap: var(--hm-space-2); }
+.hm-poll-audience__list .hm-check[hidden] { display: none; }
+.hm-poll-history > summary { cursor: pointer; font-weight: 700; }
+.hm-poll-history__list { display: grid; gap: var(--hm-space-2); margin: var(--hm-space-3) 0 0; padding: 0; list-style: none; }
+.hm-poll-history__list li { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; gap: var(--hm-space-3); align-items: center;
+    padding: var(--hm-space-2) var(--hm-space-3); border: 1px solid var(--hm-border); border-radius: var(--hm-radius-md); }
+.hm-poll-history__winner { display: grid; }
+.hm-poll-history__winner small { color: var(--hm-text-subtle); }
+@media (max-width: 640px) {
+    .hm-poll-history__list li { grid-template-columns: 1fr; gap: var(--hm-space-1); }
+}

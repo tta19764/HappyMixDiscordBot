@@ -103,7 +103,7 @@ public sealed partial class DashboardController
     [HttpPost("/groups/{guildId}/{groupId:guid}/description")]
     public Task<IActionResult> EditGroupDescription(ulong guildId, Guid groupId, string? description) =>
         RunGroupActionAsync(guildId, groupId, (actor, group) => new EditGroupDescriptionCommand(actor, group.Name, description),
-            "Description saved", section: "overview", form: new GroupFormState("overview", null, Description: description));
+            "Description saved", section: "settings", form: new GroupFormState("settings", null, Description: description));
 
     [HttpPost("/groups/{guildId}/{groupId:guid}/invite")]
     public async Task<IActionResult> InviteToGroup(ulong guildId, Guid groupId, string? member)
@@ -262,9 +262,21 @@ public sealed partial class DashboardController
                     .Select(item => EventText.Row(details, item, viewerId, EventText.Zone(details.Event), null, id => names.Name(id, key => text.Message(key)), guildId)))
                 .OrderBy(row => row.Date).Take(10).ToArray();
         }
+        GroupNotificationSummary? notifications = null;
+        var notificationSettings = HttpContext.RequestServices.GetRequiredService<HappyMix.Bot.Services.EventNotificationSettings>();
+        if (await GetDiscordMemberAsync(guildId) is { } member && await notificationSettings.CanManageAsync(member, "group", groupId) &&
+            await notificationSettings.GetEffectiveAsync(guildId, "group", groupId) is { } effective)
+        {
+            var route = effective.Route;
+            string? channel = discord.GetGuild(guildId)?.GetTextChannel(route.Channel()) is { } found ? "#" + found.Name : null;
+            notifications = new GroupNotificationSummary(route.Enabled, channel, LanguageName(route.Language),
+                route.ReminderMinutes ?? notificationSettings.DefaultReminderMinutes, route.Updates, $"/notifications/{guildId}/group/{groupId}");
+        }
         var view = View("Group", new GroupPage(guildId, GuildName(guildId), viewer, group, names,
             candidates, banner, backUrl, form, board, evening, tab)
         {
+            Notifications = notifications,
+            Polls = detail.Value.CanViewRoster ? await LoadPollsAsync(guildId, actor, groupId, $"/groups/{guildId}/{groupId}", includeMembers: false) : null,
             Events = events,
             BoardEvents = board is null ? BoardEvents.Empty
                 : await LoadBoardEventsAsync(guildId, actor.UserId, board.Rows.Select(row => row.UserId), board.Date, board.TimeZone)

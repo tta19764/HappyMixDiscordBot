@@ -80,34 +80,21 @@
             <span class="hm-count">@detail.Games.Length</span>
         }
     </a>
+    @if (Model.Polls is not null)
+    {
+        <a class="hm-chip" href="#votes">🗳️ @T["Polls_Title"] <span class="hm-count">@Model.Polls.Board.Open.Count</span></a>
+    }
+    @if (manage || Model.Notifications is not null)
+    {
+        <a class="hm-chip" href="#settings">@DashboardIcons.Render("sliders")@T["Group_settings"]</a>
+    }
 </nav>
 
 <div class="hm-stack" style="gap: var(--hm-space-6)">
     @* ---------- Overview ---------- *@
     <section class="hm-card hm-section hm-stack" id="overview" aria-labelledby="overview-title">
         <h2 id="overview-title">@T["Overview"]</h2>
-        @if (manage)
-        {
-            string? error = Model.ErrorFor("overview");
-            string value = Model.Form?.Section == "overview" ? Model.Form.Description ?? "" : group.Description ?? "";
-            <form class="hm-stack hm-stack--sm" method="post" action="@Model.Url/description" asp-antiforgery="false">
-                @Html.AntiForgeryToken()
-                <label class="hm-label" for="description">@T["Description"] <span class="hm-label__opt">@T["Optional"]</span></label>
-                <textarea class="hm-textarea" id="description" name="description" rows="3" maxlength="200"
-                          style="font-family: var(--hm-font); font-size: var(--hm-fs-md)"
-                          aria-invalid="@(error is null ? null : "true")" aria-describedby="description-help @(error is null ? "" : "description-error")">@value</textarea>
-                <p class="hm-help" id="description-help">@T["Up_to_200_characters_Shown_in_the_directory_and_to_invited_members"]</p>
-                @if (error is not null)
-                {
-                    <p class="hm-error" id="description-error">@DashboardIcons.Render("alert")@error</p>
-                }
-                <div><button class="hm-btn">@DashboardIcons.Render("check")@T["Save_description"]</button></div>
-            </form>
-        }
-        else
-        {
-            <p class="@(group.Description is null ? "hm-subtle" : "")">@(group.Description ?? T["No_description"].Value)</p>
-        }
+        <p class="@(group.Description is null ? "hm-subtle" : "")">@(group.Description ?? T["No_description"].Value)</p>
 
         @if (detail.CanLeave || manage)
         {
@@ -303,6 +290,11 @@
     }
 
     @* ---------- Games ---------- *@
+    @if (Model.Polls is { } polls)
+    {
+        <partial name="_Polls" model="polls" />
+    }
+
     <section class="hm-card hm-section hm-stack" id="games" aria-labelledby="games-title">
         <h2 id="games-title">@T["Games"]</h2>
         @if (!detail.CanViewRoster)
@@ -401,20 +393,94 @@
         }
     </section>
 
-    @if (manage)
+    @* ---------- Settings (organizer, moderators, administrators) ---------- *@
+    @if (manage || Model.Notifications is not null)
     {
-        <section class="hm-card hm-danger-zone hm-stack" aria-labelledby="close-title">
+        <section class="hm-card hm-section hm-stack hm-group-settings" id="settings" aria-labelledby="settings-title">
             <div>
-                <h2 id="close-title" style="font-size: var(--hm-fs-lg)">@T["Close_group"]</h2>
-                <p class="hm-help">@T["Deletes_the_group_for_everyone_including_its_Discord_role_Members_invitations_and"]</p>
+                <h2 id="settings-title">@DashboardIcons.Render("sliders")@T["Group_settings"]</h2>
+                <p class="hm-help">@T["Group_settings_help"]</p>
             </div>
-            @if (Model.ErrorFor("close") is { } closeError)
+            @if (manage)
             {
-                <partial name="_Banner" model="ErrorBanner(closeError)" />
+                string? error = Model.ErrorFor("settings");
+                string value = Model.Form?.Section == "settings" ? Model.Form.Description ?? "" : group.Description ?? "";
+                <div class="hm-group-settings__block">
+                    <form class="hm-stack hm-stack--sm" method="post" action="@Model.Url/description" asp-antiforgery="false">
+                        @Html.AntiForgeryToken()
+                        <label class="hm-label hm-group-settings__title" for="description">@T["Description"] <span class="hm-label__opt">@T["Optional"]</span></label>
+                        <textarea class="hm-textarea" id="description" name="description" rows="3" maxlength="200"
+                                  style="font-family: var(--hm-font); font-size: var(--hm-fs-md)"
+                                  aria-invalid="@(error is null ? null : "true")" aria-describedby="description-help @(error is null ? "" : "description-error")">@value</textarea>
+                        <p class="hm-help" id="description-help">@T["Up_to_200_characters_Shown_in_the_directory_and_to_invited_members"]</p>
+                        @if (error is not null)
+                        {
+                            <p class="hm-error" id="description-error">@DashboardIcons.Render("alert")@error</p>
+                        }
+                        <div><button class="hm-btn">@DashboardIcons.Render("check")@T["Save_description"]</button></div>
+                    </form>
+                </div>
             }
-            <div><partial name="_Confirm" model="close" /></div>
+            @if (manage && Model.Polls is { } tagged)
+            {
+                var current = tagged.Board.Tags;
+                <form class="hm-group-settings__block" method="post" action="@Model.Url/tags" asp-antiforgery="false">
+                    @Html.AntiForgeryToken()
+                    <h3>🏷️ @T["Group_tags"]</h3>
+                    <p class="hm-help">@T["Group_tags_help"]</p>
+                    <div class="hm-tag-picker">
+                        @foreach (string tag in HappyMix.Application.Polls.GroupTags.BuiltIn)
+                        {
+                            <label class="hm-tag-picker__item"><input type="checkbox" name="tags" value="@tag" checked="@current.Contains(tag)">
+                                <span><b>@T["Tag_" + tag]</b><small>@T["Tag_" + tag + "_help"]</small></span></label>
+                        }
+                    </div>
+                    <div class="hm-field">
+                        <label class="hm-label" for="custom-tags">@T["Group_tags_custom"] <span class="hm-label__opt">@T["Optional"]</span></label>
+                        <input class="hm-input" id="custom-tags" name="custom" maxlength="200" placeholder="ranked, chill, weekend"
+                               value="@string.Join(", ", current.Where(tag => !HappyMix.Application.Polls.GroupTags.IsBuiltIn(tag)))">
+                    </div>
+                    <div><button class="hm-btn">@DashboardIcons.Render("check")@T["Group_tags_save"]</button></div>
+                </form>
+            }
+            @if (Model.Notifications is { } notify)
+            {
+                <div class="hm-group-settings__block hm-group-notify">
+                    <div class="hm-row hm-row--between">
+                        <h3>@DashboardIcons.Render("bell")@T["Notifications_Settings"]</h3>
+                        <span class="hm-badge @(notify.Enabled ? "hm-badge--mint" : "")">@T[notify.Enabled ? "Notifications_On" : "Notifications_Off"]</span>
+                    </div>
+                    @if (notify.Enabled || notify.Channel is not null)
+                    {
+                        <dl class="hm-group-notify__facts">
+                            <div><dt>@T["Announcement_channel"]</dt><dd>@(notify.Channel ?? "—")</dd></div>
+                            <div><dt>@T["Notifications_Language"]</dt><dd>@notify.Language</dd></div>
+                            <div><dt>@T["Notifications_LeadTime"]</dt><dd>@T["Arg0_min", notify.LeadMinutes]</dd></div>
+                            <div><dt>@T["Notifications_Updates"]</dt><dd>@T[notify.Updates ? "Notifications_On" : "Notifications_Off"]</dd></div>
+                        </dl>
+                    }
+                    else
+                    {
+                        <p class="hm-help">@T["Group_notifications_off_help"]</p>
+                    }
+                    <div><a class="hm-btn" href="@notify.Url">@DashboardIcons.Render("sliders")@T["Group_notifications_manage"]</a></div>
+                </div>
+            }
+            @if (manage)
+            {
+            <section class="hm-danger-zone hm-stack" aria-labelledby="close-title">
+                <div>
+                    <h3 id="close-title">@T["Close_group"]</h3>
+                    <p class="hm-help">@T["Deletes_the_group_for_everyone_including_its_Discord_role_Members_invitations_and"]</p>
+                </div>
+                @if (Model.ErrorFor("close") is { } closeError)
+                {
+                    <partial name="_Banner" model="ErrorBanner(closeError)" />
+                }
+                <div><partial name="_Confirm" model="close" /></div>
+            </section>
+            }
         </section>
     }
 </div>
 
-@if (manage) { <a class="hm-btn" href="/notifications/@Model.GuildId/group/@group.Id">@T["Notifications_Settings"]</a> }
