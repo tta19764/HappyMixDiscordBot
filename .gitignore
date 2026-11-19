@@ -22,6 +22,7 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+!src/HappyMix.Application/Abstractions/Logs/
 
 # .NET Core
 project.lock.json
