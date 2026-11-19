@@ -1,3 +1,4 @@
+using Discord.Rest;
 using System.Reflection;
 using Discord;
 using Discord.Interactions;
@@ -41,6 +42,8 @@ public sealed partial class DiscordBotWorker(
         client.Ready += OnReadyAsync;
         client.InteractionCreated += OnInteractionCreatedAsync;
         interactions.InteractionExecuted += OnInteractionExecutedAsync;
+        client.PollVoteAdded += OnPollVoteAddedAsync;
+        client.PollVoteRemoved += OnPollVoteRemovedAsync;
 
         // Modules are discovered once during startup and activated through the same
         // container that owns Application and Infrastructure dependencies.
@@ -48,6 +51,36 @@ public sealed partial class DiscordBotWorker(
         await client.LoginAsync(TokenType.Bot, _options.Token);
         await client.StartAsync();
     }
+
+    private Task OnPollVoteAddedAsync(Cacheable<IUser, ulong> user, Cacheable<ISocketMessageChannel, IRestMessageChannel, IMessageChannel, ulong> channel,
+        Cacheable<IUserMessage, ulong> message, Cacheable<SocketGuild, RestGuild, IGuild, ulong>? guild, ulong answerId) =>
+        CopyPollVoteAsync(user.Id, message.Id, guild?.Id, answerId, added: true);
+
+    private Task OnPollVoteRemovedAsync(Cacheable<IUser, ulong> user, Cacheable<ISocketMessageChannel, IRestMessageChannel, IMessageChannel, ulong> channel,
+        Cacheable<IUserMessage, ulong> message, Cacheable<SocketGuild, RestGuild, IGuild, ulong>? guild, ulong answerId) =>
+        CopyPollVoteAsync(user.Id, message.Id, guild?.Id, answerId, added: false);
+
+    /// <summary>Copies a vote cast with Discord's poll controls into the bot's vote, off the gateway thread.</summary>
+    private Task CopyPollVoteAsync(ulong userId, ulong messageId, ulong? guildId, ulong answerId, bool added)
+    {
+        if (guildId is not { } guild)
+            return Task.CompletedTask;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await services.GetRequiredService<PollMessages>().OnNativeVoteAsync(guild, userId, messageId, answerId, added);
+            }
+            catch (Exception error) when (error is not OperationCanceledException)
+            {
+                LogPollVoteFailed(logger, messageId, error);
+            }
+        });
+        return Task.CompletedTask;
+    }
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Copying a Discord poll vote for message {MessageId} failed; the next sync catches up")]
+    private static partial void LogPollVoteFailed(ILogger logger, ulong messageId, Exception error);
 
     /// <inheritdoc />
     public async Task StopAsync(CancellationToken cancellationToken)
@@ -58,6 +91,8 @@ public sealed partial class DiscordBotWorker(
 
         // Removing handlers prevents retained references if the host is restarted in-process.
         client.Log -= LogAsync;
+        client.PollVoteAdded -= OnPollVoteAddedAsync;
+        client.PollVoteRemoved -= OnPollVoteRemovedAsync;
         interactions.Log -= LogAsync;
         client.Ready -= OnReadyAsync;
         client.InteractionCreated -= OnInteractionCreatedAsync;

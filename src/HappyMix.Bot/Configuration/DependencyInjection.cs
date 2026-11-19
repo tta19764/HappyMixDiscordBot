@@ -58,7 +58,8 @@ public static class DependencyInjection
         // Add privileged intents here only when a feature actually needs them.
         services.AddSingleton(new DiscordSocketConfig
         {
-            GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildVoiceStates,
+            // GuildMessagePolls delivers poll votes so Discord polls stay in step with the dashboard; it isn't privileged.
+            GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildVoiceStates | GatewayIntents.GuildMessagePolls,
             LogGatewayIntentWarnings = true
         });
 

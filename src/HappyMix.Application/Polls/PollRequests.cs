@@ -132,6 +132,15 @@ public sealed record CreatePollCommand(GroupActor Actor, Guid? GroupId, string Q
 /// <summary>A vote by id, for whoever may vote in it.</summary>
 public sealed record GetPollQuery(GroupActor Actor, Guid PollId) : IQuery<Poll>;
 
+/// <summary>One vote added or removed with Discord's poll controls on the message <paramref name="MessageId"/>.</summary>
+public sealed record CopyDiscordPollVoteCommand(ulong GuildId, ulong UserId, ulong MessageId, int Position, bool Added) : ICommand<bool>;
+
+/// <summary>
+/// Replaces the votes of a Discord poll with what Discord lists: account id → chosen positions. Linked accounts count
+/// as one member.
+/// </summary>
+public sealed record SyncDiscordPollVotesCommand(ulong GuildId, Guid PollId, IReadOnlyDictionary<ulong, int[]> Votes) : ICommand<bool>;
+
 /// <summary>Replaces the voter's choices; an empty list takes the vote back.</summary>
 public sealed record VotePollCommand(GroupActor Actor, Guid PollId, IReadOnlyList<int> Positions) : ICommand<Poll>;
 
@@ -141,6 +150,7 @@ public sealed record ClosePollCommand(GroupActor Actor, Guid PollId) : ICommand<
 internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLinks, IClock clock, ISender sender, IMediaCatalog catalog,
     IWatchStore watchlist)
     : IQueryHandler<GetPollBoardQuery, PollBoard>, IQueryHandler<GetPollQuery, Poll>, ICommandHandler<SetGroupTagsCommand, IReadOnlyList<string>>,
+      ICommandHandler<CopyDiscordPollVoteCommand, bool>, ICommandHandler<SyncDiscordPollVotesCommand, bool>,
       ICommandHandler<CreatePollCommand, Guid>, ICommandHandler<VotePollCommand, Poll>, ICommandHandler<ClosePollCommand, Poll>
 {
     private static readonly ErrorDescriptor NotFound = new("Poll.NotFound", "That vote doesn't exist or isn't for you.");
@@ -178,6 +188,35 @@ internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLi
             Progress = tracked.Where(item => item.Source is not null && item.ExternalId is not null)
                 .ToDictionary(item => new MediaRef(item.Source!, item.ExternalId!))
         };
+    }
+
+    public async Task<Result<bool>> Handle(CopyDiscordPollVoteCommand command, CancellationToken cancellationToken)
+    {
+        if (await polls.FindByMessageAsync(command.MessageId) is not { Native: true } poll || poll.GuildId != command.GuildId ||
+            poll.IsClosed(clock.UtcNow) || poll.Options.All(option => option.Position != command.Position))
+            return false;
+        ulong member = (await accountLinks.LoadAsync(command.GuildId)).Member(command.UserId);
+        var mine = poll.Votes.Where(vote => vote.UserId == member).Select(vote => vote.Position).ToHashSet();
+        if (command.Added) mine.Add(command.Position); else mine.Remove(command.Position);
+        await polls.VoteAsync(poll.Id, member, mine.ToArray());
+        return true;
+    }
+
+    public async Task<Result<bool>> Handle(SyncDiscordPollVotesCommand command, CancellationToken cancellationToken)
+    {
+        if (await polls.GetAsync(command.GuildId, command.PollId) is not { Native: true })
+            return false;
+        var links = await accountLinks.LoadAsync(command.GuildId);
+        var members = new Dictionary<ulong, HashSet<int>>();
+        foreach (var (user, positions) in command.Votes)
+        {
+            ulong member = links.Member(user);
+            if (!members.TryGetValue(member, out var chosen))
+                members[member] = chosen = [];
+            chosen.UnionWith(positions);
+        }
+        await polls.ReplaceVotesAsync(command.PollId, members.ToDictionary(item => item.Key, item => item.Value.ToArray()));
+        return true;
     }
 
     public async Task<Result<Poll>> Handle(GetPollQuery query, CancellationToken cancellationToken)
@@ -258,6 +297,8 @@ internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLi
             return Result.Failure<Poll>(NotFound);
         if (poll.IsClosed(clock.UtcNow))
             return Result.Failure<Poll>(new ErrorDescriptor("Poll.Closed", "Voting has ended."));
+        if (poll.Native && poll.MessageId is not null)
+            return Result.Failure<Poll>(new ErrorDescriptor("Poll.Discord", "This vote is a Discord poll. Vote in Discord."));
         var positions = command.Positions.Distinct().ToArray();
         if (positions.Any(position => poll.Options.All(option => option.Position != position)) || (!poll.Multiple && positions.Length > 1))
             return Result.Failure<Poll>(new ErrorDescriptor("Poll.Choice", poll.Multiple ? "Pick options from this vote." : "Pick one option."));

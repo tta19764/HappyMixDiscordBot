@@ -2236,7 +2236,7 @@
 <data name="Tag_films_help" xml:space="preserve"><value>Помнит фильмы из прошлых голосований; ссылки IMDb</value></data>
 <data name="Tag_anime_help" xml:space="preserve"><value>Помнит аниме из прошлых голосований; ссылки MyAnimeList</value></data>
 <data name="Guide_votes_Title" xml:space="preserve"><value>Голосования</value></data>
-<data name="Guide_votes_Body" xml:space="preserve"><value>Голосуйте, во что играть или что смотреть, на панели или в Discord. В группе откройте «Голосования»: встроенные теги («Игры», «Сериалы», «Фильмы», «Аниме», выбираются в настройках группы) добавляют подсказки из игр группы, её списка просмотра и прошлых голосований, а то, что давно не выбирали, показывается первым. Ищите в каталогах или вставляйте ссылки Steam, IMDb, TVmaze, MyAnimeList или AniList: тогда варианты показывают постер, год, жанры, рейтинг и сезоны или эпизоды — на панели и в сообщении Discord. Голосования группы публикуются в её канале уведомлений; голосования сервера — в выбранном канале, или начните его командой /vote create. Голосуйте через меню под сообщением. Группы, смотрящие сериалы, фильмы или аниме, ведут список просмотра: добавляйте названия поиском или ссылкой, отмечайте просмотренные эпизоды, записывайте, где остановились (например 23:40), и добавляйте победителей голосований одним нажатием.</value></data>
+<data name="Guide_votes_Body" xml:space="preserve"><value>Голосуйте, во что играть или что смотреть, на панели или в Discord. В группе откройте «Голосования»: встроенные теги («Игры», «Сериалы», «Фильмы», «Аниме», выбираются в настройках группы) добавляют подсказки из игр группы, её списка просмотра и прошлых голосований, а то, что давно не выбирали, показывается первым. Ищите в каталогах или вставляйте ссылки Steam, IMDb, TVmaze, MyAnimeList или AniList: тогда варианты показывают постер, год, жанры, рейтинг и сезоны или эпизоды. В Discord простые голосования появляются как опросы Discord, а голосования за игры, сериалы, фильмы или аниме — как карточки с постерами, ссылками и меню голосования. Голосования группы публикуются в её канале уведомлений; голосования сервера — в выбранном канале, или начните его командой /vote create. Группы, смотрящие сериалы, фильмы или аниме, ведут список просмотра: добавляйте названия поиском или ссылкой, отмечайте просмотренные эпизоды, записывайте, где остановились (например 23:40), и добавляйте победителей голосований одним нажатием.</value></data>
 <data name="Polls_VoteCount" xml:space="preserve"><value>голосов: {0}</value></data>
 <data name="Polls_WinnerLine" xml:space="preserve"><value>🏆 Победа: **{0}** — {1} из {2} голосов.</value></data>
 <data name="Polls_EndsAt" xml:space="preserve"><value>Голосование завершится {0}</value></data>
@@ -2257,11 +2257,11 @@
 <data name="Media_SearchPlaceholder" xml:space="preserve"><value>Начните вводить название…</value></data>
 <data name="Polls_FromWatchlist" xml:space="preserve"><value>в списке просмотра</value></data>
 <data name="Polls_AddThis" xml:space="preserve"><value>Добавить вариантом</value></data>
-<data name="Polls_PostedIn" xml:space="preserve"><value>Голосование также появится в {0}, где можно голосовать через меню.</value></data>
+<data name="Polls_PostedIn" xml:space="preserve"><value>Также появится в {0}: простые голосования — как опрос Discord, голосования за игры, сериалы, фильмы или аниме — как карточки с постерами и ссылками.</value></data>
 <data name="Polls_GroupNoChannel" xml:space="preserve"><value>Включите уведомления группы в настройках, чтобы голосования появлялись и в Discord.</value></data>
 <data name="Polls_PostIn" xml:space="preserve"><value>Опубликовать в Discord</value></data>
 <data name="Polls_DashboardOnly" xml:space="preserve"><value>Только на панели</value></data>
-<data name="Polls_PostInHelp" xml:space="preserve"><value>Голосовать можно через меню под сообщением. Выбранные участники будут упомянуты.</value></data>
+<data name="Polls_PostInHelp" xml:space="preserve"><value>Простые голосования для всех становятся опросом Discord. Голосования с названиями из каталогов или для выбранных участников публикуются как карточки с постерами, ссылками и меню голосования.</value></data>
 <data name="Watch_Title" xml:space="preserve"><value>Список просмотра</value></data>
 <data name="Watch_HelpEdit" xml:space="preserve"><value>Отслеживайте, что смотрит группа: следующий эпизод, где остановились, и что уже просмотрено. Победителей голосований можно добавить одним нажатием.</value></data>
 <data name="Watch_HelpView" xml:space="preserve"><value>Что смотрит группа и где остановилась. Организатор обновляет список.</value></data>
@@ -2317,4 +2317,7 @@
 <data name="HelpV007_8" xml:space="preserve"><value>Досрочно завершить ваше голосование.</value></data>
 <data name="HelpV007_9" xml:space="preserve"><value>Голосование, которое нужно завершить</value></data>
 <data name="HelpV007_10" xml:space="preserve"><value>Используйте /vote create в канале, где должны голосовать; выберите группу, чтобы голосовали только её участники. Голосования с панели тоже появляются в Discord, если выбран канал. Голосуйте через меню под сообщением.</value></data>
+<data name="Polls_VoteInDiscord" xml:space="preserve"><value>Голосовать в Discord</value></data>
+<data name="Polls_VoteInDiscordHelp" xml:space="preserve"><value>Это опрос Discord; результаты здесь обновляются по нему.</value></data>
+<data name="Polls_Err_Discord" xml:space="preserve"><value>Это голосование — опрос Discord. Голосуйте в Discord.</value></data>
 </root>

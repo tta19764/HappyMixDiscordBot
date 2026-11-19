@@ -111,9 +111,9 @@ internal sealed partial class MediaCatalog(IHttpClientFactory clients, IDbContex
     private async Task<IReadOnlyList<MediaInfo>> SearchSteamAsync(string query, CancellationToken cancellationToken)
     {
         using var document = await GetJsonAsync($"https://store.steampowered.com/api/storesearch/?term={Uri.EscapeDataString(query)}&l=english&cc=US", cancellationToken);
-        return Items(document.RootElement, "items").Take(10).Select(item => new MediaInfo("game", "steam", Text(item, "id") ?? "", Text(item, "name") ?? "",
-            $"https://store.steampowered.com/app/{Text(item, "id")}", Text(item, "tiny_image"), null, null, [], null, null, null, []))
-            .Where(item => item.ExternalId.Length > 0 && item.Title.Length > 0).ToArray();
+        return Each(Items(document.RootElement, "items"), item => Text(item, "id") is { } id && Text(item, "name") is { } name
+            ? new MediaInfo("game", "steam", id, name, $"https://store.steampowered.com/app/{id}", Text(item, "tiny_image"), null, null, [], null, null, null, [])
+            : null);
     }
 
     private async Task<MediaInfo?> FetchSteamAsync(string app, CancellationToken cancellationToken)
@@ -122,8 +122,7 @@ internal sealed partial class MediaCatalog(IHttpClientFactory clients, IDbContex
         if (!document.RootElement.TryGetProperty(app, out var wrapper) || !wrapper.TryGetProperty("data", out var data))
             return null;
         string? release = data.TryGetProperty("release_date", out var date) ? Text(date, "date") : null;
-        double? score = data.TryGetProperty("metacritic", out var metacritic) && metacritic.TryGetProperty("score", out var value) && value.TryGetInt32(out int number)
-            ? number / 10.0 : null;
+        double? score = data.TryGetProperty("metacritic", out var metacritic) && Number(metacritic, "score") is { } metascore ? metascore / 10.0 : null;
         return new MediaInfo("game", "steam", app, Text(data, "name") ?? app, $"https://store.steampowered.com/app/{app}", Text(data, "header_image"),
             YearIn(release), Clean(Text(data, "short_description")), Items(data, "genres").Select(item => Text(item, "description")).OfType<string>().Take(4).ToArray(),
             score, null, null, []);
@@ -134,8 +133,9 @@ internal sealed partial class MediaCatalog(IHttpClientFactory clients, IDbContex
     private async Task<IReadOnlyList<MediaInfo>> SearchTvMazeAsync(string query, CancellationToken cancellationToken)
     {
         using var document = await GetJsonAsync($"https://api.tvmaze.com/search/shows?q={Uri.EscapeDataString(query)}", cancellationToken);
-        return document.RootElement.EnumerateArray().Take(10)
-            .Select(item => item.TryGetProperty("show", out var show) ? TvMaze(show, []) : null).OfType<MediaInfo>().ToArray();
+        return document.RootElement.ValueKind == JsonValueKind.Array
+            ? Each(document.RootElement.EnumerateArray(), item => item.TryGetProperty("show", out var show) ? TvMaze(show, []) : null)
+            : [];
     }
 
     private async Task<MediaInfo?> FetchTvMazeAsync(string id, CancellationToken cancellationToken)
@@ -148,16 +148,29 @@ internal sealed partial class MediaCatalog(IHttpClientFactory clients, IDbContex
         return TvMaze(document.RootElement, seasons);
     }
 
+    internal static MediaInfo[] ParseTvMazeSearch(string json)
+    {
+        using var document = JsonDocument.Parse(json);
+        return document.RootElement.ValueKind == JsonValueKind.Array
+            ? Each(document.RootElement.EnumerateArray(), item => item.TryGetProperty("show", out var show) ? TvMaze(show, []) : null)
+            : [];
+    }
+
+    internal static MediaInfo? ParseAniList(string json)
+    {
+        using var document = JsonDocument.Parse(json);
+        return AniList(document.RootElement);
+    }
+
     private static MediaInfo? TvMaze(JsonElement show, MediaSeason[] seasons)
     {
         string? id = Text(show, "id"), name = Text(show, "name");
         if (id is null || name is null)
             return null;
         string? image = show.TryGetProperty("image", out var images) && images.ValueKind == JsonValueKind.Object ? Text(images, "medium") : null;
-        double? rating = show.TryGetProperty("rating", out var score) && score.ValueKind == JsonValueKind.Object && score.TryGetProperty("average", out var average)
-            && average.TryGetDouble(out double value) ? value : null;
+        double? rating = show.TryGetProperty("rating", out var score) ? Number(score, "average") : null;
         return new MediaInfo("series", "tvmaze", id, name, Text(show, "url"), image, YearIn(Text(show, "premiered")), Clean(Text(show, "summary")),
-            Items(show, "genres").Select(item => item.GetString()).OfType<string>().Take(4).ToArray(), rating, Text(show, "status"),
+            Items(show, "genres").Select(item => item.ValueKind == JsonValueKind.String ? item.GetString() : null).OfType<string>().Take(4).ToArray(), rating, Text(show, "status"),
             Int(show, "averageRuntime") ?? Int(show, "runtime"), seasons);
     }
 
@@ -170,7 +183,7 @@ internal sealed partial class MediaCatalog(IHttpClientFactory clients, IDbContex
         using var document = await AniListAsync("query ($q: String) { Page(perPage: 10) { media(search: $q, type: ANIME, isAdult: false) { " + AniListFields + " } } }",
             new { q = query }, cancellationToken);
         return document.RootElement.TryGetProperty("data", out var data) && data.TryGetProperty("Page", out var page)
-            ? Items(page, "media").Select(AniList).OfType<MediaInfo>().ToArray() : [];
+            ? Each(Items(page, "media"), AniList) : [];
     }
 
     private async Task<MediaInfo?> AniListByMalAsync(string mal, CancellationToken cancellationToken)
@@ -209,7 +222,7 @@ internal sealed partial class MediaCatalog(IHttpClientFactory clients, IDbContex
         int? score = Int(anime, "averageScore");
         int? episodes = Int(anime, "episodes");
         return new MediaInfo("anime", "anilist", id, name, Text(anime, "siteUrl"), image, Int(anime, "seasonYear"), Clean(Text(anime, "description")),
-            Items(anime, "genres").Select(item => item.GetString()).OfType<string>().Take(4).ToArray(), score / 10.0,
+            Items(anime, "genres").Select(item => item.ValueKind == JsonValueKind.String ? item.GetString() : null).OfType<string>().Take(4).ToArray(), score / 10.0,
             Text(anime, "status") is { } status ? status.Replace('_', ' ').ToLowerInvariant() : null, Int(anime, "duration"),
             episodes is > 0 ? [new MediaSeason(1, episodes.Value)] : []);
     }
@@ -219,7 +232,7 @@ internal sealed partial class MediaCatalog(IHttpClientFactory clients, IDbContex
     private async Task<IReadOnlyList<MediaInfo>> SearchTmdbAsync(string query, CancellationToken cancellationToken)
     {
         using var document = await GetJsonAsync($"https://api.themoviedb.org/3/search/movie?query={Uri.EscapeDataString(query)}&api_key={TmdbKey}", cancellationToken);
-        return Items(document.RootElement, "results").Take(10).Select(item => Tmdb(item)).OfType<MediaInfo>().ToArray();
+        return Each(Items(document.RootElement, "results"), Tmdb);
     }
 
     private async Task<MediaInfo?> FetchTmdbAsync(string id, CancellationToken cancellationToken)
@@ -234,7 +247,7 @@ internal sealed partial class MediaCatalog(IHttpClientFactory clients, IDbContex
         if (id is null || title is null)
             return null;
         string? poster = Text(movie, "poster_path");
-        double? rating = movie.TryGetProperty("vote_average", out var value) && value.TryGetDouble(out double number) && number > 0 ? number : null;
+        double? rating = Number(movie, "vote_average") is > 0 and var average ? average : null;
         return new MediaInfo("film", "tmdb", id, title, $"https://www.themoviedb.org/movie/{id}", poster is null ? null : "https://image.tmdb.org/t/p/w342" + poster,
             YearIn(Text(movie, "release_date")), Clean(Text(movie, "overview")),
             Items(movie, "genres").Select(item => Text(item, "name")).OfType<string>().Take(4).ToArray(), rating, Text(movie, "status"), Int(movie, "runtime"), []);
@@ -303,8 +316,38 @@ internal sealed partial class MediaCatalog(IHttpClientFactory clients, IDbContex
             }
             : null;
 
+    /// <summary>A whole number, or null when the field is missing, null or not a whole number (catalogs send null for unknown values).</summary>
     private static int? Int(JsonElement element, string name) =>
-        element.ValueKind == JsonValueKind.Object && element.TryGetProperty(name, out var value) && value.TryGetInt32(out int number) ? number : null;
+        element.ValueKind == JsonValueKind.Object && element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number
+            && value.TryGetInt32(out int number) ? number : null;
+
+    /// <summary>A number, or null when the field is missing, null or not a number.</summary>
+    private static double? Number(JsonElement element, string name) =>
+        element.ValueKind == JsonValueKind.Object && element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number
+            && value.TryGetDouble(out double number) ? number : null;
+
+    /// <summary>
+    /// Converts each search result on its own, so one entry with unexpected data is skipped instead of hiding every result.
+    /// </summary>
+    private static MediaInfo[] Each(IEnumerable<JsonElement> items, Func<JsonElement, MediaInfo?> convert, int limit = 10)
+    {
+        var results = new List<MediaInfo>();
+        foreach (var item in items)
+        {
+            try
+            {
+                if (convert(item) is { } info)
+                    results.Add(info);
+            }
+            catch (Exception error) when (error is InvalidOperationException or FormatException or KeyNotFoundException)
+            {
+                // Skip this entry only.
+            }
+            if (results.Count == limit)
+                break;
+        }
+        return results.ToArray();
+    }
 
     private static int? YearIn(string? date) =>
         date is not null && Regex.Match(date, @"(19|20)\d{2}", RegexOptions.None, TimeSpan.FromMilliseconds(50)) is { Success: true } match

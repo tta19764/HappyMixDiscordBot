@@ -14,6 +14,11 @@ public sealed record Poll(Guid Id, ulong GuildId, Guid? GroupId, ulong CreatorId
     public ulong? MessageId { get; init; }
     /// <summary>Whether the Discord message already shows the final result.</summary>
     public bool Finalized { get; init; }
+    /// <summary>
+    /// Whether the vote is a Discord poll: people vote with Discord's own poll controls and the bot copies the votes.
+    /// Otherwise the bot's message has a menu to vote.
+    /// </summary>
+    public bool Native { get; init; }
 
     public bool IsClosed(DateTimeOffset now) => ClosedAt is not null || now >= ClosesAt;
 
@@ -62,5 +67,14 @@ public interface IPollStore
     /// </summary>
     Task<IReadOnlyList<Poll>> ListDiscordWorkAsync(DateTimeOffset now);
 
-    Task SetMessageAsync(Guid pollId, ulong channelId, ulong? messageId, bool finalized);
+    Task SetMessageAsync(Guid pollId, ulong channelId, ulong? messageId, bool finalized, bool native = false);
+
+    /// <summary>The vote shown by a Discord message.</summary>
+    Task<Poll?> FindByMessageAsync(ulong messageId);
+
+    /// <summary>Open Discord polls, whose votes are copied from Discord.</summary>
+    Task<IReadOnlyList<Poll>> ListOpenNativeAsync(DateTimeOffset now);
+
+    /// <summary>Replaces every vote at once with <paramref name="votes"/> (member id → chosen positions).</summary>
+    Task ReplaceVotesAsync(Guid pollId, IReadOnlyDictionary<ulong, int[]> votes);
 }

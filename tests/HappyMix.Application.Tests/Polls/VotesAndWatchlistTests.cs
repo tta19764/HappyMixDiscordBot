@@ -103,6 +103,31 @@ public sealed class VotesAndWatchlistTests
         Assert.Equal(("Arcane", "watchlist"), (suggestion.Label, suggestion.Source));
     }
 
+    [Fact]
+    public async Task DiscordPollVotesAreCopiedAndTheDashboardSendsVotersToDiscord()
+    {
+        using var fixture = await PollTests.Fixture.CreateAsync();
+        var id = (await fixture.Sender.Send(new CreatePollCommand(Actor(Kai), null, "Game night?", ["Friday", "Saturday"], false,
+            TimeSpan.FromHours(3), [], true, Guid.NewGuid(), 555))).Value;
+        var store = fixture.Database.GetRequiredService<IPollStore>();
+        await store.SetMessageAsync(id, 555, 777, false, native: true);
+
+        Assert.True((await fixture.Sender.Send(new CopyDiscordPollVoteCommand(Guild, Kai, 777, 1, true))).Value);
+        Assert.True((await fixture.Sender.Send(new CopyDiscordPollVoteCommand(Guild, Organizer, 777, 0, true))).Value);
+        Assert.False((await fixture.Sender.Send(new CopyDiscordPollVoteCommand(Guild, Organizer, 777, 9, true))).Value);
+        Assert.False((await fixture.Sender.Send(new CopyDiscordPollVoteCommand(Guild + 1, Organizer, 777, 0, true))).Value);
+        await fixture.Sender.Send(new CopyDiscordPollVoteCommand(Guild, Organizer, 777, 0, false));
+        var poll = (await store.FindByMessageAsync(777))!;
+        Assert.True(poll.Native);
+        Assert.Equal([new PollVote(Kai, 1)], poll.Votes);
+
+        Assert.True((await fixture.Sender.Send(new VotePollCommand(Actor(Kai), id, [0]))).IsFailure);
+
+        await fixture.Sender.Send(new SyncDiscordPollVotesCommand(Guild, id, new Dictionary<ulong, int[]> { [Kai] = [0], [Organizer] = [1] }));
+        Assert.Equal([(Organizer, 1), (Kai, 0)], (await store.GetAsync(Guild, id))!.Votes.Select(vote => (vote.UserId, vote.Position)).Order());
+        Assert.Equal([id], (await store.ListOpenNativeAsync(fixture.Clock.UtcNow)).Select(item => item.Id));
+    }
+
     [Theory]
     [InlineData("12:30", 750)]
     [InlineData("1:05:00", 3900)]
@@ -120,30 +145,81 @@ public sealed class VotesAndWatchlistTests
         Assert.StartsWith("2024 · 166 хв", PollMessages.Details(FakeCatalog.Film, "uk"), StringComparison.Ordinal);
     }
 
+    private static readonly DateTimeOffset Now = new(2026, 11, 19, 12, 0, 0, TimeSpan.Zero);
+
+    private static Poll Sample(bool everyone = true, IReadOnlyList<PollOption>? options = null, IReadOnlyList<ulong>? audience = null) =>
+        new(Guid.NewGuid(), Guild, null, Kai, "Movie night?", false, everyone, Now.AddHours(-1), Now.AddHours(2).AddMinutes(30), null,
+            options ?? [new PollOption(0, "Arcane", "series", FakeCatalog.Series.Url, FakeCatalog.Series.Ref), new PollOption(1, "Pizza first", "custom", null)],
+            audience ?? [], [new PollVote(Kai, 0), new PollVote(Organizer, 0)]);
+
     [Fact]
-    public void DiscordMessagesShowCardsWhileOpenAndTheWinnerWhenEnded()
+    public void PlainVotesForEveryoneBecomeDiscordPolls()
     {
-        var now = new DateTimeOffset(2026, 11, 19, 12, 0, 0, TimeSpan.Zero);
-        var poll = new Poll(Guid.NewGuid(), Guild, null, Kai, "Movie night?", false, true, now.AddHours(-1), now.AddHours(1), null,
-            [new PollOption(0, "Arcane", "series", FakeCatalog.Series.Url, FakeCatalog.Series.Ref), new PollOption(1, "Pizza first", "custom", null)],
-            [], [new PollVote(Kai, 0), new PollVote(Organizer, 0)]);
+        var plain = Sample(options: [new PollOption(0, "Friday", "custom", null), new PollOption(1, "Saturday", "custom", null)]);
+        Assert.True(PollMessages.UsesNativePoll(plain));
+        Assert.False(PollMessages.UsesNativePoll(Sample()));
+        Assert.False(PollMessages.UsesNativePoll(plain with { Everyone = false, Audience = [Kai, Organizer] }));
+        Assert.False(PollMessages.UsesNativePoll(plain with { Options = [new PollOption(0, new string('x', 56), "custom", null), plain.Options[1]] }));
+
+        var native = PollMessages.NativePoll(plain with { Multiple = true }, Now);
+        Assert.Equal("Movie night?", native.Question.Text);
+        Assert.Equal(["Friday", "Saturday"], native.Answers.Select(answer => answer.Text));
+        Assert.Equal(3u, native.Duration);
+        Assert.True(native.AllowMultiselect);
+    }
+
+    [Fact]
+    public void TitleVotesBecomeCardsWithPostersAndStayWithinDiscordLimits()
+    {
+        var poll = Sample();
         var media = new Dictionary<MediaRef, MediaInfo> { [FakeCatalog.Series.Ref] = FakeCatalog.Series };
         var tracked = new WatchItem(Guid.NewGuid(), Guild, Guid.NewGuid(), "series", "Arcane", null, null, "tvmaze", "82", WatchStatus.Watching, 2, 1, 754,
-            Kai, now, now, null);
+            Kai, Now, Now, null);
         var progress = new Dictionary<MediaRef, WatchItem> { [FakeCatalog.Series.Ref] = tracked };
 
-        var (_, embeds, components) = PollMessages.Build(poll, media, progress, "en", now, "https://dash.test/votes/1#votes");
-        Assert.Equal(2, embeds.Length);
-        Assert.Equal("🗳️ Movie night?", embeds[0].Title);
-        Assert.Contains("2 votes", embeds[0].Description, StringComparison.Ordinal);
-        Assert.Equal("https://img.test/arcane.jpg", embeds[1].Thumbnail!.Value.Url);
-        Assert.Contains("next: S2 E1 · stopped at 12:34", embeds[1].Description, StringComparison.Ordinal);
-        var menu = components.Components.OfType<ActionRowComponent>().First().Components.OfType<SelectMenuComponent>().Single();
-        Assert.Equal((1, 1, 2), (menu.MinValues, menu.MaxValues, menu.Options.Count));
+        var open = PollMessages.BuildCards(poll, media, progress, "en", Now, "https://dash.test/votes/1#votes");
+        var all = Flatten(open.Components).ToArray();
+        var section = Assert.Single(all.OfType<SectionComponent>());
+        Assert.Equal("https://img.test/arcane.jpg", Assert.IsType<ThumbnailComponent>(section.Accessory).Media.Url);
+        string text = string.Join('\n', all.OfType<TextDisplayComponent>().Select(item => item.Content));
+        Assert.Contains("[Arcane](https://www.tvmaze.com/shows/82/arcane)", text, StringComparison.Ordinal);
+        Assert.Contains("2021 · 2 seasons, 5 episodes", text, StringComparison.Ordinal);
+        Assert.Contains("next: S2 E1 · stopped at 12:34", text, StringComparison.Ordinal);
+        var menu = Assert.Single(all.OfType<SelectMenuComponent>());
+        Assert.Equal((1, 2), (menu.MaxValues, menu.Options.Count));
 
-        var (_, ended, final) = PollMessages.Build(poll with { ClosedAt = now }, media, progress, "en", now, null);
-        Assert.StartsWith("🏁", ended[0].Title, StringComparison.Ordinal);
-        Assert.Contains("**Arcane** won with 2 of 2 votes", ended[0].Description, StringComparison.Ordinal);
-        Assert.Empty(final.Components);
+        var ended = PollMessages.BuildCards(poll with { ClosedAt = Now }, media, progress, "en", Now, null);
+        var finished = Flatten(ended.Components).ToArray();
+        Assert.Empty(finished.OfType<SelectMenuComponent>());
+        Assert.Single(finished.OfType<MediaGalleryComponent>());
+        Assert.Contains(finished.OfType<TextDisplayComponent>(), item => item.Content.Contains("**Arcane** won with 2 of 2 votes", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void TenPostersStillFitDiscordsComponentLimit()
+    {
+        var options = Enumerable.Range(0, 10).Select(index => new PollOption(index, $"Show {index}", "series", null, new MediaRef("tvmaze", index.ToString(System.Globalization.CultureInfo.InvariantCulture)))).ToArray();
+        var media = options.ToDictionary(option => option.Media!, option => FakeCatalog.Series with { ExternalId = option.Media!.ExternalId, Title = option.Label });
+        var cards = PollMessages.BuildCards(Sample(options: options, everyone: false, audience: [Kai, Organizer]), media, new Dictionary<MediaRef, WatchItem>(), "en", Now,
+            "https://dash.test/votes/1#votes");
+        Assert.InRange(Flatten(cards.Components).Count(), 1, 40);
+        Assert.Contains(Flatten(cards.Components).OfType<TextDisplayComponent>(), item => item.Content.Contains($"<@{Kai}>", StringComparison.Ordinal));
+    }
+
+    private static IEnumerable<IMessageComponent> Flatten(IEnumerable<IMessageComponent> components)
+    {
+        foreach (var component in components)
+        {
+            yield return component;
+            var children = component switch
+            {
+                ContainerComponent container => container.Components,
+                SectionComponent section => [.. section.Components, section.Accessory],
+                ActionRowComponent row => row.Components,
+                _ => []
+            };
+            foreach (var child in Flatten(children))
+                yield return child;
+        }
     }
 }
