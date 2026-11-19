@@ -36,6 +36,16 @@ public sealed partial class LogsTests
     public void SecretsAreMasked(string text, string expected) => Assert.Equal(expected, DatabaseLoggerProvider.Redact(text));
 
     [Fact]
+    public void ReleaseNotesStopOnceEveryNoteIsPosted()
+    {
+        var state = new Dictionary<string, ulong>(StringComparer.Ordinal) { ["channel"] = 5, ["v0.0.9/0"] = 1, ["v0.0.9/1"] = 2 };
+        Assert.True(HappyMix.Bot.Jobs.PublishReleaseNotesJob.HasPending("v0.0.9", 3, state));
+        state["v0.0.9/2"] = 3;
+        Assert.False(HappyMix.Bot.Jobs.PublishReleaseNotesJob.HasPending("v0.0.9", 3, state));
+        Assert.True(HappyMix.Bot.Jobs.PublishReleaseNotesJob.HasPending("v0.0.10", 1, state));
+    }
+
+    [Fact]
     public async Task EntriesKeepTheirServerAndUserFromMessagesAndScopes()
     {
         using var provider = new DatabaseLoggerProvider();

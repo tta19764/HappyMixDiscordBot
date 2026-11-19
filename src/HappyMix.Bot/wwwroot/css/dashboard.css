@@ -1651,3 +1651,16 @@ form:has([data-repeat-toggle]:not(:checked)) [data-repeat-through] { display: no
 .hm-suggestions .hm-roster__name { flex: 1; min-width: 0; display: grid; white-space: normal; }
 .hm-suggestions .hm-roster__name small { font-weight: 500; }
 .hm-join-requests .hm-roster__name { flex: 1; min-width: 0; }
+
+/* Game news: which kinds of Steam news a subscription posts. */
+.hm-news-sources { margin: 0; font-size: var(--hm-fs-sm); }
+.hm-news-sources > summary { cursor: pointer; list-style: none; display: flex; flex-wrap: wrap; gap: var(--hm-space-1) var(--hm-space-2); align-items: baseline; }
+.hm-news-sources > summary::-webkit-details-marker { display: none; }
+.hm-news-sources > summary .hm-link { color: var(--hm-brand); text-decoration: underline; text-underline-offset: 2px; }
+.hm-news-sources[open] > summary { margin-bottom: var(--hm-space-2); }
+.hm-news-sources .hm-checks { grid-template-columns: 1fr; }
+.hm-news-sources .hm-check { padding: var(--hm-space-1) var(--hm-space-2); }
+.hm-news-sources .hm-btn { justify-self: start; }
+.hm-news-add__sources { margin-top: var(--hm-space-4); }
+.hm-news-add__sources .hm-check { flex-wrap: nowrap; align-items: center; font-size: var(--hm-fs-sm); }
+.hm-check > span { min-width: 0; }

@@ -283,7 +283,7 @@ stable-key lookups and an entry in each language file.
 
 ### Steam game news and Discord commands
 
-News subscriptions include all feeds returned by Steam, including general announcements. The reader paginates back to the subscription creation time and retains per-post delivery deduplication. Newly created news and release channels are placed in the `Bot Notifications` category. Existing channels retain their locations.
+Each news subscription chooses its kinds of news (`GameNews.Sources` flags, migration `20261129000100_AddGameNewsSources`): patch notes (`steam_community_announcements` posts tagged `patchnotes`), other announcements from the Steam page, and press articles (every other feed). New and existing subscriptions post patch notes and announcements; the creator or an administrator changes this on the game's card. Newly ticked kinds start from that moment: posts already out are recorded as delivered. The reader paginates back to the subscription creation time and retains per-post delivery deduplication. Newly created news and release channels are placed in the `Bot Notifications` category. Existing channels retain their locations.
 
 The next release implementation plan and current status are in [docs/V0_0_2_PLAN.md](docs/V0_0_2_PLAN.md).
 
@@ -380,6 +380,11 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 - Groups can be open or invitation only (stored in the group JSON with pending join requests and game suggestions; no migration). Open groups appear for everyone under **Open to join**; their roster stays members-only. Requests go to the organizer, who approves or declines them on the group page (moderators can too); an existing invitation joins directly; closing a group drops pending requests. The organizer, requester and suggester get Discord DMs in the community language through `IGroupNotifier` (best effort).
 - Members suggest games for the group; the organizer adds or dismisses each suggestion. Join and suggestion actions are dashboard-only for now.
 - Games and game votes search IGDB when `Twitch:ClientId` and `Twitch:ClientSecret` are set (otherwise Steam), so non-Steam titles such as League of Legends or Fortnite keep their platforms, cover and official site. A result that is also on Steam is stored as a Steam game so Steam news keeps working. Epic Games Store, GOG and IGDB links are recognised in votes.
+
+### v0.0.10 game news sources
+
+- Each game news subscription chooses patch notes, Steam page announcements and/or press articles (`GameNews.Sources`, migration `20261129000100_AddGameNewsSources`; existing subscriptions keep patch notes and announcements). Newly ticked kinds start from that moment. Discord headings name patch notes or the press site.
+- `PublishReleaseNotesJob` stops before calling Discord once every note of the current version is posted, and logs only when it posts.
 
 ### CI runs and deployment diagnostics
 

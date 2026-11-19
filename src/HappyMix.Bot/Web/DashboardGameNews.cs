@@ -43,17 +43,20 @@ public sealed partial class DashboardController
     }
 
     [HttpPost("/game-news/{guildId}")]
-    public async Task<IActionResult> ChangeGameNews(ulong guildId, string action, string game, string? name,
+    public async Task<IActionResult> ChangeGameNews(ulong guildId, string action, string game, string? name, int[]? sources,
         [FromServices] GameNewsService news)
     {
         if (await GetDiscordMemberAsync(guildId) is not { } member || discord.GetGuild(guildId) is not { } guild)
             return NotMember();
-        if (action is not ("create" or "subscribe" or "unsubscribe" or "delete"))
+        if (action is not ("create" or "subscribe" or "unsubscribe" or "delete" or "sources"))
             return BadRequest();
+        // Ticked checkboxes post their flag values; a form without them (subscribe, delete) keeps the default.
+        var kinds = sources is null ? GameNewsSources.Official
+            : (GameNewsSources)sources.Aggregate(0, (all, flag) => all | flag) & GameNewsSources.All;
 
         try
         {
-            await news.ChangeAsync(guild, member, GameNewsService.ParseAppId(game), action, name);
+            await news.ChangeAsync(guild, member, GameNewsService.ParseAppId(game), action, name, kinds);
         }
         catch (InvalidOperationException error)
         {
@@ -63,6 +66,8 @@ public sealed partial class DashboardController
         {
             TempData["GameNewsError"] = "Discord could not finish the request. Check the bot’s permissions and role position, then try again.";
         }
-        return RedirectToAction(nameof(GameNews), new { guildId });
+        return action == "sources"
+            ? Redirect($"/game-news/{guildId}#news-{GameNewsService.ParseAppId(game)}")
+            : RedirectToAction(nameof(GameNews), new { guildId });
     }
 }
