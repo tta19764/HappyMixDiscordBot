@@ -202,7 +202,7 @@
     <value>Группы</value>
   </data>
   <data name="Invite_only_gaming_groups_in_this_server_Members_get_a_matching_Discord" xml:space="preserve">
-    <value>Игровые группы этого сервера, только по приглашению. Участники получают соответствующую роль в Discord.</value>
+    <value>Игровые группы этого сервера. Вступайте по приглашению или попроситесь в открытую группу. Участники получают соответствующую роль в Discord.</value>
   </data>
   <data name="My_groups" xml:space="preserve">
     <value>Мои группы</value>
@@ -256,7 +256,7 @@
     <value>Вы пока не состоите ни в одной группе</value>
   </data>
   <data name="Groups_are_invite_only_Ask_an_organizer_to_invite_you_or_start" xml:space="preserve">
-    <value>Группы доступны только по приглашению. Попросите организатора пригласить вас или создайте свою.</value>
+    <value>Попросите организатора пригласить вас, попроситесь в открытую группу или создайте свою.</value>
   </data>
   <data name="Arg0_groups" xml:space="preserve">
     <value>Групп: {0}</value>
@@ -484,7 +484,7 @@
     <value>Группа не создана</value>
   </data>
   <data name="You_ll_be_the_organizer_The_group_is_invite_only_and_HappyMix" xml:space="preserve">
-    <value>Вы станете организатором. Группа доступна только по приглашению, а HappyMix создаст соответствующую роль в Discord.</value>
+    <value>Вы станете организатором. Сначала группа доступна только по приглашению (открыть её можно в настройках), а HappyMix создаст соответствующую роль в Discord.</value>
   </data>
   <data name="You_can_t_create_groups_here" xml:space="preserve">
     <value>Вы не можете создавать группы на этом сервере</value>
@@ -1982,7 +1982,7 @@
 <data name="Guide_weekly_Title" xml:space="preserve"><value>Недельное расписание и копирование</value></data>
 <data name="Guide_weekly_Body" xml:space="preserve"><value>Откройте недельное расписание и выберите день. Добавьте промежутки времени, укажите для каждого «Точно» или «Возможно» и сохраните день. Расписание повторяется еженедельно. Копирование дня включает часы, уверенность и часовой пояс. Вставьте текст в редактор другого дня, примените и сохраните. В поле копирования работают Ctrl+C и Ctrl+V.</value></data>
 <data name="Guide_groups_Title" xml:space="preserve"><value>Группы и общее расписание</value></data>
-<data name="Guide_groups_Body" xml:space="preserve"><value>Создайте группу, добавьте описание и игры, пригласите участников сервера. Приглашённые принимают приглашение в Discord или на сайте и получают роль группы. На доске группы видна доступность участников. Организаторы и модераторы управляют группой. Восстановление ролей назначает их по сохранённому составу. Выход снимает роль группы. Закрытие удаляет состав и роль.</value></data>
+<data name="Guide_groups_Body" xml:space="preserve"><value>Создайте группу, добавьте описание и игры, пригласите участников сервера. Приглашённые принимают приглашение в Discord или на сайте и получают роль группы. На доске группы видна доступность участников. Открытую группу видят все в разделе «Открыты для вступления»: люди просятся, а организатор их принимает. Участники могут предлагать игры с любой платформы, а организатор добавляет их. Организаторы и модераторы управляют группой. Восстановление ролей назначает их по сохранённому составу. Выход снимает роль группы. Закрытие удаляет состав и роль.</value></data>
 <data name="Guide_events_Title" xml:space="preserve"><value>События и приглашения</value></data>
 <data name="Guide_events_Body" xml:space="preserve"><value>Создайте событие для группы или выберите отдельных участников. Задайте даты, часы и часовой пояс. Для повторяющегося события согласитесь один раз, чтобы присоединиться к серии; отказывайтесь или отменяйте участие в отдельных датах, не меняя остальных. Организатор подтверждает каждую дату, когда достаточно людей могут прийти, и может отменить одну дату или оставшуюся серию. Подтверждённые события отображаются в доступности. Откройте «Уведомления в канале» группы или события, чтобы выбрать канал или создать канал с её названием, задать язык и время напоминания и при желании публиковать обновления о запланированных, подтверждённых или отменённых событиях. События используют настройки группы, пока не получат собственные. Напоминания упоминают согласившихся участников и организатора, только если их нет ни в одном голосовом канале сервера, с учётом связанных аккаунтов. Повторяющееся событие отправляет каждому одно приглашение: «Принять все даты» или «Отклонить все даты» отвечает за всю серию. Отменённые события и даты удаляются через несколько минут после отмены.</value></data>
 <data name="Guide_game-news_Title" xml:space="preserve"><value>Подписки на новости игр</value></data>
@@ -2236,7 +2236,7 @@
 <data name="Tag_films_help" xml:space="preserve"><value>Помнит фильмы из прошлых голосований; ссылки IMDb</value></data>
 <data name="Tag_anime_help" xml:space="preserve"><value>Помнит аниме из прошлых голосований; ссылки MyAnimeList</value></data>
 <data name="Guide_votes_Title" xml:space="preserve"><value>Голосования</value></data>
-<data name="Guide_votes_Body" xml:space="preserve"><value>Голосуйте, во что играть или что смотреть, на панели или в Discord. В группе откройте «Голосования»: встроенные теги («Игры», «Сериалы», «Фильмы», «Аниме», выбираются в настройках группы) добавляют подсказки из игр группы, её списка просмотра и прошлых голосований, а то, что давно не выбирали, показывается первым. Ищите в каталогах или вставляйте ссылки Steam, IMDb, TVmaze, MyAnimeList или AniList: тогда варианты показывают постер, год, жанры, рейтинг и сезоны или эпизоды. В Discord простые голосования появляются как опросы Discord, а голосования за игры, сериалы, фильмы или аниме — как карточки с постерами, ссылками и меню голосования. Голосования группы публикуются в её канале уведомлений; голосования сервера — в выбранном канале, или начните его командой /vote create. Группы, смотрящие сериалы, фильмы или аниме, ведут список просмотра: добавляйте названия поиском или ссылкой, отмечайте просмотренные эпизоды, записывайте, где остановились (например 23:40), и добавляйте победителей голосований одним нажатием.</value></data>
+<data name="Guide_votes_Body" xml:space="preserve"><value>Голосуйте, во что играть или что смотреть, на панели или в Discord. В группе откройте «Голосования»: встроенные теги («Игры», «Сериалы», «Фильмы», «Аниме», выбираются в настройках группы) добавляют подсказки из игр группы, её списка просмотра и прошлых голосований, а то, что давно не выбирали, показывается первым. Ищите в каталогах или вставляйте ссылки Steam, IMDb, TVmaze, MyAnimeList или AniList: тогда варианты показывают постер, год, жанры, рейтинг и сезоны или эпизоды. В Discord каждое голосование — опрос Discord; над голосованиями за названия появляется карточка с постерами и ссылками, а голосования для выбранных людей попадают в приватную ветку только с ними. Голосования группы публикуются в её канале уведомлений; голосования сервера — в выбранном канале, или начните его командой /vote create. Панель показывает, кто за что проголосовал, и результаты за сегодня и эту неделю. Группы, смотрящие сериалы, фильмы или аниме, ведут список просмотра: добавляйте названия поиском или ссылкой, отмечайте просмотренные эпизоды, записывайте, где остановились (например 23:40), завершайте сериал одним нажатием и добавляйте победителей голосований из результатов.</value></data>
 <data name="Polls_VoteCount" xml:space="preserve"><value>голосов: {0}</value></data>
 <data name="Polls_WinnerLine" xml:space="preserve"><value>🏆 Победа: **{0}** — {1} из {2} голосов.</value></data>
 <data name="Polls_EndsAt" xml:space="preserve"><value>Голосование завершится {0}</value></data>
@@ -2257,11 +2257,11 @@
 <data name="Media_SearchPlaceholder" xml:space="preserve"><value>Начните вводить название…</value></data>
 <data name="Polls_FromWatchlist" xml:space="preserve"><value>в списке просмотра</value></data>
 <data name="Polls_AddThis" xml:space="preserve"><value>Добавить вариантом</value></data>
-<data name="Polls_PostedIn" xml:space="preserve"><value>Также появится в {0}: простые голосования — как опрос Discord, голосования за игры, сериалы, фильмы или аниме — как карточки с постерами и ссылками.</value></data>
+<data name="Polls_PostedIn" xml:space="preserve"><value>Также появится в {0} как опрос Discord; над голосованиями за игры, сериалы, фильмы или аниме будет карточка с постерами и ссылками.</value></data>
 <data name="Polls_GroupNoChannel" xml:space="preserve"><value>Включите уведомления группы в настройках, чтобы голосования появлялись и в Discord.</value></data>
 <data name="Polls_PostIn" xml:space="preserve"><value>Опубликовать в Discord</value></data>
 <data name="Polls_DashboardOnly" xml:space="preserve"><value>Только на панели</value></data>
-<data name="Polls_PostInHelp" xml:space="preserve"><value>Простые голосования для всех становятся опросом Discord. Голосования с названиями из каталогов или для выбранных участников публикуются как карточки с постерами, ссылками и меню голосования.</value></data>
+<data name="Polls_PostInHelp" xml:space="preserve"><value>Публикуется как опрос Discord. Голосование для выбранных людей попадает в приватную ветку только с ними, поэтому больше никто его не видит. Над опросом появляется карточка с постерами и ссылками на названия из каталогов.</value></data>
 <data name="Watch_Title" xml:space="preserve"><value>Список просмотра</value></data>
 <data name="Watch_HelpEdit" xml:space="preserve"><value>Отслеживайте, что смотрит группа: следующий эпизод, где остановились, и что уже просмотрено. Победителей голосований можно добавить одним нажатием.</value></data>
 <data name="Watch_HelpView" xml:space="preserve"><value>Что смотрит группа и где остановилась. Организатор обновляет список.</value></data>
@@ -2318,6 +2318,107 @@
 <data name="HelpV007_9" xml:space="preserve"><value>Голосование, которое нужно завершить</value></data>
 <data name="HelpV007_10" xml:space="preserve"><value>Используйте /vote create в канале, где должны голосовать; выберите группу, чтобы голосовали только её участники. Голосования с панели тоже появляются в Discord, если выбран канал. Голосуйте через меню под сообщением.</value></data>
 <data name="Polls_VoteInDiscord" xml:space="preserve"><value>Голосовать в Discord</value></data>
-<data name="Polls_VoteInDiscordHelp" xml:space="preserve"><value>Это опрос Discord; результаты здесь обновляются по нему.</value></data>
+<data name="Polls_VoteInDiscordHelp" xml:space="preserve"><value>Голосуют в опросе Discord; результаты и участники здесь обновляются по нему.</value></data>
 <data name="Polls_Err_Discord" xml:space="preserve"><value>Это голосование — опрос Discord. Голосуйте в Discord.</value></data>
+<data name="Logs_Title" xml:space="preserve"><value>Журнал</value></data>
+<data name="Logs_Lead" xml:space="preserve"><value>Что HappyMix делал на этом сервере: команды, активность в Discord, запланированные публикации и проблемы. Видят только администраторы.</value></data>
+<data name="Logs_AdminsOnly" xml:space="preserve"><value>Только для администраторов</value></data>
+<data name="Logs_AdminsOnlyText" xml:space="preserve"><value>Журнал сервера могут читать только его администраторы Discord.</value></data>
+<data name="Logs_BackToAvailability" xml:space="preserve"><value>К доступности</value></data>
+<data name="Logs_Level" xml:space="preserve"><value>Уровень</value></data>
+<data name="Logs_Filter_info" xml:space="preserve"><value>Всё</value></data>
+<data name="Logs_Filter_warning" xml:space="preserve"><value>Предупреждения и ошибки</value></data>
+<data name="Logs_Filter_error" xml:space="preserve"><value>Только ошибки</value></data>
+<data name="Logs_Filter_debug" xml:space="preserve"><value>Всё, вместе со служебными запусками</value></data>
+<data name="Logs_AreaLabel" xml:space="preserve"><value>Раздел</value></data>
+<data name="Logs_AllAreas" xml:space="preserve"><value>Все разделы</value></data>
+<data name="Logs_Area_commands" xml:space="preserve"><value>Действия</value></data>
+<data name="Logs_Area_discord" xml:space="preserve"><value>Discord</value></data>
+<data name="Logs_Area_jobs" xml:space="preserve"><value>По расписанию</value></data>
+<data name="Logs_Area_dashboard" xml:space="preserve"><value>Панель</value></data>
+<data name="Logs_Area_integrations" xml:space="preserve"><value>Интеграции</value></data>
+<data name="Logs_Area_system" xml:space="preserve"><value>Система</value></data>
+<data name="Logs_Range" xml:space="preserve"><value>Период</value></data>
+<data name="Logs_Range_1h" xml:space="preserve"><value>Последний час</value></data>
+<data name="Logs_Range_24h" xml:space="preserve"><value>Последние 24 часа</value></data>
+<data name="Logs_Range_7d" xml:space="preserve"><value>Последние 7 дней</value></data>
+<data name="Logs_Range_all" xml:space="preserve"><value>Всё сохранённое</value></data>
+<data name="Logs_Search" xml:space="preserve"><value>Поиск</value></data>
+<data name="Logs_SearchPlaceholder" xml:space="preserve"><value>Команда, ошибка, ID пользователя…</value></data>
+<data name="Logs_IncludeBotWide" xml:space="preserve"><value>Показывать общие записи бота (только для владельцев)</value></data>
+<data name="Logs_Apply" xml:space="preserve"><value>Показать</value></data>
+<data name="Logs_Export" xml:space="preserve"><value>Скачать CSV</value></data>
+<data name="Logs_Live" xml:space="preserve"><value>Вживую</value></data>
+<data name="Logs_LiveHelp" xml:space="preserve"><value>Новые записи появляются каждые 10 секунд</value></data>
+<data name="Logs_Retention" xml:space="preserve"><value>Журнал хранится 14 дней.</value></data>
+<data name="Logs_Empty" xml:space="preserve"><value>Для этих фильтров записей пока нет.</value></data>
+<data name="Logs_ShowOlder" xml:space="preserve"><value>Показать старые</value></data>
+<data name="Logs_Level_info" xml:space="preserve"><value>Инфо</value></data>
+<data name="Logs_Level_warning" xml:space="preserve"><value>Внимание</value></data>
+<data name="Logs_Level_error" xml:space="preserve"><value>Ошибка</value></data>
+<data name="Logs_Level_debug" xml:space="preserve"><value>Служебное</value></data>
+<data name="Logs_Time" xml:space="preserve"><value>Время</value></data>
+<data name="Logs_Source" xml:space="preserve"><value>Источник</value></data>
+<data name="Logs_User" xml:space="preserve"><value>Пользователь</value></data>
+<data name="Logs_Scope" xml:space="preserve"><value>Охват</value></data>
+<data name="Logs_BotWide" xml:space="preserve"><value>Общее для бота, без привязки к серверу</value></data>
+<data name="Logs_Details" xml:space="preserve"><value>Подробности</value></data>
+<data name="Logs_Error" xml:space="preserve"><value>Ошибка</value></data>
+<data name="Guide_logs_Title" xml:space="preserve"><value>Журнал</value></data>
+<data name="Guide_logs_Body" xml:space="preserve"><value>Администраторы видят, что HappyMix делал на их сервере: каждое действие через панель или команду (кто его выполнил и получилось ли), команды и кнопки Discord, запланированные публикации и проблемы, например нехватку разрешений или каталоги, которые не ответили. Фильтруйте по уровню, разделу, периоду или тексту, открывайте запись для подробностей, включайте «Вживую», чтобы видеть новые записи, или скачивайте отфильтрованные записи в CSV. Секреты скрыты, а то, что вводят люди, не сохраняется; записи хранятся 14 дней.</value></data>
+<data name="Watch_Finish" xml:space="preserve"><value>Завершить сериал</value></data>
+<data name="Watch_FinishConfirm" xml:space="preserve"><value>Отметить весь «{0}» просмотренным?</value></data>
+<data name="Watch_SeasonOption" xml:space="preserve"><value>Сезон {0} · эпизодов: {1}</value></data>
+<data name="Watch_Err_Season" xml:space="preserve"><value>Выберите сезон, который есть в этом сериале.</value></data>
+<data name="Watch_Err_Episode" xml:space="preserve"><value>Выберите эпизод, который есть в этом сезоне.</value></data>
+<data name="Polls_Results_today" xml:space="preserve"><value>Результаты за сегодня</value></data>
+<data name="Polls_Results_week" xml:space="preserve"><value>На этой неделе</value></data>
+<data name="Polls_EndedAt" xml:space="preserve"><value>завершено {0}</value></data>
+<data name="Polls_VoteBelow" xml:space="preserve"><value>Голосуйте в опросе ниже</value></data>
+<data name="Groups_Requested" xml:space="preserve"><value>Запрос отправлен</value></data>
+<data name="Groups_OpenToJoin" xml:space="preserve"><value>Открыты для вступления</value></data>
+<data name="Groups_Open" xml:space="preserve"><value>Открытая</value></data>
+<data name="Groups_InviteOnly" xml:space="preserve"><value>Только по приглашению</value></data>
+<data name="Groups_RequestToJoin" xml:space="preserve"><value>Попроситься в группу</value></data>
+<data name="Groups_CancelRequest" xml:space="preserve"><value>Отозвать запрос</value></data>
+<data name="Groups_RequestPending" xml:space="preserve"><value>Ваш запрос ждёт решения организатора.</value></data>
+<data name="Groups_OpenHelp" xml:space="preserve"><value>Эта группа открыта: попроситесь, и организатор вас добавит.</value></data>
+<data name="Groups_JoinRequests" xml:space="preserve"><value>Запросы на вступление</value></data>
+<data name="Groups_Approve" xml:space="preserve"><value>Принять</value></data>
+<data name="Groups_GamePage" xml:space="preserve"><value>Страница игры</value></data>
+<data name="Groups_NoStoreLink" xml:space="preserve"><value>Без ссылки на магазин</value></data>
+<data name="Groups_Suggestions" xml:space="preserve"><value>Предложенные игры</value></data>
+<data name="Groups_SuggestedBy" xml:space="preserve"><value>предлагает {0}</value></data>
+<data name="Groups_AddSuggested" xml:space="preserve"><value>Добавить в группу</value></data>
+<data name="Groups_Dismiss" xml:space="preserve"><value>Отклонить</value></data>
+<data name="Groups_SuggestGame" xml:space="preserve"><value>Предложить игру</value></data>
+<data name="Groups_SuggestHelp" xml:space="preserve"><value>Организатор получит сообщение и сможет добавить её в группу.</value></data>
+<data name="Groups_PickGame" xml:space="preserve"><value>Выбрать</value></data>
+<data name="Groups_FindGame" xml:space="preserve"><value>Найдите игру на любой платформе</value></data>
+<data name="Groups_SendSuggestion" xml:space="preserve"><value>Отправить предложение</value></data>
+<data name="Groups_GameHelp" xml:space="preserve"><value>Поиск находит игры на ПК, консолях и мобильных (Steam, Epic, Riot, Battle.net…). Steam App ID или ссылка необязательны и добавляют новости и ссылки Steam.</value></data>
+<data name="Groups_WhoCanJoin" xml:space="preserve"><value>Кто может присоединиться</value></data>
+<data name="Groups_WhoCanJoinHelp" xml:space="preserve"><value>Открытую группу видят все в разделе «Открыты для вступления»; люди просятся, а вы их принимаете. Состав группы видят только участники.</value></data>
+<data name="Groups_Dm_JoinRequested" xml:space="preserve"><value>🙋 {0} просится в **{1}** на сервере **{2}**. Примите или отклоните запрос на странице группы.</value></data>
+<data name="Groups_Dm_JoinApproved" xml:space="preserve"><value>✅ Вас приняли в **{0}** на сервере **{1}**. Добро пожаловать!</value></data>
+<data name="Groups_Dm_JoinDeclined" xml:space="preserve"><value>Ваш запрос в **{0}** на сервере **{1}** отклонён.</value></data>
+<data name="Groups_Dm_GameSuggested" xml:space="preserve"><value>💡 {0} предлагает **{1}** для **{2}**. Добавьте или отклоните на странице группы.</value></data>
+<data name="Groups_Dm_SuggestionAccepted" xml:space="preserve"><value>🎮 Предложенную вами игру **{0}** добавили в **{1}**.</value></data>
+<data name="Groups_Msg_Open" xml:space="preserve"><value>Группа открыта: любой может попроситься</value></data>
+<data name="Groups_Msg_Closed" xml:space="preserve"><value>Группа только по приглашению</value></data>
+<data name="Groups_Msg_Requested" xml:space="preserve"><value>Запрос отправлен. Организатор получит сообщение</value></data>
+<data name="Groups_Msg_Withdrawn" xml:space="preserve"><value>Запрос отозван</value></data>
+<data name="Groups_Msg_Approved" xml:space="preserve"><value>Запрос принят: человек добавлен в группу</value></data>
+<data name="Groups_Msg_Declined" xml:space="preserve"><value>Запрос отклонён</value></data>
+<data name="Groups_Msg_Suggested" xml:space="preserve"><value>Предложение отправлено организатору</value></data>
+<data name="Groups_Msg_Dismissed" xml:space="preserve"><value>Предложение отклонено</value></data>
+<data name="Groups_Err_Member" xml:space="preserve"><value>Вы уже в этой группе.</value></data>
+<data name="Groups_Err_Closed" xml:space="preserve"><value>Эта группа только по приглашению. Попросите организатора пригласить вас.</value></data>
+<data name="Groups_Err_TooManyRequests" xml:space="preserve"><value>У этой группы слишком много открытых запросов. Попробуйте позже.</value></data>
+<data name="Groups_Err_RequestGone" xml:space="preserve"><value>Этот запрос уже не ожидает решения.</value></data>
+<data name="Groups_Err_MembersSuggest" xml:space="preserve"><value>Предлагать игры для этой группы могут только участники.</value></data>
+<data name="Groups_Err_HasGame" xml:space="preserve"><value>Эта игра уже есть в группе.</value></data>
+<data name="Groups_Err_Suggested" xml:space="preserve"><value>Эту игру уже предложили.</value></data>
+<data name="Groups_Err_TooManySuggestions" xml:space="preserve"><value>У группы слишком много ожидающих предложений. Попробуйте, когда организатор их просмотрит.</value></data>
+<data name="Groups_Err_SuggestionGone" xml:space="preserve"><value>Это предложение уже не ожидает решения.</value></data>
 </root>

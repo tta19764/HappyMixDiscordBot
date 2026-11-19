@@ -44,6 +44,9 @@ public sealed record PollVote(ulong UserId, int Position);
 public interface IPollStore
 {
     Task<IReadOnlyList<string>> GetTagsAsync(ulong guildId, Guid groupId);
+
+    /// <summary>The tags of every group in the server that has any.</summary>
+    Task<IReadOnlyDictionary<Guid, string[]>> ListTagsAsync(ulong guildId);
     Task SetTagsAsync(ulong guildId, Guid groupId, IReadOnlyCollection<string> tags);
 
     Task CreateAsync(Poll poll);

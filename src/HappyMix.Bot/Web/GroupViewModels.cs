@@ -18,6 +18,9 @@ public sealed record GroupsPage(
     MemberNames Names,
     BannerModel? Banner)
 {
+    /// <summary>Tags of the listed groups.</summary>
+    public IReadOnlyDictionary<Guid, string[]> Tags { get; init; } = new Dictionary<Guid, string[]>();
+
     public string Url(GroupDirectoryFilter? filter = null, int? page = null, string? search = null)
     {
         var query = new List<string>();
@@ -59,6 +62,13 @@ public sealed record GroupPage(
 
     /// <summary>Upcoming dates of this group's events; empty for people who can't see the roster.</summary>
     public IReadOnlyList<EventRow> Events { get; init; } = [];
+
+    /// <summary>Catalog details of the group's games (platforms, cover), by game id.</summary>
+    public IReadOnlyDictionary<Guid, HappyMix.Application.Abstractions.Media.MediaInfo> GameDetails { get; init; } =
+        new Dictionary<Guid, HappyMix.Application.Abstractions.Media.MediaInfo>();
+
+    /// <summary>The group's tags, shown under its name.</summary>
+    public IReadOnlyList<string> Tags { get; init; } = [];
 
     /// <summary>Votes of the group, for people who can see the roster.</summary>
     public PollsModel? Polls { get; init; }

@@ -12,7 +12,8 @@
     {
         (GroupDirectoryFilter.Mine, T["My_groups"].Value, directory.MineCount),
         (GroupDirectoryFilter.Invited, T["Pending_invitations"].Value, directory.InvitedCount),
-        (GroupDirectoryFilter.All, Model.Viewer.CanModerate ? T["All_groups_in_this_server"].Value : T["All_groups_I_can_access"].Value, directory.AllCount)
+        (GroupDirectoryFilter.All, Model.Viewer.CanModerate ? T["All_groups_in_this_server"].Value : T["All_groups_I_can_access"].Value, directory.AllCount),
+        (GroupDirectoryFilter.Open, T["Groups_OpenToJoin"].Value, directory.OpenCount)
     };
     string Localize(string key) => T.Message(key);
     var repairAll = new ConfirmModel(T["Repair_roles_for_everyone"],
@@ -94,7 +95,13 @@ else
             <section class="hm-card hm-group-card" aria-labelledby="group-@group.Id">
                 <div class="hm-group-card__head">
                     <a class="hm-server__name" id="group-@group.Id" href="@url">@group.Name</a>
-                    <partial name="_GroupBadge" model="(group.Relation, Model.Viewer.CanModerate)" />
+                    <span class="hm-row" style="gap: var(--hm-space-1)">
+                        @if (group.Open)
+                        {
+                            <span class="hm-badge hm-badge--open">🔓 @T["Groups_Open"]</span>
+                        }
+                        <partial name="_GroupBadge" model="(group.Relation, Model.Viewer.CanModerate)" />
+                    </span>
                 </div>
                 @if (group.Description is { } description)
                 {
@@ -103,6 +110,10 @@ else
                 else
                 {
                     <p class="hm-group-card__desc hm-group-card__desc--empty">@T["No_description"]</p>
+                }
+                @if (Model.Tags.TryGetValue(group.Id, out var groupTags))
+                {
+                    <partial name="_GroupTags" model="(IReadOnlyList<string>)groupTags" />
                 }
                 <div class="hm-meta">
                     <span><partial name="_MemberAvatars" model="MemberStacks.For(Model.Names, group.OrganizerId, group.OrganizerAlternates, Localize, true)" />@T["Organizer"]: @organizerName</span>
@@ -129,6 +140,21 @@ else
                             <button class="hm-btn hm-btn--primary" name="decision" value="accept">@DashboardIcons.Render("check")@T["Accept"]</button>
                             <button class="hm-btn" name="decision" value="decline">@T["Decline"]</button>
                         </form>
+                    }
+                    else if (group.Open && group.Relation is GroupRelation.None or GroupRelation.Requested)
+                    {
+                        <form method="post" action="/groups/@Model.GuildId/@group.Id/@(group.Relation == GroupRelation.Requested ? "join/cancel" : "join")" asp-antiforgery="false">
+                            @Html.AntiForgeryToken()
+                            @if (group.Relation == GroupRelation.Requested)
+                            {
+                                <button class="hm-btn">@T["Groups_CancelRequest"]</button>
+                            }
+                            else
+                            {
+                                <button class="hm-btn hm-btn--primary">🙋 @T["Groups_RequestToJoin"]</button>
+                            }
+                        </form>
+                        <a class="hm-btn hm-btn--ghost" href="@url">@T["Open"] @DashboardIcons.Render("arrow")</a>
                     }
                     else
                     {

@@ -93,6 +93,33 @@ public sealed class VotesAndWatchlistTests
     }
 
     [Fact]
+    public async Task SeasonsAndEpisodesMustExistAndFinishingMarksTheWholeSeries()
+    {
+        using var fixture = await PollTests.Fixture.CreateAsync();
+        var group = await fixture.GroupAsync(Organizer, [Kai]);
+        var item = (await fixture.Sender.Send(new AddWatchItemCommand(Actor(Organizer), group, "series", FakeCatalog.Series.Ref, null, null))).Value;
+
+        // Arcane in the fake catalog: season 1 has 3 episodes, season 2 has 2, and there is no season 3.
+        Assert.True((await fixture.Sender.Send(new UpdateWatchItemCommand(Actor(Organizer), group, item.Id, Season: 3))).IsFailure);
+        Assert.True((await fixture.Sender.Send(new UpdateWatchItemCommand(Actor(Organizer), group, item.Id, Season: 1, Episode: 4))).IsFailure);
+        item = (await fixture.Sender.Send(new UpdateWatchItemCommand(Actor(Organizer), group, item.Id, Season: 1, Episode: 3, Position: "10:00"))).Value;
+        Assert.Equal((1, 3, (int?)600), (item.Season, item.Episode, item.PositionSeconds));
+        item = (await fixture.Sender.Send(new UpdateWatchItemCommand(Actor(Organizer), group, item.Id, Season: 2))).Value;
+        Assert.Equal((2, 1), (item.Season, item.Episode));
+
+        item = (await fixture.Sender.Send(new UpdateWatchItemCommand(Actor(Organizer), group, item.Id, Finish: true))).Value;
+        Assert.Equal((WatchStatus.Watched, 2, 2, (int?)null), (item.Status, item.Season, item.Episode, item.PositionSeconds));
+        Assert.NotNull(item.FinishedAt);
+        var entry = Assert.Single((await fixture.Sender.Send(new GetWatchlistQuery(Actor(Kai), group))).Value.Entries);
+        Assert.Equal(5, entry.EpisodesSeen);
+        Assert.Equal([1, 2], entry.Seasons.Select(season => season.Number));
+
+        // Titles the catalog doesn't know keep free numbers.
+        var home = (await fixture.Sender.Send(new AddWatchItemCommand(Actor(Organizer), group, "series", null, null, "Home videos"))).Value;
+        Assert.Equal(7, (await fixture.Sender.Send(new UpdateWatchItemCommand(Actor(Organizer), group, home.Id, Season: 7))).Value.Season);
+    }
+
+    [Fact]
     public async Task PlannedWatchlistTitlesAreSuggestedForVotes()
     {
         using var fixture = await PollTests.Fixture.CreateAsync();
@@ -153,19 +180,34 @@ public sealed class VotesAndWatchlistTests
             audience ?? [], [new PollVote(Kai, 0), new PollVote(Organizer, 0)]);
 
     [Fact]
-    public void PlainVotesForEveryoneBecomeDiscordPolls()
+    public void EveryVoteBecomesADiscordPollAndChosenMemberVotesArePrivate()
     {
-        var plain = Sample(options: [new PollOption(0, "Friday", "custom", null), new PollOption(1, "Saturday", "custom", null)]);
-        Assert.True(PollMessages.UsesNativePoll(plain));
-        Assert.False(PollMessages.UsesNativePoll(Sample()));
-        Assert.False(PollMessages.UsesNativePoll(plain with { Everyone = false, Audience = [Kai, Organizer] }));
-        Assert.False(PollMessages.UsesNativePoll(plain with { Options = [new PollOption(0, new string('x', 56), "custom", null), plain.Options[1]] }));
+        var plain = Sample(options: [new PollOption(0, "Friday", "custom", null), new PollOption(1, new string('x', 70), "series", null)]);
+        Assert.False(PollMessages.IsPrivate(plain));
+        Assert.True(PollMessages.IsPrivate(plain with { Everyone = false, Audience = [Kai, Organizer] }));
+        Assert.False(PollMessages.IsPrivate(plain with { Everyone = false, GroupId = Guid.NewGuid() }));
 
         var native = PollMessages.NativePoll(plain with { Multiple = true }, Now);
         Assert.Equal("Movie night?", native.Question.Text);
-        Assert.Equal(["Friday", "Saturday"], native.Answers.Select(answer => answer.Text));
+        Assert.Equal("Friday", native.Answers[0].Text);
+        Assert.Equal(55, native.Answers[1].Text.Length);
+        Assert.EndsWith("…", native.Answers[1].Text, StringComparison.Ordinal);
+        Assert.NotNull(native.Answers[1].Emoji);
         Assert.Equal(3u, native.Duration);
         Assert.True(native.AllowMultiselect);
+    }
+
+    [Fact]
+    public void TheInfoCardAboveAPollHasNoVoteControls()
+    {
+        var media = new Dictionary<MediaRef, MediaInfo> { [FakeCatalog.Series.Ref] = FakeCatalog.Series };
+        var card = PollMessages.BuildCards(Sample(), media, new Dictionary<MediaRef, WatchItem>(), "en", Now, "https://dash.test/votes/1#votes", interactive: false);
+        var all = Flatten(card.Components).ToArray();
+        Assert.Empty(all.OfType<SelectMenuComponent>());
+        Assert.Single(all.OfType<SectionComponent>());
+        Assert.DoesNotContain(all.OfType<TextDisplayComponent>(), item => item.Content.Contains('█'));
+        Assert.Contains(all.OfType<TextDisplayComponent>(), item => item.Content.Contains("Vote in the poll below", StringComparison.Ordinal));
+        Assert.Single(all.OfType<ButtonComponent>());
     }
 
     [Fact]

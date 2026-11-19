@@ -30,7 +30,9 @@
         <div class="hm-row" style="gap: var(--hm-space-3)">
             <h1>@group.Name</h1>
             <partial name="_GroupBadge" model="(group.Relation, Model.Viewer.CanModerate)" />
+            <span class="hm-badge @(group.Open ? "hm-badge--open" : "")">@(group.Open ? "🔓 " + T["Groups_Open"].Value : "🔒 " + T["Groups_InviteOnly"].Value)</span>
         </div>
+        <partial name="_GroupTags" model="Model.Tags" />
         <div class="hm-meta" style="margin-top: var(--hm-space-2)">
             <span><partial name="_MemberAvatars" model="organizerStack" />@T["Organizer"]: @organizerName</span>
             <span>@DashboardIcons.Render("users")@T["Arg0_members", group.MemberCount]</span>
@@ -99,6 +101,22 @@
     <section class="hm-card hm-section hm-stack" id="overview" aria-labelledby="overview-title">
         <h2 id="overview-title">@T["Overview"]</h2>
         <p class="@(group.Description is null ? "hm-subtle" : "")">@(group.Description ?? T["No_description"].Value)</p>
+        @if (group.Open && group.Relation is HappyMix.Application.Guilds.GroupRelation.None or HappyMix.Application.Guilds.GroupRelation.Requested)
+        {
+            <form class="hm-row hm-join" method="post" action="@Model.Url/@(group.Relation == HappyMix.Application.Guilds.GroupRelation.Requested ? "join/cancel" : "join")" asp-antiforgery="false">
+                @Html.AntiForgeryToken()
+                @if (group.Relation == HappyMix.Application.Guilds.GroupRelation.Requested)
+                {
+                    <span class="hm-help">⏳ @T["Groups_RequestPending"]</span>
+                    <button class="hm-btn">@T["Groups_CancelRequest"]</button>
+                }
+                else
+                {
+                    <span class="hm-help">@T["Groups_OpenHelp"]</span>
+                    <button class="hm-btn hm-btn--primary">🙋 @T["Groups_RequestToJoin"]</button>
+                }
+            </form>
+        }
 
         @if (detail.CanLeave || manage)
         {
@@ -118,6 +136,28 @@
     </section>
 
     @* ---------- Members ---------- *@
+    @if (manage && detail.JoinRequests.Length > 0)
+    {
+        <section class="hm-card hm-section hm-stack hm-join-requests" id="requests" aria-labelledby="requests-title">
+            <h2 id="requests-title">🙋 @T["Groups_JoinRequests"] <span class="hm-count">@detail.JoinRequests.Length</span></h2>
+            <ul class="hm-roster">
+                @foreach (ulong requester in detail.JoinRequests)
+                {
+                    string requesterName = Model.Names.Name(requester, Localize);
+                    <li class="hm-roster__item">
+                        <partial name="_Avatar" model="new AvatarModel(Model.Names.Get(requester), requesterName, Small: true)" />
+                        <span class="hm-roster__name">@requesterName</span>
+                        <form class="hm-row" method="post" action="@Model.Url/requests/@requester" asp-antiforgery="false">
+                            @Html.AntiForgeryToken()
+                            <button class="hm-btn hm-btn--primary hm-btn--sm" name="approve" value="true">@DashboardIcons.Render("check")@T["Groups_Approve"]</button>
+                            <button class="hm-btn hm-btn--sm" name="approve" value="false">@T["Decline"]</button>
+                        </form>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+
     <section class="hm-card hm-section hm-stack" id="members" aria-labelledby="members-title">
         <div class="hm-card__head" style="margin: 0">
             <h2 id="members-title">@T["Members"]</h2>
@@ -340,9 +380,20 @@
                                         <span class="hm-badge">Steam · @appId</span>
                                         <a href="@SteamApps.StoreUrl(appId)" target="_blank" rel="noopener noreferrer">@T["View_on_Steam"] ↗<span class="hm-sr-only"> (@T["Opens_in_a_new_tab"])</span></a>
                                     }
+                                    else if (Model.GameDetails.TryGetValue(game.Id, out var gameInfo))
+                                    {
+                                        @foreach (string platform in gameInfo.Platforms ?? [])
+                                        {
+                                            <span class="hm-badge">@platform</span>
+                                        }
+                                        @if (gameInfo.Url is { } gameUrl)
+                                        {
+                                            <a href="@gameUrl" target="_blank" rel="noopener noreferrer">@T["Groups_GamePage"] ↗<span class="hm-sr-only"> (@T["Opens_in_a_new_tab"])</span></a>
+                                        }
+                                    }
                                     else
                                     {
-                                        <span>@T["No_Steam_link"]</span>
+                                        <span>@T["Groups_NoStoreLink"]</span>
                                     }
                                 </span>
                             </div>
@@ -376,28 +427,69 @@
                 </ul>
             }
 
-            @if (manage)
+            @if (detail.Suggestions.Length > 0)
             {
-                bool adding = Model.Form?.Section == "games";
-                <hr class="hm-divider" style="margin: 0">
-                <form class="hm-stack hm-stack--sm" method="post" action="@Model.Url/games" asp-antiforgery="false" aria-labelledby="add-game-title">
-                    @Html.AntiForgeryToken()
-                    <h3 id="add-game-title">@T["Add_a_game"]</h3>
-                    <div class="hm-inline-form">
-                        <div class="hm-field">
-                            <label class="hm-label" for="game-name">@T["Game_name"]</label>
-                            <input class="hm-input" id="game-name" name="name" required maxlength="60" value="@(adding ? Model.Form!.Name : null)" placeholder="Counter-Strike 2">
-                        </div>
-                        <div class="hm-field">
-                            <label class="hm-label" for="game-steam">@T["Steam_App_ID_or_link"] <span class="hm-label__opt">@T["Optional"]</span></label>
-                            <input class="hm-input" id="game-steam" name="steam" maxlength="200" inputmode="url" value="@(adding ? Model.Form!.Steam : null)"
-                                   placeholder="730" aria-describedby="game-steam-help">
-                        </div>
-                        <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("plus")@T["Add_game"]</button>
-                    </div>
-                    <p class="hm-help" id="game-steam-help">@T["Paste_a_number_like_730_or_a_store_link_like_store_steampowered"]</p>
-                </form>
+                <div class="hm-suggestions">
+                    <h3>💡 @T["Groups_Suggestions"] <span class="hm-count">@detail.Suggestions.Length</span></h3>
+                    <ul class="hm-roster">
+                        @foreach (var suggestion in detail.Suggestions)
+                        {
+                            <li class="hm-roster__item">
+                                <span class="hm-roster__name">🎮 @suggestion.Name
+                                    <small class="hm-subtle">@T["Groups_SuggestedBy", Model.Names.Name(suggestion.SuggestedBy, Localize)]</small></span>
+                                @if (manage)
+                                {
+                                    <form class="hm-row" method="post" action="@Model.Url/suggestions/@suggestion.Id" asp-antiforgery="false">
+                                        @Html.AntiForgeryToken()
+                                        <button class="hm-btn hm-btn--primary hm-btn--sm" name="accept" value="true">@DashboardIcons.Render("plus")@T["Groups_AddSuggested"]</button>
+                                        <button class="hm-btn hm-btn--sm" name="accept" value="false">@T["Groups_Dismiss"]</button>
+                                    </form>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </div>
             }
+
+            bool adding = Model.Form?.Section is "games" or "suggest";
+            string gameAction = manage ? "games" : "suggest";
+            <hr class="hm-divider" style="margin: 0">
+            <form class="hm-stack hm-stack--sm" method="post" action="@Model.Url/@gameAction" asp-antiforgery="false" aria-labelledby="add-game-title" data-game-form>
+                @Html.AntiForgeryToken()
+                <h3 id="add-game-title">@T[manage ? "Add_a_game" : "Groups_SuggestGame"]</h3>
+                @if (!manage)
+                {
+                    <p class="hm-help">@T["Groups_SuggestHelp"]</p>
+                }
+                <div class="hm-field hm-media-search" data-media-search data-game-picker data-url="/media/@Model.GuildId/search" data-add-label="@T["Groups_PickGame"]"
+                     data-empty="@T["Media_NoResults"]" data-failed="@T["Media_SearchFailed"]" hidden>
+                    <span class="hm-label">@T["Groups_FindGame"]</span>
+                    <div class="hm-row hm-media-search__bar">
+                        <select class="hm-select" data-media-kind aria-label="@T["Media_Kind"]" hidden><option value="game" selected>🎮</option></select>
+                        <input class="hm-input" type="search" data-media-query placeholder="League of Legends, Fortnite, Counter-Strike 2…" aria-label="@T["Groups_FindGame"]">
+                    </div>
+                    <ul class="hm-media-search__results" data-media-results aria-live="polite"></ul>
+                </div>
+                <input type="hidden" name="provider" data-game-provider>
+                <input type="hidden" name="externalId" data-game-id>
+                <div class="hm-inline-form">
+                    <div class="hm-field">
+                        <label class="hm-label" for="game-name">@T["Game_name"]</label>
+                        <input class="hm-input" id="game-name" name="name" required maxlength="60" value="@(adding ? Model.Form!.Name : null)" placeholder="League of Legends" data-game-name>
+                    </div>
+                    <div class="hm-field">
+                        <label class="hm-label" for="game-steam">@T["Steam_App_ID_or_link"] <span class="hm-label__opt">@T["Optional"]</span></label>
+                        <input class="hm-input" id="game-steam" name="steam" maxlength="200" inputmode="url" value="@(adding ? Model.Form!.Steam : null)"
+                               placeholder="730" aria-describedby="game-steam-help" data-game-steam>
+                    </div>
+                    <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("plus")@T[manage ? "Add_game" : "Groups_SendSuggestion"]</button>
+                </div>
+                <p class="hm-help" id="game-steam-help">@T["Groups_GameHelp"]</p>
+                @if (Model.ErrorFor("suggest") is { } suggestError)
+                {
+                    <p class="hm-error">@DashboardIcons.Render("alert")@suggestError</p>
+                }
+            </form>
         }
     </section>
 
@@ -428,6 +520,19 @@
                         <div><button class="hm-btn">@DashboardIcons.Render("check")@T["Save_description"]</button></div>
                     </form>
                 </div>
+            }
+            @if (manage)
+            {
+                <form class="hm-group-settings__block" method="post" action="@Model.Url/open" asp-antiforgery="false">
+                    @Html.AntiForgeryToken()
+                    <h3>🚪 @T["Groups_WhoCanJoin"]</h3>
+                    <div class="hm-mode" role="radiogroup" aria-label="@T["Groups_WhoCanJoin"]">
+                        <label><input type="radio" name="open" value="false" checked="@(!group.Open)">🔒 @T["Groups_InviteOnly"]</label>
+                        <label><input type="radio" name="open" value="true" checked="@group.Open">🔓 @T["Groups_Open"]</label>
+                    </div>
+                    <p class="hm-help">@T["Groups_WhoCanJoinHelp"]</p>
+                    <div><button class="hm-btn">@DashboardIcons.Render("check")@T["Save"]</button></div>
+                </form>
             }
             @if (manage && Model.Polls is { } tagged)
             {

@@ -15,6 +15,36 @@
     string question = T[board.DefaultQuestion].Value;
     bool startOpen = board.Open.Count == 0;
     string formId = "poll-new-" + (board.GroupId?.ToString("N") ?? "server");
+    DateTimeOffset Local(DateTimeOffset when) => TimeZoneInfo.ConvertTime(when, Model.Zone);
+    var today = DateOnly.FromDateTime(Local(Model.Now).DateTime);
+    var weekStart = today.AddDays(-(((int)today.DayOfWeek + 6) % 7));
+    string Period(HappyMix.Application.Abstractions.Polls.Poll poll)
+    {
+        var day = DateOnly.FromDateTime(Local(poll.EndedAt).DateTime);
+        return day == today ? "today" : day >= weekStart ? "week" : "earlier";
+    }
+    string Voters(HappyMix.Application.Abstractions.Polls.Poll poll, int position)
+    {
+        var names = poll.Votes.Where(vote => vote.Position == position).Select(vote => Model.Names.Name(vote.UserId, Localize))
+            .OrderBy(name => name, StringComparer.CurrentCultureIgnoreCase).ToArray();
+        return names.Length <= 6 ? string.Join(", ", names) : string.Join(", ", names.Take(6)) + " " + T["Arg0_more", names.Length - 6].Value;
+    }
+    async Task AddToWatchlist(HappyMix.Application.Abstractions.Polls.PollOption leader)
+    {
+        if (board.CanManageTags && board.GroupId is { } watchGroup && leader.Kind is "series" or "film" or "anime"
+            && !(leader.Media is { } known && board.Progress.ContainsKey(known)))
+        {
+            <form method="post" action="/groups/@Model.GuildId/@watchGroup/watch" asp-antiforgery="false">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="kind" value="@leader.Kind">
+                <input type="hidden" name="title" value="@leader.Label">
+                <input type="hidden" name="url" value="@leader.Url">
+                <input type="hidden" name="source" value="@leader.Media?.Source">
+                <input type="hidden" name="externalId" value="@leader.Media?.ExternalId">
+                <button class="hm-btn hm-btn--ghost hm-btn--sm">➕ @T["Watch_AddToList"]</button>
+            </form>
+        }
+    }
 }
 <section class="hm-card hm-section hm-stack hm-polls" id="votes" aria-labelledby="votes-title">
     <div class="hm-row hm-row--between">
@@ -91,6 +121,10 @@
                                 }
                             </span>
                             <b class="hm-poll__count">@count</b>
+                            @if (count > 0)
+                            {
+                                <span class="hm-poll__voters">@Voters(poll, option.Position)</span>
+                            }
                         </label>
                     }
                 </div>
@@ -221,8 +255,8 @@
                 <fieldset class="hm-field hm-poll-audience" data-poll-audience>
                     <legend class="hm-label">@T["Polls_Who"]</legend>
                     <div class="hm-mode" role="radiogroup">
-                        <label><input type="radio" name="audience" value="chosen" checked>@T["Polls_WhoChosen"]</label>
-                        <label><input type="radio" name="audience" value="everyone">@T["Polls_WhoEveryone"]</label>
+                        <label><input type="radio" name="audience" value="everyone" checked>@T["Polls_WhoEveryone"]</label>
+                        <label><input type="radio" name="audience" value="chosen">@T["Polls_WhoChosen"]</label>
                     </div>
                     <div class="hm-poll-audience__pick">
                         <input class="hm-input" type="search" placeholder="@T["Polls_FindMember"]" aria-label="@T["Polls_FindMember"]" data-member-filter>
@@ -247,42 +281,80 @@
 
     @if (board.Ended.Count > 0)
     {
-        <details class="hm-poll-history">
-            <summary>@T["Polls_Earlier", board.Ended.Count]</summary>
-            <ul class="hm-poll-history__list">
-                @foreach (var poll in board.Ended)
+        var recent = board.Ended.GroupBy(Period).ToDictionary(group => group.Key, group => group.ToArray());
+        foreach (string period in new[] { "today", "week" }.Where(recent.ContainsKey))
+        {
+            <div class="hm-poll-results">
+                <h3>@T["Polls_Results_" + period] <span class="hm-count">@recent[period].Length</span></h3>
+                @foreach (var poll in recent[period])
                 {
                     var leader = poll.Leader;
-                    <li>
-                        <span class="hm-poll-history__question">@poll.Question</span>
-                        <span class="hm-poll-history__winner">
-                            @if (leader is not null)
+                    int max = Math.Max(1, poll.Options.Max(option => poll.Count(option.Position)));
+                    <article class="hm-poll hm-poll--ended">
+                        <header class="hm-poll__head">
+                            <h4>🏁 @poll.Question</h4>
+                            <p class="hm-help">@T["Polls_EndedAt", Local(poll.EndedAt).ToString(period == "today" ? "HH:mm" : "ddd d MMM, HH:mm", CultureInfo.CurrentCulture)] ·
+                                @T["Polls_Voted_Count", Model.VoterCount(poll)]</p>
+                        </header>
+                        <div class="hm-poll__options">
+                            @foreach (var option in poll.Options.OrderByDescending(option => poll.Count(option.Position)).ThenBy(option => option.Position))
                             {
-                                <span>🏆 @Icon(leader.Kind) @leader.Label</span>
-                                <small>@T["Polls_VotesOf", poll.Count(leader.Position), Model.VoterCount(poll)]</small>
-                                @if (board.CanManageTags && board.GroupId is { } watchGroup && leader.Kind is "series" or "film" or "anime"
-                                     && !(leader.Media is { } known && board.Progress.ContainsKey(known)))
-                                {
-                                    <form method="post" action="/groups/@Model.GuildId/@watchGroup/watch" asp-antiforgery="false">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="kind" value="@leader.Kind">
-                                        <input type="hidden" name="title" value="@leader.Label">
-                                        <input type="hidden" name="url" value="@leader.Url">
-                                        <input type="hidden" name="source" value="@leader.Media?.Source">
-                                        <input type="hidden" name="externalId" value="@leader.Media?.ExternalId">
-                                        <button class="hm-btn hm-btn--ghost hm-btn--sm">➕ @T["Watch_AddToList"]</button>
-                                    </form>
-                                }
+                                int count = poll.Count(option.Position);
+                                bool winner = leader?.Position == option.Position;
+                                <div class="hm-poll__option @(winner ? "is-winner" : "")" style="--share: @((count * 100 / max).ToString(CultureInfo.InvariantCulture))%">
+                                    <span class="hm-poll__label"><span>@(winner ? "🏆 " : "")<span aria-hidden="true">@Icon(option.Kind)</span> @option.Label
+                                        @if (option.Url is { } url)
+                                        {
+                                            <a href="@url" target="_blank" rel="noopener noreferrer" class="hm-poll__link" aria-label="@T["Polls_OpenLink", option.Label]">↗</a>
+                                        }</span>
+                                        @if (count > 0)
+                                        {
+                                            <small class="hm-poll__voters">@Voters(poll, option.Position)</small>
+                                        }
+                                    </span>
+                                    <b class="hm-poll__count">@count</b>
+                                </div>
                             }
-                            else
-                            {
-                                <small class="hm-subtle">@T["Polls_NoVotes"]</small>
-                            }
-                        </span>
-                        <small class="hm-subtle">@poll.EndedAt.ToLocalTime().ToString("d MMM yyyy", CultureInfo.CurrentCulture)</small>
-                    </li>
+                        </div>
+                        @if (leader is not null)
+                        {
+                            await AddToWatchlist(leader);
+                        }
+                        else
+                        {
+                            <p class="hm-subtle">@T["Polls_NoVotes"]</p>
+                        }
+                    </article>
                 }
-            </ul>
-        </details>
+            </div>
+        }
+        if (recent.TryGetValue("earlier", out var earlier))
+        {
+            <details class="hm-poll-history">
+                <summary>@T["Polls_Earlier", earlier.Length]</summary>
+                <ul class="hm-poll-history__list">
+                    @foreach (var poll in earlier)
+                    {
+                        var leader = poll.Leader;
+                        <li>
+                            <span class="hm-poll-history__question">@poll.Question</span>
+                            <span class="hm-poll-history__winner">
+                                @if (leader is not null)
+                                {
+                                    <span>🏆 @Icon(leader.Kind) @leader.Label</span>
+                                    <small>@T["Polls_VotesOf", poll.Count(leader.Position), Model.VoterCount(poll)] · @Voters(poll, leader.Position)</small>
+                                    await AddToWatchlist(leader);
+                                }
+                                else
+                                {
+                                    <small class="hm-subtle">@T["Polls_NoVotes"]</small>
+                                }
+                            </span>
+                            <small class="hm-subtle">@Local(poll.EndedAt).ToString("d MMM yyyy", CultureInfo.CurrentCulture)</small>
+                        </li>
+                    }
+                </ul>
+            </details>
+        }
     }
 </section>

@@ -27,7 +27,8 @@ public sealed partial class DashboardController
         return Json(results.Select(item => new
         {
             kind = item.Kind, source = item.Source, id = item.ExternalId, title = item.Title, url = item.Url, image = item.ImageUrl,
-            details = PollMessages.Details(item, language)
+            details = PollMessages.Details(item, language),
+            steam = item.SteamAppId
         }));
     }
 
@@ -51,6 +52,7 @@ public sealed partial class DashboardController
         var command = action switch
         {
             "next" => new UpdateWatchItemCommand(actor, groupId, itemId, NextEpisode: true),
+            "finish" => new UpdateWatchItemCommand(actor, groupId, itemId, Finish: true),
             "status" => new UpdateWatchItemCommand(actor, groupId, itemId, Status: status),
             "progress" => new UpdateWatchItemCommand(actor, groupId, itemId, Season: season, Episode: episode, Position: position ?? ""),
             "remove" => null,

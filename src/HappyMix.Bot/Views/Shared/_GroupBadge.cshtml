@@ -11,6 +11,9 @@
     case GroupRelation.Invited:
         <span class="hm-badge hm-badge--warn">@T["Invited"]</span>
         break;
+    case GroupRelation.Requested:
+        <span class="hm-badge hm-badge--warn">⏳ @T["Groups_Requested"]</span>
+        break;
     default:
         if (Model.CanModerate)
         {

@@ -18,8 +18,12 @@ public sealed record WatchEntry(WatchItem Item, MediaInfo? Media)
 
     /// <summary>Episodes before the next one, across all seasons, for a progress bar. Null without catalog seasons.</summary>
     public int? EpisodesSeen => Media is { Seasons.Count: > 0 } media
-        ? media.Seasons.Where(season => season.Number < Item.Season).Sum(season => season.Episodes) + Item.Episode - 1
+        ? Item.Status == WatchStatus.Watched ? media.EpisodeCount
+            : Math.Min(media.EpisodeCount ?? 0, media.Seasons.Where(season => season.Number < Item.Season).Sum(season => season.Episodes) + Item.Episode - 1)
         : null;
+
+    /// <summary>The seasons the catalog knows, with their episode counts, for the season picker.</summary>
+    public IReadOnlyList<MediaSeason> Seasons => Media?.Seasons.Where(season => season.Episodes > 0).OrderBy(season => season.Number).ToArray() ?? [];
 }
 
 /// <param name="CanEdit">The organizer and moderators change the watchlist; members follow it.</param>
@@ -36,11 +40,12 @@ public sealed record AddWatchItemCommand(GroupActor Actor, Guid GroupId, string 
 
 /// <summary>
 /// Changes an entry. Null values stay as they are. <paramref name="NextEpisode"/> marks the current episode (or the film)
-/// as watched and moves on; <paramref name="Position"/> is where the group stopped, like "12:30" or "1:05:00", and an
-/// empty string clears it.
+/// as watched and moves on; <paramref name="Finish"/> marks the whole series (or film) watched; <paramref name="Position"/>
+/// is where the group stopped, like "12:30" or "1:05:00", and an empty string clears it. When the catalog knows the
+/// seasons, the season and episode must exist in it.
 /// </summary>
 public sealed record UpdateWatchItemCommand(GroupActor Actor, Guid GroupId, Guid ItemId, WatchStatus? Status = null, int? Season = null,
-    int? Episode = null, string? Position = null, bool NextEpisode = false) : ICommand<WatchItem>;
+    int? Episode = null, string? Position = null, bool NextEpisode = false, bool Finish = false) : ICommand<WatchItem>;
 
 public sealed record RemoveWatchItemCommand(GroupActor Actor, Guid GroupId, Guid ItemId) : ICommand<bool>;
 
@@ -116,10 +121,22 @@ internal sealed class WatchHandlers(IWatchStore store, IMediaCatalog catalog, IC
             return Result.Failure<WatchItem>(error!);
         var now = clock.UtcNow;
         var updated = item with { UpdatedAt = now };
-        if (command.Season is { } season)
-            updated = updated with { Season = Math.Clamp(season, 1, 200), PositionSeconds = null };
-        if (command.Episode is { } episode)
-            updated = updated with { Episode = Math.Clamp(episode, 1, 5000), PositionSeconds = null };
+        var seasons = command.Season is not null || command.Episode is not null || command.Finish || command.Status == WatchStatus.Watched
+            ? await SeasonsAsync(item, cancellationToken) : [];
+        if (command.Season is { } season && season != item.Season)
+        {
+            if (season < 1 || seasons.Length > 0 && seasons.All(entry => entry.Number != season) || season > 200)
+                return Result.Failure<WatchItem>(new ErrorDescriptor("Watch.Season", "Pick a season this series has."));
+            // A new season starts at its first episode unless an episode is given too.
+            updated = updated with { Season = season, Episode = 1, PositionSeconds = null };
+        }
+        if (command.Episode is { } episode && (episode != item.Episode || updated.Season != item.Season))
+        {
+            int? limit = seasons.FirstOrDefault(entry => entry.Number == updated.Season)?.Episodes;
+            if (episode < 1 || episode > (limit ?? 5000))
+                return Result.Failure<WatchItem>(new ErrorDescriptor("Watch.Episode", "Pick an episode this season has."));
+            updated = updated with { Episode = episode, PositionSeconds = null };
+        }
         if (command.Position is { } position)
         {
             if (position.Trim().Length == 0)
@@ -131,13 +148,10 @@ internal sealed class WatchHandlers(IWatchStore store, IMediaCatalog catalog, IC
         }
         if (command.NextEpisode)
             updated = await AdvanceAsync(updated, now, cancellationToken);
-        if (command.Status is { } status && status != updated.Status)
-            updated = updated with
-            {
-                Status = status,
-                FinishedAt = status == WatchStatus.Watched ? now : null,
-                PositionSeconds = status == WatchStatus.Watched ? null : updated.PositionSeconds
-            };
+        if (command.Finish || command.Status == WatchStatus.Watched && updated.Status != WatchStatus.Watched)
+            updated = Finished(updated, seasons, now);
+        else if (command.Status is { } status && status != updated.Status)
+            updated = updated with { Status = status, FinishedAt = null };
         await store.SaveAsync(updated);
         return updated;
     }
@@ -168,6 +182,17 @@ internal sealed class WatchHandlers(IWatchStore store, IMediaCatalog catalog, IC
         }
         return item with { Season = season, Episode = episode, PositionSeconds = null, Status = WatchStatus.Watching };
     }
+
+    /// <summary>The whole series (or film) watched: the last episode, no resume point, and when it was finished.</summary>
+    private static WatchItem Finished(WatchItem item, MediaSeason[] seasons, DateTimeOffset now) => seasons.Length > 0 && WatchKinds.HasEpisodes(item.Kind)
+        ? item with { Status = WatchStatus.Watched, FinishedAt = now, PositionSeconds = null, Season = seasons[^1].Number, Episode = seasons[^1].Episodes }
+        : item with { Status = WatchStatus.Watched, FinishedAt = now, PositionSeconds = null };
+
+    /// <summary>The seasons the catalog knows for the item, with episodes, in order; empty when it doesn't know.</summary>
+    private async Task<MediaSeason[]> SeasonsAsync(WatchItem item, CancellationToken cancellationToken) =>
+        item.Source is { } source && item.ExternalId is { } id && await catalog.GetAsync(new MediaRef(source, id), cancellationToken) is { } media
+            ? media.Seasons.Where(season => season.Episodes > 0).OrderBy(season => season.Number).ToArray()
+            : [];
 
     private async Task<(WatchItem? Item, ErrorDescriptor? Error)> EditableAsync(GroupActor actor, Guid groupId, Guid itemId)
     {

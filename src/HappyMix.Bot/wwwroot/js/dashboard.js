@@ -1388,7 +1388,17 @@ for (const image of document.querySelectorAll("[data-game-art]")) {
         let timer = 0, ticket = 0;
 
         const note = text => { results.replaceChildren(); const item = document.createElement("li"); item.className = "hm-subtle"; item.textContent = text; results.append(item); };
+        const gameForm = box.closest("[data-game-form]");
         const add = item => {
+            if (gameForm) {
+                // A game from IGDB that is also on Steam keeps its Steam id, so Steam news and links keep working.
+                gameForm.querySelector("[data-game-name]").value = item.title.slice(0, 60);
+                gameForm.querySelector("[data-game-steam]").value = item.steam || (item.source === "steam" ? item.id : "");
+                gameForm.querySelector("[data-game-provider]").value = item.steam ? "steam" : item.source;
+                gameForm.querySelector("[data-game-id]").value = item.steam || item.id;
+                gameForm.querySelector("[data-game-name]").dispatchEvent(new Event("input", { bubbles: true }));
+                return;
+            }
             if (pollForm) {
                 const fields = [...pollForm.querySelectorAll("[data-poll-option]")];
                 const empty = fields.find(field => !field.value.trim());
@@ -1450,5 +1460,70 @@ for (const image of document.querySelectorAll("[data-game-art]")) {
         query.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(search, 350); });
         query.addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); clearTimeout(timer); search(); } });
         kind.addEventListener("change", () => { if (query.value.trim()) search(); });
+    }
+})();
+
+// Logs tab: local times, "Show older", and a live view that adds new entries every 10 seconds.
+(() => {
+    const list = document.querySelector("[data-logs]");
+    if (!list) return;
+    const timeFormat = new Intl.DateTimeFormat(document.documentElement.lang || undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    const localize = scope => {
+        for (const time of scope.querySelectorAll("time[datetime]")) {
+            const when = new Date(time.getAttribute("datetime"));
+            if (!isNaN(when)) time.textContent = timeFormat.format(when);
+        }
+    };
+    localize(list);
+
+    const rowsUrl = list.dataset.rowsUrl;
+    const more = document.querySelector("[data-logs-more]");
+    const live = document.querySelector("[data-logs-live]");
+    const ids = () => [...list.querySelectorAll("[data-log-id]")].map(row => Number(row.dataset.logId));
+    const fetchRows = extra => fetch(rowsUrl + "&" + extra, { credentials: "same-origin" })
+        .then(response => response.ok ? response.text().then(html => ({ html, hasMore: response.headers.get("X-Has-More") === "1" })) : Promise.reject());
+    const parse = html => { const holder = document.createElement("div"); holder.innerHTML = html; localize(holder); return [...holder.children]; };
+
+    more?.addEventListener("click", () => {
+        const known = ids();
+        if (known.length === 0) return;
+        more.disabled = true;
+        fetchRows("before=" + Math.min(...known))
+            .then(({ html, hasMore }) => { list.append(...parse(html)); more.hidden = !hasMore; })
+            .finally(() => { more.disabled = false; });
+    });
+
+    let timer = 0;
+    const poll = () => {
+        const known = ids();
+        const after = known.length ? Math.max(...known) : 0;
+        fetchRows("after=" + after).then(({ html }) => {
+            const rows = parse(html);
+            if (rows.length === 0) return;
+            list.querySelector("[data-logs-empty]")?.remove();
+            for (const row of rows) row.classList.add("is-new");
+            list.prepend(...rows);
+        }).catch(() => {});
+    };
+    live?.addEventListener("change", () => {
+        clearInterval(timer);
+        if (live.checked) { poll(); timer = setInterval(poll, 10000); }
+    });
+})();
+
+// Buttons that need a second thought ask first; season pickers cap the episode field at the season's length.
+(() => {
+    document.addEventListener("click", event => {
+        const button = event.target.closest("[data-confirm]");
+        if (button && !window.confirm(button.dataset.confirm)) event.preventDefault();
+    });
+    for (const picker of document.querySelectorAll("[data-season-picker]")) {
+        const episode = picker.form?.querySelector("[data-episode-input]");
+        if (!episode) continue;
+        picker.addEventListener("change", () => {
+            const count = Number(picker.selectedOptions[0]?.dataset.episodes || 0);
+            if (count > 0) episode.max = String(count);
+            episode.value = "1";
+        });
     }
 })();

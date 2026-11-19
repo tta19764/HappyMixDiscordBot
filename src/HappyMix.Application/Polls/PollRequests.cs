@@ -66,6 +66,12 @@ public static partial class PollLinks
                     kind = "anime";
                     if (title.Length == 0 && segments.Length > 2) title = Words(segments[2]);
                     break;
+                case "store.epicgames.com" when segments.Length >= 2 && segments[^2] == "p":
+                case "gog.com" when segments.Length >= 2 && segments[^2] == "game":
+                case "igdb.com" when segments is ["games", _, ..]:
+                    kind = "game";
+                    if (title.Length == 0) title = CultureInfoTitle(Words(segments[host == "igdb.com" ? 1 : ^1]));
+                    break;
                 case "imdb.com" or "m.imdb.com" when segments is ["title", _, ..]:
                     if (fallbackKind is not ("series" or "film" or "anime")) kind = "series";
                     break;
@@ -82,6 +88,10 @@ public static partial class PollLinks
 
     /// <summary>The first web address in the text, if any.</summary>
     public static string? FindUrl(string? text) => UrlPattern().Match(text ?? "") is { Success: true } match ? match.Value : null;
+
+    /// <summary>"league of legends" → "League Of Legends": a readable title from a store address.</summary>
+    private static string CultureInfoTitle(string words) =>
+        System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase(words);
 
     private static string Words(string slug) =>
         Regex.Replace(Uri.UnescapeDataString(slug).Replace('_', ' ').Replace('-', ' '), @"\s+", " ").Trim();
@@ -119,6 +129,9 @@ public sealed record PollBoard(ulong ViewerId, Guid? GroupId, bool CanManageTags
 /// <summary>Polls of a group (members only), or the server's own polls when <paramref name="GroupId"/> is null.</summary>
 public sealed record GetPollBoardQuery(GroupActor Actor, Guid? GroupId) : IQuery<PollBoard>;
 
+/// <summary>The tags of every group in a server, for group lists and headers.</summary>
+public sealed record GetGroupTagsQuery(ulong GuildId) : IQuery<IReadOnlyDictionary<Guid, string[]>>;
+
 public sealed record SetGroupTagsCommand(GroupActor Actor, Guid GroupId, IReadOnlyList<string> Tags) : ICommand<IReadOnlyList<string>>;
 
 /// <summary>
@@ -149,7 +162,7 @@ public sealed record ClosePollCommand(GroupActor Actor, Guid PollId) : ICommand<
 
 internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLinks, IClock clock, ISender sender, IMediaCatalog catalog,
     IWatchStore watchlist)
-    : IQueryHandler<GetPollBoardQuery, PollBoard>, IQueryHandler<GetPollQuery, Poll>, ICommandHandler<SetGroupTagsCommand, IReadOnlyList<string>>,
+    : IQueryHandler<GetPollBoardQuery, PollBoard>, IQueryHandler<GetPollQuery, Poll>, IQueryHandler<GetGroupTagsQuery, IReadOnlyDictionary<Guid, string[]>>, ICommandHandler<SetGroupTagsCommand, IReadOnlyList<string>>,
       ICommandHandler<CopyDiscordPollVoteCommand, bool>, ICommandHandler<SyncDiscordPollVotesCommand, bool>,
       ICommandHandler<CreatePollCommand, Guid>, ICommandHandler<VotePollCommand, Poll>, ICommandHandler<ClosePollCommand, Poll>
 {
@@ -218,6 +231,9 @@ internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLi
         await polls.ReplaceVotesAsync(command.PollId, members.ToDictionary(item => item.Key, item => item.Value.ToArray()));
         return true;
     }
+
+    public async Task<Result<IReadOnlyDictionary<Guid, string[]>>> Handle(GetGroupTagsQuery query, CancellationToken cancellationToken) =>
+        Result.Success(await polls.ListTagsAsync(query.GuildId));
 
     public async Task<Result<Poll>> Handle(GetPollQuery query, CancellationToken cancellationToken)
     {

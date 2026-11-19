@@ -1,0 +1,42 @@
+@using System.Globalization
+@using HappyMix.Application.Abstractions.Logs
+@model LogsPage
+@{
+    string Localize(string key) => T.Message(key);
+    string LevelClass(LogSeverity level) => level switch
+    {
+        >= LogSeverity.Error => "error", LogSeverity.Warning => "warning", LogSeverity.Information => "info", _ => "debug"
+    };
+}
+@foreach (var entry in Model.Entries)
+{
+    <details class="hm-log hm-log--@LevelClass(entry.Level)" data-log-id="@entry.Id">
+        <summary class="hm-log__row">
+            <time class="hm-log__time hm-tnum" datetime="@entry.At.UtcDateTime.ToString("o", CultureInfo.InvariantCulture)" title="@entry.At.UtcDateTime.ToString("u", CultureInfo.InvariantCulture)">@entry.At.UtcDateTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture)</time>
+            <span class="hm-log__level">@T["Logs_Level_" + LevelClass(entry.Level)]</span>
+            <span class="hm-log__area">@T["Logs_Area_" + entry.Area]</span>
+            <span class="hm-log__message">@entry.Message</span>
+            <span class="hm-log__user">@(entry.UserId is { } user ? Model.Names.Name(user, Localize) : "")</span>
+        </summary>
+        <dl class="hm-log__details">
+            <div><dt>@T["Logs_Time"]</dt><dd class="hm-tnum">@entry.At.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture) UTC</dd></div>
+            <div><dt>@T["Logs_Source"]</dt><dd><code>@entry.Category</code></dd></div>
+            @if (entry.UserId is { } who)
+            {
+                <div><dt>@T["Logs_User"]</dt><dd>@Model.Names.Name(who, Localize) <code>@who</code></dd></div>
+            }
+            @if (entry.GuildId is null)
+            {
+                <div><dt>@T["Logs_Scope"]</dt><dd>@T["Logs_BotWide"]</dd></div>
+            }
+            @if (entry.Properties is { } properties)
+            {
+                <div><dt>@T["Logs_Details"]</dt><dd><code class="hm-log__json">@properties</code></dd></div>
+            }
+            @if (entry.Exception is { } error)
+            {
+                <div class="hm-log__exception"><dt>@T["Logs_Error"]</dt><dd><pre>@error</pre></dd></div>
+            }
+        </dl>
+    </details>
+}

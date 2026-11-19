@@ -47,6 +47,11 @@ public static class DependencyInjection
                 "Discord subscription limits must be positive.")
             .ValidateOnStart();
 
+        // Stored logs for the admin Logs tab: the provider queues entries, the writer stores and prunes them.
+        services.AddSingleton<HappyMix.Bot.Logging.DatabaseLoggerProvider>();
+        services.AddSingleton<ILoggerProvider>(provider => provider.GetRequiredService<HappyMix.Bot.Logging.DatabaseLoggerProvider>());
+        services.AddHostedService<HappyMix.Bot.Logging.DatabaseLogWriter>();
+
         // Starting values for servers that haven't chosen their own language or broadcast preferences.
         services.AddOptions<CommunityDefaults>()
             .Bind(configuration.GetSection("CommunityDefaults"))
@@ -79,6 +84,7 @@ public static class DependencyInjection
         services.AddSingleton<NotificationChannels>();
         services.AddSingleton<EventNotificationSettings>();
         services.AddSingleton<PollMessages>();
+        services.AddSingleton<IGroupNotifier, DiscordGroupNotifier>();
         services.AddSingleton<DiscordMatchAnnouncementPublisher>();
         services.AddSingleton<IGuildAnnouncementPublisher>(provider =>
             provider.GetRequiredService<DiscordMatchAnnouncementPublisher>());

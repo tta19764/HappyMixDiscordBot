@@ -33,8 +33,9 @@ public sealed partial class DashboardController
 
         bool canCreate = (await sender.Send(new CanCreateGroupQuery(actor, roles), cancellationToken)).Value;
         var (members, available) = await memberDirectory.GetMembersAsync(guildId, cancellationToken);
+        var tags = (await sender.Send(new HappyMix.Application.Polls.GetGroupTagsQuery(guildId), cancellationToken)).Value;
         return View("Groups", new GroupsPage(guildId, GuildName(guildId), viewer, canCreate, chosen, q?.Trim(), directory,
-            new MemberNames(members, available), TakeBanner()));
+            new MemberNames(members, available), TakeBanner()) { Tags = tags });
     }
 
     [HttpGet("/groups/{guildId}/new")]
@@ -147,8 +148,8 @@ public sealed partial class DashboardController
             "Roles repaired for this member", section: "members");
 
     [HttpPost("/groups/{guildId}/{groupId:guid}/games")]
-    public Task<IActionResult> AddGroupGame(ulong guildId, Guid groupId, string? name, string? steam) =>
-        RunGroupActionAsync(guildId, groupId, (actor, group) => new AddGroupGameCommand(actor, group.Id, name ?? "", steam),
+    public Task<IActionResult> AddGroupGame(ulong guildId, Guid groupId, string? name, string? steam, string? provider, string? externalId) =>
+        RunGroupActionAsync(guildId, groupId, (actor, group) => new AddGroupGameCommand(actor, group.Id, name ?? "", steam, provider, externalId),
             "Game added", section: "games", form: new GroupFormState("games", null, name, steam));
 
     [HttpPost("/groups/{guildId}/{groupId:guid}/games/{gameId:guid}")]
@@ -203,6 +204,18 @@ public sealed partial class DashboardController
     }
 
     /// <summary>Looks the group up through the visibility-checked query, then runs one name-scoped command.</summary>
+    /// <summary>Platforms and covers of games picked from IGDB (cached catalog lookups).</summary>
+    private async Task<Dictionary<Guid, HappyMix.Application.Abstractions.Media.MediaInfo>> GameDetailsAsync(
+        IEnumerable<HappyMix.Application.Abstractions.Guilds.GroupGame> games, CancellationToken cancellationToken)
+    {
+        var catalog = HttpContext.RequestServices.GetRequiredService<HappyMix.Application.Abstractions.Media.IMediaCatalog>();
+        var details = new Dictionary<Guid, HappyMix.Application.Abstractions.Media.MediaInfo>();
+        foreach (var game in games.Where(game => game.Provider == HappyMix.Application.Abstractions.Guilds.GroupGame.IgdbProvider && game.ExternalId is not null))
+            if (await catalog.GetAsync(new(game.Provider!, game.ExternalId!), cancellationToken) is { } info)
+                details[game.Id] = info;
+        return details;
+    }
+
     private async Task<IActionResult> RunGroupActionAsync(ulong guildId, Guid groupId,
         Func<GroupActor, GroupSummary, GroupCommand> command, string success, string section = "overview",
         GroupFormState? form = null, bool afterDecline = false)
@@ -281,6 +294,8 @@ public sealed partial class DashboardController
         {
             Notifications = notifications,
             Polls = polls,
+            GameDetails = await GameDetailsAsync(group.Games, cancellationToken),
+            Tags = (await sender.Send(new HappyMix.Application.Polls.GetGroupTagsQuery(guildId), cancellationToken)).Value.GetValueOrDefault(groupId) ?? [],
             Watch = watch,
             Events = events,
             BoardEvents = board is null ? BoardEvents.Empty
@@ -344,6 +359,7 @@ public sealed partial class DashboardController
 
     private static GroupDirectoryFilter ParseFilter(string? filter) => filter switch
     {
+        "open" => GroupDirectoryFilter.Open,
         "invited" => GroupDirectoryFilter.Invited,
         "all" => GroupDirectoryFilter.All,
         _ => GroupDirectoryFilter.Mine

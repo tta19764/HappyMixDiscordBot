@@ -17,7 +17,9 @@ public sealed record MediaInfo(
     double? Rating,
     string? Status,
     int? Runtime,
-    IReadOnlyList<MediaSeason> Seasons)
+    IReadOnlyList<MediaSeason> Seasons,
+    IReadOnlyList<string>? Platforms = null,
+    string? SteamAppId = null)
 {
     public int? EpisodeCount => Seasons.Count == 0 ? null : Seasons.Sum(season => season.Episodes);
 
@@ -31,7 +33,8 @@ public sealed record MediaSeason(int Number, int Episodes);
 public sealed record MediaRef(string Source, string ExternalId);
 
 /// <summary>
-/// Looks titles up in free public catalogs: Steam for games, TVmaze for series, AniList for anime (MyAnimeList links are matched by their id) and,
+/// Looks titles up in free public catalogs: IGDB for games on every platform (when Twitch app credentials are set;
+/// otherwise the Steam store), TVmaze for series, AniList for anime (MyAnimeList links are matched by their id) and,
 /// when an API key is configured, TMDB for films. Results are cached. Every call is best effort: a catalog that is
 /// unreachable or doesn't know the item returns nothing rather than failing.
 /// </summary>

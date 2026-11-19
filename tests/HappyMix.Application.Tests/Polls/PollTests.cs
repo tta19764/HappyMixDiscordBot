@@ -49,6 +49,7 @@ public sealed class PollTests
 
         Assert.True((await fixture.Sender.Send(new SetGroupTagsCommand(Actor(Kai), group, ["games"]))).IsFailure);
         Assert.Equal(["games", "coop"], (await fixture.Sender.Send(new SetGroupTagsCommand(Actor(Organizer), group, ["games", "Coop"]))).Value);
+        Assert.Equal(["games", "coop"], (await fixture.Sender.Send(new GetGroupTagsQuery(Guild))).Value[group]);
 
         var board = (await fixture.Sender.Send(new GetPollBoardQuery(Actor(Kai), group))).Value;
         Assert.Equal("Polls_Question_games", board.DefaultQuestion);

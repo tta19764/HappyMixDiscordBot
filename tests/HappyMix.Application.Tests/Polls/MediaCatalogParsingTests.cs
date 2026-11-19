@@ -44,4 +44,29 @@ public sealed class MediaCatalogParsingTests
         Assert.Equal(["Action"], anime.Genres);
         Assert.Equal("Gold Roger was known as the Pirate King.", anime.Summary);
     }
+
+    [Fact]
+    public void IgdbGamesKeepPlatformsCoversAndTheirSteamId()
+    {
+        using var lol = System.Text.Json.JsonDocument.Parse("""
+            {"id": 115, "name": "League of Legends", "slug": "league-of-legends", "url": "https://www.igdb.com/games/league-of-legends",
+             "first_release_date": 1256860800, "total_rating": 82.4, "cover": {"id": 1, "image_id": "co49wj"},
+             "genres": [{"name": "MOBA"}, {"name": "Strategy"}], "platforms": [{"abbreviation": "PC"}, {"abbreviation": "Mac"}],
+             "websites": [{"category": 1, "url": "https://www.leagueoflegends.com"}], "summary": "A <b>team</b> game."}
+            """);
+        var info = MediaCatalog.Igdb(lol.RootElement)!;
+        Assert.Equal(("game", "igdb", "115", "League of Legends", 2009, 8.2), (info.Kind, info.Source, info.ExternalId, info.Title, info.Year, info.Rating));
+        Assert.Equal("https://images.igdb.com/igdb/image/upload/t_cover_big/co49wj.jpg", info.ImageUrl);
+        Assert.Equal(["PC", "Mac"], info.Platforms!);
+        Assert.Equal("https://www.leagueoflegends.com", info.Url);
+        Assert.Null(info.SteamAppId);
+
+        using var drg = System.Text.Json.JsonDocument.Parse("""
+            {"id": 26226, "name": "Deep Rock Galactic", "platforms": [{"name": "PC (Microsoft Windows)"}], "total_rating": null,
+             "websites": [{"category": 13, "url": "https://store.steampowered.com/app/548430/Deep_Rock_Galactic/"}]}
+            """);
+        var steam = MediaCatalog.Igdb(drg.RootElement)!;
+        Assert.Equal(("548430", (double?)null), (steam.SteamAppId, steam.Rating));
+        Assert.Equal(["PC (Microsoft Windows)"], steam.Platforms!);
+    }
 }
