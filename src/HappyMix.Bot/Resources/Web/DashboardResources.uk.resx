@@ -1986,7 +1986,7 @@
 <data name="Guide_events_Title" xml:space="preserve"><value>Події та запрошення</value></data>
 <data name="Guide_events_Body" xml:space="preserve"><value>Створіть подію для групи або оберіть окремих учасників. Задайте дати, години й часовий пояс. Для повторюваної події погодьтеся один раз, щоб приєднатися до серії; відмовляйтеся чи скасовуйте участь в окремих датах, не змінюючи інших. Організатор підтверджує кожну дату, коли достатньо людей можуть прийти, і може скасувати одну дату або решту серії. Підтверджені події відображаються в доступності. Відкрийте «Сповіщення в каналі» групи чи події, щоб обрати канал або створити канал з її назвою, задати мову й час нагадування та за бажання публікувати оновлення про заплановані, підтверджені чи скасовані події. Події використовують налаштування групи, доки не отримають власні. Нагадування згадують учасників, які погодилися, та організатора лише тоді, коли їх немає в жодному голосовому каналі сервера, враховуючи пов’язані акаунти. Повторювана подія надсилає кожному одне запрошення: «Прийняти всі дати» або «Відхилити всі дати» відповідає за всю серію. Скасовані події та дати видаляються за кілька хвилин після скасування.</value></data>
 <data name="Guide_game-news_Title" xml:space="preserve"><value>Підписки на новини ігор</value></data>
-<data name="Guide_game-news_Body" xml:space="preserve"><value>Створіть підписку за ID гри Steam або посиланням на магазин і назвою гри. HappyMix створить канал і роль для сповіщень. Учасники можуть приєднатися до наявної підписки або відписатися, щоб зняти роль. Автори й адміністратори можуть видалити підписку, канал і роль. Новини Steam перевіряються кожні десять хвилин. Тип новини визначається за оголошенням. Для портретів потрібен доступ до списку учасників Discord. Публікуються новини з усіх джерел, які повертає Steam, зокрема загальні оголошення. Нові канали створюються в категорії Bot Notifications.</value></data>
+<data name="Guide_game-news_Body" xml:space="preserve"><value>Створіть підписку за ID гри Steam або посиланням на магазин і назвою гри. HappyMix створить канал і роль для сповіщень. Учасники можуть приєднатися до наявної підписки або відписатися, щоб зняти роль. Автори й адміністратори можуть видалити підписку, канал і роль. Новини Steam перевіряються кожні десять хвилин. Тип новини визначається за оголошенням. Для портретів потрібен доступ до списку учасників Discord. Кожна підписка обирає, що публікувати: патчноути, інші оголошення зі сторінки гри в Steam і статті преси. Нові підписки публікують патчноути й оголошення; автор або адміністратор може змінити це на картці гри. Нові канали створюються в категорії Bot Notifications.</value></data>
 <data name="Guide_links_Title" xml:space="preserve"><value>Пов’язані акаунти</value></data>
 <data name="Guide_links_Body" xml:space="preserve"><value>Створіть запит з основного акаунта й відкрийте посилання підтвердження, увійшовши з додаткового. Обидва акаунти мають бути на сервері. Перед підтвердженням перегляньте конфлікти розкладів. Пов’язані акаунти мають спільне членство в групах і доступність. Права Discord належать кожному акаунту окремо. Перед роз’єднанням перегляньте наслідки. Адміністратори можуть керувати зв’язками у своїх інструментах.</value></data>
 <data name="Guide_settings_Title" xml:space="preserve"><value>Налаштування сервера й кіберспорт</value></data>
@@ -2421,4 +2421,16 @@
 <data name="Groups_Err_Suggested" xml:space="preserve"><value>Цю гру вже запропонували.</value></data>
 <data name="Groups_Err_TooManySuggestions" xml:space="preserve"><value>У групи забагато пропозицій, що чекають. Спробуйте, коли організатор їх перегляне.</value></data>
 <data name="Groups_Err_SuggestionGone" xml:space="preserve"><value>Ця пропозиція вже не чекає на рішення.</value></data>
+<data name="News_Sources" xml:space="preserve"><value>Які новини публікувати</value></data>
+<data name="News_Sources_Change" xml:space="preserve"><value>Змінити</value></data>
+<data name="News_Sources_Save" xml:space="preserve"><value>Зберегти</value></data>
+<data name="News_Source_PatchNotes" xml:space="preserve"><value>Патчноути</value></data>
+<data name="News_Source_PatchNotes_Help" xml:space="preserve"><value>Оновлення й виправлення від розробників</value></data>
+<data name="News_Source_Announcements" xml:space="preserve"><value>Оголошення</value></data>
+<data name="News_Source_Announcements_Help" xml:space="preserve"><value>Події, знижки й плани зі сторінки гри в Steam</value></data>
+<data name="News_Source_Press" xml:space="preserve"><value>Статті преси</value></data>
+<data name="News_Source_Press_Help" xml:space="preserve"><value>Ігрові сайти, як-от PC Gamer чи PCGamesN</value></data>
+<data name="News_Err_PickOne" xml:space="preserve"><value>Оберіть хоча б один тип новин.</value></data>
+<data name="News_Err_OnlyOwnerSources" xml:space="preserve"><value>Обирати новини підписки можуть лише її автор або адміністратор сервера.</value></data>
+<data name="News_Err_SteamDown" xml:space="preserve"><value>Steam не відповів. Спробуйте за хвилину.</value></data>
 </root>

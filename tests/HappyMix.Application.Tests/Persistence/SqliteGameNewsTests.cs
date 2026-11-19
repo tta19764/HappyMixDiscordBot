@@ -20,6 +20,9 @@ public sealed class SqliteGameNewsTests
         Assert.Equal(subscription, Assert.Single(await store.ListAsync(default)));
         Assert.Equal("announcement", Assert.Single(await store.DeliveredAsync(subscription, default)));
 
+        await store.SetSourcesAsync(subscription, GameNewsSources.PatchNotes | GameNewsSources.Press, default);
+        Assert.Equal(GameNewsSources.PatchNotes | GameNewsSources.Press, Assert.Single(await store.ListAsync(default)).Sources);
+
         await store.MarkDeletingAsync(subscription, default);
         Assert.True(Assert.Single(await store.ListAsync(default)).Deleting);
         await store.RemoveAsync(subscription, default);

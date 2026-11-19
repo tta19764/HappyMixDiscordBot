@@ -1,0 +1,14 @@
+{
+  "en": [
+    "**v0.0.10 · Choose your game news**\nEach game news subscription now picks what it posts, with three checkboxes: **Patch notes**, **Announcements** (events, sales and plans from the game's Steam page) and **Press articles** (gaming sites such as PC Gamer or PCGamesN). Subscriptions post patch notes and announcements by default, so outside articles no longer fill the channel. The subscription's creator or a server administrator can change this on the game's card; a newly ticked kind starts from that moment, without old posts. News headings in Discord now say Patch notes or which site an article is from.",
+    "**Quieter Logs tab**\nThe release notes check no longer adds an entry to the Logs tab every minute; it now writes one only when it actually posts something."
+  ],
+  "uk": [
+    "**v0.0.10 · Обирайте новини ігор**\nКожна підписка на новини гри тепер обирає, що публікувати, трьома прапорцями: **Патчноути**, **Оголошення** (події, знижки й плани зі сторінки гри в Steam) і **Статті преси** (ігрові сайти, як-от PC Gamer чи PCGamesN). Типово підписки публікують патчноути й оголошення, тож сторонні статті більше не заповнюють канал. Автор підписки або адміністратор сервера може змінити це на картці гри; щойно увімкнений тип новин діє з цього моменту, без старих дописів. Заголовки новин у Discord тепер показують «Patch notes» або сайт, з якого стаття.",
+    "**Тихіший журнал**\nПеревірка нотаток до релізу більше не додає запис у журнал щохвилини; тепер вона пише лише тоді, коли справді щось публікує."
+  ],
+  "ru": [
+    "**v0.0.10 · Выбирайте новости игр**\nКаждая подписка на новости игры теперь выбирает, что публиковать, тремя флажками: **Патчноуты**, **Объявления** (события, скидки и планы со страницы игры в Steam) и **Статьи прессы** (игровые сайты, например PC Gamer или PCGamesN). По умолчанию подписки публикуют патчноуты и объявления, поэтому сторонние статьи больше не заполняют канал. Автор подписки или администратор сервера может изменить это на карточке игры; только что включённый тип новостей действует с этого момента, без старых публикаций. Заголовки новостей в Discord теперь показывают «Patch notes» или сайт, с которого статья.",
+    "**Более тихий журнал**\nПроверка заметок к релизу больше не добавляет запись в журнал каждую минуту; теперь она пишет, только когда действительно что-то публикует."
+  ]
+}

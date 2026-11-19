@@ -10,6 +10,13 @@
     // Your subscriptions first, then the rest by name.
     var games = Model.Subscriptions.OrderByDescending(Joined).ThenBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase).ToArray();
     int joinedCount = games.Count(Joined);
+    (GameNewsSources Flag, string Label, string Help)[] kinds =
+    [
+        (GameNewsSources.PatchNotes, "News_Source_PatchNotes", "News_Source_PatchNotes_Help"),
+        (GameNewsSources.Announcements, "News_Source_Announcements", "News_Source_Announcements_Help"),
+        (GameNewsSources.Press, "News_Source_Press", "News_Source_Press_Help")
+    ];
+    string Chosen(GameNewsSources sources) => string.Join(" · ", kinds.Where(kind => sources.HasFlag(kind.Flag)).Select(kind => T[kind.Label].Value));
 }
 <partial name="_ServerNav" model="nav" />
 <div class="hm-stack hm-stack--lg">
@@ -50,7 +57,7 @@
                     bool joined = Joined(subscription);
                     var portraits = Model.Subscribers.GetValueOrDefault(subscription.RoleId) ?? [];
                     bool canDelete = Model.IsAdmin || subscription.OwnerId == Model.MemberId;
-                    <li class="hm-news-card @(joined ? "is-joined" : "") @(subscription.Deleting ? "is-deleting" : "")" data-news-name="@subscription.Name.ToLowerInvariant()">
+                    <li class="hm-news-card @(joined ? "is-joined" : "") @(subscription.Deleting ? "is-deleting" : "")" id="news-@subscription.AppId" data-news-name="@subscription.Name.ToLowerInvariant()">
                         <div class="hm-news-card__art">
                             <img src="https://cdn.akamai.steamstatic.com/steam/apps/@subscription.AppId/header.jpg" alt="" loading="lazy" data-game-art />
                             @if (joined)
@@ -74,6 +81,30 @@
                                     <span>@T["News_MembersUnavailable"]</span>
                                 }
                             </div>
+                            @if (canDelete && !subscription.Deleting)
+                            {
+                                <details class="hm-news-sources">
+                                    <summary><span class="hm-subtle">@T["News_Sources"]:</span> @Chosen(subscription.Sources) <span class="hm-link">@T["News_Sources_Change"]</span></summary>
+                                    <form class="hm-stack" method="post" action="@url">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="game" value="@subscription.AppId" />
+                                        <div class="hm-checks">
+                                            @foreach (var kind in kinds)
+                                            {
+                                                <label class="hm-check">
+                                                    <input type="checkbox" name="sources" value="@((int)kind.Flag)" checked="@subscription.Sources.HasFlag(kind.Flag)" />
+                                                    <span>@T[kind.Label]<small>@T[kind.Help]</small></span>
+                                                </label>
+                                            }
+                                        </div>
+                                        <button class="hm-btn hm-btn--sm hm-btn--primary" name="action" value="sources">@DashboardIcons.Render("check")@T["News_Sources_Save"]</button>
+                                    </form>
+                                </details>
+                            }
+                            else
+                            {
+                                <p class="hm-news-sources"><span class="hm-subtle">@T["News_Sources"]:</span> @Chosen(subscription.Sources)</p>
+                            }
                             <div class="hm-news-card__actions">
                                 @if (subscription.Deleting)
                                 {
@@ -124,5 +155,17 @@
             </div>
             <button class="hm-btn hm-btn--primary" name="action" value="create">@DashboardIcons.Render("plus")@T["GameNews_Create"]</button>
         </div>
+        <fieldset class="hm-choice hm-news-add__sources">
+            <legend>@T["News_Sources"]</legend>
+            <div class="hm-checks">
+                @foreach (var kind in kinds)
+                {
+                    <label class="hm-check">
+                        <input type="checkbox" name="sources" value="@((int)kind.Flag)" checked="@GameNewsSources.Official.HasFlag(kind.Flag)" />
+                        <span>@T[kind.Label]<small>@T[kind.Help]</small></span>
+                    </label>
+                }
+            </div>
+        </fieldset>
     </form>
 </div>

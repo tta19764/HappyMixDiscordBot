@@ -29,6 +29,8 @@ public sealed class PublishReleaseNotesJob(DiscordSocketClient discord, IConfigu
         var state = File.Exists(stateFile)
             ? JsonSerializer.Deserialize<Dictionary<string, ulong>>(await File.ReadAllTextAsync(stateFile, context.CancellationToken))!
             : new Dictionary<string, ulong>(StringComparer.Ordinal);
+        // Runs every minute: once every note of this version is posted there is nothing to ask Discord or to log.
+        if (!HasPending(version, notes[language].Length, state)) return;
         ulong channelId = config.GetValue<ulong>("ReleaseAnnouncements:ChannelId");
         if (channelId == 0) state.TryGetValue("channel", out channelId);
         var channels = await ((IGuild)guild).GetTextChannelsAsync();
@@ -38,6 +40,7 @@ public sealed class PublishReleaseNotesJob(DiscordSocketClient discord, IConfigu
         state["channel"] = channel.Id;
         await SaveAsync(stateFile, state, context.CancellationToken);
         var messages = await channel.GetMessagesAsync(100).FlattenAsync();
+        int posted = 0;
         foreach (var (body, index) in notes[language].Select((body, index) => (body, index)))
         {
             string key = $"{version}/{index}";
@@ -51,12 +54,18 @@ public sealed class PublishReleaseNotesJob(DiscordSocketClient discord, IConfigu
                     .WithFooter(marker).WithColor(Color.Blue).Build();
                 existing = await channel.SendMessageAsync(embed: embed, allowedMentions: AllowedMentions.None,
                     options: new RequestOptions { CancelToken = context.CancellationToken });
+                posted++;
             }
             state[key] = existing.Id;
             await SaveAsync(stateFile, state, context.CancellationToken);
         }
-        LogPublished(logger, version, guild.Id);
+        if (posted > 0)
+            LogPublished(logger, version, guild.Id, posted, channel.Name);
     }
+
+    /// <summary>Whether any note of <paramref name="version"/> hasn't been recorded as posted yet.</summary>
+    internal static bool HasPending(string version, int count, IReadOnlyDictionary<string, ulong> state) =>
+        Enumerable.Range(0, count).Any(index => !state.ContainsKey($"{version}/{index}"));
 
     private static async Task SaveAsync(string path, Dictionary<string, ulong> state, CancellationToken ct)
     {
@@ -65,7 +74,8 @@ public sealed class PublishReleaseNotesJob(DiscordSocketClient discord, IConfigu
         File.Move(temporary, path, overwrite: true);
     }
 
-    private static readonly Action<ILogger, string, ulong, Exception?> Published = LoggerMessage.Define<string, ulong>(
-        LogLevel.Information, new EventId(1, "ReleasePublished"), "Release {Version} published to guild {GuildId}");
-    private static void LogPublished(ILogger logger, string version, ulong guildId) => Published(logger, version, guildId, null);
+    private static readonly Action<ILogger, string, ulong, int, string, Exception?> Published = LoggerMessage.Define<string, ulong, int, string>(
+        LogLevel.Information, new EventId(1, "ReleasePublished"), "Release notes {Version} posted in server {GuildId}: {Count} message(s) in #{Channel}");
+    private static void LogPublished(ILogger logger, string version, ulong guildId, int count, string channel) =>
+        Published(logger, version, guildId, count, channel, null);
 }
