@@ -8,6 +8,13 @@ public sealed record Poll(Guid Id, ulong GuildId, Guid? GroupId, ulong CreatorId
     DateTimeOffset CreatedAt, DateTimeOffset ClosesAt, DateTimeOffset? ClosedAt, IReadOnlyList<PollOption> Options,
     IReadOnlyList<ulong> Audience, IReadOnlyList<PollVote> Votes)
 {
+    /// <summary>The Discord channel the vote is posted in, if any.</summary>
+    public ulong? ChannelId { get; init; }
+    /// <summary>The Discord message showing the vote, once posted.</summary>
+    public ulong? MessageId { get; init; }
+    /// <summary>Whether the Discord message already shows the final result.</summary>
+    public bool Finalized { get; init; }
+
     public bool IsClosed(DateTimeOffset now) => ClosedAt is not null || now >= ClosesAt;
 
     /// <summary>When voting ended: closed early, or the planned closing time.</summary>
@@ -22,9 +29,10 @@ public sealed record Poll(Guid Id, ulong GuildId, Guid? GroupId, ulong CreatorId
 
 /// <summary>
 /// One choice. <see cref="Kind"/> is game, series, film, anime or custom; <see cref="Url"/> is a store, IMDb or anime
-/// database link when one was given.
+/// database link when one was given; <see cref="Media"/> points at its catalog entry, for details such as the poster,
+/// year and episodes.
 /// </summary>
-public sealed record PollOption(int Position, string Label, string Kind, string? Url);
+public sealed record PollOption(int Position, string Label, string Kind, string? Url, HappyMix.Application.Abstractions.Media.MediaRef? Media = null);
 
 public sealed record PollVote(ulong UserId, int Position);
 
@@ -47,4 +55,12 @@ public interface IPollStore
 
     /// <summary>Ends voting now. False when it had already ended.</summary>
     Task<bool> CloseAsync(Guid pollId, DateTimeOffset now);
+
+    /// <summary>
+    /// Polls whose Discord message needs work: open polls with a channel but no message yet, and ended polls whose
+    /// message doesn't show the result yet.
+    /// </summary>
+    Task<IReadOnlyList<Poll>> ListDiscordWorkAsync(DateTimeOffset now);
+
+    Task SetMessageAsync(Guid pollId, ulong channelId, ulong? messageId, bool finalized);
 }

@@ -77,6 +77,7 @@ public static class DependencyInjection
         services.AddSingleton<GameNewsService>();
         services.AddSingleton<NotificationChannels>();
         services.AddSingleton<EventNotificationSettings>();
+        services.AddSingleton<PollMessages>();
         services.AddSingleton<DiscordMatchAnnouncementPublisher>();
         services.AddSingleton<IGuildAnnouncementPublisher>(provider =>
             provider.GetRequiredService<DiscordMatchAnnouncementPublisher>());
@@ -117,6 +118,11 @@ public static class DependencyInjection
             JobKey channelEventsKey = new("publish-event-channels");
             scheduler.AddJob<PublishEventChannelsJob>(job => job.WithIdentity(channelEventsKey));
             scheduler.AddTrigger(trigger => trigger.ForJob(channelEventsKey).StartNow()
+                .WithSimpleSchedule(schedule => schedule.WithIntervalInMinutes(1).RepeatForever()));
+
+            JobKey pollsKey = new("publish-polls");
+            scheduler.AddJob<PublishPollsJob>(job => job.WithIdentity(pollsKey));
+            scheduler.AddTrigger(trigger => trigger.ForJob(pollsKey).StartNow()
                 .WithSimpleSchedule(schedule => schedule.WithIntervalInMinutes(1).RepeatForever()));
 
             JobKey eventsKey = new("dispatch-event-messages");

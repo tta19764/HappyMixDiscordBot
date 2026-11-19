@@ -11,7 +11,7 @@ namespace HappyMix.Application.Tests.Polls;
 
 public sealed class PollTests
 {
-    private const ulong Guild = 1, Organizer = 10, Kai = 20, Mira = 30, Outsider = 99;
+    internal const ulong Guild = 1, Organizer = 10, Kai = 20, Mira = 30, Outsider = 99;
     private static GroupActor Actor(ulong user, bool moderate = false) => new(Guild, user, moderate);
 
     [Theory]
@@ -101,7 +101,7 @@ public sealed class PollTests
         Assert.Null(board.Ended[0].Leader);
     }
 
-    private sealed class Fixture : IDisposable
+    internal sealed class Fixture : IDisposable
     {
         private SqliteTestDatabase database = null!;
         private ServiceProvider application = null!;
@@ -118,6 +118,8 @@ public sealed class PollTests
                 .AddSingleton(storage.GetRequiredService<IGuildSettingsStore>())
                 .AddSingleton(storage.GetRequiredService<IAccountLinkStore>())
                 .AddSingleton(storage.GetRequiredService<IPollStore>())
+                .AddSingleton(storage.GetRequiredService<HappyMix.Application.Abstractions.Watch.IWatchStore>())
+                .AddSingleton<HappyMix.Application.Abstractions.Media.IMediaCatalog>(new FakeCatalog())
                 .AddSingleton(storage.GetRequiredService<HappyMix.Application.Abstractions.Events.IEventStore>())
                 .AddSingleton<IClock>(fixture.Clock)
                 .AddApplication().BuildServiceProvider();
@@ -138,7 +140,7 @@ public sealed class PollTests
         }
     }
 
-    private sealed class MutableClock : IClock
+    internal sealed class MutableClock : IClock
     {
         public DateTimeOffset UtcNow { get; private set; } = new(2026, 11, 18, 12, 0, 0, TimeSpan.Zero);
         public void Advance(TimeSpan by) => UtcNow += by;

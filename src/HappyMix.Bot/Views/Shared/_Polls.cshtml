@@ -1,6 +1,7 @@
 @using System.Globalization
 @using HappyMix.Application.Abstractions.Polls
 @using HappyMix.Application.Polls
+@using HappyMix.Bot.Services
 @model PollsModel
 @{
     var board = Model.Board;
@@ -66,10 +67,23 @@
                         string names = string.Join(", ", poll.Votes.Where(vote => vote.Position == option.Position).Select(vote => Model.Names.Name(vote.UserId, Localize)));
                         <label class="hm-poll__option @(mine.Contains(option.Position) ? "is-mine" : "")" style="--share: @((count * 100 / max).ToString(CultureInfo.InvariantCulture))%" title="@names">
                             <input type="@(poll.Multiple ? "checkbox" : "radio")" name="choice" value="@option.Position" checked="@mine.Contains(option.Position)">
-                            <span class="hm-poll__label"><span aria-hidden="true">@Icon(option.Kind)</span> @option.Label
+                            @{ var info = option.Media is { } reference && board.Media.TryGetValue(reference, out var found) ? found : null; }
+                            @if (info?.ImageUrl is { } poster)
+                            {
+                                <img class="hm-poll__poster" src="@poster" alt="" loading="lazy" referrerpolicy="no-referrer">
+                            }
+                            <span class="hm-poll__label"><span><span aria-hidden="true">@Icon(option.Kind)</span> @option.Label
                                 @if (option.Url is { } url)
                                 {
                                     <a href="@url" target="_blank" rel="noopener noreferrer" class="hm-poll__link" aria-label="@T["Polls_OpenLink", option.Label]">↗</a>
+                                }</span>
+                                @if (info is not null)
+                                {
+                                    <small class="hm-poll__details">@PollMessages.Details(info, Model.Language)</small>
+                                }
+                                @if (option.Media is { } tracked && board.Progress.TryGetValue(tracked, out var progress))
+                                {
+                                    <small class="hm-poll__progress">@PollMessages.ProgressLine(progress, Model.Language)</small>
                                 }
                             </span>
                             <b class="hm-poll__count">@count</b>
@@ -119,6 +133,7 @@
                         {
                             string meta = item.TimesWon > 0 && item.LastWon is { } won ? T["Polls_LastPicked", Ago(won)].Value
                                 : item.Source == "group" ? T["Polls_FromGroup"].Value
+                                : item.Source == "watchlist" ? T["Polls_FromWatchlist"].Value
                                 : item.TimesOffered > 0 ? T["Polls_OfferedBefore", item.TimesOffered].Value : "";
                             <button type="button" class="hm-poll-suggest__item" data-suggest="@(item.Url is null ? item.Label : item.Label + " " + item.Url)" aria-pressed="false">
                                 <span aria-hidden="true">@Icon(item.Kind)</span> @item.Label
@@ -129,6 +144,21 @@
                     <p class="hm-help">@T["Polls_SuggestionsHelp"]</p>
                 </div>
             }
+
+            <div class="hm-field hm-media-search" data-media-search data-url="/media/@Model.GuildId/search" data-add-label="@T["Polls_AddThis"]"
+                 data-empty="@T["Media_NoResults"]" data-failed="@T["Media_SearchFailed"]" hidden>
+                <span class="hm-label">@T["Media_FindTitle"]</span>
+                <div class="hm-row hm-media-search__bar">
+                    <select class="hm-select" data-media-kind aria-label="@T["Media_Kind"]">
+                        <option value="game">🎮 @T["Tag_games"]</option>
+                        <option value="series">📺 @T["Tag_series"]</option>
+                        <option value="anime">🌸 @T["Tag_anime"]</option>
+                        <option value="film">🎬 @T["Tag_films"]</option>
+                    </select>
+                    <input class="hm-input" type="search" data-media-query placeholder="@T["Media_SearchPlaceholder"]" aria-label="@T["Media_FindTitle"]">
+                </div>
+                <ul class="hm-media-search__results" data-media-results aria-live="polite"></ul>
+            </div>
 
             <fieldset class="hm-field hm-poll-options" data-poll-options>
                 <legend class="hm-label">@T["Polls_Options"]</legend>
@@ -154,6 +184,24 @@
                 <label class="hm-check" style="align-self: end"><input type="checkbox" name="multiple" value="true"><span>@T["Polls_AllowMultiple"]<small>@T["Polls_AllowMultipleHelp"]</small></span></label>
             </div>
 
+            @if (Model.IsGroup)
+            {
+                <p class="hm-help hm-poll-new__where">💬 @(Model.GroupChannel is { } where ? T["Polls_PostedIn", where] : T["Polls_GroupNoChannel"])</p>
+            }
+            else
+            {
+                <div class="hm-field">
+                    <label class="hm-label" for="@formId-channel">@T["Polls_PostIn"]</label>
+                    <select class="hm-select" id="@formId-channel" name="channelId">
+                        <option value="">@T["Polls_DashboardOnly"]</option>
+                        @foreach (var (id, name) in Model.Channels)
+                        {
+                            <option value="@id">#@name</option>
+                        }
+                    </select>
+                    <p class="hm-help">@T["Polls_PostInHelp"]</p>
+                </div>
+            }
             @if (!Model.IsGroup)
             {
                 <fieldset class="hm-field hm-poll-audience" data-poll-audience>
@@ -198,6 +246,19 @@
                             {
                                 <span>🏆 @Icon(leader.Kind) @leader.Label</span>
                                 <small>@T["Polls_VotesOf", poll.Count(leader.Position), Model.VoterCount(poll)]</small>
+                                @if (board.CanManageTags && board.GroupId is { } watchGroup && leader.Kind is "series" or "film" or "anime"
+                                     && !(leader.Media is { } known && board.Progress.ContainsKey(known)))
+                                {
+                                    <form method="post" action="/groups/@Model.GuildId/@watchGroup/watch" asp-antiforgery="false">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="kind" value="@leader.Kind">
+                                        <input type="hidden" name="title" value="@leader.Label">
+                                        <input type="hidden" name="url" value="@leader.Url">
+                                        <input type="hidden" name="source" value="@leader.Media?.Source">
+                                        <input type="hidden" name="externalId" value="@leader.Media?.ExternalId">
+                                        <button class="hm-btn hm-btn--ghost hm-btn--sm">➕ @T["Watch_AddToList"]</button>
+                                    </form>
+                                }
                             }
                             else
                             {

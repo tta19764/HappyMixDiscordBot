@@ -357,6 +357,12 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 - Options are titles or Steam/IMDb/MyAnimeList/AniList links; Steam and MyAnimeList slugs fill in titles, IMDb links need a title. Suggestions combine the group's games (games tag) with options from the last 30 votes, least recently won first.
 - Votes close at the chosen time (1 hour to 1 week) or earlier by their creator or the group's organizer/moderators. Winners are the most-voted option, ties going to the first listed.
 
+### v0.0.7 votes in Discord, media details and watchlists
+
+- Votes with a channel are posted as a Discord message: a summary embed with vote bars, a card per catalog-backed option (poster, year, genres, rating, seasons/episodes or running time, watchlist progress), a select menu to vote and a button to take the vote back. The message updates after every vote (Discord or dashboard) and shows the winner once voting ends; `PublishPollsJob` catches up every minute. Group votes use the group's notification channel when notifications are on; server votes use the channel chosen in the form or the channel of `/vote create`.
+- `IMediaCatalog` (Infrastructure `MediaCatalog`) looks titles up in the Steam store, TVmaze (series, IMDb lookups), AniList (anime; MyAnimeList links by id) and, with `Media__TmdbApiKey`, TMDB (films). Lookups are best effort with a 6-second HTTP timeout (4 seconds while creating a vote) and cached for 7 days in `MediaCache`. Only the typed search text and link ids are sent to these services.
+- Groups tagged series, films or anime have a watchlist (`WatchItems`): status, next season/episode (rolling over by catalog season lengths), and a resume position for unfinished episodes or films. The organizer and moderators edit it; members see it. Migration `20261126000100_AddDiscordVotesAndWatchlist` adds the tables and columns.
+
 ### CI runs and deployment diagnostics
 
 Pull requests targeting main run validation. New PR commits cancel older in-progress checks. Main pushes do not repeat those checks; version tags run validation plus image publication and deployment. Completed checks for earlier PR commits remain in history because they validated different code.

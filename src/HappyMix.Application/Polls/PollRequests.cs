@@ -1,6 +1,8 @@
 using System.Text.RegularExpressions;
 using HappyMix.Application.Abstractions;
 using HappyMix.Application.Abstractions.Guilds;
+using HappyMix.Application.Abstractions.Media;
+using HappyMix.Application.Abstractions.Watch;
 using HappyMix.Application.Abstractions.Messaging;
 using HappyMix.Application.Abstractions.Polls;
 using HappyMix.Application.Guilds;
@@ -78,6 +80,9 @@ public static partial class PollLinks
         return (new PollOption(0, title, kind, url), null);
     }
 
+    /// <summary>The first web address in the text, if any.</summary>
+    public static string? FindUrl(string? text) => UrlPattern().Match(text ?? "") is { Success: true } match ? match.Value : null;
+
     private static string Words(string slug) =>
         Regex.Replace(Uri.UnescapeDataString(slug).Replace('_', ' ').Replace('-', ' '), @"\s+", " ").Trim();
 
@@ -102,7 +107,14 @@ public sealed record PollSuggestion(string Label, string Kind, string? Url, stri
 
 /// <summary>Everything the vote section needs: who may do what, the polls, and suggestions for a new one.</summary>
 public sealed record PollBoard(ulong ViewerId, Guid? GroupId, bool CanManageTags, IReadOnlyList<string> Tags, string DefaultQuestion,
-    IReadOnlyList<Poll> Open, IReadOnlyList<Poll> Ended, IReadOnlyList<PollSuggestion> Suggestions, IReadOnlyCollection<ulong> Voters);
+    IReadOnlyList<Poll> Open, IReadOnlyList<Poll> Ended, IReadOnlyList<PollSuggestion> Suggestions, IReadOnlyCollection<ulong> Voters)
+{
+    /// <summary>Catalog details of the options of open votes, for posters, years and episodes.</summary>
+    public IReadOnlyDictionary<MediaRef, MediaInfo> Media { get; init; } = new Dictionary<MediaRef, MediaInfo>();
+
+    /// <summary>Watchlist progress of the group's titles, by catalog entry, so vote options can show "next: S2E5".</summary>
+    public IReadOnlyDictionary<MediaRef, WatchItem> Progress { get; init; } = new Dictionary<MediaRef, WatchItem>();
+}
 
 /// <summary>Polls of a group (members only), or the server's own polls when <paramref name="GroupId"/> is null.</summary>
 public sealed record GetPollBoardQuery(GroupActor Actor, Guid? GroupId) : IQuery<PollBoard>;
@@ -113,8 +125,12 @@ public sealed record SetGroupTagsCommand(GroupActor Actor, Guid GroupId, IReadOn
 /// Starts a vote. Options are typed text and/or links (see <see cref="PollLinks"/>). A server poll needs
 /// <paramref name="Audience"/> or <paramref name="Everyone"/>; a group poll goes to the group's members.
 /// </summary>
+/// <param name="ChannelId">Discord channel to post the vote in, or null to keep it on the dashboard.</param>
 public sealed record CreatePollCommand(GroupActor Actor, Guid? GroupId, string Question, IReadOnlyList<string> Options, bool Multiple,
-    TimeSpan Duration, IReadOnlyList<ulong> Audience, bool Everyone, Guid RequestId) : ICommand<Guid>;
+    TimeSpan Duration, IReadOnlyList<ulong> Audience, bool Everyone, Guid RequestId, ulong? ChannelId = null) : ICommand<Guid>;
+
+/// <summary>A vote by id, for whoever may vote in it.</summary>
+public sealed record GetPollQuery(GroupActor Actor, Guid PollId) : IQuery<Poll>;
 
 /// <summary>Replaces the voter's choices; an empty list takes the vote back.</summary>
 public sealed record VotePollCommand(GroupActor Actor, Guid PollId, IReadOnlyList<int> Positions) : ICommand<Poll>;
@@ -122,8 +138,9 @@ public sealed record VotePollCommand(GroupActor Actor, Guid PollId, IReadOnlyLis
 /// <summary>The creator, or whoever manages the group, ends voting early.</summary>
 public sealed record ClosePollCommand(GroupActor Actor, Guid PollId) : ICommand<Poll>;
 
-internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLinks, IClock clock, ISender sender)
-    : IQueryHandler<GetPollBoardQuery, PollBoard>, ICommandHandler<SetGroupTagsCommand, IReadOnlyList<string>>,
+internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLinks, IClock clock, ISender sender, IMediaCatalog catalog,
+    IWatchStore watchlist)
+    : IQueryHandler<GetPollBoardQuery, PollBoard>, IQueryHandler<GetPollQuery, Poll>, ICommandHandler<SetGroupTagsCommand, IReadOnlyList<string>>,
       ICommandHandler<CreatePollCommand, Guid>, ICommandHandler<VotePollCommand, Poll>, ICommandHandler<ClosePollCommand, Poll>
 {
     private static readonly ErrorDescriptor NotFound = new("Poll.NotFound", "That vote doesn't exist or isn't for you.");
@@ -147,10 +164,26 @@ internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLi
         var all = await polls.ListAsync(actor.GuildId, query.GroupId, PollRules.HistorySize, now);
         // Server polls are listed only to the people they were for.
         var visible = all.Where(poll => group is not null || poll.Everyone || poll.Audience.Contains(viewer) || poll.CreatorId == viewer).ToArray();
-        var suggestions = Suggest(group, tags, all);
+        var tracked = query.GroupId is { } id ? await watchlist.ListAsync(actor.GuildId, id) : [];
+        var suggestions = Suggest(group, tags, all, tracked);
+        var open = visible.Where(poll => !poll.IsClosed(now)).ToArray();
+        var media = new Dictionary<MediaRef, MediaInfo>();
+        foreach (var reference in open.SelectMany(poll => poll.Options).Select(option => option.Media).OfType<MediaRef>().Distinct())
+            if (await catalog.GetAsync(reference, cancellationToken) is { } info)
+                media[reference] = info;
         return new PollBoard(viewer, query.GroupId, group?.Summary.CanManage == true, tags, DefaultQuestion(tags),
-            visible.Where(poll => !poll.IsClosed(now)).ToArray(), visible.Where(poll => poll.IsClosed(now)).ToArray(), suggestions,
-            group is null ? [] : Voters(group));
+            open, visible.Where(poll => poll.IsClosed(now)).ToArray(), suggestions, group is null ? [] : Voters(group))
+        {
+            Media = media,
+            Progress = tracked.Where(item => item.Source is not null && item.ExternalId is not null)
+                .ToDictionary(item => new MediaRef(item.Source!, item.ExternalId!))
+        };
+    }
+
+    public async Task<Result<Poll>> Handle(GetPollQuery query, CancellationToken cancellationToken)
+    {
+        var (poll, _, _) = await AccessAsync(query.Actor, query.PollId);
+        return poll is null ? Result.Failure<Poll>(NotFound) : poll;
     }
 
     public async Task<Result<IReadOnlyList<string>>> Handle(SetGroupTagsCommand command, CancellationToken cancellationToken)
@@ -183,11 +216,17 @@ internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLi
         if (question.Length is 0 or > PollRules.QuestionLength)
             return Fail("Polls_QuestionError");
         var options = new List<PollOption>();
-        foreach (string text in command.Options.Where(item => !string.IsNullOrWhiteSpace(item)))
+        foreach (string text in command.Options.Where(item => !string.IsNullOrWhiteSpace(item)).Take(PollRules.MaxOptions + 1))
         {
             var (option, problem) = PollLinks.Parse(text, fallbackKind);
+            // Catalog details (poster, year, episodes) for links; they also supply a missing title, e.g. for a bare IMDb link.
+            var media = PollLinks.FindUrl(text) is { } url ? await LookupAsync(url, cancellationToken) : null;
+            if (option is null && media is not null && problem == "Polls_LinkNeedsTitle")
+                option = new PollOption(0, media.Title, media.Kind, PollLinks.FindUrl(text));
             if (option is null)
                 return Fail(problem!);
+            if (media is not null)
+                option = option with { Kind = media.Kind, Media = media.Ref };
             if (!options.Any(item => string.Equals(item.Label, option.Label, StringComparison.OrdinalIgnoreCase)))
                 options.Add(option with { Position = options.Count });
         }
@@ -205,7 +244,10 @@ internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLi
 
         var now = clock.UtcNow;
         await polls.CreateAsync(new Poll(command.RequestId, actor.GuildId, command.GroupId, creator, question, command.Multiple,
-            command.GroupId is null && command.Everyone, now, now + command.Duration, null, options, audience, []));
+            command.GroupId is null && command.Everyone, now, now + command.Duration, null, options, audience, [])
+        {
+            ChannelId = command.ChannelId
+        });
         return command.RequestId;
     }
 
@@ -247,6 +289,21 @@ internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLi
         return allowed ? (poll, voter, actor.CanModerate) : (null, voter, false);
     }
 
+    /// <summary>Catalog details for a link, waiting at most a few seconds so a slow catalog never blocks a vote.</summary>
+    private async Task<MediaInfo?> LookupAsync(string url, CancellationToken cancellationToken)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(4));
+        try
+        {
+            return await catalog.LookupAsync(url, timeout.Token);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
+    }
+
     private async Task<GroupDetail?> GroupAsync(GroupActor actor, Guid groupId) =>
         (await sender.Send(new GetGroupDetailQuery(actor, groupId))) is { IsSuccess: true } result ? result.Value : null;
 
@@ -270,7 +327,7 @@ internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLi
     /// was offered and won. Options nobody picked recently come first, so the list nudges toward something new.
     /// </summary>
     private PollSuggestion[] Suggest(GroupDetail? group, IReadOnlyList<string> tags,
-        IReadOnlyList<Poll> history)
+        IReadOnlyList<Poll> history, IReadOnlyList<WatchItem> tracked)
     {
         var kinds = tags.Where(GroupTags.IsBuiltIn).Select(GroupTags.Kind).ToHashSet();
         var items = new Dictionary<string, (string Label, string Kind, string? Url, string Source, int Offered, int Won, DateTimeOffset? LastWon)>(
@@ -278,6 +335,8 @@ internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLi
         if (group is not null && kinds.Contains("game"))
             foreach (var game in group.Games)
                 items[game.Name] = (game.Name, "game", game.SteamAppId is { } app ? $"https://store.steampowered.com/app/{app}" : null, "group", 0, 0, null);
+        foreach (var item in tracked.Where(item => item.Status is WatchStatus.Planned or WatchStatus.Watching))
+            items[item.Title] = (item.Title, item.Kind, item.Url, "watchlist", 0, 0, null);
         var now = clock.UtcNow;
         foreach (var poll in history)
         {

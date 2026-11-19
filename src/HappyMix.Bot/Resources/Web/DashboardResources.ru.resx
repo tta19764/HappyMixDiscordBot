@@ -2236,5 +2236,85 @@
 <data name="Tag_films_help" xml:space="preserve"><value>Помнит фильмы из прошлых голосований; ссылки IMDb</value></data>
 <data name="Tag_anime_help" xml:space="preserve"><value>Помнит аниме из прошлых голосований; ссылки MyAnimeList</value></data>
 <data name="Guide_votes_Title" xml:space="preserve"><value>Голосования</value></data>
-<data name="Guide_votes_Body" xml:space="preserve"><value>Голосуйте, во что играть или что смотреть. В группе откройте «Голосования» и начните новое: встроенные теги («Игры», «Сериалы», «Фильмы», «Аниме», выбираются в настройках группы) добавляют подсказки из игр группы и прошлых голосований, а то, что давно не выбирали, показывается первым. Введите название или вставьте ссылку Steam, IMDb или MyAnimeList; ссылки Steam и MyAnimeList подставляют название. Без группы используйте вкладку «Голосования», чтобы спросить выбранных участников или весь сервер. Выберите, когда завершится голосование и можно ли несколько вариантов; автор может завершить его досрочно. Завершённые голосования остаются в истории вместе с победителем.</value></data>
+<data name="Guide_votes_Body" xml:space="preserve"><value>Голосуйте, во что играть или что смотреть, на панели или в Discord. В группе откройте «Голосования»: встроенные теги («Игры», «Сериалы», «Фильмы», «Аниме», выбираются в настройках группы) добавляют подсказки из игр группы, её списка просмотра и прошлых голосований, а то, что давно не выбирали, показывается первым. Ищите в каталогах или вставляйте ссылки Steam, IMDb, TVmaze, MyAnimeList или AniList: тогда варианты показывают постер, год, жанры, рейтинг и сезоны или эпизоды — на панели и в сообщении Discord. Голосования группы публикуются в её канале уведомлений; голосования сервера — в выбранном канале, или начните его командой /vote create. Голосуйте через меню под сообщением. Группы, смотрящие сериалы, фильмы или аниме, ведут список просмотра: добавляйте названия поиском или ссылкой, отмечайте просмотренные эпизоды, записывайте, где остановились (например 23:40), и добавляйте победителей голосований одним нажатием.</value></data>
+<data name="Polls_VoteCount" xml:space="preserve"><value>голосов: {0}</value></data>
+<data name="Polls_WinnerLine" xml:space="preserve"><value>🏆 Победа: **{0}** — {1} из {2} голосов.</value></data>
+<data name="Polls_EndsAt" xml:space="preserve"><value>Голосование завершится {0}</value></data>
+<data name="Polls_PickOne" xml:space="preserve"><value>Выберите один вариант</value></data>
+<data name="Polls_PickSeveral" xml:space="preserve"><value>Выберите один или несколько вариантов</value></data>
+<data name="Polls_Voters" xml:space="preserve"><value>Проголосовали: {0}</value></data>
+<data name="Polls_OpenDashboard" xml:space="preserve"><value>Открыть на панели</value></data>
+<data name="Polls_NoneOpen" xml:space="preserve"><value>Сейчас для вас нет открытых голосований. Начните новое командой /vote create.</value></data>
+<data name="Polls_PickFromList" xml:space="preserve"><value>Выберите голосование из списка.</value></data>
+<data name="Polls_YouPicked" xml:space="preserve"><value>Ваш голос: {0}.</value></data>
+<data name="Media_SeasonsEpisodes" xml:space="preserve"><value>сезонов: {0}, эпизодов: {1}</value></data>
+<data name="Media_Episodes" xml:space="preserve"><value>эпизодов: {0}</value></data>
+<data name="Media_Minutes" xml:space="preserve"><value>{0} мин</value></data>
+<data name="Media_NoResults" xml:space="preserve"><value>Ничего не найдено. Попробуйте другое написание или вставьте ссылку.</value></data>
+<data name="Media_SearchFailed" xml:space="preserve"><value>Поиск сейчас недоступен. Вставьте ссылку.</value></data>
+<data name="Media_FindTitle" xml:space="preserve"><value>Найти название</value></data>
+<data name="Media_Kind" xml:space="preserve"><value>Тип</value></data>
+<data name="Media_SearchPlaceholder" xml:space="preserve"><value>Начните вводить название…</value></data>
+<data name="Polls_FromWatchlist" xml:space="preserve"><value>в списке просмотра</value></data>
+<data name="Polls_AddThis" xml:space="preserve"><value>Добавить вариантом</value></data>
+<data name="Polls_PostedIn" xml:space="preserve"><value>Голосование также появится в {0}, где можно голосовать через меню.</value></data>
+<data name="Polls_GroupNoChannel" xml:space="preserve"><value>Включите уведомления группы в настройках, чтобы голосования появлялись и в Discord.</value></data>
+<data name="Polls_PostIn" xml:space="preserve"><value>Опубликовать в Discord</value></data>
+<data name="Polls_DashboardOnly" xml:space="preserve"><value>Только на панели</value></data>
+<data name="Polls_PostInHelp" xml:space="preserve"><value>Голосовать можно через меню под сообщением. Выбранные участники будут упомянуты.</value></data>
+<data name="Watch_Title" xml:space="preserve"><value>Список просмотра</value></data>
+<data name="Watch_HelpEdit" xml:space="preserve"><value>Отслеживайте, что смотрит группа: следующий эпизод, где остановились, и что уже просмотрено. Победителей голосований можно добавить одним нажатием.</value></data>
+<data name="Watch_HelpView" xml:space="preserve"><value>Что смотрит группа и где остановилась. Организатор обновляет список.</value></data>
+<data name="Watch_Add" xml:space="preserve"><value>Добавить название</value></data>
+<data name="Watch_AddThis" xml:space="preserve"><value>Добавить</value></data>
+<data name="Watch_OrLink" xml:space="preserve"><value>Или вставьте ссылку</value></data>
+<data name="Watch_Link" xml:space="preserve"><value>Ссылка</value></data>
+<data name="Watch_TitlePlaceholder" xml:space="preserve"><value>Название (нужно без известной ссылки)</value></data>
+<data name="Watch_TitleLabel" xml:space="preserve"><value>Название</value></data>
+<data name="Watch_AddButton" xml:space="preserve"><value>Добавить</value></data>
+<data name="Watch_LinkHelp" xml:space="preserve"><value>Ссылки IMDb, TVmaze, MyAnimeList, AniList и TMDB подставляют подробности. Любое другое название можно добавить вручную.</value></data>
+<data name="Watch_LinkHelpNoFilms" xml:space="preserve"><value>Ссылки IMDb на сериалы, TVmaze, MyAnimeList и AniList подставляют подробности. Фильмы добавляются по названию (для поиска фильмов боту нужен ключ TMDB).</value></data>
+<data name="Watch_Empty" xml:space="preserve"><value>В списке просмотра пока ничего нет.</value></data>
+<data name="Watch_Status_Watching" xml:space="preserve"><value>Смотрим</value></data>
+<data name="Watch_Status_Planned" xml:space="preserve"><value>В планах</value></data>
+<data name="Watch_Status_Watched" xml:space="preserve"><value>Просмотрено</value></data>
+<data name="Watch_Status_Dropped" xml:space="preserve"><value>Брошено</value></data>
+<data name="Watch_Next" xml:space="preserve"><value>Далее: С{0} Э{1}</value></data>
+<data name="Watch_OfSeason" xml:space="preserve"><value>эпизодов в сезоне: {0}</value></data>
+<data name="Watch_EpisodesSeen" xml:space="preserve"><value>просмотрено {0} из {1} эпизодов</value></data>
+<data name="Watch_FinishedOn" xml:space="preserve"><value>Завершено {0}</value></data>
+<data name="Watch_MarkEpisode" xml:space="preserve"><value>Просмотрено С{0} Э{1}</value></data>
+<data name="Watch_MarkWatched" xml:space="preserve"><value>Отметить просмотренным</value></data>
+<data name="Watch_Edit" xml:space="preserve"><value>Изменить</value></data>
+<data name="Watch_Season" xml:space="preserve"><value>Сезон</value></data>
+<data name="Watch_Episode" xml:space="preserve"><value>Эпизод</value></data>
+<data name="Watch_StoppedAtLabel" xml:space="preserve"><value>Остановились на</value></data>
+<data name="Watch_StatusLabel" xml:space="preserve"><value>Статус</value></data>
+<data name="Watch_SetStatus" xml:space="preserve"><value>Изменить статус</value></data>
+<data name="Watch_Remove" xml:space="preserve"><value>Удалить</value></data>
+<data name="Watch_Added" xml:space="preserve"><value>{0} добавлено в список просмотра</value></data>
+<data name="Watch_Removed" xml:space="preserve"><value>Удалено из списка просмотра</value></data>
+<data name="Watch_Saved" xml:space="preserve"><value>Список просмотра обновлён</value></data>
+<data name="Watch_AddToList" xml:space="preserve"><value>В список просмотра</value></data>
+<data name="Watch_Watched" xml:space="preserve"><value>просмотрено</value></data>
+<data name="Watch_NextEpisode" xml:space="preserve"><value>далее: С{0} Э{1}</value></data>
+<data name="Watch_InProgress" xml:space="preserve"><value>в процессе</value></data>
+<data name="Watch_StoppedAt" xml:space="preserve"><value>остановились на {0}</value></data>
+<data name="Watch_Err_NotFound" xml:space="preserve"><value>Такой группы или названия не существует.</value></data>
+<data name="Watch_Err_Forbidden" xml:space="preserve"><value>Менять список просмотра может только организатор или модератор.</value></data>
+<data name="Watch_Err_Kind" xml:space="preserve"><value>Выберите сериал, фильм или аниме.</value></data>
+<data name="Watch_Err_Link" xml:space="preserve"><value>Ссылка не распознана. Добавьте ещё и название.</value></data>
+<data name="Watch_Err_Title" xml:space="preserve"><value>Найдите название, вставьте ссылку или введите название.</value></data>
+<data name="Watch_Err_Position" xml:space="preserve"><value>Укажите, где остановились, например 12:30 или 1:05:00.</value></data>
+<data name="HelpV007_0" xml:space="preserve"><value>Начать, найти или завершить голосование.</value></data>
+<data name="HelpV007_1" xml:space="preserve"><value>Начать голосование в этом канале. Разделяйте варианты символом ;</value></data>
+<data name="HelpV007_2" xml:space="preserve"><value>О чём голосуем, напр. Во что играем сегодня?</value></data>
+<data name="HelpV007_3" xml:space="preserve"><value>2–10 вариантов через ;: названия или ссылки Steam/IMDb/MyAnimeList</value></data>
+<data name="HelpV007_4" xml:space="preserve"><value>Голосуют только участники этой группы</value></data>
+<data name="HelpV007_5" xml:space="preserve"><value>Когда завершится голосование</value></data>
+<data name="HelpV007_6" xml:space="preserve"><value>Разрешить несколько вариантов</value></data>
+<data name="HelpV007_7" xml:space="preserve"><value>Показать открытые голосования, в которых вы можете участвовать.</value></data>
+<data name="HelpV007_8" xml:space="preserve"><value>Досрочно завершить ваше голосование.</value></data>
+<data name="HelpV007_9" xml:space="preserve"><value>Голосование, которое нужно завершить</value></data>
+<data name="HelpV007_10" xml:space="preserve"><value>Используйте /vote create в канале, где должны голосовать; выберите группу, чтобы голосовали только её участники. Голосования с панели тоже появляются в Discord, если выбран канал. Голосуйте через меню под сообщением.</value></data>
 </root>

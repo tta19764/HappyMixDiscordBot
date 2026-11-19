@@ -38,6 +38,13 @@ public static class DependencyInjection
         services.AddSingleton<IAvailabilityStore, SqliteAvailabilityStore>();
         services.AddSingleton<IAccountLinkStore, SqliteAccountLinkStore>();
         services.AddSingleton<HappyMix.Application.Abstractions.Polls.IPollStore, SqlitePollStore>();
+        services.AddSingleton<HappyMix.Application.Abstractions.Watch.IWatchStore, SqliteWatchStore>();
+        services.AddHttpClient(HappyMix.Infrastructure.Media.MediaCatalog.HttpClientName, client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(6);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("HappyMixBot/1.0");
+        });
+        services.AddSingleton<HappyMix.Application.Abstractions.Media.IMediaCatalog, HappyMix.Infrastructure.Media.MediaCatalog>();
         services.AddSingleton<HappyMix.Application.Abstractions.Events.IEventStore, SqliteEventStore>();
         services.AddSingleton<IMatchAnnouncementStateFactory, SqliteMatchAnnouncementStateFactory>();
         services.AddOptions<StorageOptions>()

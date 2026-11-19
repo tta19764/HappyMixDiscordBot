@@ -262,6 +262,10 @@ public sealed partial class DashboardController
                     .Select(item => EventText.Row(details, item, viewerId, EventText.Zone(details.Event), null, id => names.Name(id, key => text.Message(key)), guildId)))
                 .OrderBy(row => row.Date).Take(10).ToArray();
         }
+        var polls = detail.Value.CanViewRoster ? await LoadPollsAsync(guildId, actor, groupId, $"/groups/{guildId}/{groupId}", includeMembers: false) : null;
+        var watch = detail.Value.CanViewRoster ? await LoadWatchlistAsync(guildId, actor, groupId) : null;
+        if (watch is not null && watch.Board.Entries.Count == 0 && polls?.Board.Tags.Any(tag => tag is "series" or "films" or "anime") != true)
+            watch = null;
         GroupNotificationSummary? notifications = null;
         var notificationSettings = HttpContext.RequestServices.GetRequiredService<HappyMix.Bot.Services.EventNotificationSettings>();
         if (await GetDiscordMemberAsync(guildId) is { } member && await notificationSettings.CanManageAsync(member, "group", groupId) &&
@@ -276,7 +280,8 @@ public sealed partial class DashboardController
             candidates, banner, backUrl, form, board, evening, tab)
         {
             Notifications = notifications,
-            Polls = detail.Value.CanViewRoster ? await LoadPollsAsync(guildId, actor, groupId, $"/groups/{guildId}/{groupId}", includeMembers: false) : null,
+            Polls = polls,
+            Watch = watch,
             Events = events,
             BoardEvents = board is null ? BoardEvents.Empty
                 : await LoadBoardEventsAsync(guildId, actor.UserId, board.Rows.Select(row => row.UserId), board.Date, board.TimeZone)
