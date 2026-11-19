@@ -363,6 +363,12 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 - `IMediaCatalog` (Infrastructure `MediaCatalog`) looks titles up in the Steam store, TVmaze (series, IMDb lookups), AniList (anime; MyAnimeList links by id) and, with `Media__TmdbApiKey`, TMDB (films). Lookups are best effort with a 6-second HTTP timeout (4 seconds while creating a vote) and cached for 7 days in `MediaCache`. Only the typed search text and link ids are sent to these services.
 - Groups tagged series, films or anime have a watchlist (`WatchItems`): status, next season/episode (rolling over by catalog season lengths), and a resume position for unfinished episodes or films. The organizer and moderators edit it; members see it. Migration `20261126000100_AddDiscordVotesAndWatchlist` adds the tables and columns.
 
+### v0.0.8 Discord polls and title cards
+
+- Plain votes (no catalog-backed options, every answer at most 55 characters, for a group or everyone) are posted as native Discord polls (duration rounded up to whole hours, max 768). Votes cast in Discord are copied live from `PollVoteAdded`/`PollVoteRemoved` gateway events (intent `GuildMessagePolls`, not privileged) and resynced every minute and when the poll ends; ending a vote early ends the Discord poll. Dashboard voting on these polls links to Discord instead.
+- Votes with catalog titles, or for chosen members, are posted with Discord's component layout (Components V2): one section per option with a poster thumbnail, linked title, preset details, watch progress and vote bar, a vote menu, and the winner with a large poster once voting ends, kept within Discord's 40-component limit. Older embed messages fall back to embeds when Discord refuses the conversion.
+- Discord.Net is 3.20.2. Catalog parsing treats null numbers as unknown and skips single bad search entries instead of failing the whole search.
+
 ### CI runs and deployment diagnostics
 
 Pull requests targeting main run validation. New PR commits cancel older in-progress checks. Main pushes do not repeat those checks; version tags run validation plus image publication and deployment. Completed checks for earlier PR commits remain in history because they validated different code.

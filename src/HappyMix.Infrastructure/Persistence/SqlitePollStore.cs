@@ -96,19 +96,50 @@ internal sealed class SqlitePollStore(IDbContextFactory<HappyMixDbContext> facto
         var rows = await db.Database.SqlQuery<PollRow>($"""
             SELECT * FROM Polls WHERE ChannelId IS NOT NULL AND (
                 (MessageId IS NULL AND ClosedUtc IS NULL AND ClosesUtc > {stamp}) OR
-                (MessageId IS NOT NULL AND Finalized = 0 AND (ClosedUtc IS NOT NULL OR ClosesUtc <= {stamp})))
+                (MessageId IS NOT NULL AND Finalized = 0 AND (ClosedUtc IS NOT NULL OR ClosesUtc <= {stamp})) OR
+                (Native = 1 AND MessageId IS NOT NULL AND Finalized = 0 AND ClosesUtc > {stamp}))
             LIMIT 50
             """).ToListAsync();
         return await LoadAsync(db, rows);
     }
 
-    public async Task SetMessageAsync(Guid pollId, ulong channelId, ulong? messageId, bool finalized)
+    public async Task SetMessageAsync(Guid pollId, ulong channelId, ulong? messageId, bool finalized, bool native = false)
     {
         await using var db = await factory.CreateDbContextAsync();
         string id = pollId.ToString(), channel = Id(channelId);
         string? message = messageId is { } value ? Id(value) : null;
         await db.Database.ExecuteSqlInterpolatedAsync(
-            $"UPDATE Polls SET ChannelId = {channel}, MessageId = {message}, Finalized = {finalized} WHERE Id = {id}");
+            $"UPDATE Polls SET ChannelId = {channel}, MessageId = {message}, Finalized = {finalized}, Native = {native} WHERE Id = {id}");
+    }
+
+    public async Task<Poll?> FindByMessageAsync(ulong messageId)
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        string message = Id(messageId);
+        var rows = await db.Database.SqlQuery<PollRow>($"SELECT * FROM Polls WHERE MessageId = {message}").ToListAsync();
+        var polls = await LoadAsync(db, rows);
+        return polls.Count == 0 ? null : polls[0];
+    }
+
+    public async Task<IReadOnlyList<Poll>> ListOpenNativeAsync(DateTimeOffset now)
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        long stamp = now.ToUnixTimeSeconds();
+        var rows = await db.Database.SqlQuery<PollRow>(
+            $"SELECT * FROM Polls WHERE Native = 1 AND MessageId IS NOT NULL AND ClosedUtc IS NULL AND ClosesUtc > {stamp} LIMIT 50").ToListAsync();
+        return await LoadAsync(db, rows);
+    }
+
+    public async Task ReplaceVotesAsync(Guid pollId, IReadOnlyDictionary<ulong, int[]> votes)
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        await using var transaction = await db.Database.BeginTransactionAsync();
+        string id = pollId.ToString();
+        await db.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM PollVotes WHERE PollId = {id}");
+        foreach (var (user, positions) in votes)
+            foreach (int position in positions.Distinct())
+                await db.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO PollVotes (PollId, UserId, Position) VALUES ({id}, {Id(user)}, {position})");
+        await transaction.CommitAsync();
     }
 
     private static async Task<IReadOnlyList<Poll>> LoadAsync(HappyMixDbContext db, List<PollRow> rows)
@@ -130,7 +161,8 @@ internal sealed class SqlitePollStore(IDbContextFactory<HappyMixDbContext> facto
             {
                 ChannelId = row.ChannelId is { } channel ? Parse(channel) : null,
                 MessageId = row.MessageId is { } message ? Parse(message) : null,
-                Finalized = row.Finalized
+                Finalized = row.Finalized,
+                Native = row.Native
             });
         }
         return result;
@@ -140,7 +172,7 @@ internal sealed class SqlitePollStore(IDbContextFactory<HappyMixDbContext> facto
     private static ulong Parse(string value) => ulong.Parse(value, CultureInfo.InvariantCulture);
 
     private sealed record PollRow(string Id, string GuildId, string GroupId, string CreatorId, string Question, bool Multiple, bool Everyone,
-        long CreatedUtc, long ClosesUtc, long? ClosedUtc, string? ChannelId, string? MessageId, bool Finalized);
+        long CreatedUtc, long ClosesUtc, long? ClosedUtc, string? ChannelId, string? MessageId, bool Finalized, bool Native);
     private sealed record OptionRow(int Position, string Label, string Kind, string? Url, string? Source, string? ExternalId);
     private sealed record VoteRow(string UserId, int Position);
 }

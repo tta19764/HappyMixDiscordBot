@@ -47,6 +47,7 @@
         int voters = Model.VoterCount(poll);
         int max = Math.Max(1, poll.Options.Max(option => poll.Count(option.Position)));
         var mine = Model.Mine(poll);
+        bool inDiscord = poll.Native && poll.MessageId is not null;
         <article class="hm-poll" aria-labelledby="poll-@poll.Id.ToString("N")">
             <header class="hm-poll__head">
                 <h3 id="poll-@poll.Id.ToString("N")">@poll.Question</h3>
@@ -66,7 +67,10 @@
                         int count = poll.Count(option.Position);
                         string names = string.Join(", ", poll.Votes.Where(vote => vote.Position == option.Position).Select(vote => Model.Names.Name(vote.UserId, Localize)));
                         <label class="hm-poll__option @(mine.Contains(option.Position) ? "is-mine" : "")" style="--share: @((count * 100 / max).ToString(CultureInfo.InvariantCulture))%" title="@names">
-                            <input type="@(poll.Multiple ? "checkbox" : "radio")" name="choice" value="@option.Position" checked="@mine.Contains(option.Position)">
+                            @if (!inDiscord)
+                            {
+                                <input type="@(poll.Multiple ? "checkbox" : "radio")" name="choice" value="@option.Position" checked="@mine.Contains(option.Position)">
+                            }
                             @{ var info = option.Media is { } reference && board.Media.TryGetValue(reference, out var found) ? found : null; }
                             @if (info?.ImageUrl is { } poster)
                             {
@@ -90,13 +94,23 @@
                         </label>
                     }
                 </div>
-                <div class="hm-row">
-                    <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("check")@T[mine.Length == 0 ? "Polls_Vote" : "Polls_ChangeVote"]</button>
-                    @if (mine.Length > 0)
-                    {
-                        <button class="hm-btn hm-btn--ghost" name="clear" value="true">@T["Polls_ClearVote"]</button>
-                    }
-                </div>
+                @if (inDiscord && Model.DiscordUrl(poll) is { } jump)
+                {
+                    <div class="hm-row">
+                        <a class="hm-btn hm-btn--primary" href="@jump" target="_blank" rel="noopener noreferrer">💬 @T["Polls_VoteInDiscord"]</a>
+                        <span class="hm-help">@T["Polls_VoteInDiscordHelp"]</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="hm-row">
+                        <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("check")@T[mine.Length == 0 ? "Polls_Vote" : "Polls_ChangeVote"]</button>
+                        @if (mine.Length > 0)
+                        {
+                            <button class="hm-btn hm-btn--ghost" name="clear" value="true">@T["Polls_ClearVote"]</button>
+                        }
+                    </div>
+                }
             </form>
             @if (Model.CanClose(poll))
             {

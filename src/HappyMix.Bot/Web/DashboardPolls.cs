@@ -32,6 +32,10 @@ public sealed record PollsModel(ulong GuildId, PollBoard Board, MemberNames Name
     public int[] Mine(Poll poll) => poll.Votes.Where(vote => vote.UserId == Board.ViewerId).Select(vote => vote.Position).ToArray();
     public int VoterCount(Poll poll) => poll.Votes.Select(vote => vote.UserId).Distinct().Count();
 
+    /// <summary>A link that opens the vote's Discord message, once it is posted.</summary>
+    public string? DiscordUrl(Poll poll) => poll.ChannelId is { } channel && poll.MessageId is { } message
+        ? $"https://discord.com/channels/{GuildId}/{channel}/{message}" : null;
+
     /// <summary>How many people can vote, when known.</summary>
     public int? Electorate(Poll poll) => poll.GroupId is not null ? Board.Voters.Count : poll.Everyone ? null : poll.Audience.Count;
 }

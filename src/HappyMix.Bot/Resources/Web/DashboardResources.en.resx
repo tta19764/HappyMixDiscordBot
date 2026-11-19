@@ -2236,7 +2236,7 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Tag_films_help" xml:space="preserve"><value>Remembers films from earlier votes; IMDb links</value></data>
 <data name="Tag_anime_help" xml:space="preserve"><value>Remembers anime from earlier votes; MyAnimeList links</value></data>
 <data name="Guide_votes_Title" xml:space="preserve"><value>Votes</value></data>
-<data name="Guide_votes_Body" xml:space="preserve"><value>Vote on what to play or watch, on the dashboard or in Discord. In a group, open Votes: built-in tags (Games, Series, Films, Anime, chosen in the group’s Settings) add suggestions from the group’s games, its watchlist and earlier votes, and options nobody picked lately come first. Search the catalogs or paste a Steam, IMDb, TVmaze, MyAnimeList or AniList link: options then show the poster, year, genres, rating and seasons or episodes, on the dashboard and in the Discord message. Group votes are posted in the group’s notification channel; server votes in the channel you pick, or start one with /vote create. Vote with the menu under the message. Groups watching series, films or anime keep a Watchlist: add titles by search or link, mark episodes watched, note where you stopped (like 23:40), and add vote winners in one click.</value></data>
+<data name="Guide_votes_Body" xml:space="preserve"><value>Vote on what to play or watch, on the dashboard or in Discord. In a group, open Votes: built-in tags (Games, Series, Films, Anime, chosen in the group’s Settings) add suggestions from the group’s games, its watchlist and earlier votes, and options nobody picked lately come first. Search the catalogs or paste a Steam, IMDb, TVmaze, MyAnimeList or AniList link: options then show the poster, year, genres, rating and seasons or episodes. In Discord, plain votes appear as Discord polls, and votes on games, series, films or anime appear as cards with posters, links and a vote menu. Group votes are posted in the group’s notification channel; server votes in the channel you pick, or start one with /vote create. Groups watching series, films or anime keep a Watchlist: add titles by search or link, mark episodes watched, note where you stopped (like 23:40), and add vote winners in one click.</value></data>
 <data name="Polls_VoteCount" xml:space="preserve"><value>{0} votes</value></data>
 <data name="Polls_WinnerLine" xml:space="preserve"><value>🏆 **{0}** won with {1} of {2} votes.</value></data>
 <data name="Polls_EndsAt" xml:space="preserve"><value>Voting ends {0}</value></data>
@@ -2257,11 +2257,11 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Media_SearchPlaceholder" xml:space="preserve"><value>Start typing a name…</value></data>
 <data name="Polls_FromWatchlist" xml:space="preserve"><value>on the watchlist</value></data>
 <data name="Polls_AddThis" xml:space="preserve"><value>Add as option</value></data>
-<data name="Polls_PostedIn" xml:space="preserve"><value>The vote is also posted in {0}, where people can vote with a menu.</value></data>
+<data name="Polls_PostedIn" xml:space="preserve"><value>Also posted in {0}: plain votes as a Discord poll, votes on games, series, films or anime as cards with posters and links.</value></data>
 <data name="Polls_GroupNoChannel" xml:space="preserve"><value>Turn on the group’s channel notifications in Settings to post votes in Discord too.</value></data>
 <data name="Polls_PostIn" xml:space="preserve"><value>Post in Discord</value></data>
 <data name="Polls_DashboardOnly" xml:space="preserve"><value>Only on the dashboard</value></data>
-<data name="Polls_PostInHelp" xml:space="preserve"><value>People can vote with a menu under the message. Chosen members are mentioned.</value></data>
+<data name="Polls_PostInHelp" xml:space="preserve"><value>Plain votes for everyone become a Discord poll. Votes with titles from the catalogs, or for chosen members, are posted as cards with posters, links and a vote menu.</value></data>
 <data name="Watch_Title" xml:space="preserve"><value>Watchlist</value></data>
 <data name="Watch_HelpEdit" xml:space="preserve"><value>Track what the group watches: next episode, where you stopped, and what’s done. Vote winners can be added in one click.</value></data>
 <data name="Watch_HelpView" xml:space="preserve"><value>What the group is watching and where it stopped. The organizer keeps it up to date.</value></data>
@@ -2317,4 +2317,7 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="HelpV007_8" xml:space="preserve"><value>End a vote you started before its time.</value></data>
 <data name="HelpV007_9" xml:space="preserve"><value>The vote to end</value></data>
 <data name="HelpV007_10" xml:space="preserve"><value>Use /vote create in the channel where people should vote; pick a group to limit it to its members. Votes started on the dashboard appear in Discord too when a channel is chosen. Vote with the menu under the message.</value></data>
+<data name="Polls_VoteInDiscord" xml:space="preserve"><value>Vote in Discord</value></data>
+<data name="Polls_VoteInDiscordHelp" xml:space="preserve"><value>This is a Discord poll; the results here follow it.</value></data>
+<data name="Polls_Err_Discord" xml:space="preserve"><value>This vote is a Discord poll. Vote in Discord.</value></data>
 </root>
