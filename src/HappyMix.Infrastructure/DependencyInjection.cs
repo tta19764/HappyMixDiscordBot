@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.AddSingleton<IAccountLinkStore, SqliteAccountLinkStore>();
         services.AddSingleton<HappyMix.Application.Abstractions.Polls.IPollStore, SqlitePollStore>();
         services.AddSingleton<HappyMix.Application.Abstractions.Watch.IWatchStore, SqliteWatchStore>();
+        services.AddSingleton<HappyMix.Application.Abstractions.Logs.ILogStore, SqliteLogStore>();
         services.AddHttpClient(HappyMix.Infrastructure.Media.MediaCatalog.HttpClientName, client =>
         {
             client.Timeout = TimeSpan.FromSeconds(6);

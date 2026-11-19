@@ -26,11 +26,11 @@ public sealed partial class PublishPollsJob(DiscordSocketClient discord, IPollSt
             }
             catch (Exception error) when (!context.CancellationToken.IsCancellationRequested)
             {
-                LogFailure(logger, poll.Id, error);
+                LogFailure(logger, poll.Id, poll.GuildId, error);
             }
         }
     }
 
-    [LoggerMessage(Level = LogLevel.Warning, Message = "Vote message {PollId} couldn't be synchronized")]
-    private static partial void LogFailure(ILogger logger, Guid pollId, Exception error);
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Vote message {PollId} in server {GuildId} couldn't be synchronized")]
+    private static partial void LogFailure(ILogger logger, Guid pollId, ulong guildId, Exception error);
 }

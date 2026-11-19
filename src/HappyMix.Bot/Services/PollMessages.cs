@@ -16,14 +16,14 @@ using Poll = HappyMix.Application.Abstractions.Polls.Poll;
 namespace HappyMix.Bot.Services;
 
 /// <summary>
-/// Votes in Discord, in one of two forms.
+/// Votes in Discord. Every vote is a Discord poll, so people vote with Discord's own poll controls and Discord shows the
+/// result; the bot copies the votes so the dashboard stays in step.
 /// <list type="bullet">
-/// <item>A plain vote (text options, for a group or the whole server) is a Discord poll: people vote with Discord's own
-/// poll controls, Discord shows the result, and the bot copies the votes so the dashboard stays in step.</item>
-/// <item>A vote on games, series, films or anime with catalog details is a card message: each option shows its poster,
-/// linked title, details and watch progress, with a menu to vote. Votes for chosen members use it too, because a Discord
-/// poll can't limit who votes.</item>
+/// <item>A vote on games, series, films or anime gets an info card right above the poll: each option's poster, linked
+/// title, details and watch progress.</item>
+/// <item>A vote for chosen members goes into a private thread with just them, so nobody else sees it or can vote.</item>
 /// </list>
+/// Messages from earlier versions that use the bot's own vote menu keep working.
 /// </summary>
 public sealed partial class PollMessages(DiscordSocketClient discord, IPollStore polls, IMediaCatalog catalog, IWatchStore watchlist,
     ISender sender, EventNotificationSettings notifications, IOptions<CommunityDefaults> community, IConfiguration configuration,
@@ -37,10 +37,8 @@ public sealed partial class PollMessages(DiscordSocketClient discord, IPollStore
     /// <summary>Discord allows at most 40 components in one message.</summary>
     internal const int ComponentLimit = 40;
 
-    /// <summary>Whether a vote is posted as a Discord poll rather than a card message.</summary>
-    public static bool UsesNativePoll(Poll poll) =>
-        poll.Options.All(option => option.Media is null && option.Label.Length <= NativeAnswerLength)
-        && (poll.Everyone || poll.GroupId is not null) && poll.Question.Length <= 300;
+    /// <summary>Whether a vote is for chosen members only, and so goes into a private thread.</summary>
+    public static bool IsPrivate(Poll poll) => !poll.Everyone && poll.GroupId is null;
 
     /// <summary>Posts the vote if it has a channel and no message yet, or brings the message up to date.</summary>
     public async Task SyncAsync(Guid pollId, ulong guildId, CancellationToken cancellationToken = default)
@@ -51,7 +49,7 @@ public sealed partial class PollMessages(DiscordSocketClient discord, IPollStore
 
     public async Task SyncAsync(Poll poll, CancellationToken cancellationToken = default)
     {
-        if (poll.ChannelId is not { } channelId || discord.GetGuild(poll.GuildId)?.GetTextChannel(channelId) is not { } channel)
+        if (poll.ChannelId is not { } channelId || await ChannelAsync(poll.GuildId, channelId, cancellationToken) is not { } channel)
             return;
         var now = clock.UtcNow;
         bool closed = poll.IsClosed(now);
@@ -70,7 +68,7 @@ public sealed partial class PollMessages(DiscordSocketClient discord, IPollStore
         catch (Discord.Net.HttpException error) when (error.HttpCode is System.Net.HttpStatusCode.NotFound or System.Net.HttpStatusCode.Forbidden)
         {
             // The message or channel is gone, or the bot lost access: stop trying and keep the vote on the dashboard.
-            LogPostFailed(logger, poll.Id, error.HttpCode);
+            LogPostFailed(logger, poll.Id, poll.GuildId, error.HttpCode);
             await polls.SetMessageAsync(poll.Id, channelId, poll.MessageId, true, poll.Native);
         }
     }
@@ -83,7 +81,7 @@ public sealed partial class PollMessages(DiscordSocketClient discord, IPollStore
     public async Task ReconcileAsync(Poll poll, CancellationToken cancellationToken = default)
     {
         if (!poll.Native || poll.MessageId is not { } messageId || poll.ChannelId is not { } channelId ||
-            discord.GetGuild(poll.GuildId)?.GetTextChannel(channelId) is not { } channel ||
+            await ChannelAsync(poll.GuildId, channelId, cancellationToken) is not { } channel ||
             await channel.GetMessageAsync(messageId, options: new RequestOptions { CancelToken = cancellationToken }) is not IUserMessage message)
             return;
         await CopyVotesAsync(poll, message, cancellationToken);
@@ -94,23 +92,67 @@ public sealed partial class PollMessages(DiscordSocketClient discord, IPollStore
         await notifications.GetEffectiveAsync(guildId, "group", groupId) is { Route: { Enabled: true } route } && route.Channel() is > 0 and var channel
             ? channel : null;
 
-    private async Task PostAsync(Poll poll, SocketTextChannel channel, DateTimeOffset now, RequestOptions options)
+    /// <summary>
+    /// Posts the vote: a private thread first when it's for chosen members, then the info card when options have
+    /// catalog details, then the Discord poll.
+    /// </summary>
+    private async Task PostAsync(Poll poll, ITextChannel channel, DateTimeOffset now, RequestOptions options)
     {
-        if (UsesNativePoll(poll))
+        ITextChannel target = channel;
+        if (IsPrivate(poll) && channel is not IThreadChannel)
         {
-            var message = await channel.SendMessageAsync(poll: NativePoll(poll, now), allowedMentions: AllowedMentions.None, options: options);
-            await polls.SetMessageAsync(poll.Id, channel.Id, message.Id, false, native: true);
-            return;
+            try
+            {
+                var thread = await channel.CreateThreadAsync(Trim("🗳️ " + poll.Question, 100), ThreadType.PrivateThread,
+                    ThreadArchiveDuration.OneWeek, invitable: false, options: options);
+                foreach (ulong member in poll.Audience)
+                    if (await channel.Guild.GetUserAsync(member, CacheMode.AllowDownload, options) is { } user)
+                        await thread.AddUserAsync(user, options);
+                target = thread;
+            }
+            catch (Discord.Net.HttpException)
+            {
+                LogThreadFailed(logger, poll.Id, poll.GuildId, channel.Name);
+                throw;
+            }
         }
-        string language = await LanguageAsync(poll);
-        var (media, progress) = await DetailsAsync(poll, options.CancelToken);
-        var mentions = poll.Audience.Count is > 0 and <= 25 ? new AllowedMentions { UserIds = poll.Audience.ToList() } : AllowedMentions.None;
-        var sent = await channel.SendMessageAsync(components: BuildCards(poll, media, progress, language, now, DashboardUrl(poll)),
-            flags: MessageFlags.ComponentsV2, allowedMentions: mentions, options: options);
-        await polls.SetMessageAsync(poll.Id, channel.Id, sent.Id, false);
+
+        if (poll.Options.Any(option => option.Media is not null))
+        {
+            string language = await LanguageAsync(poll);
+            var (media, progress) = await DetailsAsync(poll, options.CancelToken);
+            await target.SendMessageAsync(components: BuildCards(poll, media, progress, language, now, DashboardUrl(poll), interactive: false),
+                flags: MessageFlags.ComponentsV2, allowedMentions: AllowedMentions.None, options: options);
+        }
+        var message = await target.SendMessageAsync(poll: NativePoll(poll, now), allowedMentions: AllowedMentions.None, options: options);
+        await polls.SetMessageAsync(poll.Id, target.Id, message.Id, false, native: true);
+        LogPosted(logger, poll.Id, poll.GuildId, target.Name, target is IThreadChannel ? "Discord poll in a private thread" : "Discord poll");
     }
 
-    private async Task SyncNativeAsync(Poll poll, SocketTextChannel channel, ulong messageId, bool closed, RequestOptions options)
+    /// <summary>The vote's channel or thread, from the cache or from Discord (threads that went quiet aren't cached).</summary>
+    private async Task<ITextChannel?> ChannelAsync(ulong guildId, ulong channelId, CancellationToken cancellationToken)
+    {
+        if (discord.GetGuild(guildId)?.GetChannel(channelId) is ITextChannel cached)
+            return cached;
+        try
+        {
+            return await discord.Rest.GetChannelAsync(channelId, new RequestOptions { CancelToken = cancellationToken }) is ITextChannel fetched && fetched.GuildId == guildId
+                ? fetched : null;
+        }
+        catch (Discord.Net.HttpException)
+        {
+            return null;
+        }
+    }
+
+    [LoggerMessage(Level = LogLevel.Warning,
+        Message = "Vote {PollId} in server {GuildId} is for chosen members, but a private thread couldn't be created in #{Channel}; give the bot Create Private Threads and Send Messages in Threads there. It stays on the dashboard")]
+    private static partial void LogThreadFailed(ILogger logger, Guid pollId, ulong guildId, string channel);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Vote {PollId} in server {GuildId} posted in #{Channel} as {Format}")]
+    private static partial void LogPosted(ILogger logger, Guid pollId, ulong guildId, string channel, string format);
+
+    private async Task SyncNativeAsync(Poll poll, ITextChannel channel, ulong messageId, bool closed, RequestOptions options)
     {
         if (await channel.GetMessageAsync(messageId, options: options) is not IUserMessage message)
             return;
@@ -126,7 +168,7 @@ public sealed partial class PollMessages(DiscordSocketClient discord, IPollStore
             await CopyVotesAsync(poll, message, options.CancelToken);
     }
 
-    private async Task UpdateCardsAsync(Poll poll, SocketTextChannel channel, ulong messageId, bool closed, RequestOptions options,
+    private async Task UpdateCardsAsync(Poll poll, ITextChannel channel, ulong messageId, bool closed, RequestOptions options,
         CancellationToken cancellationToken)
     {
         string language = await LanguageAsync(poll);
@@ -201,9 +243,9 @@ public sealed partial class PollMessages(DiscordSocketClient discord, IPollStore
     /// <summary>A Discord poll for a plain vote. Discord counts in whole hours, up to 32 days.</summary>
     internal static PollProperties NativePoll(Poll poll, DateTimeOffset now) => new()
     {
-        Question = new PollMediaProperties { Text = poll.Question },
+        Question = new PollMediaProperties { Text = Trim(poll.Question, 300) },
         Answers = poll.Options.OrderBy(option => option.Position)
-            .Select(option => new PollMediaProperties { Text = option.Label, Emoji = option.Kind == "custom" ? null : new Emoji(Icon(option.Kind)) })
+            .Select(option => new PollMediaProperties { Text = Trim(option.Label, NativeAnswerLength), Emoji = option.Kind == "custom" ? null : new Emoji(Icon(option.Kind)) })
             .ToList(),
         Duration = (uint)Math.Clamp(Math.Ceiling((poll.ClosesAt - now).TotalHours), 1, NativeMaxHours),
         AllowMultiselect = poll.Multiple,
@@ -214,21 +256,24 @@ public sealed partial class PollMessages(DiscordSocketClient discord, IPollStore
     /// The card message (Discord's component layout): a header, one section per option with its poster, linked title,
     /// details, watch progress and vote bar, and the vote menu. Once voting ends, the winner leads with a large poster.
     /// </summary>
+    /// <param name="interactive">
+    /// False for the info card above a Discord poll: no vote bars, counts or menu, because people vote in the poll.
+    /// </param>
     internal static MessageComponent BuildCards(Poll poll, IReadOnlyDictionary<MediaRef, MediaInfo> media,
-        IReadOnlyDictionary<MediaRef, WatchItem> progress, string language, DateTimeOffset now, string? dashboardUrl)
+        IReadOnlyDictionary<MediaRef, WatchItem> progress, string language, DateTimeOffset now, string? dashboardUrl, bool interactive = true)
     {
         string T(string key, params object[] values) => NotificationText.Get(language, key, values);
-        bool closed = poll.IsClosed(now);
+        bool closed = interactive && poll.IsClosed(now);
         int voters = poll.Votes.Select(vote => vote.UserId).Distinct().Count();
         int max = Math.Max(1, poll.Options.Max(option => poll.Count(option.Position)));
-        var leader = poll.Leader;
+        var leader = interactive ? poll.Leader : null;
         MediaInfo? Info(PollOption option) => option.Media is { } reference && media.TryGetValue(reference, out var info) ? info : null;
 
         // Fixed parts: container, header, two separators and footer, plus the menu row and button row below it.
         int below = closed ? (dashboardUrl is null ? 0 : 2) : 2 + 1 + 1 + (dashboardUrl is null ? 0 : 1);
         int used = 5 + below + poll.Options.Count; // every option needs at least one text component
         var container = new ContainerBuilder().WithAccentColor(closed ? new Color(0xF1C40F) : AccentFor(poll));
-        string mentions = poll.Audience.Count is > 0 and <= 25 && !closed ? "\n" + string.Join(" ", poll.Audience.Select(id => $"<@{id}>")) : "";
+        string mentions = interactive && poll.Audience.Count is > 0 and <= 25 && !closed ? "\n" + string.Join(" ", poll.Audience.Select(id => $"<@{id}>")) : "";
         container.AddComponent(new TextDisplayBuilder(Trim($"## {(closed ? "🏁" : "🗳️")} {Format.Sanitize(poll.Question)}{mentions}", 1000)));
         if (closed && leader is not null && Info(leader)?.ImageUrl is { } winnerPoster && used + 2 <= ComponentLimit)
         {
@@ -256,7 +301,8 @@ public sealed partial class PollMessages(DiscordSocketClient discord, IPollStore
             }
             if (option.Media is { } reference && progress.TryGetValue(reference, out var tracked))
                 text.Append('\n').Append(ProgressLine(tracked, language));
-            text.Append('\n').Append(CultureInfo.InvariantCulture, $"`{new string('█', filled)}{new string('░', 10 - filled)}` **{count}**");
+            if (interactive)
+                text.Append('\n').Append(CultureInfo.InvariantCulture, $"`{new string('█', filled)}{new string('░', 10 - filled)}` **{count}**");
 
             // A poster needs a section and a thumbnail on top of the text: two more components, while they fit.
             if (info?.ImageUrl is { } poster && used + 2 <= ComponentLimit)
@@ -271,14 +317,21 @@ public sealed partial class PollMessages(DiscordSocketClient discord, IPollStore
         }
 
         container.AddComponent(new SeparatorBuilder(true, SeparatorSpacingSize.Small, null));
-        string footer = closed
+        string footer = !interactive
+            ? T("Polls_VoteBelow") + " · " + T("Polls_EndsAt", $"<t:{poll.ClosesAt.ToUnixTimeSeconds()}:R>")
+            : closed
             ? leader is null ? T("Polls_NoVotes") : T("Polls_WinnerLine", Format.Sanitize(leader.Label), poll.Count(leader.Position), voters)
             : T("Polls_EndsAt", $"<t:{poll.ClosesAt.ToUnixTimeSeconds()}:R>") + " · " + T(poll.Multiple ? "Polls_PickSeveral" : "Polls_PickOne")
               + " · " + T("Polls_Voters", voters);
         container.AddComponent(new TextDisplayBuilder("-# " + footer));
 
         var message = new ComponentBuilderV2().AddComponent(container);
-        if (!closed)
+        if (!interactive)
+        {
+            if (dashboardUrl is not null)
+                message.AddComponent(new ActionRowBuilder().WithButton(new ButtonBuilder().WithLabel(T("Polls_OpenDashboard")).WithStyle(ButtonStyle.Link).WithUrl(dashboardUrl)));
+        }
+        else if (!closed)
         {
             var menu = new SelectMenuBuilder()
                 .WithCustomId($"{PickPrefix}:{poll.GuildId}:{poll.Id:N}")
@@ -357,6 +410,9 @@ public sealed partial class PollMessages(DiscordSocketClient discord, IPollStore
             case "film" when info.Runtime is { } runtime:
                 parts.Add(T("Media_Minutes", runtime));
                 break;
+            case "game" when info.Platforms is { Count: > 0 } platforms:
+                parts.Add(string.Join(", ", platforms.Take(4)));
+                break;
         }
         if (info.Genres.Count > 0) parts.Add(string.Join(", ", info.Genres.Take(3)));
         if (info.Rating is { } rating) parts.Add("★ " + rating.ToString("0.0", CultureInfo.InvariantCulture));
@@ -387,6 +443,7 @@ public sealed partial class PollMessages(DiscordSocketClient discord, IPollStore
 
     private static string Trim(string value, int length) => value.Length <= length ? value : value[..(length - 1)] + "…";
 
-    [LoggerMessage(Level = LogLevel.Warning, Message = "Vote {PollId} couldn't be posted or updated in Discord ({Status}); it stays on the dashboard")]
-    private static partial void LogPostFailed(ILogger logger, Guid pollId, System.Net.HttpStatusCode? status);
+    [LoggerMessage(Level = LogLevel.Warning,
+        Message = "Vote {PollId} in server {GuildId} couldn't be posted or updated in Discord ({Status}); check the bot's access to the channel. It stays on the dashboard")]
+    private static partial void LogPostFailed(ILogger logger, Guid pollId, ulong guildId, System.Net.HttpStatusCode? status);
 }

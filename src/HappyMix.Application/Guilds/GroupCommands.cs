@@ -9,13 +9,16 @@ namespace HappyMix.Application.Guilds;
 /// Moderation (<see cref="GroupActor.CanModerate"/>) is always the requesting account's own Discord permission.
 /// </summary>
 internal sealed partial class GroupCommands(IGuildGroupStore groups, IGuildSettingsStore settings, GroupRoles roles,
-    IAccountLinkStore accountLinks) :
+    IAccountLinkStore accountLinks, IEnumerable<IGroupNotifier> notifiers) :
     ICommandHandler<CreateGroupCommand, GroupChange>, ICommandHandler<InviteGroupMemberCommand, GroupChange>,
     ICommandHandler<ResolveGroupInviteCommand, GroupChange>, ICommandHandler<LeaveGroupCommand, GroupChange>,
     ICommandHandler<RemoveGroupMemberCommand, GroupChange>, ICommandHandler<DeleteGroupCommand, GroupChange>,
     ICommandHandler<EditGroupDescriptionCommand, GroupChange>, ICommandHandler<RepairGroupRolesCommand, GroupChange>,
     ICommandHandler<AddGroupGameCommand, GroupChange>, ICommandHandler<UpdateGroupGameCommand, GroupChange>,
-    ICommandHandler<RemoveGroupGameCommand, GroupChange>
+    ICommandHandler<RemoveGroupGameCommand, GroupChange>, ICommandHandler<SetGroupOpenCommand, GroupChange>,
+    ICommandHandler<RequestToJoinGroupCommand, GroupChange>, ICommandHandler<CancelJoinRequestCommand, GroupChange>,
+    ICommandHandler<ResolveJoinRequestCommand, GroupChange>, ICommandHandler<SuggestGroupGameCommand, GroupChange>,
+    ICommandHandler<ResolveGameSuggestionCommand, GroupChange>
 {
     public Task<Result<GroupChange>> Handle(CreateGroupCommand command, CancellationToken cancellationToken) =>
         RunAsync(async () =>

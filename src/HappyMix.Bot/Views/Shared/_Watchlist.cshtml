@@ -124,11 +124,15 @@
                                 <div class="hm-watch-item__actions">
                                     @if (item.Status != WatchStatus.Watched)
                                     {
-                                        <form method="post" action="@Model.ItemUrl(item)" asp-antiforgery="false">
+                                        <form class="hm-row" method="post" action="@Model.ItemUrl(item)" asp-antiforgery="false">
                                             @Html.AntiForgeryToken()
                                             <button class="hm-btn hm-btn--primary hm-btn--sm" name="action" value="next">
                                                 ✓ @(episodes ? T["Watch_MarkEpisode", item.Season, item.Episode] : T["Watch_MarkWatched"])
                                             </button>
+                                            @if (episodes)
+                                            {
+                                                <button class="hm-btn hm-btn--sm" name="action" value="finish" data-confirm="@T["Watch_FinishConfirm", item.Title]">🏁 @T["Watch_Finish"]</button>
+                                            }
                                         </form>
                                     }
                                     <details class="hm-watch-item__edit">
@@ -136,7 +140,22 @@
                                         <form class="hm-watch-item__form" method="post" action="@Model.ItemUrl(item)" asp-antiforgery="false">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="action" value="progress">
-                                            @if (episodes)
+                                            @if (episodes && entry.Seasons.Count > 0)
+                                            {
+                                                // The catalog knows the seasons: only real seasons, and episodes up to the season's length.
+                                                <label class="hm-field"><span class="hm-label">@T["Watch_Season"]</span>
+                                                    <select class="hm-select" name="season" data-season-picker>
+                                                        @foreach (var season in entry.Seasons)
+                                                        {
+                                                            <option value="@season.Number" data-episodes="@season.Episodes" selected="@(season.Number == item.Season)">@T["Watch_SeasonOption", season.Number, season.Episodes]</option>
+                                                        }
+                                                    </select>
+                                                </label>
+                                                <label class="hm-field"><span class="hm-label">@T["Watch_Episode"]</span>
+                                                    <input class="hm-input hm-tnum" type="number" name="episode" min="1" required data-episode-input
+                                                           max="@(entry.SeasonEpisodes ?? entry.Seasons[0].Episodes)" value="@item.Episode"></label>
+                                            }
+                                            else if (episodes)
                                             {
                                                 <label class="hm-field"><span class="hm-label">@T["Watch_Season"]</span><input class="hm-input hm-tnum" type="number" name="season" min="1" max="200" value="@item.Season"></label>
                                                 <label class="hm-field"><span class="hm-label">@T["Watch_Episode"]</span><input class="hm-input hm-tnum" type="number" name="episode" min="1" max="5000" value="@item.Episode"></label>

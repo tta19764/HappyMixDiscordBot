@@ -15,6 +15,15 @@ internal sealed class SqlitePollStore(IDbContextFactory<HappyMixDbContext> facto
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyDictionary<Guid, string[]>> ListTagsAsync(ulong guildId)
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        string guild = Id(guildId);
+        var rows = await db.Database.SqlQuery<TagRow>($"SELECT GroupId, Tag, Position FROM GroupTags WHERE GuildId = {guild}").ToListAsync();
+        return rows.GroupBy(row => Guid.Parse(row.GroupId))
+            .ToDictionary(group => group.Key, group => group.OrderBy(row => row.Position).Select(row => row.Tag).ToArray());
+    }
+
     public async Task SetTagsAsync(ulong guildId, Guid groupId, IReadOnlyCollection<string> tags)
     {
         await using var db = await factory.CreateDbContextAsync();
@@ -95,7 +104,7 @@ internal sealed class SqlitePollStore(IDbContextFactory<HappyMixDbContext> facto
         long stamp = now.ToUnixTimeSeconds();
         var rows = await db.Database.SqlQuery<PollRow>($"""
             SELECT * FROM Polls WHERE ChannelId IS NOT NULL AND (
-                (MessageId IS NULL AND ClosedUtc IS NULL AND ClosesUtc > {stamp}) OR
+                (MessageId IS NULL AND Finalized = 0 AND ClosedUtc IS NULL AND ClosesUtc > {stamp}) OR
                 (MessageId IS NOT NULL AND Finalized = 0 AND (ClosedUtc IS NOT NULL OR ClosesUtc <= {stamp})) OR
                 (Native = 1 AND MessageId IS NOT NULL AND Finalized = 0 AND ClosesUtc > {stamp}))
             LIMIT 50
@@ -175,4 +184,5 @@ internal sealed class SqlitePollStore(IDbContextFactory<HappyMixDbContext> facto
         long CreatedUtc, long ClosesUtc, long? ClosedUtc, string? ChannelId, string? MessageId, bool Finalized, bool Native);
     private sealed record OptionRow(int Position, string Label, string Kind, string? Url, string? Source, string? ExternalId);
     private sealed record VoteRow(string UserId, int Position);
+    private sealed record TagRow(string GroupId, string Tag, int Position);
 }

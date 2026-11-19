@@ -26,13 +26,13 @@
     }
 </header>
 <nav class="hm-card hm-row" style="flex-wrap:wrap;margin-bottom:24px" aria-label="@T["Guide_Title"]">
-    @foreach (string feature in new[] { "overview", "availability", "vacation", "weekly", "groups", "votes", "events", "game-news", "links", "settings" })
+    @foreach (string feature in new[] { "overview", "availability", "vacation", "weekly", "groups", "votes", "events", "game-news", "links", "settings", "logs" })
     {
         <a href="#feature-@feature">@T[$"Guide_{feature}_Title"]</a>
     }
 </nav>
 <div class="hm-stack" style="margin-bottom:24px">
-    @foreach (string feature in new[] { "overview", "availability", "vacation", "weekly", "groups", "votes", "events", "game-news", "links", "settings" })
+    @foreach (string feature in new[] { "overview", "availability", "vacation", "weekly", "groups", "votes", "events", "game-news", "links", "settings", "logs" })
     {
         <section class="hm-card hm-stack" id="feature-@feature">
             <h2>@T[$"Guide_{feature}_Title"]</h2>

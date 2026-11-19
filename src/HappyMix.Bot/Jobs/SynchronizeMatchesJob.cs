@@ -83,12 +83,14 @@ internal sealed partial class SynchronizeMatchesJob(
                     }
                     catch (Exception exception) when (exception is not OperationCanceledException)
                     {
+                        LogPublishFailed(logger, settings.GuildId, route.Key, exception);
                         errors.Add(new InvalidOperationException($"Match publication failed for channel {route.Key}.", exception));
                     }
                 }
             }
             catch (Exception exception) when (exception is not OperationCanceledException)
             {
+                LogSyncFailed(logger, settings.GuildId, exception);
                 errors.Add(new InvalidOperationException($"Match synchronization failed for guild {settings.GuildId}.", exception));
             }
         }
@@ -103,6 +105,12 @@ internal sealed partial class SynchronizeMatchesJob(
         (settings.Preferences ?? GuildEsportsPreferences.Default).Routes(settings.ChannelId)
             .SelectMany(route => route.Games.Select(game => (route.ChannelId, Game: game)))
             .GroupBy(route => route.ChannelId, route => route.Game).ToArray();
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Match posts for server {GuildId} couldn't be published in channel {ChannelId}; check the bot's access to it")]
+    private static partial void LogPublishFailed(ILogger logger, ulong guildId, ulong channelId, Exception error);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Match schedule for server {GuildId} couldn't be loaded")]
+    private static partial void LogSyncFailed(ILogger logger, ulong guildId, Exception error);
 
     [LoggerMessage(
         EventId = 4,

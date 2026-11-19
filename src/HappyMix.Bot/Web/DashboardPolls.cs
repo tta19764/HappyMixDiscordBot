@@ -24,6 +24,9 @@ public sealed record PollsModel(ulong GuildId, PollBoard Board, MemberNames Name
     /// <summary>The language for option details (seasons, episodes, minutes).</summary>
     public string Language { get; init; } = "en";
 
+    /// <summary>The server's time zone, for "today" and "this week" results.</summary>
+    public TimeZoneInfo Zone { get; init; } = TimeZoneInfo.Utc;
+
     public bool IsGroup => Board.GroupId is not null;
     public string NewUrl => $"/votes/{GuildId}/new";
     public string VoteUrl(Poll poll) => $"/votes/{GuildId}/{poll.Id}/vote";
@@ -140,8 +143,16 @@ public sealed partial class DashboardController
         {
             Channels = includeMembers ? PostableChannels(guildId, actor.UserId) : [],
             GroupChannel = groupChannel,
-            Language = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName
+            Language = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName,
+            Zone = await ServerZoneAsync(guildId)
         };
+    }
+
+    private async Task<TimeZoneInfo> ServerZoneAsync(ulong guildId)
+    {
+        string zoneId = (await sender.Send(new HappyMix.Application.Guilds.GetGuildSettingsQuery(guildId), HttpContext.RequestAborted)).Value?.TimeZoneId
+            ?? options.Value.TimeZoneId;
+        return TimeZoneInfo.TryFindSystemTimeZoneById(zoneId, out var zone) ? zone : TimeZoneInfo.Utc;
     }
 
     /// <summary>Text channels the member can see and the bot can post vote messages in.</summary>

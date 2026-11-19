@@ -16,12 +16,18 @@ namespace HappyMix.Infrastructure.Media;
 /// <c>Media:TmdbApiKey</c> is set, TMDB for films. Details are cached for a week in the MediaCache table.
 /// </summary>
 internal sealed partial class MediaCatalog(IHttpClientFactory clients, IDbContextFactory<HappyMixDbContext> factory, IConfiguration configuration,
-    IClock clock, ILogger<MediaCatalog> logger) : IMediaCatalog
+    IClock clock, ILogger<MediaCatalog> logger) : IMediaCatalog, IDisposable
 {
     public const string HttpClientName = "Media";
     private static readonly TimeSpan CacheAge = TimeSpan.FromDays(7);
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     private string? TmdbKey => configuration["Media:TmdbApiKey"] is { Length: > 0 } key ? key : null;
+    private bool HasIgdb => configuration["Twitch:ClientId"] is { Length: > 0 } && configuration["Twitch:ClientSecret"] is { Length: > 0 };
+    private string? _igdbToken;
+    private DateTimeOffset _igdbExpires;
+    private readonly SemaphoreSlim _igdbLock = new(1);
+
+    public void Dispose() => _igdbLock.Dispose();
 
     public bool SupportsFilms => TmdbKey is not null;
 
@@ -34,6 +40,7 @@ internal sealed partial class MediaCatalog(IHttpClientFactory clients, IDbContex
         {
             return kind switch
             {
+                "game" when HasIgdb => await SearchIgdbAsync(query, cancellationToken),
                 "game" => await SearchSteamAsync(query, cancellationToken),
                 "series" => await SearchTvMazeAsync(query, cancellationToken),
                 "anime" => await SearchAniListAsync(query, cancellationToken),
@@ -58,6 +65,11 @@ internal sealed partial class MediaCatalog(IHttpClientFactory clients, IDbContex
         {
             switch (host)
             {
+                case "igdb.com" when segments is ["games", var igdbSlug, ..] && HasIgdb && SlugPattern().IsMatch(igdbSlug):
+                    return await FetchIgdbAsync($"where slug = \"{igdbSlug}\";", cancellationToken);
+                case "store.epicgames.com" or "epicgames.com" or "gog.com" when HasIgdb && segments.LastOrDefault() is { } storeSlug && SlugPattern().IsMatch(storeSlug):
+                    // Store pages name the game in the address: find it on IGDB by that name.
+                    return (await SearchIgdbAsync(storeSlug.Replace('-', ' ').Replace('_', ' '), cancellationToken)) is { Count: > 0 } found ? found[0] : null;
                 case "store.steampowered.com" when segments is ["app", var app, ..] && uint.TryParse(app, out _):
                     return await GetAsync(new MediaRef("steam", app), cancellationToken);
                 case "tvmaze.com" when segments is ["shows", var show, ..] && int.TryParse(show, out _):
@@ -90,6 +102,7 @@ internal sealed partial class MediaCatalog(IHttpClientFactory clients, IDbContex
             var info = reference.Source switch
             {
                 "steam" => await FetchSteamAsync(reference.ExternalId, cancellationToken),
+                "igdb" when HasIgdb => await FetchIgdbAsync($"where id = {long.Parse(reference.ExternalId, CultureInfo.InvariantCulture)};", cancellationToken),
                 "tvmaze" => await FetchTvMazeAsync(reference.ExternalId, cancellationToken),
                 "anilist" => await FetchAniListAsync($"id: {int.Parse(reference.ExternalId, CultureInfo.InvariantCulture)}", cancellationToken),
                 "tmdb" when TmdbKey is not null => await FetchTmdbAsync(reference.ExternalId, cancellationToken),
@@ -126,6 +139,90 @@ internal sealed partial class MediaCatalog(IHttpClientFactory clients, IDbContex
         return new MediaInfo("game", "steam", app, Text(data, "name") ?? app, $"https://store.steampowered.com/app/{app}", Text(data, "header_image"),
             YearIn(release), Clean(Text(data, "short_description")), Items(data, "genres").Select(item => Text(item, "description")).OfType<string>().Take(4).ToArray(),
             score, null, null, []);
+    }
+
+    // ---------- IGDB (games on every platform) ----------
+
+    private const string IgdbFields = "fields name,slug,url,first_release_date,summary,total_rating,cover.image_id,genres.name,platforms.abbreviation,platforms.name,websites.category,websites.url;";
+
+    private async Task<IReadOnlyList<MediaInfo>> SearchIgdbAsync(string query, CancellationToken cancellationToken)
+    {
+        string safe = query.Replace("\\", "", StringComparison.Ordinal).Replace("\"", "", StringComparison.Ordinal);
+        using var document = await IgdbAsync($"search \"{safe}\"; {IgdbFields} where version_parent = null; limit 10;", cancellationToken);
+        return document.RootElement.ValueKind == JsonValueKind.Array ? Each(document.RootElement.EnumerateArray(), Igdb) : [];
+    }
+
+    /// <param name="filter">A trusted IGDB "where" clause built from a parsed number or a checked slug.</param>
+    private async Task<MediaInfo?> FetchIgdbAsync(string filter, CancellationToken cancellationToken)
+    {
+        using var document = await IgdbAsync($"{IgdbFields} {filter} limit 1;", cancellationToken);
+        var info = document.RootElement.ValueKind == JsonValueKind.Array ? Each(document.RootElement.EnumerateArray(), Igdb, 1).FirstOrDefault() : null;
+        if (info is not null)
+            await WriteCacheAsync(info, cancellationToken);
+        return info;
+    }
+
+    private async Task<JsonDocument> IgdbAsync(string body, CancellationToken cancellationToken)
+    {
+        string token = await IgdbTokenAsync(cancellationToken);
+        using var client = clients.CreateClient(HttpClientName);
+        using var request = new HttpRequestMessage(HttpMethod.Post, "https://api.igdb.com/v4/games") { Content = new StringContent(body) };
+        request.Headers.Add("Client-ID", configuration["Twitch:ClientId"]);
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        using var response = await client.SendAsync(request, cancellationToken);
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            _igdbToken = null;
+        response.EnsureSuccessStatusCode();
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        return await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>An app access token from Twitch, which runs IGDB; the same credentials as the Twitch stream lookups.</summary>
+    private async Task<string> IgdbTokenAsync(CancellationToken cancellationToken)
+    {
+        await _igdbLock.WaitAsync(cancellationToken);
+        try
+        {
+            if (_igdbToken is not null && clock.UtcNow < _igdbExpires)
+                return _igdbToken;
+            using var client = clients.CreateClient(HttpClientName);
+            using var content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["client_id"] = configuration["Twitch:ClientId"]!,
+                ["client_secret"] = configuration["Twitch:ClientSecret"]!,
+                ["grant_type"] = "client_credentials"
+            });
+            using var response = await client.PostAsync("https://id.twitch.tv/oauth2/token", content, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            using var document = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(cancellationToken), cancellationToken: cancellationToken);
+            _igdbToken = Text(document.RootElement, "access_token") ?? throw new HttpRequestException("Twitch returned no access token.");
+            _igdbExpires = clock.UtcNow.AddSeconds(Math.Max(60, (Int(document.RootElement, "expires_in") ?? 3600) - 120));
+            return _igdbToken;
+        }
+        finally
+        {
+            _igdbLock.Release();
+        }
+    }
+
+    internal static MediaInfo? Igdb(JsonElement game)
+    {
+        if (Text(game, "id") is not { } id || Text(game, "name") is not { } name)
+            return null;
+        string? cover = game.TryGetProperty("cover", out var image) && Text(image, "image_id") is { } imageId
+            ? $"https://images.igdb.com/igdb/image/upload/t_cover_big/{imageId}.jpg" : null;
+        int? year = Number(game, "first_release_date") is { } released ? DateTimeOffset.FromUnixTimeSeconds((long)released).Year : null;
+        var websites = Items(game, "websites");
+        // IGDB marks Steam store links with category 13; keeping the app id lets Steam features (news) work for the game.
+        string? steam = websites.Where(site => Int(site, "category") == 13).Select(site => Text(site, "url"))
+            .Select(url => url is null ? null : Regex.Match(url, @"store\.steampowered\.com/app/(\d+)", RegexOptions.None, TimeSpan.FromMilliseconds(50)))
+            .Where(match => match is { Success: true }).Select(match => match!.Groups[1].Value).FirstOrDefault();
+        string? official = websites.Where(site => Int(site, "category") == 1).Select(site => Text(site, "url")).FirstOrDefault();
+        var platforms = Items(game, "platforms").Select(platform => Text(platform, "abbreviation") ?? Text(platform, "name")).OfType<string>()
+            .Distinct().Take(6).ToArray();
+        return new MediaInfo("game", "igdb", id, name, official ?? Text(game, "url"), cover, year, Clean(Text(game, "summary")),
+            Items(game, "genres").Select(genre => Text(genre, "name")).OfType<string>().Take(3).ToArray(),
+            Number(game, "total_rating") is { } rating ? Math.Round(rating / 10, 1) : null, null, null, [], platforms, steam);
     }
 
     // ---------- TVmaze (series) ----------
@@ -376,6 +473,9 @@ internal sealed partial class MediaCatalog(IHttpClientFactory clients, IDbContex
 
     [GeneratedRegex(@"^tt\d{5,10}$", RegexOptions.None, 50)]
     private static partial Regex ImdbPattern();
+
+    [GeneratedRegex(@"^[a-z0-9][a-z0-9\-_]{0,80}$", RegexOptions.None, 50)]
+    private static partial Regex SlugPattern();
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Media catalog lookup failed for {Catalog} ({FailureType})")]
     private static partial void LogLookupFailed(ILogger logger, string catalog, string failureType);

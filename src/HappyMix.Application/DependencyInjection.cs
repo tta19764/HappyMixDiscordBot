@@ -19,7 +19,11 @@ public static class DependencyInjection
         // Scanning this assembly keeps request handlers private to the Application
         // layer while allowing adapters to dispatch requests through MediatR.
         services.AddMediatR(configuration =>
-            configuration.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+        {
+            configuration.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+            // Every command is logged with its server, user and outcome for the admin Logs tab.
+            configuration.AddOpenBehavior(typeof(Logging.CommandLoggingBehavior<,>));
+        });
         services.AddSingleton<GroupRoles>();
 
         return services;

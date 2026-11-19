@@ -202,7 +202,7 @@
     <value>Groups</value>
   </data>
   <data name="Invite_only_gaming_groups_in_this_server_Members_get_a_matching_Discord" xml:space="preserve">
-    <value>Invite-only gaming groups in this server. Members get a matching Discord role.</value>
+    <value>Gaming groups in this server. Join by invitation, or ask to join an open group. Members get a matching Discord role.</value>
   </data>
   <data name="My_groups" xml:space="preserve">
     <value>My groups</value>
@@ -256,7 +256,7 @@
     <value>You're not in any groups yet</value>
   </data>
   <data name="Groups_are_invite_only_Ask_an_organizer_to_invite_you_or_start" xml:space="preserve">
-    <value>Groups are invite-only. Ask an organizer to invite you, or start your own.</value>
+    <value>Ask an organizer to invite you, request to join an open group, or start your own.</value>
   </data>
   <data name="Arg0_groups" xml:space="preserve">
     <value>{0} groups</value>
@@ -484,7 +484,7 @@
     <value>Group not created</value>
   </data>
   <data name="You_ll_be_the_organizer_The_group_is_invite_only_and_HappyMix" xml:space="preserve">
-    <value>You'll be the organizer. The group is invite-only, and HappyMix creates a matching Discord role.</value>
+    <value>You'll be the organizer. The group starts invitation only (you can open it in its settings), and HappyMix creates a matching Discord role.</value>
   </data>
   <data name="You_can_t_create_groups_here" xml:space="preserve">
     <value>You can't create groups here</value>
@@ -1982,7 +1982,7 @@
 <data name="Guide_weekly_Title" xml:space="preserve"><value>Weekly timetable and copying</value></data>
 <data name="Guide_weekly_Body" xml:space="preserve"><value>Open Weekly timetable and edit a weekday. Add one or more time ranges, set certainty for each, then save the day. The schedule repeats weekly. Copy day includes hours, certainty and time zone. Paste the copied text into another day’s editor, apply it, then save that day. Ctrl+C and Ctrl+V work in the copy field.</value></data>
 <data name="Guide_groups_Title" xml:space="preserve"><value>Groups and shared availability</value></data>
-<data name="Guide_groups_Body" xml:space="preserve"><value>Create a group, add its description and games, and invite server members. Invitees accept in Discord or the dashboard to join and receive the group role. The group board shows members’ availability. Organizers and moderators manage the group. Role repair restores roles from saved membership. Leaving removes your group role. Closing a group deletes its membership records and role.</value></data>
+<data name="Guide_groups_Body" xml:space="preserve"><value>Create a group, add its description and games, and invite server members. Invitees accept in Discord or the dashboard to join and receive the group role. The group board shows members’ availability. An open group is listed for everyone under “Open to join”: people ask to join and the organizer lets them in. Members can suggest games, found on any platform, for the organizer to add. Organizers and moderators manage the group. Role repair restores roles from saved membership. Leaving removes your group role. Closing a group deletes its membership records and role.</value></data>
 <data name="Guide_events_Title" xml:space="preserve"><value>Events and invitations</value></data>
 <data name="Guide_events_Body" xml:space="preserve"><value>Create an event for a group or choose individual members. Set its dates, hours and time zone. For a recurring event, accept once to join the series; decline or withdraw from individual dates without changing the others. The organizer confirms each date when enough people can attend, and can cancel one date or the remaining series. Confirmed events appear in availability. Open Channel notifications on a group or event to choose or create a channel named after it, set the language and reminder lead time, and optionally post updates when events are scheduled, confirmed or canceled. Events use their group’s settings until they get their own. Reminders mention accepted participants and the organizer only when they are absent from every server voice channel, including linked accounts. A repeating event sends each person one invitation: Accept all dates or Decline all dates answers the whole series. Canceled events and dates are erased a few minutes after cancellation.</value></data>
 <data name="Guide_game-news_Title" xml:space="preserve"><value>Game news subscriptions</value></data>
@@ -2236,7 +2236,7 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Tag_films_help" xml:space="preserve"><value>Remembers films from earlier votes; IMDb links</value></data>
 <data name="Tag_anime_help" xml:space="preserve"><value>Remembers anime from earlier votes; MyAnimeList links</value></data>
 <data name="Guide_votes_Title" xml:space="preserve"><value>Votes</value></data>
-<data name="Guide_votes_Body" xml:space="preserve"><value>Vote on what to play or watch, on the dashboard or in Discord. In a group, open Votes: built-in tags (Games, Series, Films, Anime, chosen in the group’s Settings) add suggestions from the group’s games, its watchlist and earlier votes, and options nobody picked lately come first. Search the catalogs or paste a Steam, IMDb, TVmaze, MyAnimeList or AniList link: options then show the poster, year, genres, rating and seasons or episodes. In Discord, plain votes appear as Discord polls, and votes on games, series, films or anime appear as cards with posters, links and a vote menu. Group votes are posted in the group’s notification channel; server votes in the channel you pick, or start one with /vote create. Groups watching series, films or anime keep a Watchlist: add titles by search or link, mark episodes watched, note where you stopped (like 23:40), and add vote winners in one click.</value></data>
+<data name="Guide_votes_Body" xml:space="preserve"><value>Vote on what to play or watch, on the dashboard or in Discord. In a group, open Votes: built-in tags (Games, Series, Films, Anime, chosen in the group’s Settings) add suggestions from the group’s games, its watchlist and earlier votes, and options nobody picked lately come first. Search the catalogs or paste a Steam, IMDb, TVmaze, MyAnimeList or AniList link: options then show the poster, year, genres, rating and seasons or episodes. In Discord every vote is a Discord poll; title votes get a card with posters and links above it, and votes for chosen people go into a private thread with just them. Group votes are posted in the group’s notification channel; server votes in the channel you pick, or start one with /vote create. The dashboard shows who voted for what and today’s and this week’s results. Groups watching series, films or anime keep a Watchlist: add titles by search or link, mark episodes watched, note where you stopped (like 23:40), finish a series in one click, and add vote winners from the results.</value></data>
 <data name="Polls_VoteCount" xml:space="preserve"><value>{0} votes</value></data>
 <data name="Polls_WinnerLine" xml:space="preserve"><value>🏆 **{0}** won with {1} of {2} votes.</value></data>
 <data name="Polls_EndsAt" xml:space="preserve"><value>Voting ends {0}</value></data>
@@ -2257,11 +2257,11 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Media_SearchPlaceholder" xml:space="preserve"><value>Start typing a name…</value></data>
 <data name="Polls_FromWatchlist" xml:space="preserve"><value>on the watchlist</value></data>
 <data name="Polls_AddThis" xml:space="preserve"><value>Add as option</value></data>
-<data name="Polls_PostedIn" xml:space="preserve"><value>Also posted in {0}: plain votes as a Discord poll, votes on games, series, films or anime as cards with posters and links.</value></data>
+<data name="Polls_PostedIn" xml:space="preserve"><value>Also posted in {0} as a Discord poll; votes on games, series, films or anime get a card with posters and links above it.</value></data>
 <data name="Polls_GroupNoChannel" xml:space="preserve"><value>Turn on the group’s channel notifications in Settings to post votes in Discord too.</value></data>
 <data name="Polls_PostIn" xml:space="preserve"><value>Post in Discord</value></data>
 <data name="Polls_DashboardOnly" xml:space="preserve"><value>Only on the dashboard</value></data>
-<data name="Polls_PostInHelp" xml:space="preserve"><value>Plain votes for everyone become a Discord poll. Votes with titles from the catalogs, or for chosen members, are posted as cards with posters, links and a vote menu.</value></data>
+<data name="Polls_PostInHelp" xml:space="preserve"><value>Posted as a Discord poll. Votes for chosen people go into a private thread with just them, so nobody else sees it. Titles from the catalogs get a card with posters and links above the poll.</value></data>
 <data name="Watch_Title" xml:space="preserve"><value>Watchlist</value></data>
 <data name="Watch_HelpEdit" xml:space="preserve"><value>Track what the group watches: next episode, where you stopped, and what’s done. Vote winners can be added in one click.</value></data>
 <data name="Watch_HelpView" xml:space="preserve"><value>What the group is watching and where it stopped. The organizer keeps it up to date.</value></data>
@@ -2318,6 +2318,107 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="HelpV007_9" xml:space="preserve"><value>The vote to end</value></data>
 <data name="HelpV007_10" xml:space="preserve"><value>Use /vote create in the channel where people should vote; pick a group to limit it to its members. Votes started on the dashboard appear in Discord too when a channel is chosen. Vote with the menu under the message.</value></data>
 <data name="Polls_VoteInDiscord" xml:space="preserve"><value>Vote in Discord</value></data>
-<data name="Polls_VoteInDiscordHelp" xml:space="preserve"><value>This is a Discord poll; the results here follow it.</value></data>
+<data name="Polls_VoteInDiscordHelp" xml:space="preserve"><value>Votes are cast in the Discord poll; the results and voters here follow it.</value></data>
 <data name="Polls_Err_Discord" xml:space="preserve"><value>This vote is a Discord poll. Vote in Discord.</value></data>
+<data name="Logs_Title" xml:space="preserve"><value>Logs</value></data>
+<data name="Logs_Lead" xml:space="preserve"><value>What HappyMix did in this server: commands, Discord activity, scheduled posts and problems. Only administrators see this.</value></data>
+<data name="Logs_AdminsOnly" xml:space="preserve"><value>Admins only</value></data>
+<data name="Logs_AdminsOnlyText" xml:space="preserve"><value>Only Discord administrators of this server can read its logs.</value></data>
+<data name="Logs_BackToAvailability" xml:space="preserve"><value>Go to availability</value></data>
+<data name="Logs_Level" xml:space="preserve"><value>Level</value></data>
+<data name="Logs_Filter_info" xml:space="preserve"><value>Everything</value></data>
+<data name="Logs_Filter_warning" xml:space="preserve"><value>Warnings and errors</value></data>
+<data name="Logs_Filter_error" xml:space="preserve"><value>Errors only</value></data>
+<data name="Logs_Filter_debug" xml:space="preserve"><value>Everything, with routine runs</value></data>
+<data name="Logs_AreaLabel" xml:space="preserve"><value>Area</value></data>
+<data name="Logs_AllAreas" xml:space="preserve"><value>All areas</value></data>
+<data name="Logs_Area_commands" xml:space="preserve"><value>Actions</value></data>
+<data name="Logs_Area_discord" xml:space="preserve"><value>Discord</value></data>
+<data name="Logs_Area_jobs" xml:space="preserve"><value>Scheduled</value></data>
+<data name="Logs_Area_dashboard" xml:space="preserve"><value>Dashboard</value></data>
+<data name="Logs_Area_integrations" xml:space="preserve"><value>Integrations</value></data>
+<data name="Logs_Area_system" xml:space="preserve"><value>System</value></data>
+<data name="Logs_Range" xml:space="preserve"><value>Period</value></data>
+<data name="Logs_Range_1h" xml:space="preserve"><value>Last hour</value></data>
+<data name="Logs_Range_24h" xml:space="preserve"><value>Last 24 hours</value></data>
+<data name="Logs_Range_7d" xml:space="preserve"><value>Last 7 days</value></data>
+<data name="Logs_Range_all" xml:space="preserve"><value>Everything kept</value></data>
+<data name="Logs_Search" xml:space="preserve"><value>Search</value></data>
+<data name="Logs_SearchPlaceholder" xml:space="preserve"><value>Command, error, user id…</value></data>
+<data name="Logs_IncludeBotWide" xml:space="preserve"><value>Include bot-wide entries (owners only)</value></data>
+<data name="Logs_Apply" xml:space="preserve"><value>Show</value></data>
+<data name="Logs_Export" xml:space="preserve"><value>Download CSV</value></data>
+<data name="Logs_Live" xml:space="preserve"><value>Live</value></data>
+<data name="Logs_LiveHelp" xml:space="preserve"><value>New entries appear every 10 seconds</value></data>
+<data name="Logs_Retention" xml:space="preserve"><value>Logs are kept for 14 days.</value></data>
+<data name="Logs_Empty" xml:space="preserve"><value>Nothing logged for these filters yet.</value></data>
+<data name="Logs_ShowOlder" xml:space="preserve"><value>Show older</value></data>
+<data name="Logs_Level_info" xml:space="preserve"><value>Info</value></data>
+<data name="Logs_Level_warning" xml:space="preserve"><value>Warning</value></data>
+<data name="Logs_Level_error" xml:space="preserve"><value>Error</value></data>
+<data name="Logs_Level_debug" xml:space="preserve"><value>Routine</value></data>
+<data name="Logs_Time" xml:space="preserve"><value>Time</value></data>
+<data name="Logs_Source" xml:space="preserve"><value>Source</value></data>
+<data name="Logs_User" xml:space="preserve"><value>User</value></data>
+<data name="Logs_Scope" xml:space="preserve"><value>Scope</value></data>
+<data name="Logs_BotWide" xml:space="preserve"><value>Bot-wide, not tied to a server</value></data>
+<data name="Logs_Details" xml:space="preserve"><value>Details</value></data>
+<data name="Logs_Error" xml:space="preserve"><value>Error</value></data>
+<data name="Guide_logs_Title" xml:space="preserve"><value>Logs</value></data>
+<data name="Guide_logs_Body" xml:space="preserve"><value>Administrators see what HappyMix did in their server: every action through the dashboard or a command (with who did it and whether it worked), Discord commands and buttons, scheduled posts, and problems such as missing permissions or catalogs that didn’t answer. Filter by level, area, period or text, open an entry for details, turn on Live to watch new entries arrive, or download the filtered entries as a CSV file. Secrets are masked and what people type isn’t stored; entries are kept for 14 days.</value></data>
+<data name="Watch_Finish" xml:space="preserve"><value>Finish series</value></data>
+<data name="Watch_FinishConfirm" xml:space="preserve"><value>Mark all of “{0}” as watched?</value></data>
+<data name="Watch_SeasonOption" xml:space="preserve"><value>Season {0} · {1} episodes</value></data>
+<data name="Watch_Err_Season" xml:space="preserve"><value>Pick a season this series has.</value></data>
+<data name="Watch_Err_Episode" xml:space="preserve"><value>Pick an episode this season has.</value></data>
+<data name="Polls_Results_today" xml:space="preserve"><value>Today's results</value></data>
+<data name="Polls_Results_week" xml:space="preserve"><value>This week</value></data>
+<data name="Polls_EndedAt" xml:space="preserve"><value>ended {0}</value></data>
+<data name="Polls_VoteBelow" xml:space="preserve"><value>Vote in the poll below</value></data>
+<data name="Groups_Requested" xml:space="preserve"><value>Requested</value></data>
+<data name="Groups_OpenToJoin" xml:space="preserve"><value>Open to join</value></data>
+<data name="Groups_Open" xml:space="preserve"><value>Open</value></data>
+<data name="Groups_InviteOnly" xml:space="preserve"><value>Invitation only</value></data>
+<data name="Groups_RequestToJoin" xml:space="preserve"><value>Request to join</value></data>
+<data name="Groups_CancelRequest" xml:space="preserve"><value>Withdraw request</value></data>
+<data name="Groups_RequestPending" xml:space="preserve"><value>Your request is waiting for the organizer.</value></data>
+<data name="Groups_OpenHelp" xml:space="preserve"><value>This group is open: ask to join and the organizer will let you in.</value></data>
+<data name="Groups_JoinRequests" xml:space="preserve"><value>Requests to join</value></data>
+<data name="Groups_Approve" xml:space="preserve"><value>Let in</value></data>
+<data name="Groups_GamePage" xml:space="preserve"><value>Game page</value></data>
+<data name="Groups_NoStoreLink" xml:space="preserve"><value>No store link</value></data>
+<data name="Groups_Suggestions" xml:space="preserve"><value>Suggested games</value></data>
+<data name="Groups_SuggestedBy" xml:space="preserve"><value>suggested by {0}</value></data>
+<data name="Groups_AddSuggested" xml:space="preserve"><value>Add to the group</value></data>
+<data name="Groups_Dismiss" xml:space="preserve"><value>Dismiss</value></data>
+<data name="Groups_SuggestGame" xml:space="preserve"><value>Suggest a game</value></data>
+<data name="Groups_SuggestHelp" xml:space="preserve"><value>The organizer gets a message and can add it to the group.</value></data>
+<data name="Groups_PickGame" xml:space="preserve"><value>Pick</value></data>
+<data name="Groups_FindGame" xml:space="preserve"><value>Find a game on any platform</value></data>
+<data name="Groups_SendSuggestion" xml:space="preserve"><value>Send suggestion</value></data>
+<data name="Groups_GameHelp" xml:space="preserve"><value>Search finds games on PC, consoles and mobile (Steam, Epic, Riot, Battle.net…). A Steam App ID or store link is optional and adds Steam news and links.</value></data>
+<data name="Groups_WhoCanJoin" xml:space="preserve"><value>Who can join</value></data>
+<data name="Groups_WhoCanJoinHelp" xml:space="preserve"><value>An open group is listed for everyone under “Open to join”; people ask to join and you let them in. Its roster stays visible to members only.</value></data>
+<data name="Groups_Dm_JoinRequested" xml:space="preserve"><value>🙋 {0} asked to join **{1}** in **{2}**. Let them in or decline on the group page.</value></data>
+<data name="Groups_Dm_JoinApproved" xml:space="preserve"><value>✅ You’re in **{0}** on **{1}**. Welcome!</value></data>
+<data name="Groups_Dm_JoinDeclined" xml:space="preserve"><value>Your request to join **{0}** on **{1}** was declined.</value></data>
+<data name="Groups_Dm_GameSuggested" xml:space="preserve"><value>💡 {0} suggested **{1}** for **{2}**. Add it or dismiss it on the group page.</value></data>
+<data name="Groups_Dm_SuggestionAccepted" xml:space="preserve"><value>🎮 **{0}**, which you suggested, is now one of **{1}**’s games.</value></data>
+<data name="Groups_Msg_Open" xml:space="preserve"><value>The group is open: anyone can ask to join</value></data>
+<data name="Groups_Msg_Closed" xml:space="preserve"><value>The group is invitation only</value></data>
+<data name="Groups_Msg_Requested" xml:space="preserve"><value>Request sent. The organizer will get a message</value></data>
+<data name="Groups_Msg_Withdrawn" xml:space="preserve"><value>Request withdrawn</value></data>
+<data name="Groups_Msg_Approved" xml:space="preserve"><value>Request approved: they're in the group</value></data>
+<data name="Groups_Msg_Declined" xml:space="preserve"><value>Request declined</value></data>
+<data name="Groups_Msg_Suggested" xml:space="preserve"><value>Suggestion sent to the organizer</value></data>
+<data name="Groups_Msg_Dismissed" xml:space="preserve"><value>Suggestion dismissed</value></data>
+<data name="Groups_Err_Member" xml:space="preserve"><value>You already belong to this group.</value></data>
+<data name="Groups_Err_Closed" xml:space="preserve"><value>This group is invitation only. Ask its organizer to invite you.</value></data>
+<data name="Groups_Err_TooManyRequests" xml:space="preserve"><value>This group has too many open requests. Try again later.</value></data>
+<data name="Groups_Err_RequestGone" xml:space="preserve"><value>That request is no longer pending.</value></data>
+<data name="Groups_Err_MembersSuggest" xml:space="preserve"><value>Only members can suggest games for this group.</value></data>
+<data name="Groups_Err_HasGame" xml:space="preserve"><value>The group already has that game.</value></data>
+<data name="Groups_Err_Suggested" xml:space="preserve"><value>Someone already suggested that game.</value></data>
+<data name="Groups_Err_TooManySuggestions" xml:space="preserve"><value>This group has too many suggestions waiting. Try again once the organizer has looked at them.</value></data>
+<data name="Groups_Err_SuggestionGone" xml:space="preserve"><value>That suggestion is no longer waiting.</value></data>
 </root>

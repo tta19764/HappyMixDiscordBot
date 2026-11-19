@@ -17,5 +17,6 @@
     @if (Model.CanConfigure)
     {
         <a href="/settings/@Model.GuildId" aria-current="@(Model.Active == "settings" ? "page" : null)">@T["Settings"]</a>
+        <a href="/logs/@Model.GuildId" aria-current="@(Model.Active == "logs" ? "page" : null)">@T["Logs_Title"]</a>
     }
 </nav>

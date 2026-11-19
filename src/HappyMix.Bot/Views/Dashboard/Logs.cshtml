@@ -1,0 +1,69 @@
+@using HappyMix.Application.Abstractions.Logs
+@model LogsPage
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = T["Logs_Title"];
+    var nav = new ServerNavModel(Model.GuildId, Model.GuildName, "logs", true, "Logs_Title", T["Logs_Lead"]);
+    var query = Model.Query;
+    string baseUrl = $"/logs/{Model.GuildId}";
+    long? newest = Model.Entries.Count > 0 ? Model.Entries[0].Id : null;
+    long? oldest = Model.Entries.Count > 0 ? Model.Entries[^1].Id : null;
+}
+<partial name="_ServerNav" model="nav" />
+
+<section class="hm-card hm-stack hm-logs">
+    <form class="hm-logs__filters" method="get" action="@baseUrl">
+        <label class="hm-field"><span class="hm-label">@T["Logs_Level"]</span>
+            <select class="hm-select" name="level">
+                @foreach (var (value, key) in new[] { ("info", "Logs_Filter_info"), ("warning", "Logs_Filter_warning"), ("error", "Logs_Filter_error"), ("debug", "Logs_Filter_debug") })
+                {
+                    <option value="@value" selected="@(query.Level == value)">@T[key]</option>
+                }
+            </select>
+        </label>
+        <label class="hm-field"><span class="hm-label">@T["Logs_AreaLabel"]</span>
+            <select class="hm-select" name="area">
+                <option value="">@T["Logs_AllAreas"]</option>
+                @foreach (var area in LogQuery.Areas)
+                {
+                    <option value="@area" selected="@(query.Area == area)">@T["Logs_Area_" + area]</option>
+                }
+            </select>
+        </label>
+        <label class="hm-field"><span class="hm-label">@T["Logs_Range"]</span>
+            <select class="hm-select" name="range">
+                @foreach (var range in LogQuery.Ranges)
+                {
+                    <option value="@range" selected="@(query.Range == range)">@T["Logs_Range_" + range]</option>
+                }
+            </select>
+        </label>
+        <label class="hm-field hm-logs__search"><span class="hm-label">@T["Logs_Search"]</span>
+            <input class="hm-input" type="search" name="q" value="@query.Search" maxlength="100" placeholder="@T["Logs_SearchPlaceholder"]">
+        </label>
+        @if (Model.IsOwner)
+        {
+            <label class="hm-check hm-logs__botwide"><input type="checkbox" name="botwide" value="true" checked="@query.BotWide"><span>@T["Logs_IncludeBotWide"]</span></label>
+        }
+        <div class="hm-row hm-logs__actions">
+            <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("check")@T["Logs_Apply"]</button>
+            <a class="hm-btn hm-btn--ghost" href="@baseUrl/export@(query.QueryString())">⬇ @T["Logs_Export"]</a>
+        </div>
+    </form>
+
+    <div class="hm-row hm-row--between hm-logs__bar">
+        <label class="hm-check"><input type="checkbox" data-logs-live><span>@T["Logs_Live"]<small>@T["Logs_LiveHelp"]</small></span></label>
+        <span class="hm-help">@T["Logs_Retention"]</span>
+    </div>
+
+    <div class="hm-logs__list" data-logs data-rows-url="@baseUrl/rows@(query.QueryString())" data-newest="@newest" data-oldest="@oldest" aria-live="polite">
+        @if (Model.Entries.Count == 0)
+        {
+            <p class="hm-subtle" data-logs-empty>@T["Logs_Empty"]</p>
+        }
+        <partial name="_LogRows" model="Model" />
+    </div>
+    <div class="hm-row" style="justify-content: center">
+        <button type="button" class="hm-btn" data-logs-more hidden="@(!Model.HasMore)">@T["Logs_ShowOlder"]</button>
+    </div>
+</section>

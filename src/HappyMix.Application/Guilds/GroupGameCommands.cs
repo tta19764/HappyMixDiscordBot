@@ -15,11 +15,18 @@ internal sealed partial class GroupCommands
         RunAsync(async () =>
         {
             var group = await RequireManagedByIdAsync(command.Actor, command.GroupId);
-            var game = NormalizeGame(command.Name, command.Steam);
+            var (provider, externalId) = Catalog(command.Provider, command.ExternalId);
+            var game = NormalizeGame(command.Name, provider is null || provider == GroupGame.SteamProvider ? command.Steam : null);
             var existing = (await groups.ListGamesAsync(command.Actor.GuildId)).Where(item => item.GroupId == group.Id).ToArray();
             if (existing.Length >= MaxGames)
                 throw new GroupRuleException(TooManyGames);
-            if (!await groups.SaveGameAsync(command.Actor.GuildId, CreateGame(group.Id, Guid.NewGuid(), game.Name, game.SteamAppId)))
+            if (existing.Any(item => string.Equals(item.Name, game.Name, StringComparison.OrdinalIgnoreCase) ||
+                    provider is not null && item.Provider == provider && item.ExternalId == externalId))
+                throw new GroupRuleException("The group already has that game.");
+            var record = game.SteamAppId is not null || provider is null
+                ? CreateGame(group.Id, Guid.NewGuid(), game.Name, game.SteamAppId)
+                : new GroupGame(Guid.NewGuid(), group.Id, game.Name, provider, externalId);
+            if (!await groups.SaveGameAsync(command.Actor.GuildId, record))
                 throw new GroupRuleException(DuplicateGame);
             return new GroupChange(group.Name, GroupId: group.Id);
         }, cancellationToken);

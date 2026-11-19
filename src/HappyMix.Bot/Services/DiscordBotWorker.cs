@@ -44,6 +44,9 @@ public sealed partial class DiscordBotWorker(
         interactions.InteractionExecuted += OnInteractionExecutedAsync;
         client.PollVoteAdded += OnPollVoteAddedAsync;
         client.PollVoteRemoved += OnPollVoteRemovedAsync;
+        client.JoinedGuild += OnJoinedGuildAsync;
+        client.LeftGuild += OnLeftGuildAsync;
+        client.Disconnected += OnDisconnectedAsync;
 
         // Modules are discovered once during startup and activated through the same
         // container that owns Application and Infrastructure dependencies.
@@ -73,14 +76,14 @@ public sealed partial class DiscordBotWorker(
             }
             catch (Exception error) when (error is not OperationCanceledException)
             {
-                LogPollVoteFailed(logger, messageId, error);
+                LogPollVoteFailed(logger, messageId, guild, error);
             }
         });
         return Task.CompletedTask;
     }
 
-    [LoggerMessage(Level = LogLevel.Warning, Message = "Copying a Discord poll vote for message {MessageId} failed; the next sync catches up")]
-    private static partial void LogPollVoteFailed(ILogger logger, ulong messageId, Exception error);
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Copying a Discord poll vote for message {MessageId} in server {GuildId} failed; the next sync catches up")]
+    private static partial void LogPollVoteFailed(ILogger logger, ulong messageId, ulong guildId, Exception error);
 
     /// <inheritdoc />
     public async Task StopAsync(CancellationToken cancellationToken)
@@ -93,11 +96,65 @@ public sealed partial class DiscordBotWorker(
         client.Log -= LogAsync;
         client.PollVoteAdded -= OnPollVoteAddedAsync;
         client.PollVoteRemoved -= OnPollVoteRemovedAsync;
+        client.JoinedGuild -= OnJoinedGuildAsync;
+        client.LeftGuild -= OnLeftGuildAsync;
+        client.Disconnected -= OnDisconnectedAsync;
         interactions.Log -= LogAsync;
         client.Ready -= OnReadyAsync;
         client.InteractionCreated -= OnInteractionCreatedAsync;
         interactions.InteractionExecuted -= OnInteractionExecutedAsync;
     }
+
+    /// <summary>"/settings broadcasts", or the button/menu id prefix such as "poll:pick", without per-message ids.</summary>
+    internal static string InteractionName(ICommandInfo? command, IDiscordInteraction interaction) => interaction switch
+    {
+        ISlashCommandInteraction slash => "/" + string.Join(" ", new[] { slash.Data.Name }.Concat(SubcommandPath(slash.Data.Options))),
+        IComponentInteraction component => string.Join(':', component.Data.CustomId.Split(':').Take(2)),
+        _ => command?.Name ?? interaction.Type.ToString()
+    };
+
+    private static IEnumerable<string> SubcommandPath(IReadOnlyCollection<IApplicationCommandInteractionDataOption> options)
+    {
+        var first = options.FirstOrDefault();
+        return first?.Type is ApplicationCommandOptionType.SubCommand or ApplicationCommandOptionType.SubCommandGroup
+            ? new[] { first.Name }.Concat(SubcommandPath(first.Options))
+            : [];
+    }
+
+    private Task OnJoinedGuildAsync(SocketGuild guild)
+    {
+        LogJoinedGuild(logger, guild.Id, guild.Name, guild.MemberCount);
+        return Task.CompletedTask;
+    }
+
+    private Task OnLeftGuildAsync(SocketGuild guild)
+    {
+        LogLeftGuild(logger, guild.Id, guild.Name);
+        return Task.CompletedTask;
+    }
+
+    private Task OnDisconnectedAsync(Exception error)
+    {
+        LogDisconnected(logger, error.GetType().Name, error.Message);
+        return Task.CompletedTask;
+    }
+
+    [LoggerMessage(EventId = 20, EventName = "InteractionUsed", Level = LogLevel.Information,
+        Message = "{Interaction} used by user {UserId} in server {GuildId}")]
+    private static partial void LogInteractionUsed(ILogger logger, string interaction, ulong userId, ulong? guildId);
+
+    [LoggerMessage(EventId = 21, EventName = "InteractionError", Level = LogLevel.Warning,
+        Message = "{Interaction} by user {UserId} in server {GuildId} failed: {ErrorType} {Reason}")]
+    private static partial void LogInteractionError(ILogger logger, string interaction, ulong userId, ulong? guildId, string errorType, string? reason);
+
+    [LoggerMessage(EventId = 22, EventName = "JoinedServer", Level = LogLevel.Information, Message = "Joined server {GuildId} ({GuildName}, {MemberCount} members)")]
+    private static partial void LogJoinedGuild(ILogger logger, ulong guildId, string guildName, int memberCount);
+
+    [LoggerMessage(EventId = 23, EventName = "LeftServer", Level = LogLevel.Warning, Message = "Removed from server {GuildId} ({GuildName})")]
+    private static partial void LogLeftGuild(ILogger logger, ulong guildId, string guildName);
+
+    [LoggerMessage(EventId = 24, EventName = "Disconnected", Level = LogLevel.Warning, Message = "Disconnected from Discord ({ErrorType}): {Reason}")]
+    private static partial void LogDisconnected(ILogger logger, string errorType, string reason);
 
     private async Task OnReadyAsync()
     {
@@ -124,9 +181,13 @@ public sealed partial class DiscordBotWorker(
     // leaving Discord's "This interaction failed" (or nothing at all, after a defer).
     private async Task OnInteractionExecutedAsync(ICommandInfo? command, IInteractionContext context, Discord.Interactions.IResult result)
     {
+        string name = InteractionName(command, context.Interaction);
         if (result.IsSuccess)
+        {
+            LogInteractionUsed(logger, name, context.User.Id, context.Guild?.Id);
             return;
-        LogInteractionFailed(logger, context.Interaction.Id, $"{command?.Name}: {result.ErrorReason}");
+        }
+        LogInteractionError(logger, name, context.User.Id, context.Guild?.Id, result.Error?.ToString() ?? "", result.ErrorReason);
         const string message = "Something went wrong. Please try again, or answer from the dashboard.";
         try
         {

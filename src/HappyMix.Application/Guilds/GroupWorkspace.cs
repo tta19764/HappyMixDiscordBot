@@ -9,7 +9,9 @@ public enum GroupDirectoryFilter
 {
     Mine,
     Invited,
-    All
+    All,
+    /// <summary>Open groups the actor can ask to join.</summary>
+    Open
 }
 
 /// <summary>How the acting user relates to a group. Moderator access is carried separately on the actor.</summary>
@@ -18,7 +20,9 @@ public enum GroupRelation
     None,
     Invited,
     Member,
-    Organizer
+    Organizer,
+    /// <summary>Asked to join an open group; the organizer hasn't answered yet.</summary>
+    Requested
 }
 
 /// <summary>
@@ -30,10 +34,17 @@ public sealed record GroupSummary(Guid Id, string Name, string? Description, ulo
     string[] Games, GroupRelation Relation, bool CanManage)
 {
     public ulong[] OrganizerAlternates { get; init; } = [];
+
+    /// <summary>Anyone in the server can ask to join an open group; a closed group is invitation only.</summary>
+    public bool Open { get; init; }
 }
 
 public sealed record GroupDirectory(GroupSummary[] Items, int Total, int Page, int PageCount,
-    int MineCount, int InvitedCount, int AllCount);
+    int MineCount, int InvitedCount, int AllCount)
+{
+    /// <summary>Open groups the actor isn't in yet.</summary>
+    public int OpenCount { get; init; }
+}
 
 /// <summary>
 /// A group as the actor may see it. Invited users see the overview only; the roster and games need membership,
@@ -44,6 +55,12 @@ public sealed record GroupDetail(GroupSummary Summary, ulong[] Members, ulong[] 
 {
     /// <summary>Linked alternate accounts for each listed member or invitee. Empty unless the roster is visible.</summary>
     public IReadOnlyDictionary<ulong, ulong[]> LinkedAccounts { get; init; } = new Dictionary<ulong, ulong[]>();
+
+    /// <summary>Accounts asking to join, for people who manage the group.</summary>
+    public ulong[] JoinRequests { get; init; } = [];
+
+    /// <summary>Games members suggested, for people who can see the roster.</summary>
+    public GameSuggestion[] Suggestions { get; init; } = [];
 }
 
 public sealed record GroupGameInput(string Name, string? Steam);
@@ -53,7 +70,9 @@ public sealed record GetGroupDirectoryQuery(GroupActor Actor, GroupDirectoryFilt
 public sealed record GetGroupDetailQuery(GroupActor Actor, Guid GroupId) : IQuery<GroupDetail>;
 public sealed record CanCreateGroupQuery(GroupActor Actor, ulong[] RoleIds) : IQuery<bool>;
 
-public sealed record AddGroupGameCommand(GroupActor Actor, Guid GroupId, string Name, string? Steam) : GroupCommand(Actor);
+/// <param name="Provider">steam or igdb when the game was picked from a search, with its <paramref name="ExternalId"/>.</param>
+public sealed record AddGroupGameCommand(GroupActor Actor, Guid GroupId, string Name, string? Steam, string? Provider = null,
+    string? ExternalId = null) : GroupCommand(Actor);
 public sealed record UpdateGroupGameCommand(GroupActor Actor, Guid GroupId, Guid GameId, string Name, string? Steam)
     : GroupCommand(Actor);
 public sealed record RemoveGroupGameCommand(GroupActor Actor, Guid GroupId, Guid GameId) : GroupCommand(Actor);
@@ -121,6 +140,7 @@ internal sealed class GroupWorkspaceQueries(IGuildGroupStore groups, IGuildSetti
         {
             GroupDirectoryFilter.Mine => mine,
             GroupDirectoryFilter.Invited => invited,
+            GroupDirectoryFilter.Open => accessible.Where(group => group.Open && !links.Includes(group.Members, actor.UserId)).ToArray(),
             _ => accessible
         };
 
@@ -140,7 +160,10 @@ internal sealed class GroupWorkspaceQueries(IGuildGroupStore groups, IGuildSetti
             .Select(group => Summarize(group, actor, links, games[group.Id].Select(game => game.Name).ToArray()))
             .ToArray();
         return Result.Success(new GroupDirectory(items, matches.Length, page, pageCount,
-            mine.Length, invited.Length, accessible.Length));
+            mine.Length, invited.Length, accessible.Length)
+        {
+            OpenCount = accessible.Count(group => group.Open && !links.Includes(group.Members, actor.UserId))
+        });
     }
 
     public async Task<Result<GroupDetail>> Handle(GetGroupDetailQuery query, CancellationToken cancellationToken)
@@ -167,7 +190,12 @@ internal sealed class GroupWorkspaceQueries(IGuildGroupStore groups, IGuildSetti
             summary.CanManage ? invites : [],
             roster ? games : [],
             roster,
-            isMember && !links.Same(group.OrganizerId, actor.UserId)) { LinkedAccounts = linked });
+            isMember && !links.Same(group.OrganizerId, actor.UserId))
+        {
+            LinkedAccounts = linked,
+            JoinRequests = summary.CanManage ? (group.JoinRequests ?? []).Where(id => !links.Includes(group.Members, id)).ToArray() : [],
+            Suggestions = roster ? group.Suggestions ?? [] : []
+        });
     }
 
     public async Task<Result<bool>> Handle(CanCreateGroupQuery query, CancellationToken cancellationToken)
@@ -185,7 +213,7 @@ internal sealed class GroupWorkspaceQueries(IGuildGroupStore groups, IGuildSetti
     /// moderators see the whole server, based on the requesting account's own Discord permission.
     /// </summary>
     internal static bool CanSee(GuildGroup group, GroupActor actor, MemberLinks links) =>
-        actor.CanModerate || links.Includes(group.Members, actor.UserId) || group.Invites.Contains(actor.UserId);
+        group.Open || actor.CanModerate || links.Includes(group.Members, actor.UserId) || group.Invites.Contains(actor.UserId);
 
     /// <summary>The roster rule: members, the organizer and moderators.</summary>
     internal static bool CanViewRoster(GuildGroup group, GroupActor actor, MemberLinks links) =>
@@ -199,13 +227,15 @@ internal sealed class GroupWorkspaceQueries(IGuildGroupStore groups, IGuildSetti
         var relation = links.Same(group.OrganizerId, actor.UserId) ? GroupRelation.Organizer
             : links.Includes(group.Members, actor.UserId) ? GroupRelation.Member
             : group.Invites.Contains(actor.UserId) ? GroupRelation.Invited
+            : (group.JoinRequests ?? []).Any(id => links.Same(id, actor.UserId)) ? GroupRelation.Requested
             : GroupRelation.None;
         bool roster = relation is GroupRelation.Organizer or GroupRelation.Member || actor.CanModerate;
         ulong organizer = group.OrganizerId;
         return new GroupSummary(group.Id, group.Name, group.Description, organizer, links.Representatives(group.Members).Length,
             roster ? games : [], relation, relation == GroupRelation.Organizer || actor.CanModerate)
         {
-            OrganizerAlternates = roster ? links.Accounts(organizer).Where(account => account != organizer).ToArray() : []
+            OrganizerAlternates = roster ? links.Accounts(organizer).Where(account => account != organizer).ToArray() : [],
+            Open = group.Open
         };
     }
 }
