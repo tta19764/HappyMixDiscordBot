@@ -1374,3 +1374,81 @@ for (const image of document.querySelectorAll("[data-game-art]")) {
         }
     }
 })();
+
+// Catalog search: find a game, series, film or anime and add it as a vote option or to the watchlist.
+(() => {
+    for (const box of document.querySelectorAll("[data-media-search]")) {
+        const kind = box.querySelector("[data-media-kind]");
+        const query = box.querySelector("[data-media-query]");
+        const results = box.querySelector("[data-media-results]");
+        const pollForm = box.closest("[data-poll-form]");
+        const watchUrl = box.dataset.watchUrl;
+        if (!kind || !query || !results) continue;
+        box.hidden = false;
+        let timer = 0, ticket = 0;
+
+        const note = text => { results.replaceChildren(); const item = document.createElement("li"); item.className = "hm-subtle"; item.textContent = text; results.append(item); };
+        const add = item => {
+            if (pollForm) {
+                const fields = [...pollForm.querySelectorAll("[data-poll-option]")];
+                const empty = fields.find(field => !field.value.trim());
+                if (!empty) return;
+                empty.value = item.url ? item.title + " " + item.url : item.title;
+                empty.hidden = false;
+                empty.dispatchEvent(new Event("input", { bubbles: true }));
+                return;
+            }
+            if (watchUrl) {
+                const form = document.createElement("form");
+                form.method = "post";
+                form.action = watchUrl;
+                const token = box.querySelector('input[name="__RequestVerificationToken"]');
+                const values = { kind: item.kind, title: item.title, url: item.url ?? "", source: item.source, externalId: item.id };
+                if (token) values.__RequestVerificationToken = token.value;
+                for (const [name, value] of Object.entries(values)) {
+                    const input = document.createElement("input");
+                    input.type = "hidden"; input.name = name; input.value = value;
+                    form.append(input);
+                }
+                document.body.append(form);
+                form.submit();
+            }
+        };
+
+        const search = () => {
+            const text = query.value.trim();
+            if (text.length < 2) { results.replaceChildren(); return; }
+            const mine = ++ticket;
+            results.setAttribute("aria-busy", "true");
+            fetch(`${box.dataset.url}?kind=${encodeURIComponent(kind.value)}&q=${encodeURIComponent(text)}`, { credentials: "same-origin" })
+                .then(response => response.ok ? response.json() : Promise.reject())
+                .then(items => {
+                    if (mine !== ticket) return;
+                    if (items.length === 0) { note(box.dataset.empty); return; }
+                    results.replaceChildren(...items.slice(0, 8).map(item => {
+                        const row = document.createElement("li");
+                        row.className = "hm-media-result";
+                        if (item.image) {
+                            const image = document.createElement("img");
+                            image.src = item.image; image.alt = ""; image.loading = "lazy"; image.referrerPolicy = "no-referrer";
+                            row.append(image);
+                        }
+                        const text = document.createElement("span");
+                        const title = document.createElement("b"); title.textContent = item.title;
+                        const details = document.createElement("small"); details.textContent = item.details || "";
+                        text.append(title, details);
+                        const button = document.createElement("button");
+                        button.type = "button"; button.className = "hm-btn hm-btn--sm"; button.textContent = box.dataset.addLabel;
+                        button.addEventListener("click", () => { add(item); button.disabled = true; });
+                        row.append(text, button);
+                        return row;
+                    }));
+                })
+                .catch(() => { if (mine === ticket) note(box.dataset.failed); })
+                .finally(() => results.removeAttribute("aria-busy"));
+        };
+        query.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(search, 350); });
+        query.addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); clearTimeout(timer); search(); } });
+        kind.addEventListener("change", () => { if (query.value.trim()) search(); });
+    }
+})();

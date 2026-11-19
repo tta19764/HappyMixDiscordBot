@@ -63,6 +63,9 @@ public sealed record GroupPage(
     /// <summary>Votes of the group, for people who can see the roster.</summary>
     public PollsModel? Polls { get; init; }
 
+    /// <summary>The watchlist, shown when the group has a watch tag or already tracks something.</summary>
+    public WatchModel? Watch { get; init; }
+
     /// <summary>The group's channel notifications, for people who may change them (the organizer or an administrator).</summary>
     public GroupNotificationSummary? Notifications { get; init; }
 

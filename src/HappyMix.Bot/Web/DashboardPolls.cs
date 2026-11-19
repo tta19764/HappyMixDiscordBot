@@ -1,3 +1,5 @@
+using Discord;
+using Poll = HappyMix.Application.Abstractions.Polls.Poll;
 using HappyMix.Application.Abstractions.Polls;
 using HappyMix.Application.Guilds;
 using HappyMix.Application.Polls;
@@ -13,6 +15,15 @@ namespace HappyMix.Bot.Web;
 public sealed record PollsModel(ulong GuildId, PollBoard Board, MemberNames Names, string ReturnUrl, MemberProfile[] Members,
     DateTimeOffset Now, string? Error = null)
 {
+    /// <summary>Channels a server vote can be posted in (empty on a group page).</summary>
+    public IReadOnlyList<(ulong Id, string Name)> Channels { get; init; } = [];
+
+    /// <summary>Where a group's votes are posted: its notification channel, when notifications are on.</summary>
+    public string? GroupChannel { get; init; }
+
+    /// <summary>The language for option details (seasons, episodes, minutes).</summary>
+    public string Language { get; init; } = "en";
+
     public bool IsGroup => Board.GroupId is not null;
     public string NewUrl => $"/votes/{GuildId}/new";
     public string VoteUrl(Poll poll) => $"/votes/{GuildId}/{poll.Id}/vote";
@@ -49,34 +60,45 @@ public sealed partial class DashboardController
 
     [HttpPost("/votes/{guildId}/new")]
     public async Task<IActionResult> CreatePoll(ulong guildId, Guid? groupId, Guid requestId, string? question, string[]? options,
-        bool multiple, int minutes, string? audience, ulong[]? members, string? returnUrl)
+        bool multiple, int minutes, string? audience, ulong[]? members, ulong? channelId, string? returnUrl,
+        [FromServices] PollMessages messages)
     {
         if (await GetGroupActorAsync(guildId) is not ({ } actor, _, _))
             return NotMember();
+        // Group votes go to the group's notification channel; server votes to the channel picked in the form, if any.
+        ulong? channel = groupId is { } group ? await messages.GroupChannelAsync(guildId, group)
+            : channelId is > 0 and var picked && PostableChannels(guildId, actor.UserId).Any(item => item.Id == picked) ? picked : null;
         var result = await sender.Send(new CreatePollCommand(actor, groupId, question ?? "", options ?? [], multiple,
-            TimeSpan.FromMinutes(minutes), members ?? [], audience == "everyone", requestId == Guid.Empty ? Guid.NewGuid() : requestId),
+            TimeSpan.FromMinutes(minutes), members ?? [], audience == "everyone", requestId == Guid.Empty ? Guid.NewGuid() : requestId, channel),
             HttpContext.RequestAborted);
+        if (result.IsSuccess)
+            await SyncPollAsync(messages, guildId, result.Value);
         return PollRedirect(guildId, groupId, returnUrl, result.IsSuccess ? text["Polls_Started"].Value : null,
             result.IsFailure ? text.Message(result.Error.Description).Value : null);
     }
 
     [HttpPost("/votes/{guildId}/{pollId:guid}/vote")]
-    public async Task<IActionResult> VotePoll(ulong guildId, Guid pollId, int[]? choice, bool clear, string? returnUrl)
+    public async Task<IActionResult> VotePoll(ulong guildId, Guid pollId, int[]? choice, bool clear, string? returnUrl,
+        [FromServices] PollMessages messages)
     {
         if (await GetGroupActorAsync(guildId) is not ({ } actor, _, _))
             return NotMember();
         var result = await sender.Send(new VotePollCommand(actor, pollId, clear ? [] : choice ?? []), HttpContext.RequestAborted);
+        if (result.IsSuccess)
+            await SyncPollAsync(messages, guildId, pollId);
         return PollRedirect(guildId, result.IsSuccess ? result.Value.GroupId : null, returnUrl,
             result.IsSuccess ? text[clear || (choice ?? []).Length == 0 ? "Polls_VoteRemoved" : "Polls_Voted"].Value : null,
             result.IsFailure ? text.Message(result.Error.Description).Value : null);
     }
 
     [HttpPost("/votes/{guildId}/{pollId:guid}/close")]
-    public async Task<IActionResult> ClosePoll(ulong guildId, Guid pollId, string? returnUrl)
+    public async Task<IActionResult> ClosePoll(ulong guildId, Guid pollId, string? returnUrl, [FromServices] PollMessages messages)
     {
         if (await GetGroupActorAsync(guildId) is not ({ } actor, _, _))
             return NotMember();
         var result = await sender.Send(new ClosePollCommand(actor, pollId), HttpContext.RequestAborted);
+        if (result.IsSuccess)
+            await SyncPollAsync(messages, guildId, pollId);
         return PollRedirect(guildId, result.IsSuccess ? result.Value.GroupId : null, returnUrl,
             result.IsSuccess ? text["Polls_Ended"].Value : null, result.IsFailure ? text.Message(result.Error.Description).Value : null);
     }
@@ -106,8 +128,40 @@ public sealed partial class DashboardController
             ? members.Values.Where(profile => profile.InServer && !profile.IsBot && profile.Id != actor.UserId)
                 .OrderBy(profile => profile.DisplayName, StringComparer.CurrentCultureIgnoreCase).Take(500).ToArray()
             : [];
+        string? groupChannel = groupId is { } group
+            && await HttpContext.RequestServices.GetRequiredService<PollMessages>().GroupChannelAsync(guildId, group) is { } channelId
+            && discord.GetGuild(guildId)?.GetTextChannel(channelId) is { } found ? "#" + found.Name : null;
         return new PollsModel(guildId, board.Value, new MemberNames(members, available), returnUrl, choices, clock.UtcNow,
-            TempData["PollError"] as string);
+            TempData["PollError"] as string)
+        {
+            Channels = includeMembers ? PostableChannels(guildId, actor.UserId) : [],
+            GroupChannel = groupChannel,
+            Language = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName
+        };
+    }
+
+    /// <summary>Text channels the member can see and the bot can post vote messages in.</summary>
+    private (ulong Id, string Name)[] PostableChannels(ulong guildId, ulong userId)
+    {
+        if (discord.GetGuild(guildId) is not { } guild || guild.GetUser(userId) is not { } member)
+            return [];
+        return guild.TextChannels
+            .Where(channel => channel.GetChannelType() == ChannelType.Text && member.GetPermissions(channel).ViewChannel &&
+                guild.CurrentUser.GetPermissions(channel) is { ViewChannel: true, SendMessages: true, EmbedLinks: true })
+            .OrderBy(channel => channel.Position).Select(channel => (channel.Id, channel.Name)).ToArray();
+    }
+
+    /// <summary>Posts or updates the vote's Discord message. Discord trouble never fails the dashboard action.</summary>
+    private async Task SyncPollAsync(PollMessages messages, ulong guildId, Guid pollId)
+    {
+        try
+        {
+            await messages.SyncAsync(pollId, guildId, HttpContext.RequestAborted);
+        }
+        catch (Exception error) when (error is Discord.Net.HttpException or TimeoutException or InvalidOperationException)
+        {
+            // The catch-up job retries posting; the vote itself is saved.
+        }
     }
 
     private RedirectResult PollRedirect(ulong guildId, Guid? groupId, string? returnUrl, string? success, string? error)

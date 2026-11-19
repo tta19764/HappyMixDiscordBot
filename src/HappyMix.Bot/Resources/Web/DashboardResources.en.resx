@@ -2236,5 +2236,85 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Tag_films_help" xml:space="preserve"><value>Remembers films from earlier votes; IMDb links</value></data>
 <data name="Tag_anime_help" xml:space="preserve"><value>Remembers anime from earlier votes; MyAnimeList links</value></data>
 <data name="Guide_votes_Title" xml:space="preserve"><value>Votes</value></data>
-<data name="Guide_votes_Body" xml:space="preserve"><value>Vote on what to play or watch. In a group, open Votes and start a vote: built-in tags (Games, Series, Films, Anime, chosen in the group’s Settings) add suggestions from the group’s games and earlier votes, and options nobody picked lately are listed first. Type a title or paste a Steam, IMDb or MyAnimeList link; Steam and MyAnimeList links fill in the title. Without a group, use the Votes tab to ask chosen members or everyone on the server. Choose when voting ends and whether several choices are allowed; the person who started it can end it early. Ended votes stay in the history with their winner.</value></data>
+<data name="Guide_votes_Body" xml:space="preserve"><value>Vote on what to play or watch, on the dashboard or in Discord. In a group, open Votes: built-in tags (Games, Series, Films, Anime, chosen in the group’s Settings) add suggestions from the group’s games, its watchlist and earlier votes, and options nobody picked lately come first. Search the catalogs or paste a Steam, IMDb, TVmaze, MyAnimeList or AniList link: options then show the poster, year, genres, rating and seasons or episodes, on the dashboard and in the Discord message. Group votes are posted in the group’s notification channel; server votes in the channel you pick, or start one with /vote create. Vote with the menu under the message. Groups watching series, films or anime keep a Watchlist: add titles by search or link, mark episodes watched, note where you stopped (like 23:40), and add vote winners in one click.</value></data>
+<data name="Polls_VoteCount" xml:space="preserve"><value>{0} votes</value></data>
+<data name="Polls_WinnerLine" xml:space="preserve"><value>🏆 **{0}** won with {1} of {2} votes.</value></data>
+<data name="Polls_EndsAt" xml:space="preserve"><value>Voting ends {0}</value></data>
+<data name="Polls_PickOne" xml:space="preserve"><value>Pick one option</value></data>
+<data name="Polls_PickSeveral" xml:space="preserve"><value>Pick one or more options</value></data>
+<data name="Polls_Voters" xml:space="preserve"><value>{0} voted</value></data>
+<data name="Polls_OpenDashboard" xml:space="preserve"><value>Open on the dashboard</value></data>
+<data name="Polls_NoneOpen" xml:space="preserve"><value>No open votes for you right now. Start one with /vote create.</value></data>
+<data name="Polls_PickFromList" xml:space="preserve"><value>Pick a vote from the list.</value></data>
+<data name="Polls_YouPicked" xml:space="preserve"><value>You voted for {0}.</value></data>
+<data name="Media_SeasonsEpisodes" xml:space="preserve"><value>{0} seasons, {1} episodes</value></data>
+<data name="Media_Episodes" xml:space="preserve"><value>{0} episodes</value></data>
+<data name="Media_Minutes" xml:space="preserve"><value>{0} min</value></data>
+<data name="Media_NoResults" xml:space="preserve"><value>Nothing found. Try another spelling or paste a link.</value></data>
+<data name="Media_SearchFailed" xml:space="preserve"><value>Search isn’t available right now. Paste a link instead.</value></data>
+<data name="Media_FindTitle" xml:space="preserve"><value>Find a title</value></data>
+<data name="Media_Kind" xml:space="preserve"><value>Kind</value></data>
+<data name="Media_SearchPlaceholder" xml:space="preserve"><value>Start typing a name…</value></data>
+<data name="Polls_FromWatchlist" xml:space="preserve"><value>on the watchlist</value></data>
+<data name="Polls_AddThis" xml:space="preserve"><value>Add as option</value></data>
+<data name="Polls_PostedIn" xml:space="preserve"><value>The vote is also posted in {0}, where people can vote with a menu.</value></data>
+<data name="Polls_GroupNoChannel" xml:space="preserve"><value>Turn on the group’s channel notifications in Settings to post votes in Discord too.</value></data>
+<data name="Polls_PostIn" xml:space="preserve"><value>Post in Discord</value></data>
+<data name="Polls_DashboardOnly" xml:space="preserve"><value>Only on the dashboard</value></data>
+<data name="Polls_PostInHelp" xml:space="preserve"><value>People can vote with a menu under the message. Chosen members are mentioned.</value></data>
+<data name="Watch_Title" xml:space="preserve"><value>Watchlist</value></data>
+<data name="Watch_HelpEdit" xml:space="preserve"><value>Track what the group watches: next episode, where you stopped, and what’s done. Vote winners can be added in one click.</value></data>
+<data name="Watch_HelpView" xml:space="preserve"><value>What the group is watching and where it stopped. The organizer keeps it up to date.</value></data>
+<data name="Watch_Add" xml:space="preserve"><value>Add a title</value></data>
+<data name="Watch_AddThis" xml:space="preserve"><value>Add</value></data>
+<data name="Watch_OrLink" xml:space="preserve"><value>Or paste a link</value></data>
+<data name="Watch_Link" xml:space="preserve"><value>Link</value></data>
+<data name="Watch_TitlePlaceholder" xml:space="preserve"><value>Title (needed without a known link)</value></data>
+<data name="Watch_TitleLabel" xml:space="preserve"><value>Title</value></data>
+<data name="Watch_AddButton" xml:space="preserve"><value>Add</value></data>
+<data name="Watch_LinkHelp" xml:space="preserve"><value>IMDb, TVmaze, MyAnimeList, AniList and TMDB links fill in the details. Any other title can be added by name.</value></data>
+<data name="Watch_LinkHelpNoFilms" xml:space="preserve"><value>IMDb series, TVmaze, MyAnimeList and AniList links fill in the details. Films are added by name (film lookups need a TMDB key on the bot).</value></data>
+<data name="Watch_Empty" xml:space="preserve"><value>Nothing on the watchlist yet.</value></data>
+<data name="Watch_Status_Watching" xml:space="preserve"><value>Watching</value></data>
+<data name="Watch_Status_Planned" xml:space="preserve"><value>Planned</value></data>
+<data name="Watch_Status_Watched" xml:space="preserve"><value>Watched</value></data>
+<data name="Watch_Status_Dropped" xml:space="preserve"><value>Dropped</value></data>
+<data name="Watch_Next" xml:space="preserve"><value>Next: S{0} E{1}</value></data>
+<data name="Watch_OfSeason" xml:space="preserve"><value>{0} episodes this season</value></data>
+<data name="Watch_EpisodesSeen" xml:space="preserve"><value>{0} of {1} episodes watched</value></data>
+<data name="Watch_FinishedOn" xml:space="preserve"><value>Finished on {0}</value></data>
+<data name="Watch_MarkEpisode" xml:space="preserve"><value>Watched S{0} E{1}</value></data>
+<data name="Watch_MarkWatched" xml:space="preserve"><value>Mark as watched</value></data>
+<data name="Watch_Edit" xml:space="preserve"><value>Edit</value></data>
+<data name="Watch_Season" xml:space="preserve"><value>Season</value></data>
+<data name="Watch_Episode" xml:space="preserve"><value>Episode</value></data>
+<data name="Watch_StoppedAtLabel" xml:space="preserve"><value>Stopped at</value></data>
+<data name="Watch_StatusLabel" xml:space="preserve"><value>Status</value></data>
+<data name="Watch_SetStatus" xml:space="preserve"><value>Set status</value></data>
+<data name="Watch_Remove" xml:space="preserve"><value>Remove</value></data>
+<data name="Watch_Added" xml:space="preserve"><value>{0} is on the watchlist</value></data>
+<data name="Watch_Removed" xml:space="preserve"><value>Removed from the watchlist</value></data>
+<data name="Watch_Saved" xml:space="preserve"><value>Watchlist updated</value></data>
+<data name="Watch_AddToList" xml:space="preserve"><value>Add to watchlist</value></data>
+<data name="Watch_Watched" xml:space="preserve"><value>watched</value></data>
+<data name="Watch_NextEpisode" xml:space="preserve"><value>next: S{0} E{1}</value></data>
+<data name="Watch_InProgress" xml:space="preserve"><value>in progress</value></data>
+<data name="Watch_StoppedAt" xml:space="preserve"><value>stopped at {0}</value></data>
+<data name="Watch_Err_NotFound" xml:space="preserve"><value>That group or title doesn't exist.</value></data>
+<data name="Watch_Err_Forbidden" xml:space="preserve"><value>Only the organizer or a moderator can change the watchlist.</value></data>
+<data name="Watch_Err_Kind" xml:space="preserve"><value>Choose a series, film or anime.</value></data>
+<data name="Watch_Err_Link" xml:space="preserve"><value>That link wasn't recognised. Add the title too.</value></data>
+<data name="Watch_Err_Title" xml:space="preserve"><value>Search for a title, paste a link, or type a title.</value></data>
+<data name="Watch_Err_Position" xml:space="preserve"><value>Write where you stopped like 12:30 or 1:05:00.</value></data>
+<data name="HelpV007_0" xml:space="preserve"><value>Start, find or end votes.</value></data>
+<data name="HelpV007_1" xml:space="preserve"><value>Start a vote in this channel. Separate options with ;</value></data>
+<data name="HelpV007_2" xml:space="preserve"><value>What to vote on, e.g. What are we playing tonight?</value></data>
+<data name="HelpV007_3" xml:space="preserve"><value>2-10 options separated by ;, titles or Steam/IMDb/MyAnimeList links</value></data>
+<data name="HelpV007_4" xml:space="preserve"><value>Only members of this group vote</value></data>
+<data name="HelpV007_5" xml:space="preserve"><value>When voting ends</value></data>
+<data name="HelpV007_6" xml:space="preserve"><value>Allow ticking several options</value></data>
+<data name="HelpV007_7" xml:space="preserve"><value>Show open votes you can take part in.</value></data>
+<data name="HelpV007_8" xml:space="preserve"><value>End a vote you started before its time.</value></data>
+<data name="HelpV007_9" xml:space="preserve"><value>The vote to end</value></data>
+<data name="HelpV007_10" xml:space="preserve"><value>Use /vote create in the channel where people should vote; pick a group to limit it to its members. Votes started on the dashboard appear in Discord too when a channel is chosen. Vote with the menu under the message.</value></data>
 </root>

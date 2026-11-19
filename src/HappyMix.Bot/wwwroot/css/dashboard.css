@@ -1537,3 +1537,51 @@ form:has([data-repeat-toggle]:not(:checked)) [data-repeat-through] { display: no
 @media (max-width: 640px) {
     .hm-poll-history__list li { grid-template-columns: 1fr; gap: var(--hm-space-1); }
 }
+
+/* ---------- 33. Media details, catalog search and watchlist ---------- */
+.hm-poll__poster { flex: none; width: 2.25rem; height: 3.2rem; object-fit: cover; border-radius: 4px; background: var(--hm-surface-2); }
+.hm-poll__label { display: grid; gap: 2px; }
+.hm-poll__details, .hm-poll__progress { color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); font-weight: 500; }
+.hm-poll__progress { color: var(--hm-text-muted); }
+.hm-poll-new__where { margin: 0; }
+.hm-media-search__bar { flex-wrap: nowrap; gap: var(--hm-space-2); }
+.hm-media-search__bar .hm-select { flex: 0 0 auto; width: auto; }
+.hm-media-search__bar .hm-input { flex: 1; min-width: 0; }
+.hm-media-search__results { display: grid; gap: var(--hm-space-1); margin: 0; padding: 0; list-style: none; max-height: 22rem; overflow: auto; }
+.hm-media-search__results:empty { display: none; }
+.hm-media-result { display: flex; align-items: center; gap: var(--hm-space-3); padding: var(--hm-space-2); border: 1px solid var(--hm-border);
+    border-radius: var(--hm-radius-md); background: var(--hm-surface); }
+.hm-media-result img { flex: none; width: 2.5rem; height: 3.5rem; object-fit: cover; border-radius: 4px; }
+.hm-media-result span { display: grid; flex: 1; min-width: 0; }
+.hm-media-result small { color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); }
+.hm-watch h2 { margin: 0; }
+.hm-watch-add > summary { list-style: none; width: max-content; }
+.hm-watch-add > summary::-webkit-details-marker { display: none; }
+.hm-watch-add__body { margin-top: var(--hm-space-3); padding: var(--hm-space-4); border: 1px dashed var(--hm-border-strong); border-radius: var(--hm-radius-md); }
+.hm-watch-add__manual { display: grid; grid-template-columns: auto minmax(0, 1.4fr) minmax(0, 1fr) auto; gap: var(--hm-space-2); }
+.hm-watch-group > summary { cursor: pointer; list-style: none; }
+.hm-watch-group > summary h3 { display: inline-flex; gap: var(--hm-space-2); align-items: center; margin: 0; font-size: var(--hm-fs-md); }
+.hm-watch-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr)); gap: var(--hm-space-3); margin-top: var(--hm-space-3); }
+.hm-watch-item { display: flex; gap: var(--hm-space-3); padding: var(--hm-space-3); border: 1px solid var(--hm-border); border-left: 4px solid #93c5fd;
+    border-radius: var(--hm-radius-md); background: var(--hm-surface-2); min-width: 0; }
+.hm-watch-item--anime { border-left-color: #f9a8d4; }
+.hm-watch-item--film { border-left-color: #fca5a5; }
+.hm-watch-item__poster { flex: none; width: 4.5rem; height: 6.4rem; object-fit: cover; border-radius: 6px; background: var(--hm-surface); }
+.hm-watch-item__poster--empty { display: grid; place-items: center; font-size: 1.6rem; }
+.hm-watch-item__body { display: grid; gap: var(--hm-space-1); align-content: start; min-width: 0; flex: 1; }
+.hm-watch-item__body h4 { margin: 0; font-size: var(--hm-fs-md); }
+.hm-watch-item__body p { margin: 0; }
+.hm-watch-item__progress { display: flex; flex-wrap: wrap; gap: var(--hm-space-2); align-items: center; }
+.hm-watch-item__bar { height: 6px; border-radius: 999px; background: var(--hm-surface); overflow: hidden; }
+.hm-watch-item__bar span { display: block; width: var(--done, 0%); height: 100%; background: var(--hm-brand); }
+.hm-watch-item__actions { display: flex; flex-wrap: wrap; gap: var(--hm-space-2); align-items: flex-start; margin-top: var(--hm-space-2); }
+.hm-watch-item__edit > summary { list-style: none; }
+.hm-watch-item__edit > summary::-webkit-details-marker { display: none; }
+.hm-watch-item__edit[open] { flex-basis: 100%; display: grid; gap: var(--hm-space-2); }
+.hm-watch-item__form { display: grid; grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr)); gap: var(--hm-space-2); align-items: end; }
+.hm-watch-item__form .hm-field { margin: 0; }
+.hm-btn--danger { color: var(--hm-danger); }
+@media (max-width: 640px) {
+    .hm-watch-add__manual { grid-template-columns: 1fr; }
+    .hm-watch-list { grid-template-columns: 1fr; }
+}

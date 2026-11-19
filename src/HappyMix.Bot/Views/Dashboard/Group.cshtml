@@ -84,6 +84,10 @@
     {
         <a class="hm-chip" href="#votes">🗳️ @T["Polls_Title"] <span class="hm-count">@Model.Polls.Board.Open.Count</span></a>
     }
+    @if (Model.Watch is not null)
+    {
+        <a class="hm-chip" href="#watchlist">📺 @T["Watch_Title"]</a>
+    }
     @if (manage || Model.Notifications is not null)
     {
         <a class="hm-chip" href="#settings">@DashboardIcons.Render("sliders")@T["Group_settings"]</a>
@@ -293,6 +297,10 @@
     @if (Model.Polls is { } polls)
     {
         <partial name="_Polls" model="polls" />
+    }
+    @if (Model.Watch is { } watch)
+    {
+        <partial name="_Watchlist" model="watch" />
     }
 
     <section class="hm-card hm-section hm-stack" id="games" aria-labelledby="games-title">
