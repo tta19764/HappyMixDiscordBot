@@ -22,7 +22,7 @@ def read_rows(source, heading, size):
         if not line.startswith('|'):
             continue
         cells = [cell.strip() for cell in line.strip().strip('|').split('|')]
-        if cells[0] in {'ID', 'Day'} or re.fullmatch(r'[- :]+', cells[0]):
+        if cells[0] in {'ID', 'Day', 'Date'} or re.fullmatch(r'[- :]+', cells[0]):
             continue
         if len(cells) != size or cells[2] not in STATUSES:
             raise ValueError('Invalid roadmap row: ' + line)
@@ -35,6 +35,7 @@ def read_rows(source, heading, size):
 source = SOURCE.read_text(encoding='utf-8')
 baseline = read_rows(source, 'Current baseline', 5)
 plan = read_rows(source, 'Development checklist', 6)
+presentations = read_rows(source, 'Presentation catch-up', 6)
 if [row[0] for row in plan] != [str(i) for i in range(1, len(plan) + 1)]:
     raise ValueError('Plan must contain unique ordered slots starting at 1')
 ids = {row[0] for row in baseline} | {row[0] for row in plan}
@@ -42,7 +43,7 @@ for row in plan:
     if any(dep.strip() not in ids for dep in row[5].split(',')):
         raise ValueError('Unknown dependency for day ' + row[0])
 reviewed = re.search(r'Reviewed: ([0-9-]+)', source).group(1)
-payload = json.dumps({'baseline': baseline, 'plan': plan}, ensure_ascii=True).replace('<', '\\u003c')
+payload = json.dumps({'baseline': baseline, 'plan': plan, 'presentations': presentations}, ensure_ascii=True).replace('<', '\\u003c')
 template = r'''<!doctype html>
 <html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>HappyMix · Implementation progress</title>
@@ -53,6 +54,10 @@ template = r'''<!doctype html>
 <p class="muted">Source reviewed __DATE__ · __SLOTS__ adjustable work slots · 5–20 minutes of daily human review</p>
 <p>Availability → shared games → buying votes → groups → sessions → esports watch parties.</p></header>
 <noscript>This dashboard requires JavaScript. Read <a href="ROADMAP.md">the Markdown roadmap</a> instead.</noscript>
+<h2>Two-day presentation catch-up</h2>
+<p>Basic voting was already presented; watchlists, logs and the redesign were not. Dates use Europe/Kiev. These features are implemented; the status below tracks presenting them.</p>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Focus</th><th>Status</th><th>Features</th><th>Walkthrough / completion criterion</th><th>Release sources</th></tr></thead><tbody id="presentations"></tbody></table></div>
+<p class="muted">Allow 15–20 minutes per day. Check the deployed version, demo data, admin access and catalog/Discord permissions first. Read <a href="ROADMAP.md#presentation-catch-up">preparation and fallback guidance</a> before presenting.</p>
 <section class="stats" id="stats" aria-label="Progress totals"></section>
 <section class="note next" id="next"></section>
 <p class="muted">Counts reflect the Markdown snapshot, not live bot telemetry. Partial items receive no completion credit. Each slot counts equally; this is not an effort estimate.</p>
@@ -75,6 +80,7 @@ const complete=new Set([...data.baseline,...data.plan].filter(r=>r[2]==='done').
 const next=data.plan.find(r=>r[2]!=='done'&&r[2]!=='blocked'&&r[5].split(',').every(d=>complete.has(d.trim())));
 $('next').textContent=next?`Next ready slot · Day ${next[0]}: ${next[3]}. ${next[4]}`:'No ready slot: review incomplete dependencies or blocked items in the roadmap.';
 rows('baseline',data.baseline);
+rows('presentations',data.presentations);
 for(const area of [...new Set(data.plan.map(r=>r[1]))].sort()){const option=document.createElement('option');option.value=area;option.textContent=area;$('area').append(option)}
 function render(){const term=$('search').value.toLowerCase().trim();const items=data.plan.filter(r=>(!$('status').value||r[2]===$('status').value)&&(!$('area').value||r[1]===$('area').value)&&r.join(' ').toLowerCase().includes(term));rows('plan',items);$('count').textContent=`Showing ${items.length} of ${data.plan.length} slots`;$('empty').hidden=items.length>0}
 for(const id of ['search','status','area'])$(id).addEventListener('input',render);

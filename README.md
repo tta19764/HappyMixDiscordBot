@@ -285,7 +285,7 @@ stable-key lookups and an entry in each language file.
 
 Each news subscription chooses its kinds of news (`GameNews.Sources` flags, migration `20261129000100_AddGameNewsSources`): patch notes (`steam_community_announcements` posts tagged `patchnotes`), other announcements from the Steam page, and press articles (every other feed). New and existing subscriptions post patch notes and announcements; the creator or an administrator changes this on the game's card. Newly ticked kinds start from that moment: posts already out are recorded as delivered. The reader paginates back to the subscription creation time and retains per-post delivery deduplication. Newly created news and release channels are placed in the `Bot Notifications` category. Existing channels retain their locations.
 
-The next release implementation plan and current status are in [docs/V0_0_2_PLAN.md](docs/V0_0_2_PLAN.md).
+The current implementation roadmap and November 20–21 presentation catch-up are in [docs/ROADMAP.md](docs/ROADMAP.md). The historical v0.0.2 implementation plan is in [docs/V0_0_2_PLAN.md](docs/V0_0_2_PLAN.md).
 
 Use the dashboard's **Game news** tab or `/game-news create` with a Steam App ID or
 store link and a display name. HappyMix creates one channel and role per game per
