@@ -5,7 +5,7 @@
     var group = Model.Group;
     var detail = Model.Detail;
     ViewData["Title"] = group.Name;
-    ViewData["NavGuildName"] = Model.GuildName;
+    SideNav.Set(ViewData, Model.GuildId, Model.GuildName, "groups", Model.Viewer.CanConfigure);
     string Localize(string key) => T.Message(key);
     var organizerStack = MemberStacks.For(Model, Model.Group.OrganizerId, Localize, small: true);
     BannerModel ErrorBanner(string message) => new("error", message, null, false);
@@ -20,29 +20,25 @@
         $"{Model.Url}/close", T["Close_Arg0", group.Name]);
 }
 
-<nav class="hm-crumbs" aria-label="@T["Breadcrumb"]">
-    <a href="/">@T["Servers"]</a><span aria-hidden="true">/</span>
-    <a href="@Model.BackUrl">@T["Groups"]</a><span aria-hidden="true">/</span>
-    <span>@group.Name</span>
-</nav>
 <div class="hm-page-head">
     <div>
-        <div class="hm-row" style="gap: var(--hm-space-3)">
-            <h1>@group.Name</h1>
+        <nav class="hm-page-head__crumb" aria-label="@T["Breadcrumb"]"><a href="/">@T["Servers"]</a><span aria-hidden="true">/</span><a href="@Model.BackUrl">@T["Groups"]</a><span aria-hidden="true">/</span><span>@group.Name</span></nav>
+        <h1>@group.Name</h1>
+        <div class="hm-row" style="gap: var(--hm-space-2)">
             <partial name="_GroupBadge" model="(group.Relation, Model.Viewer.CanModerate)" />
-            <span class="hm-badge @(group.Open ? "hm-badge--open" : "")">@(group.Open ? "🔓 " + T["Groups_Open"].Value : "🔒 " + T["Groups_InviteOnly"].Value)</span>
+            <span class="hm-badge @(group.Open ? "hm-badge--open" : "")">@DashboardIcons.Render(group.Open ? "door" : "lock")@(group.Open ? T["Groups_Open"].Value : T["Groups_InviteOnly"].Value)</span>
+            <partial name="_GroupTags" model="Model.Tags" />
         </div>
-        <partial name="_GroupTags" model="Model.Tags" />
-        <div class="hm-meta" style="margin-top: var(--hm-space-2)">
+        <div class="hm-meta">
             <span><partial name="_MemberAvatars" model="organizerStack" />@T["Organizer"]: @organizerName</span>
             <span>@DashboardIcons.Render("users")@T["Arg0_members", group.MemberCount]</span>
             @if (detail.CanViewRoster)
             {
-                <span>@DashboardIcons.Render("calendar")@T["Arg0_games", detail.Games.Length]</span>
+                <span>@DashboardIcons.Render("games")@T["Arg0_games", detail.Games.Length]</span>
             }
         </div>
     </div>
-    <a class="hm-btn hm-btn--ghost" href="@Model.BackUrl">← @T["All_groups"]</a>
+    <a class="hm-btn hm-btn--ghost" href="@Model.BackUrl">@T["All_groups"]</a>
 </div>
 
 @if (Model.Banner is { } banner)
@@ -63,42 +59,50 @@
         }
         <form class="hm-row hm-sticky-action" method="post" action="@Model.Url/invitation" asp-antiforgery="false">
             @Html.AntiForgeryToken()
-            <button class="hm-btn hm-btn--primary hm-btn--lg" name="decision" value="accept">@DashboardIcons.Render("check")@T["Accept_invitation"]</button>
+            <button class="hm-btn hm-btn--primary hm-btn--lg" name="decision" value="accept">@T["Accept_invitation"]</button>
             <button class="hm-btn hm-btn--lg" name="decision" value="decline">@T["Decline"]</button>
         </form>
     </section>
 }
 
-<nav class="hm-section-nav" aria-label="@T["Group_sections"]">
-    <a class="hm-chip" href="#overview">@T["Overview"]</a>
-    <a class="hm-chip" href="#members">@T["Members"] <span class="hm-count">@group.MemberCount</span></a>
+@{
+    bool boardTab = Model.Board is not null && detail.CanViewRoster;
+    string defaultTab = Model.Tab == "roster" ? "members" : "overview";
+}
+<nav class="hm-gtabs" aria-label="@T["Group_sections"]" data-group-tabs data-default-tab="@defaultTab">
+    <a class="hm-tab-c-overview" href="#overview" data-tab="overview">@DashboardIcons.Render("overview")@T["Overview"]</a>
+    @if (boardTab)
+    {
+        <a class="hm-tab-c-availability" href="@Model.DayUrl(Model.Board!.Date)" data-tab="availability">@DashboardIcons.Render("availability")@T["Availability"]</a>
+    }
+    <a class="hm-tab-c-members" href="@(boardTab ? Model.TabUrl("roster") : "#members")" data-tab="members">@DashboardIcons.Render("groups")@T["Members"] <span class="hm-count">@group.MemberCount</span></a>
     @if (Model.Detail.CanViewRoster)
     {
-        <a class="hm-chip" href="#events">@T["Events"] <span class="hm-count">@Model.Events.Count</span></a>
+        <a class="hm-tab-c-events" href="#events" data-tab="events">@DashboardIcons.Render("events")@T["Events"] <span class="hm-count">@Model.Events.Count</span></a>
     }
-    <a class="hm-chip" href="#games">@T["Games"]
+    @if (Model.Polls is not null)
+    {
+        <a class="hm-tab-c-votes" href="#votes" data-tab="votes">@DashboardIcons.Render("votes")@T["Polls_Title"] <span class="hm-count">@Model.Polls.Board.Open.Count</span></a>
+    }
+    @if (Model.Watch is not null)
+    {
+        <a class="hm-tab-c-watchlist" href="#watchlist" data-tab="watchlist">@DashboardIcons.Render("watch")@T["Watch_Title"]</a>
+    }
+    <a class="hm-tab-c-games" href="#games" data-tab="games">@DashboardIcons.Render("games")@T["Games"]
         @if (detail.CanViewRoster)
         {
             <span class="hm-count">@detail.Games.Length</span>
         }
     </a>
-    @if (Model.Polls is not null)
-    {
-        <a class="hm-chip" href="#votes">🗳️ @T["Polls_Title"] <span class="hm-count">@Model.Polls.Board.Open.Count</span></a>
-    }
-    @if (Model.Watch is not null)
-    {
-        <a class="hm-chip" href="#watchlist">📺 @T["Watch_Title"]</a>
-    }
     @if (manage || Model.Notifications is not null)
     {
-        <a class="hm-chip" href="#settings">@DashboardIcons.Render("sliders")@T["Group_settings"]</a>
+        <a class="hm-tab-c-settings" href="#settings" data-tab="settings">@DashboardIcons.Render("settings")@T["Group_settings"]</a>
     }
 </nav>
 
 <div class="hm-stack" style="gap: var(--hm-space-6)">
     @* ---------- Overview ---------- *@
-    <section class="hm-card hm-section hm-stack" id="overview" aria-labelledby="overview-title">
+    <section class="hm-card hm-section hm-stack" id="overview" aria-labelledby="overview-title" data-group-panel="overview">
         <h2 id="overview-title">@T["Overview"]</h2>
         <p class="@(group.Description is null ? "hm-subtle" : "")">@(group.Description ?? T["No_description"].Value)</p>
         @if (group.Open && group.Relation is HappyMix.Application.Guilds.GroupRelation.None or HappyMix.Application.Guilds.GroupRelation.Requested)
@@ -107,13 +111,13 @@
                 @Html.AntiForgeryToken()
                 @if (group.Relation == HappyMix.Application.Guilds.GroupRelation.Requested)
                 {
-                    <span class="hm-help">⏳ @T["Groups_RequestPending"]</span>
+                    <span class="hm-help">@DashboardIcons.Render("clock")@T["Groups_RequestPending"]</span>
                     <button class="hm-btn">@T["Groups_CancelRequest"]</button>
                 }
                 else
                 {
                     <span class="hm-help">@T["Groups_OpenHelp"]</span>
-                    <button class="hm-btn hm-btn--primary">🙋 @T["Groups_RequestToJoin"]</button>
+                    <button class="hm-btn hm-btn--primary">@T["Groups_RequestToJoin"]</button>
                 }
             </form>
         }
@@ -138,8 +142,8 @@
     @* ---------- Members ---------- *@
     @if (manage && detail.JoinRequests.Length > 0)
     {
-        <section class="hm-card hm-section hm-stack hm-join-requests" id="requests" aria-labelledby="requests-title">
-            <h2 id="requests-title">🙋 @T["Groups_JoinRequests"] <span class="hm-count">@detail.JoinRequests.Length</span></h2>
+        <section class="hm-card hm-section hm-stack hm-join-requests" id="requests" aria-labelledby="requests-title" data-group-panel="overview members">
+            <h2 id="requests-title">@DashboardIcons.Render("request", cssClass: "hm-heading-icon")@T["Groups_JoinRequests"] <span class="hm-count">@detail.JoinRequests.Length</span></h2>
             <ul class="hm-roster">
                 @foreach (ulong requester in detail.JoinRequests)
                 {
@@ -149,7 +153,7 @@
                         <span class="hm-roster__name">@requesterName</span>
                         <form class="hm-row" method="post" action="@Model.Url/requests/@requester" asp-antiforgery="false">
                             @Html.AntiForgeryToken()
-                            <button class="hm-btn hm-btn--primary hm-btn--sm" name="approve" value="true">@DashboardIcons.Render("check")@T["Groups_Approve"]</button>
+                            <button class="hm-btn hm-btn--primary hm-btn--sm" name="approve" value="true">@T["Groups_Approve"]</button>
                             <button class="hm-btn hm-btn--sm" name="approve" value="false">@T["Decline"]</button>
                         </form>
                     </li>
@@ -158,7 +162,7 @@
         </section>
     }
 
-    <section class="hm-card hm-section hm-stack" id="members" aria-labelledby="members-title">
+    <section class="hm-card hm-section hm-stack @(Model.ShowRoster ? "" : "hm-panel-availability")" id="members" aria-labelledby="members-title" data-group-panel="@(Model.ShowRoster ? "members" : "availability")">
         <div class="hm-card__head" style="margin: 0">
             <h2 id="members-title">@T["Members"]</h2>
             <span class="hm-badge hm-tnum">@T["Arg0_members", group.MemberCount]</span>
@@ -179,13 +183,6 @@
             @if (!Model.Names.Available)
             {
                 <p class="hm-help">@DashboardIcons.Render("info") @T["Discord_didn_t_return_the_member_list_so_names_are_shown_as"]</p>
-            }
-            @if (Model.Board is not null)
-            {
-                <nav class="hm-segment" aria-label="@T["Members_view"]">
-                    <a href="@Model.TabUrl("availability")" aria-current="@(Model.ShowRoster ? null : "page")">@DashboardIcons.Render("calendar")@T["Availability"]</a>
-                    <a href="@Model.TabUrl("roster")" aria-current="@(Model.ShowRoster ? "page" : null)">@DashboardIcons.Render("users")@T["Roster_invites"]</a>
-                </nav>
             }
             @if (!Model.ShowRoster)
             {
@@ -264,7 +261,7 @@
                     <div class="hm-search" style="max-width: none">
                         <input class="hm-input" id="invite-member" name="member" list="invite-candidates" required autocomplete="off"
                                spellcheck="false" value="@memberValue" placeholder="@T["Start_typing_a_name"]" aria-describedby="invite-help">
-                        <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("plus")@T["Invite"]</button>
+                        <button class="hm-btn hm-btn--primary">@T["Invite"]</button>
                     </div>
                     <p class="hm-help" id="invite-help">@T["They_get_a_Discord_message_with_Accept_and_Decline_buttons_Nobody_joins"]</p>
                     <datalist id="invite-candidates">
@@ -312,10 +309,10 @@
     @if (Model.Detail.CanViewRoster)
     {
         ViewData["GuildId"] = Model.GuildId;
-        <section class="hm-card hm-section hm-stack" id="events" aria-labelledby="events-title">
+        <section class="hm-card hm-section hm-stack hm-panel-events" id="events" aria-labelledby="events-title" data-group-panel="events">
             <div class="hm-card__head" style="margin: 0">
                 <div><h2 id="events-title">@T["Events"]</h2><p>@T["Sessions_planned_for_this_group_pending_until_the_organizer_confirms"]</p></div>
-                <a class="hm-btn hm-btn--sm" href="/events/@Model.GuildId/new?group=@group.Id">@DashboardIcons.Render("plus")@T["Plan_an_event"]</a>
+                <a class="hm-btn hm-btn--sm" href="/events/@Model.GuildId/new?group=@group.Id">@T["Plan_an_event"]</a>
             </div>
             @if (Model.Events.Count == 0)
             {
@@ -336,14 +333,14 @@
     @* ---------- Games ---------- *@
     @if (Model.Polls is { } polls)
     {
-        <partial name="_Polls" model="polls" />
+        <div class="hm-panel-votes" data-group-panel="votes"><partial name="_Polls" model="polls" /></div>
     }
     @if (Model.Watch is { } watch)
     {
-        <partial name="_Watchlist" model="watch" />
+        <div class="hm-panel-watchlist" data-group-panel="watchlist"><partial name="_Watchlist" model="watch" /></div>
     }
 
-    <section class="hm-card hm-section hm-stack" id="games" aria-labelledby="games-title">
+    <section class="hm-card hm-section hm-stack" id="games" aria-labelledby="games-title" data-group-panel="games">
         <h2 id="games-title">@T["Games"]</h2>
         @if (!detail.CanViewRoster)
         {
@@ -414,7 +411,7 @@
                                             <label class="hm-label" for="@formKey-steam">@T["Steam_App_ID_or_link"] <span class="hm-label__opt">@T["Optional"]</span></label>
                                             <input class="hm-input" id="@formKey-steam" name="steam" maxlength="200" inputmode="url" value="@(editing ? Model.Form!.Steam : game.SteamAppId)">
                                         </div>
-                                        <button class="hm-btn">@DashboardIcons.Render("check")@T["Save"]</button>
+                                        <button class="hm-btn">@T["Save"]</button>
                                     </form>
                                     @if (editing && Model.Form!.Error is { } editError)
                                     {
@@ -430,18 +427,18 @@
             @if (detail.Suggestions.Length > 0)
             {
                 <div class="hm-suggestions">
-                    <h3>💡 @T["Groups_Suggestions"] <span class="hm-count">@detail.Suggestions.Length</span></h3>
+                    <h3 class="hm-row" style="gap: var(--hm-space-2)">@DashboardIcons.Render("idea", cssClass: "hm-heading-icon")@T["Groups_Suggestions"] <span class="hm-count">@detail.Suggestions.Length</span></h3>
                     <ul class="hm-roster">
                         @foreach (var suggestion in detail.Suggestions)
                         {
                             <li class="hm-roster__item">
-                                <span class="hm-roster__name">🎮 @suggestion.Name
+                                <span class="hm-roster__name">@DashboardIcons.Render("games")@suggestion.Name
                                     <small class="hm-subtle">@T["Groups_SuggestedBy", Model.Names.Name(suggestion.SuggestedBy, Localize)]</small></span>
                                 @if (manage)
                                 {
                                     <form class="hm-row" method="post" action="@Model.Url/suggestions/@suggestion.Id" asp-antiforgery="false">
                                         @Html.AntiForgeryToken()
-                                        <button class="hm-btn hm-btn--primary hm-btn--sm" name="accept" value="true">@DashboardIcons.Render("plus")@T["Groups_AddSuggested"]</button>
+                                        <button class="hm-btn hm-btn--primary hm-btn--sm" name="accept" value="true">@T["Groups_AddSuggested"]</button>
                                         <button class="hm-btn hm-btn--sm" name="accept" value="false">@T["Groups_Dismiss"]</button>
                                     </form>
                                 }
@@ -465,7 +462,7 @@
                      data-empty="@T["Media_NoResults"]" data-failed="@T["Media_SearchFailed"]" hidden>
                     <span class="hm-label">@T["Groups_FindGame"]</span>
                     <div class="hm-row hm-media-search__bar">
-                        <select class="hm-select" data-media-kind aria-label="@T["Media_Kind"]" hidden><option value="game" selected>🎮</option></select>
+                        <select class="hm-select" data-media-kind aria-label="@T["Media_Kind"]" hidden><option value="game" selected>@T["Tag_games"]</option></select>
                         <input class="hm-input" type="search" data-media-query placeholder="League of Legends, Fortnite, Counter-Strike 2…" aria-label="@T["Groups_FindGame"]">
                     </div>
                     <ul class="hm-media-search__results" data-media-results aria-live="polite"></ul>
@@ -482,7 +479,7 @@
                         <input class="hm-input" id="game-steam" name="steam" maxlength="200" inputmode="url" value="@(adding ? Model.Form!.Steam : null)"
                                placeholder="730" aria-describedby="game-steam-help" data-game-steam>
                     </div>
-                    <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("plus")@T[manage ? "Add_game" : "Groups_SendSuggestion"]</button>
+                    <button class="hm-btn hm-btn--primary">@T[manage ? "Add_game" : "Groups_SendSuggestion"]</button>
                 </div>
                 <p class="hm-help" id="game-steam-help">@T["Groups_GameHelp"]</p>
                 @if (Model.ErrorFor("suggest") is { } suggestError)
@@ -496,9 +493,9 @@
     @* ---------- Settings (organizer, moderators, administrators) ---------- *@
     @if (manage || Model.Notifications is not null)
     {
-        <section class="hm-card hm-section hm-stack hm-group-settings" id="settings" aria-labelledby="settings-title">
+        <section class="hm-card hm-section hm-stack hm-group-settings" id="settings" aria-labelledby="settings-title" data-group-panel="settings">
             <div>
-                <h2 id="settings-title">@DashboardIcons.Render("sliders")@T["Group_settings"]</h2>
+                <h2 id="settings-title">@DashboardIcons.Render("settings", cssClass: "hm-heading-icon")@T["Group_settings"]</h2>
                 <p class="hm-help">@T["Group_settings_help"]</p>
             </div>
             @if (manage)
@@ -517,7 +514,7 @@
                         {
                             <p class="hm-error" id="description-error">@DashboardIcons.Render("alert")@error</p>
                         }
-                        <div><button class="hm-btn">@DashboardIcons.Render("check")@T["Save_description"]</button></div>
+                        <div><button class="hm-btn">@T["Save_description"]</button></div>
                     </form>
                 </div>
             }
@@ -525,13 +522,13 @@
             {
                 <form class="hm-group-settings__block" method="post" action="@Model.Url/open" asp-antiforgery="false">
                     @Html.AntiForgeryToken()
-                    <h3>🚪 @T["Groups_WhoCanJoin"]</h3>
+                    <h3 class="hm-row" style="gap: var(--hm-space-2)">@DashboardIcons.Render("door", cssClass: "hm-heading-icon")@T["Groups_WhoCanJoin"]</h3>
                     <div class="hm-mode" role="radiogroup" aria-label="@T["Groups_WhoCanJoin"]">
-                        <label><input type="radio" name="open" value="false" checked="@(!group.Open)">🔒 @T["Groups_InviteOnly"]</label>
-                        <label><input type="radio" name="open" value="true" checked="@group.Open">🔓 @T["Groups_Open"]</label>
+                        <label><input type="radio" name="open" value="false" checked="@(!group.Open)">@T["Groups_InviteOnly"]</label>
+                        <label><input type="radio" name="open" value="true" checked="@group.Open">@T["Groups_Open"]</label>
                     </div>
                     <p class="hm-help">@T["Groups_WhoCanJoinHelp"]</p>
-                    <div><button class="hm-btn">@DashboardIcons.Render("check")@T["Save"]</button></div>
+                    <div><button class="hm-btn">@T["Save"]</button></div>
                 </form>
             }
             @if (manage && Model.Polls is { } tagged)
@@ -539,7 +536,7 @@
                 var current = tagged.Board.Tags;
                 <form class="hm-group-settings__block" method="post" action="@Model.Url/tags" asp-antiforgery="false">
                     @Html.AntiForgeryToken()
-                    <h3>🏷️ @T["Group_tags"]</h3>
+                    <h3 class="hm-row" style="gap: var(--hm-space-2)">@DashboardIcons.Render("hash", cssClass: "hm-heading-icon")@T["Group_tags"]</h3>
                     <p class="hm-help">@T["Group_tags_help"]</p>
                     <div class="hm-tag-picker">
                         @foreach (string tag in HappyMix.Application.Polls.GroupTags.BuiltIn)
@@ -553,7 +550,7 @@
                         <input class="hm-input" id="custom-tags" name="custom" maxlength="200" placeholder="ranked, chill, weekend"
                                value="@string.Join(", ", current.Where(tag => !HappyMix.Application.Polls.GroupTags.IsBuiltIn(tag)))">
                     </div>
-                    <div><button class="hm-btn">@DashboardIcons.Render("check")@T["Group_tags_save"]</button></div>
+                    <div><button class="hm-btn">@T["Group_tags_save"]</button></div>
                 </form>
             }
             @if (Model.Notifications is { } notify)
@@ -576,7 +573,7 @@
                     {
                         <p class="hm-help">@T["Group_notifications_off_help"]</p>
                     }
-                    <div><a class="hm-btn" href="@notify.Url">@DashboardIcons.Render("sliders")@T["Group_notifications_manage"]</a></div>
+                    <div><a class="hm-btn" href="@notify.Url">@T["Group_notifications_manage"]</a></div>
                 </div>
             }
             @if (manage)

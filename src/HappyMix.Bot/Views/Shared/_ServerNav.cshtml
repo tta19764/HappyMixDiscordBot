@@ -1,22 +1,12 @@
 @model ServerNavModel
-<nav class="hm-crumbs" aria-label="Breadcrumb"><a href="/">@T["Servers"]</a><span aria-hidden="true">/</span><span>@Model.GuildName</span></nav>
-<div class="hm-page-head" style="margin-bottom: var(--hm-space-4)">
+@{
+    SideNav.Set(Context, Model.GuildId, Model.GuildName, Model.Active, Model.CanConfigure);
+    string guideAnchor = Model.Active == "availability" && Context.Request.Query["view"] == "weekly" ? "weekly" : Model.Active;
+}
+<div class="hm-page-head">
     <div>
+        <nav class="hm-page-head__crumb" aria-label="@T["Breadcrumb"]"><a href="/">@T["Servers"]</a><span aria-hidden="true">/</span><span>@Model.GuildName</span></nav>
         <h1>@T.Message(Model.Title)</h1>
-        <p>@Model.Lead</p>
-        <a href="/info?guildId=@Model.GuildId#feature-@(Model.Active == "availability" && Context.Request.Query["view"] == "weekly" ? "weekly" : Model.Active)">@T["Guide_PageHelp"]</a>
+        <p>@Model.Lead <a href="/info?guildId=@Model.GuildId#feature-@guideAnchor">@T["Guide_PageHelp"]</a></p>
     </div>
 </div>
-<nav class="hm-tabs" aria-label="Server">
-    <a href="/availability/@Model.GuildId" aria-current="@(Model.Active == "availability" ? "page" : null)">@T["Availability"]</a>
-    <a href="/events/@Model.GuildId" aria-current="@(Model.Active == "events" ? "page" : null)">@T["Events"]</a>
-    <a href="/game-news/@Model.GuildId" aria-current="@(Model.Active == "game-news" ? "page" : null)">@T["GameNews_Title"]</a>
-    <a href="/groups/@Model.GuildId" aria-current="@(Model.Active == "groups" ? "page" : null)">@T["Groups"]</a>
-    <a href="/votes/@Model.GuildId" aria-current="@(Model.Active == "votes" ? "page" : null)">@T["Polls_Title"]</a>
-    <a href="/links/@Model.GuildId" aria-current="@(Model.Active == "links" ? "page" : null)">@T["Linked_accounts"]</a>
-    @if (Model.CanConfigure)
-    {
-        <a href="/settings/@Model.GuildId" aria-current="@(Model.Active == "settings" ? "page" : null)">@T["Settings"]</a>
-        <a href="/logs/@Model.GuildId" aria-current="@(Model.Active == "logs" ? "page" : null)">@T["Logs_Title"]</a>
-    }
-</nav>

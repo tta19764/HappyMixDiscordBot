@@ -46,8 +46,8 @@
             <label class="hm-check hm-logs__botwide"><input type="checkbox" name="botwide" value="true" checked="@query.BotWide"><span>@T["Logs_IncludeBotWide"]</span></label>
         }
         <div class="hm-row hm-logs__actions">
-            <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("check")@T["Logs_Apply"]</button>
-            <a class="hm-btn hm-btn--ghost" href="@baseUrl/export@(query.QueryString())">⬇ @T["Logs_Export"]</a>
+            <button class="hm-btn hm-btn--primary">@T["Logs_Apply"]</button>
+            <a class="hm-btn hm-btn--ghost" href="@baseUrl/export@(query.QueryString())">@T["Logs_Export"]</a>
         </div>
     </form>
 

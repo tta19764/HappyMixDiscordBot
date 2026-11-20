@@ -4,6 +4,7 @@
     Layout = "_DashboardLayout";
     ViewData["Title"] = T["Guide_Title"];
     ViewData["NavGuildName"] = Model.GuildName;
+    if (Model.GuildId is { } sideGuild && Model.GuildName is { } sideName) { SideNav.Set(ViewData, sideGuild, sideName, "", false); }
     var modules = Model.Commands.GroupBy(command => command.Path.Contains(' ') ? command.Path.Split(' ')[0] : "general");
 }
 <nav class="hm-crumbs" aria-label="@T["Breadcrumb"]">
@@ -18,11 +19,11 @@
     <div><h1>@T["Guide_Title"]</h1><p>@T["Browse_Discord_commands_workflows_and_options"]</p></div>
     @if (Model.GuildId is { } backId)
     {
-        <a class="hm-btn" href="/availability/@backId">@DashboardIcons.Render("back")<span>@T["Back_to_Arg0", Model.GuildName!]</span></a>
+        <a class="hm-btn" href="/availability/@backId"><span>@T["Back_to_Arg0", Model.GuildName!]</span></a>
     }
     else
     {
-        <a class="hm-btn" href="/">@DashboardIcons.Render("back")<span>@T["Choose_a_server"]</span></a>
+        <a class="hm-btn" href="/"><span>@T["Choose_a_server"]</span></a>
     }
 </header>
 <nav class="hm-card hm-row" style="flex-wrap:wrap;margin-bottom:24px" aria-label="@T["Guide_Title"]">

@@ -5,7 +5,7 @@
         @foreach (string tag in Model)
         {
             bool builtIn = HappyMix.Application.Polls.GroupTags.IsBuiltIn(tag);
-            <span class="hm-tag hm-tag--@(builtIn ? tag : "custom")">@(tag switch { "games" => "🎮 ", "series" => "📺 ", "films" => "🎬 ", "anime" => "🌸 ", _ => "#" })@(builtIn ? T["Tag_" + tag].Value : tag)</span>
+            <span class="hm-tag hm-tag--@(builtIn ? tag : "custom")">@DashboardIcons.Tag(tag)@(builtIn ? T["Tag_" + tag].Value : tag)</span>
         }
     </span>
 }

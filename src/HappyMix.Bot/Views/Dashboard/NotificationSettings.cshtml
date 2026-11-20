@@ -3,6 +3,7 @@
 @{
     Layout = "_DashboardLayout";
     ViewData["Title"] = T["Notifications_Settings"];
+    SideNav.Set(ViewData, Model.GuildId, ViewData["NavGuildName"] as string ?? "", Model.Scope == "group" ? "groups" : "events", false);
     var route = Model.Effective.Route;
     bool isEvent = Model.Scope == "event";
     string title = Model.Effective.Target.Title;
@@ -95,7 +96,7 @@ else if (Model.Saved)
             </fieldset>
         </div>
         <div class="hm-row">
-            <button class="hm-btn hm-btn--primary" type="submit">@DashboardIcons.Render("check")@T["Save"]</button>
+            <button class="hm-btn hm-btn--primary" type="submit">@T["Save"]</button>
             <a class="hm-btn hm-btn--ghost" href="@Model.BackUrl">@T["Notifications_Back"]</a>
         </div>
     </form>

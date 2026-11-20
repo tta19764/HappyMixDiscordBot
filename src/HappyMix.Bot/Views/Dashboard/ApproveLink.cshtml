@@ -4,7 +4,7 @@
     bool admin = ViewData["AdminMode"] is true;
     Layout = admin ? null : "_DashboardLayout";
     ViewData["Title"] = T["Approve_linked_account"];
-    ViewData["NavGuildName"] = Model.GuildName;
+    SideNav.Set(ViewData, Model.GuildId, Model.GuildName, "links", Model.Viewer.CanConfigure);
     string Localize(string key) => T.Message(key);
     BannerModel ErrorBanner(string message) => new("error", message, null, true);
     var preview = Model.Preview;
@@ -32,7 +32,7 @@
                 <p>@T["Copy_this_page_s_address_sign_out_sign_in_to_Discord_as"]</p>
                 <form action="/logout" method="post" asp-antiforgery="false">
                     @Html.AntiForgeryToken()
-                    <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("logout")@T["Sign_out"]</button>
+                    <button class="hm-btn hm-btn--primary">@T["Sign_out"]</button>
                 </form>
             }
             else
@@ -133,7 +133,7 @@ else
 
         <div class="hm-row hm-sticky-action" style="justify-content: flex-end">
             <a class="hm-btn hm-btn--ghost" href="@(admin ? $"/links/{Model.GuildId}/admin" : $"/links/{Model.GuildId}")">@T["Cancel"]</a>
-            <button class="hm-btn hm-btn--primary hm-btn--lg">@DashboardIcons.Render("check")@T["Approve_link"]</button>
+            <button class="hm-btn hm-btn--primary hm-btn--lg">@T["Approve_link"]</button>
         </div>
     </form>
 }

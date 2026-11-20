@@ -2,7 +2,7 @@
 @{
     Layout = "_DashboardLayout";
     ViewData["Title"] = T["New_event"];
-    ViewData["NavGuildName"] = Model.GuildName;
+    SideNav.Set(ViewData, Model.GuildId, Model.GuildName, "events", Model.CanConfigure);
     var form = Model.Form;
     var hours = Enumerable.Range(0, 24).Select(hour => hour.ToString("00")).ToArray();
     var minutes = Enumerable.Range(0, 12).Select(step => (step * 5).ToString("00")).ToArray();
@@ -169,7 +169,7 @@
 
     <div class="hm-row" style="justify-content: flex-end">
         <a class="hm-btn hm-btn--ghost" href="/events/@Model.GuildId">@T["Cancel"]</a>
-        <button class="hm-btn hm-btn--primary" data-event-submit>@DashboardIcons.Render("check")@T["Create_event"]</button>
+        <button class="hm-btn hm-btn--primary" data-event-submit>@T["Create_event"]</button>
     </div>
 </form>
 
