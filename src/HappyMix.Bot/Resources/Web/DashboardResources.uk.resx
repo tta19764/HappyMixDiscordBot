@@ -2440,4 +2440,14 @@
 <data name="Refresh_list" xml:space="preserve"><value>Оновити список</value></data>
 <data name="Set_availability" xml:space="preserve"><value>Вказати свій час</value></data>
 <data name="No_hours_set_for_today" xml:space="preserve"><value>На сьогодні час не вказано</value></data>
+<data name="Polls_TabActive" xml:space="preserve"><value>Активні</value></data>
+<data name="Polls_TabResults" xml:space="preserve"><value>Результати</value></data>
+<data name="Polls_NoneRunning" xml:space="preserve"><value>Зараз немає активних голосувань.</value></data>
+<data name="Polls_NoResults" xml:space="preserve"><value>Завершених голосувань ще немає. Результати з’являться тут, щойно голосування закінчиться.</value></data>
+<data name="Events_ConfirmAll" xml:space="preserve"><value>Підтвердити всі дати, що очікують ({0})</value></data>
+<data name="Events_ConfirmAllHelp" xml:space="preserve"><value>Підтверджує всі майбутні дати, що ще очікують. Кожен, хто прийняв запрошення, отримає одне повідомлення в Discord, а не по одному на дату.</value></data>
+<data name="Events_SeriesConfirmed" xml:space="preserve"><value>Дати підтверджено</value></data>
+<data name="Events_SeriesConfirmedDetail" xml:space="preserve"><value>Підтверджено дат: {0}. Кожен, хто прийняв запрошення, отримає одне повідомлення в Discord.</value></data>
+<data name="Events_NothingToConfirm" xml:space="preserve"><value>Усі майбутні дати вже підтверджено</value></data>
+<data name="This_series_was_canceled" xml:space="preserve"><value>Цю серію скасовано.</value></data>
 </root>

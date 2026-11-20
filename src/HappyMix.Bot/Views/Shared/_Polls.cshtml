@@ -13,8 +13,10 @@
     string Ago(DateTimeOffset when) => (Model.Now - when).TotalDays >= 1
         ? when.ToLocalTime().ToString("d MMM", CultureInfo.CurrentCulture) : T["Polls_Today"].Value;
     string question = T[board.DefaultQuestion].Value;
-    bool startOpen = board.Open.Count == 0;
     string formId = "poll-new-" + (board.GroupId?.ToString("N") ?? "server");
+    // Three tabs: running votes, starting one, and finished results. Redirects name the tab in the address.
+    string tabs = "votes-" + (board.GroupId?.ToString("N") ?? "server");
+    string firstTab = tabs + "-active";
     DateTimeOffset Local(DateTimeOffset when) => TimeZoneInfo.ConvertTime(when, Model.Zone);
     var today = DateOnly.FromDateTime(Local(Model.Now).DateTime);
     var weekStart = today.AddDays(-(((int)today.DayOfWeek + 6) % 7));
@@ -72,6 +74,18 @@
         <partial name="_Banner" model="@(new BannerModel("error", Model.Error, null, false))" />
     }
 
+    <div class="hm-subtabs" role="tablist" aria-label="@T["Polls_Title"]" data-tabs data-default-tab="@firstTab" hidden>
+        <button class="hm-subtab" type="button" role="tab" id="@tabs-active-tab" aria-controls="@tabs-active" data-tab="@tabs-active">@DashboardIcons.Render("votes")@T["Polls_TabActive"] <span class="hm-count">@board.Open.Count</span></button>
+        <button class="hm-subtab" type="button" role="tab" id="@tabs-new-tab" aria-controls="@tabs-new" data-tab="@tabs-new">@DashboardIcons.Render("pencil")@T["Polls_Start"]</button>
+        <button class="hm-subtab" type="button" role="tab" id="@tabs-results-tab" aria-controls="@tabs-results" data-tab="@tabs-results">@DashboardIcons.Render("done")@T["Polls_TabResults"] <span class="hm-count">@board.Ended.Count</span></button>
+    </div>
+
+    <div class="hm-stack hm-subpanel" id="@tabs-active" role="tabpanel" aria-labelledby="@tabs-active-tab" data-tab-panel>
+    <h3 class="hm-subpanel__title">@T["Polls_TabActive"]</h3>
+    @if (board.Open.Count == 0)
+    {
+        <p class="hm-empty-note">@T["Polls_NoneRunning"] <a href="#@tabs-new" data-tab-link="@tabs-new">@T["Polls_Start"]</a></p>
+    }
     @foreach (var poll in board.Open)
     {
         int voters = Model.VoterCount(poll);
@@ -156,9 +170,10 @@
             }
         </article>
     }
+    </div>
 
-    <details class="hm-poll-new" open="@startOpen">
-        <summary class="hm-btn @(startOpen ? "" : "hm-btn--primary")">@T["Polls_Start"]</summary>
+    <div class="hm-poll-new hm-subpanel" id="@tabs-new" role="tabpanel" aria-labelledby="@tabs-new-tab" data-tab-panel>
+        <h3 class="hm-subpanel__title">@T["Polls_Start"]</h3>
         <form class="hm-stack" id="@formId" method="post" action="@Model.NewUrl" asp-antiforgery="false" data-poll-form>
             @Html.AntiForgeryToken()
             <input type="hidden" name="requestId" value="@Guid.NewGuid()">
@@ -277,9 +292,15 @@
 
             <div><button class="hm-btn hm-btn--primary">@T["Polls_StartButton"]</button></div>
         </form>
-    </details>
+    </div>
 
-    @if (board.Ended.Count > 0)
+    <div class="hm-stack hm-subpanel" id="@tabs-results" role="tabpanel" aria-labelledby="@tabs-results-tab" data-tab-panel>
+    <h3 class="hm-subpanel__title">@T["Polls_TabResults"]</h3>
+    @if (board.Ended.Count == 0)
+    {
+        <p class="hm-empty-note">@T["Polls_NoResults"]</p>
+    }
+    else
     {
         var recent = board.Ended.GroupBy(Period).ToDictionary(group => group.Key, group => group.ToArray());
         foreach (string period in new[] { "today", "week" }.Where(recent.ContainsKey))
@@ -330,8 +351,8 @@
         }
         if (recent.TryGetValue("earlier", out var earlier))
         {
-            <details class="hm-poll-history">
-                <summary>@T["Polls_Earlier", earlier.Length]</summary>
+            <div class="hm-poll-history">
+                <h3>@T["Polls_Earlier", earlier.Length]</h3>
                 <ul class="hm-poll-history__list">
                     @foreach (var poll in earlier)
                     {
@@ -354,7 +375,8 @@
                         </li>
                     }
                 </ul>
-            </details>
+            </div>
         }
     }
+    </div>
 </section>

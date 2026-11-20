@@ -12,6 +12,13 @@ public sealed record EventRow(Guid EventId, DateOnly Date, string Title, string 
     string Organizer, string Url, string DayShort, string DayNumber, bool DmFailed)
 {
     public string StatusKey => Status switch { OccurrenceStatus.Confirmed => "confirmed", OccurrenceStatus.Canceled => "canceled", _ => "pending" };
+
+    /// <summary>The short month in the viewer's language, in the form used after a day number ("Nov", "лист.", "нояб.").</summary>
+    public string MonthShort => Date.ToString("d MMM", System.Globalization.CultureInfo.CurrentCulture)
+        .TrimStart('0', '1', '2', '3', '4', '5', '6', '7', '8', '9').Trim();
+
+    /// <summary>Just the times ("23:00–00:00", or "23:00–sat 00:00" past midnight), for rows that show the day beside them.</summary>
+    public string TimeText => When.IndexOf(" · ", StringComparison.Ordinal) is var at and >= 0 ? When[(at + 3)..] : When;
 }
 
 public sealed record EventsPage(ulong GuildId, string GuildName, bool CanConfigure, IReadOnlyList<EventRow> Invitations,

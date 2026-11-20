@@ -9,7 +9,7 @@
     string respond = $"/events/{ViewData["GuildId"]}/{Model.EventId}/respond";
 }
 <li class="hm-event hm-event--@Model.StatusKey">
-    <span class="hm-event__date" aria-hidden="true"><small>@Model.DayShort</small><b>@Model.DayNumber</b></span>
+    <span class="hm-event__date" aria-hidden="true"><small>@Model.DayShort</small><b>@Model.DayNumber</b><small>@Model.MonthShort</small></span>
     <div class="hm-event__main">
         <p class="hm-event__title">
             <a href="@Model.Url">@Model.Title</a>

@@ -394,6 +394,12 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 - Group pages have a tab row (`data-group-tabs`); with scripts on, one `data-group-panel` shows at a time, chosen by the address hash, so existing `#section` redirects open the right tab. Availability and Members keep their server-side mode (`?tab=roster`).
 - `DashboardIcons` is HappyMix's own icon set (24 px grid, square caps). Icons mark navigation, tabs, headings, cards and tags; buttons are words only apart from collapse, switch server, theme, language and sign-out. `DashboardDesignTests` checks icon names and that views use no emoji.
 
+### v0.0.12 vote tabs and series confirmation
+
+- `_Polls` splits into Active, Start a vote and Results panels (`data-tabs` sub-tabs, ids `votes-<group|server>-<tab>`); `PollRedirect` sends people back to `#votes-…-active`, or `-new` after a failed start. Without scripts all three panels show with their headings.
+- `ConfirmEventSeriesCommand` (POST `/events/{guild}/{event}/confirm-all`) confirms every pending upcoming date; each person who accepted one gets a single Confirmed message for their first newly confirmed date.
+- Event date boxes show weekday, day and month; compact series rows show only the times, with status and count underneath. Side panel menus open beside the panel (`position: fixed`) so its scroll area no longer clips them.
+
 ### CI runs and deployment diagnostics
 
 Pull requests targeting main run validation. New PR commits cancel older in-progress checks. Main pushes do not repeat those checks; version tags run validation plus image publication and deployment. Completed checks for earlier PR commits remain in history because they validated different code.

@@ -169,6 +169,12 @@ public sealed partial class DashboardController
         RunEventActionAsync(guildId, eventId, date, (userId, day) => sender.Send(new ConfirmEventCommand(guildId, userId, eventId, day)),
             _ => text["Date_confirmed"].Value, value => text["Arg0_going_Everyone_who_accepted_gets_a_Discord_message", value.Accepted].Value);
 
+    [HttpPost("/events/{guildId}/{eventId:guid}/confirm-all")]
+    public Task<IActionResult> ConfirmEventSeries(ulong guildId, Guid eventId, string date) =>
+        RunEventActionAsync(guildId, eventId, date, (userId, _) => sender.Send(new ConfirmEventSeriesCommand(guildId, userId, eventId)),
+            count => (count == 0 ? text["Events_NothingToConfirm"] : text["Events_SeriesConfirmed"]).Value,
+            count => count == 0 ? null : text["Events_SeriesConfirmedDetail", count].Value);
+
     [HttpPost("/events/{guildId}/{eventId:guid}/cancel")]
     public Task<IActionResult> CancelEvent(ulong guildId, Guid eventId, string date, string scope) =>
         RunEventActionAsync(guildId, eventId, date, (userId, day) => sender.Send(new CancelEventCommand(guildId, userId, eventId, scope == "series" ? null : day)),

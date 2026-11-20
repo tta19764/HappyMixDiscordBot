@@ -199,18 +199,33 @@
                     @foreach (var row in Model.Dates)
                     {
                         <li class="hm-event hm-event--@row.StatusKey @(row.Date == occurrence.Date ? "is-current" : "")">
-                            <span class="hm-event__date" aria-hidden="true"><small>@row.DayShort</small><b>@row.DayNumber</b></span>
+                            <span class="hm-event__date" aria-hidden="true"><small>@row.DayShort</small><b>@row.DayNumber</b><small>@row.MonthShort</small></span>
                             <div class="hm-event__main">
-                                <a class="hm-event__title" href="@row.Url" aria-current="@(row.Date == occurrence.Date ? "page" : null)">@row.When</a>
-                                <p class="hm-event__meta">@T["Arg0_going", row.Counts.Accepted]</p>
+                                <a class="hm-event__title" href="@row.Url" aria-label="@row.When" aria-current="@(row.Date == occurrence.Date ? "page" : null)">@row.TimeText</a>
+                                <p class="hm-event__meta">
+                                    <span class="hm-badge hm-event__status hm-event__status--@row.StatusKey">@(row.StatusKey switch { "confirmed" => T["Confirmed"], "canceled" => T["Canceled"], _ => T["Pending"] })</span>
+                                    <span>@T["Arg0_going", row.Counts.Accepted]</span>
+                                </p>
                             </div>
-                            <span class="hm-badge hm-event__status hm-event__status--@row.StatusKey">@(row.StatusKey switch { "confirmed" => T["Confirmed"], "canceled" => T["Canceled"], _ => T["Pending"] })</span>
                         </li>
                     }
                 </ul>
                 @if (Model.View.IsOrganizer && !Model.SeriesCanceled)
                 {
-                    <div style="margin-top: var(--hm-space-3)"><partial name="_Confirm" model="cancelSeries" /></div>
+                    int pendingDates = Model.Dates.Count(row => row.StatusKey == "pending");
+                    <div class="hm-stack hm-stack--sm" style="margin-top: var(--hm-space-3)">
+                        @if (pendingDates > 0)
+                        {
+                            <form method="post" action="@baseUrl/confirm-all" asp-antiforgery="false">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="date" value="@date">
+                                <input type="hidden" name="returnUrl" value="@self">
+                                <button class="hm-btn hm-btn--primary hm-btn--block">@T["Events_ConfirmAll", pendingDates]</button>
+                            </form>
+                            <p class="hm-help">@T["Events_ConfirmAllHelp"]</p>
+                        }
+                        <partial name="_Confirm" model="cancelSeries" />
+                    </div>
                 }
             </section>
         }

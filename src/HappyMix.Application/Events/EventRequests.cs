@@ -31,6 +31,12 @@ public sealed record EventAnswer(string Title, DateTimeOffset Start, string Time
 /// <summary>The organizer confirms one date; everyone who accepted gets a Discord update.</summary>
 public sealed record ConfirmEventCommand(ulong GuildId, ulong UserId, Guid EventId, DateOnly Date) : ICommand<EventCounts>;
 
+/// <summary>
+/// The organizer confirms every pending date of a series that hasn't ended yet. Each person who accepted one of them
+/// gets a single Discord update (for their first newly confirmed date), not one per date. Returns how many dates changed.
+/// </summary>
+public sealed record ConfirmEventSeriesCommand(ulong GuildId, ulong UserId, Guid EventId) : ICommand<int>;
+
 /// <summary>The organizer cancels one date, or the whole series when <paramref name="Date"/> is null.</summary>
 public sealed record CancelEventCommand(ulong GuildId, ulong UserId, Guid EventId, DateOnly? Date) : ICommand<int>;
 
@@ -89,6 +95,7 @@ internal sealed class EventHandlers(IEventStore store, IGuildGroupStore groups, 
     ICommandHandler<CreateEventCommand, EventCreated>,
     ICommandHandler<RespondToEventCommand, EventAnswer>,
     ICommandHandler<ConfirmEventCommand, EventCounts>,
+    ICommandHandler<ConfirmEventSeriesCommand, int>,
     ICommandHandler<TransferEventCommand>,
     ICommandHandler<CancelEventCommand, int>,
     IQueryHandler<GetEventQuery, EventView>,
@@ -236,6 +243,29 @@ internal sealed class EventHandlers(IEventStore store, IGuildGroupStore groups, 
         var accepted = details.Responses.Where(item => item.Date == command.Date && item.Accepted && details.Invitees.Contains(item.UserId));
         await store.EnqueueAsync(accepted.Select(item => (command.EventId, command.Date, item.UserId, EventNotificationKind.Confirmed)), clock.UtcNow);
         return EventRules.Count(details, command.Date);
+    });
+
+    public Task<Result<int>> Handle(ConfirmEventSeriesCommand command, CancellationToken cancellationToken) => RunAsync(async () =>
+    {
+        var (details, viewer) = await LoadAsync(command.GuildId, command.UserId, command.EventId);
+        RequireOrganizer(details, viewer);
+        if (details.Event.CanceledAt is not null)
+            throw new EventRuleException("This series was canceled.");
+
+        var now = clock.UtcNow;
+        var confirmed = new List<DateOnly>();
+        foreach (var occurrence in details.Occurrences.Where(item => item.Status == OccurrenceStatus.Pending && item.End > now).OrderBy(item => item.Start))
+            if (await store.SetStatusAsync(command.EventId, occurrence.Date, [OccurrenceStatus.Pending], OccurrenceStatus.Confirmed, now))
+                confirmed.Add(occurrence.Date);
+        if (confirmed.Count == 0)
+            return 0;
+
+        var notify = details.Invitees.Select(user => (User: user, First: confirmed.FirstOrDefault(day =>
+                details.Responses.Any(item => item.UserId == user && item.Date == day && item.Accepted))))
+            .Where(item => item.First != default)
+            .Select(item => (command.EventId, item.First, item.User, EventNotificationKind.Confirmed));
+        await store.EnqueueAsync(notify, now);
+        return confirmed.Count;
     });
 
     public Task<Result<int>> Handle(CancelEventCommand command, CancellationToken cancellationToken) => RunAsync(async () =>
