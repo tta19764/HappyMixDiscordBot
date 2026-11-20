@@ -2,16 +2,18 @@
 
 Reviewed: 2026-11-20.
 
+Development started: 2026-11-09 (Day 1). Counting calendar days inclusively, November 20 is Day 12 and November 21 is Day 13. Dates use Europe/Kiev.
+
 Reviewed repository tags and the English, Ukrainian and Russian release manifests through `v0.0.12` (`78409c9`). GitHub has no separate Release entries; tags and `src/HappyMix.Bot/Releases/v*.json` provide the release history. Basic voting has already been presented; watchlists, series progress, logs and the dashboard redesign have not. The two-day catch-up below covers implemented features without scheduling them for development again. Tagged source does not establish the currently deployed version or completion of a live walkthrough.
 
 ## Presentation catch-up
 
-Dates use Europe/Kiev. Both presentations are planned; mark each done only after presenting it. Allow about 15–20 minutes each. Use the current behavior described below: later releases supersede some earlier voting controls. Days in the development checklist remain adjustable implementation slots, independent of these dates.
+Dates use Europe/Kiev. Both presentations are planned; mark each done only after presenting it. Allow about 15–20 minutes each. Use the current behavior described below: later releases supersede some earlier voting controls. The development checklist uses numbered work slots; elapsed development days below are counted from November 9.
 
 | Date | Focus | Status | Features | Walkthrough / completion criterion | Release sources |
 | --- | --- | --- | --- | --- | --- |
-| 2026-11-20 (today) | Dashboard, watchlists and votes | planned | New dashboard navigation and Night/Sand themes; group tabs; series/film/anime watchlists and progress; current voting layout | Tour the side panel, themes and group tabs (3 min). In a group tagged Series, Films or Anime, add a catalog title or a vote winner, set Planned/Watching/Watched/Dropped, mark an episode watched, show season rollover and save a resume timestamp; show valid season/episode limits and Finish series (8 min). Briefly revisit familiar voting through Active / Start a vote / Results, title cards, voters and day/week results; show the native Discord poll and chosen-member private thread (5 min). Do not repeat the basic voting introduction. | v0.0.7 watchlists; v0.0.8 search correction; v0.0.9 watchlist validation and current native polls; v0.0.11 redesign; v0.0.12 vote tabs |
-| 2026-11-21 (tomorrow) | Community, events, news and logs | planned | Open groups and join requests; member game suggestions and multi-platform search; game news sources; whole-series confirmation; admin Logs | Request membership in an open group and approve it as organizer; suggest and accept a non-Steam game (5 min). Show Patch notes / Announcements / Press articles and explain that newly enabled sources start from now (2 min). Confirm all pending upcoming dates of a recurring event and show the single confirmation message per accepted person (3 min). As server admin, filter Logs by action/user text, expand details, enable Live and export CSV; explain access, masking and 14-day default retention (5 min). | v0.0.9 open groups, game search and logs; v0.0.10 news sources and quieter release logging; v0.0.12 event confirmation |
+| Day 12 — 2026-11-20 (today) | Dashboard, watchlists and votes | planned | New dashboard navigation and Night/Sand themes; group tabs; series/film/anime watchlists and progress; current voting layout | Tour the side panel, themes and group tabs (3 min). In a group tagged Series, Films or Anime, add a catalog title or a vote winner, set Planned/Watching/Watched/Dropped, mark an episode watched, show season rollover and save a resume timestamp; show valid season/episode limits and Finish series (8 min). Briefly revisit familiar voting through Active / Start a vote / Results, title cards, voters and day/week results; show the native Discord poll and chosen-member private thread (5 min). Do not repeat the basic voting introduction. | v0.0.7 watchlists; v0.0.8 search correction; v0.0.9 watchlist validation and current native polls; v0.0.11 redesign; v0.0.12 vote tabs |
+| Day 13 — 2026-11-21 (tomorrow) | Community, events, news and logs | planned | Open groups and join requests; member game suggestions and multi-platform search; game news sources; whole-series confirmation; admin Logs | Request membership in an open group and approve it as organizer; suggest and accept a non-Steam game (5 min). Show Patch notes / Announcements / Press articles and explain that newly enabled sources start from now (2 min). Confirm all pending upcoming dates of a recurring event and show the single confirmation message per accepted person (3 min). As server admin, filter Logs by action/user text, expand details, enable Live and export CSV; explain access, masking and 14-day default retention (5 min). | v0.0.9 open groups, game search and logs; v0.0.10 news sources and quieter release logging; v0.0.12 event confirmation |
 
 Preparation: use a group with the appropriate media tag, a catalog-backed series with season data, a vote winner, a recurring event with pending dates and accepted participants, an open group, a news subscription and a server administrator account. Prepare an ordinary member account for join requests and permission checks. Demonstrate Finish series on a disposable watchlist entry. Check Discord posting permissions, private-thread permissions and configured catalog credentials before the session; film search requires TMDB configuration and multi-platform game search requires Twitch/IGDB credentials. Check the deployed build supports these features before presenting. Keep any unrelated local UI edits out of the release claims.
 
@@ -24,8 +26,8 @@ Open `docs/progress.html` directly in a browser. No server, npm install, or paid
 Commit the Markdown and generated HTML together. The dashboard is read-only; it never silently saves changes in browser storage.
 
 Statuses: `done`, `partial`, `planned`, `blocked`. Done means the acceptance criterion is implemented and verified; partial means some implementation exists. Record evidence when changing status.
-Days are adjustable work slots, not dates or promises. The first seven slots summarize delivered work, with later rows separating remaining scope from released foundations. Presentation dates above do not change implementation status.
-Progress is counted by completed items, not estimated hours. Baseline capabilities and development days are counted separately.
+Checklist slots are adjustable units of work, not elapsed development days or date promises. The first seven slots summarize delivered work, with later rows separating remaining scope from released foundations. Presentation dates above do not change implementation status.
+Progress is counted by completed items, not estimated hours. Baseline capabilities and completed work slots are counted separately from elapsed development days.
 
 ## Current baseline
 
@@ -48,10 +50,10 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 
 ## Development checklist
 
-| Day | Area | Status | Deliverable | Acceptance criterion | Depends on |
+| Slot | Area | Status | Deliverable | Acceptance criterion | Depends on |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Reliability | done | SQLite and MediatR foundation | Startup migrations, persistent announcement history, application command and query handlers, and architecture tests. | B02 |
-| 2 | Operations | done | Oracle deployment and HTTPS | ARM64 images deploy through GitHub Actions and GHCR over Tailscale. Caddy served the dashboard through Duck DNS with a valid certificate. Recovery and spending checks remain on Day 30. | 1 |
+| 2 | Operations | done | Oracle deployment and HTTPS | ARM64 images deploy through GitHub Actions and GHCR over Tailscale. Caddy served the dashboard through Duck DNS with a valid certificate. Recovery and spending checks remain on Slot 30. | 1 |
 | 3 | Settings | done | Server settings and esports delivery | Discord and web settings share persisted preferences. CS2 and Dota 2 have separate routing, team catalogs, reminders, and Twitch preferences. Web announcement selectors accept standard text channels. | 1 |
 | 4 | Groups | done | Groups, membership, and game attachments | Invite-only groups, descriptions, rosters, role repair, and the web workspace. Games can be attached with an optional Steam App ID. | 3 |
 | 5 | Availability | done | Personal and recurring availability | Today and weekly timetable entry, named time zones, fixed offsets, overnight windows, and full-day shortcuts. MVC dashboard and English, Ukrainian, and Russian resources. | 2, 3 |
@@ -66,7 +68,7 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 | 14 | Steam | planned | Common game recommendations | Rank shared owned games using willingness; permit catalog additions for missing free games; show why each is suggested | 4, 10, 13 |
 | 15 | Sessions | partial | Session creation and attendance | Released events already support creation, responses, confirmation, cancellation and reminders (v0.0.1–v0.0.5, v0.0.12). Remaining: server/role audience selection and capacity-enforced session behavior; reuse events where suitable. | 4, 14 |
 | 16 | Sessions | planned | Waitlist and readiness | Concurrent joins cannot exceed capacity; timed slot offer promotes next eligible member; readiness buttons work | 15 |
-| 17 | Sessions | partial | Durable session reminders | Released event notification routes and voice-aware reminders provide a foundation (v0.0.2–v0.0.5). Remaining: verify session-specific reminders, capacity/waitlist changes, preference handling and restart recovery after Day 16. | 16 |
+| 17 | Sessions | partial | Durable session reminders | Released event notification routes and voice-aware reminders provide a foundation (v0.0.2–v0.0.5). Remaining: verify session-specific reminders, capacity/waitlist changes, preference handling and restart recovery after Slot 16. | 16 |
 | 18 | Voting | partial | Game-buying poll creation | General group/server polls, audience controls, catalog suggestions and deadlines shipped in v0.0.6–v0.0.9. Remaining: buying-specific minimum-buyer settings and role-based electorate snapshot semantics; audit existing poll storage before extending it. | 4, 11 |
 | 19 | Voting | partial | Buying decisions and result calculation | General votes and results shipped in v0.0.6–v0.0.9, with Active / Start a vote / Results in v0.0.12. Remaining: would-buy/already-own/pass per candidate, eligibility guarantees for that model and explicit buying-result/tie rules. | 18 |
 | 20 | Voting | planned | Vote-to-group workflow | Close poll durably, retain summary, create group and propose first session; store links rather than assuming universal prices | 15, 19 |
@@ -85,7 +87,7 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 ## Scope and operating decisions
 
 - One .NET process, existing Clean Architecture, SQLite and existing Quartz scheduler. No React runtime, Redis or managed database required.
-- Oracle deployment is documented in DEPLOYMENT_RUNBOOK.md; its recorded commit is historical. Verify the current deployed tag, restore procedure and resource budget on Day 30 rather than treating an earlier hosting proposal as current state.
+- Oracle deployment is documented in DEPLOYMENT_RUNBOOK.md; its recorded commit is historical. Verify the current deployed tag, restore procedure and resource budget on Slot 30 rather than treating an earlier hosting proposal as current state.
 - The bot should run continuously; do not use a sleeping web tier for precise reminders. No domain is required for the initial gateway-based Discord bot.
 - Steam import uses the official API and visible libraries. It does not bypass profile privacy or prove ownership of the linked account.
 - Daily availability means one refreshed board per date in a configured channel, with optional daily discussion thread. Dedicated channels for every date are not the default.
@@ -97,7 +99,7 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 
 - Join-to-create voice lobby with ownership transfer.
 - Verified Steam sign-in (requires an additional web authentication flow).
-- Advanced availability poll voting. Recurring events are included in Day 7.
+- Advanced availability poll voting. Recurring events are included in Slot 7.
 - Match prediction leaderboard without money or betting.
 - Regional price alerts from a verified permitted data source.
 - Calendar export and optional external calendar synchronization.
@@ -117,6 +119,6 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 
 - Exact main-team allowlists replace the general CS2 tier feed. Administrators can change their server's list with `/settings teams`. PandaScore returned no FUT Dota main roster.
 - The daily schedule publishes once per persisted destination/local date, not at a configured morning time, and does not edit schedule changes.
-- Announcement state is now persisted per destination channel and discipline. Guild-specific notification preferences are implemented; live routing verification remains on Day 24.
+- Announcement state is now persisted per destination channel and discipline. Guild-specific notification preferences are implemented; live routing verification remains on Slot 24.
 - Existing local changes were present during this review; this roadmap does not certify them as released.
 - The repository still pins SDK 10.0.102 with latestPatch. Tests were successfully executed with installed SDK 10.0.402 from work/sdk-validation using a local SDK selection file; the root pin is unchanged. Normal root-directory dotnet commands still require the pinned SDK or an explicitly reviewed SDK-policy update.
