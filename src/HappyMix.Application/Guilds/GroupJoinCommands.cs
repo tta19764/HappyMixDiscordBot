@@ -148,7 +148,7 @@ internal sealed partial class GroupCommands
                 return current with { Suggestions = [.. pending, suggestion] };
             });
             if (!links.Same(group.OrganizerId, actor.UserId))
-                await NotifyAsync(new GroupNotice(GroupNoticeKind.GameSuggested, actor.GuildId, group.Id, group.Name, group.OrganizerId, actor.UserId, name),
+                await NotifyAsync(new GroupNotice(GroupNoticeKind.GameSuggested, actor.GuildId, group.Id, group.Name, group.OrganizerId, actor.UserId, name, suggestion.Id),
                     cancellationToken);
             return change with { GroupId = group.Id };
         }, cancellationToken);

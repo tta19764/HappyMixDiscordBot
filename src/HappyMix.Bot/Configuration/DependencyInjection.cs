@@ -64,7 +64,10 @@ public static class DependencyInjection
         services.AddSingleton(new DiscordSocketConfig
         {
             // GuildMessagePolls delivers poll votes so Discord polls stay in step with the dashboard; it isn't privileged.
-            GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildVoiceStates | GatewayIntents.GuildMessagePolls,
+            // GuildPresences (privileged) only when Live should read Discord "Playing" statuses: it must also be switched on
+            // in the Discord Developer Portal, or Discord refuses the connection.
+            GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildVoiceStates | GatewayIntents.GuildMessagePolls
+                | (LivePresenceWatcher.Enabled(configuration) ? GatewayIntents.GuildPresences : GatewayIntents.None),
             LogGatewayIntentWarnings = true
         });
 
@@ -81,6 +84,9 @@ public static class DependencyInjection
         services.AddSingleton<TwitchLiveStreams>();
         services.AddHttpClient("SteamNews", client => client.Timeout = TimeSpan.FromSeconds(10));
         services.AddSingleton<GameNewsService>();
+        services.AddSingleton<HappyMix.Application.Abstractions.News.IGameNewsGateway, DiscordGameNewsGateway>();
+        services.AddSingleton<HappyMix.Application.Abstractions.Live.ILiveNotifier, DiscordLiveNotifier>();
+        services.AddHostedService<LivePresenceWatcher>();
         services.AddSingleton<NotificationChannels>();
         services.AddSingleton<EventNotificationSettings>();
         services.AddSingleton<PollMessages>();
@@ -114,6 +120,10 @@ public static class DependencyInjection
 
             JobKey newsKey = new("publish-game-news");
             scheduler.AddJob<PublishGameNewsJob>(job => job.WithIdentity(newsKey));
+            JobKey liveKey = new("sync-steam-playing");
+            scheduler.AddJob<SyncSteamPlayingJob>(job => job.WithIdentity(liveKey));
+            scheduler.AddTrigger(trigger => trigger.ForJob(liveKey).StartNow()
+                .WithSimpleSchedule(schedule => schedule.WithIntervalInMinutes(2).RepeatForever()));
             scheduler.AddTrigger(trigger => trigger.ForJob(newsKey).StartNow()
                 .WithSimpleSchedule(schedule => schedule.WithIntervalInMinutes(10).RepeatForever()));
 

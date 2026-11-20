@@ -1,3 +1,4 @@
+using HappyMix.Application.Abstractions.News;
 using HappyMix.Infrastructure.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 

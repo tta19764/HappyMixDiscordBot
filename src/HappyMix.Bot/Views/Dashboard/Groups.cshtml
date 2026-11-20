@@ -95,12 +95,12 @@ else
             <section class="hm-card hm-group-card" aria-labelledby="group-@group.Id">
                 <div class="hm-group-card__head">
                     <a class="hm-server__name" id="group-@group.Id" href="@url">@group.Name</a>
-                    <span class="hm-row" style="gap: var(--hm-space-1)">
+                    <span class="hm-group-card__badges">
+                        <partial name="_GroupBadge" model="(group.Relation, Model.Viewer.CanModerate)" />
                         @if (group.Open)
                         {
                             <span class="hm-badge hm-badge--open">@DashboardIcons.Render("door")@T["Groups_Open"]</span>
                         }
-                        <partial name="_GroupBadge" model="(group.Relation, Model.Viewer.CanModerate)" />
                     </span>
                 </div>
                 @if (group.Description is { } description)

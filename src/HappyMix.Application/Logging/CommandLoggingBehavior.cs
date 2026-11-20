@@ -18,7 +18,7 @@ internal sealed partial class CommandLoggingBehavior<TRequest, TResponse>(ILogge
     private static readonly string Name = typeof(TRequest).Name;
     private static readonly bool IsCommand = Name.EndsWith("Command", StringComparison.Ordinal);
     private static readonly bool IsRoutine = Name is "DispatchEventMessagesCommand" or "SynchronizeMatchesCommand" or "PublishGuildMatchesCommand"
-        or "CopyDiscordPollVoteCommand" or "SyncDiscordPollVotesCommand";
+        or "CopyDiscordPollVoteCommand" or "SyncDiscordPollVotesCommand" or "ReportPlayingCommand" or "SyncSteamPlayingCommand";
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {

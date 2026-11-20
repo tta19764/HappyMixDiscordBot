@@ -162,6 +162,36 @@ public sealed partial class DashboardController
         RunGroupActionAsync(guildId, groupId, (actor, group) => new RemoveGroupGameCommand(actor, group.Id, gameId),
             "Game removed", section: "games");
 
+    [HttpPost("/groups/{guildId}/{groupId:guid}/live")]
+    public Task<IActionResult> SetLiveSharing(ulong guildId, Guid groupId, bool share, bool notify) =>
+        RunLiveActionAsync(guildId, groupId, actor => new HappyMix.Application.Live.SetLiveSharingCommand(actor, groupId, share, notify));
+
+    [HttpPost("/groups/{guildId}/{groupId:guid}/live/channel")]
+    public Task<IActionResult> SetLiveChannel(ulong guildId, Guid groupId, bool post) =>
+        RunLiveActionAsync(guildId, groupId, actor => new HappyMix.Application.Live.SetLiveChannelCommand(actor, groupId, post));
+
+    private async Task<IActionResult> RunLiveActionAsync(ulong guildId, Guid groupId,
+        Func<GroupActor, MediatR.IRequest<HappyMix.Domain.Abstractions.Result<HappyMix.Application.Live.GroupLive>>> command)
+    {
+        if (await GetGroupActorAsync(guildId) is not ({ } actor, { } viewer, _))
+            return NotMember();
+        var result = await sender.Send(command(actor), HttpContext.RequestAborted);
+        if (result.IsFailure)
+            return await RenderGroupAsync(guildId, actor, viewer, groupId, null, null, new GroupFormState("live", text.Message(result.Error.Description)));
+        TempData["GroupBannerTitle"] = text["Live_Saved"].Value;
+        return Redirect($"/groups/{guildId}/{groupId}#live");
+    }
+
+    private async Task<LiveModel?> LoadLiveAsync(ulong guildId, GroupActor actor, GroupDetail group, CancellationToken cancellationToken)
+    {
+        if (!group.CanViewRoster
+            || await sender.Send(new HappyMix.Application.Live.GetGroupLiveQuery(actor, group.Summary.Id), cancellationToken) is not { IsSuccess: true } live)
+            return null;
+        var steam = (await sender.Send(new HappyMix.Application.Players.GetMyGamesQuery(actor.UserId), cancellationToken)).Value?.Steam;
+        return new LiveModel(live.Value, await GetGuildZoneAsync(guildId, cancellationToken), clock.UtcNow,
+            group.Summary.Relation is GroupRelation.Member or GroupRelation.Organizer, steam?.Verified == true);
+    }
+
     [HttpPost("/groups/{guildId}/{groupId:guid}/close")]
     public async Task<IActionResult> CloseGroup(ulong guildId, Guid groupId)
     {
@@ -295,6 +325,9 @@ public sealed partial class DashboardController
             Notifications = notifications,
             Polls = polls,
             GameDetails = await GameDetailsAsync(group.Games, cancellationToken),
+            Interest = group.CanViewRoster && await sender.Send(new HappyMix.Application.Players.GetGroupGameInterestQuery(actor, groupId), cancellationToken)
+                is { IsSuccess: true } interest ? interest.Value : null,
+            Live = await LoadLiveAsync(guildId, actor, group, cancellationToken),
             Tags = (await sender.Send(new HappyMix.Application.Polls.GetGroupTagsQuery(guildId), cancellationToken)).Value.GetValueOrDefault(groupId) ?? [],
             Watch = watch,
             Events = events,

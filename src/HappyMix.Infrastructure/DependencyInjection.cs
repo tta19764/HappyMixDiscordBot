@@ -32,6 +32,7 @@ public static class DependencyInjection
         // A single stateless clock is sufficient for the lifetime of the process.
         services.AddSingleton<IClock, SystemClock>();
         services.AddSingleton(provider => new GameNewsStore(provider.GetRequiredService<IDbContextFactory<HappyMixDbContext>>()));
+        services.AddSingleton<HappyMix.Application.Abstractions.News.IGameNewsStore>(provider => provider.GetRequiredService<GameNewsStore>());
         services.AddSingleton(provider => new NotificationRouteStore(provider.GetRequiredService<IDbContextFactory<HappyMixDbContext>>()));
         services.AddSingleton<IGuildSettingsStore, SqliteGuildSettingsStore>();
         services.AddSingleton<IGuildGroupStore, SqliteGuildGroupStore>();
@@ -40,6 +41,14 @@ public static class DependencyInjection
         services.AddSingleton<HappyMix.Application.Abstractions.Polls.IPollStore, SqlitePollStore>();
         services.AddSingleton<HappyMix.Application.Abstractions.Watch.IWatchStore, SqliteWatchStore>();
         services.AddSingleton<HappyMix.Application.Abstractions.Logs.ILogStore, SqliteLogStore>();
+        services.AddSingleton<HappyMix.Application.Abstractions.Players.IPlayerGameStore, SqlitePlayerGameStore>();
+        services.AddSingleton<HappyMix.Application.Abstractions.Live.ILiveStore, SqliteLiveStore>();
+        services.AddHttpClient(HappyMix.Infrastructure.Steam.SteamDirectory.HttpClientName, client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(10);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("HappyMixBot/1.0");
+        });
+        services.AddSingleton<HappyMix.Application.Abstractions.Players.ISteamDirectory, HappyMix.Infrastructure.Steam.SteamDirectory>();
         services.AddHttpClient(HappyMix.Infrastructure.Media.MediaCatalog.HttpClientName, client =>
         {
             client.Timeout = TimeSpan.FromSeconds(6);

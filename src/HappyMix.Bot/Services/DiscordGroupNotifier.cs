@@ -36,7 +36,8 @@ internal sealed partial class DiscordGroupNotifier(DiscordSocketClient discord, 
             if (user is null)
                 return;
             var channel = await user.CreateDMChannelAsync(new RequestOptions { CancelToken = cancellationToken });
-            await channel.SendMessageAsync(text, allowedMentions: AllowedMentions.None, options: new RequestOptions { CancelToken = cancellationToken });
+            await channel.SendMessageAsync(text, allowedMentions: AllowedMentions.None, components: Buttons(notice, language),
+                options: new RequestOptions { CancelToken = cancellationToken });
             LogSent(logger, notice.Kind, notice.GuildId, notice.RecipientId);
         }
         catch (Discord.Net.HttpException error)
@@ -44,6 +45,23 @@ internal sealed partial class DiscordGroupNotifier(DiscordSocketClient discord, 
             LogNotSent(logger, notice.Kind, notice.GuildId, notice.RecipientId, error.DiscordCode?.ToString() ?? error.HttpCode.ToString());
         }
     }
+
+    /// <summary>
+    /// The organizer answers from the message itself: Let in / Decline for a join request, Add / Dismiss for a game
+    /// suggestion. <see cref="Interactions.GroupInvitationModule"/> handles the buttons with the same commands as the dashboard.
+    /// </summary>
+    internal static MessageComponent? Buttons(GroupNotice notice, string language) => notice.Kind switch
+    {
+        GroupNoticeKind.JoinRequested => new ComponentBuilder()
+            .WithButton(NotificationText.Get(language, "Groups_Approve"), $"group-request:{notice.GuildId}:{notice.GroupId:N}:{notice.ActorId}:1", ButtonStyle.Success)
+            .WithButton(NotificationText.Get(language, "Decline"), $"group-request:{notice.GuildId}:{notice.GroupId:N}:{notice.ActorId}:0", ButtonStyle.Secondary)
+            .Build(),
+        GroupNoticeKind.GameSuggested when notice.SuggestionId is { } suggestion => new ComponentBuilder()
+            .WithButton(NotificationText.Get(language, "Groups_AddSuggested"), $"group-suggestion:{notice.GuildId}:{notice.GroupId:N}:{suggestion:N}:1", ButtonStyle.Success)
+            .WithButton(NotificationText.Get(language, "Groups_Dismiss"), $"group-suggestion:{notice.GuildId}:{notice.GroupId:N}:{suggestion:N}:0", ButtonStyle.Secondary)
+            .Build(),
+        _ => null
+    };
 
     private string? Link(GroupNotice notice) =>
         configuration.GetValue<bool>("Dashboard:Enabled") && Uri.TryCreate(configuration["Dashboard:PublicUrl"], UriKind.Absolute, out var origin) && origin.Scheme == Uri.UriSchemeHttps

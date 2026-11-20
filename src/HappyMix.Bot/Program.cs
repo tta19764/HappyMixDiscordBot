@@ -39,6 +39,8 @@ if (enabled)
             options.TokenEndpoint = "https://discord.com/api/v10/oauth2/token";
             options.UserInformationEndpoint = "https://discord.com/api/v10/users/@me";
             options.Scope.Add("identify");
+            // Connected accounts, so My games can offer the Steam account already connected to Discord.
+            options.Scope.Add("connections");
             options.UsePkce = true;
             options.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
             options.ClaimActions.MapJsonKey(ClaimTypes.Name, "username");
@@ -50,6 +52,7 @@ if (enabled)
                 response.EnsureSuccessStatusCode();
                 using var profile = JsonDocument.Parse(await response.Content.ReadAsStringAsync(context.HttpContext.RequestAborted));
                 context.RunClaimActions(profile.RootElement);
+                await HappyMix.Bot.Web.DiscordConnections.AddSteamClaimsAsync(context);
             };
         });
     if (string.IsNullOrWhiteSpace(web["ClientId"]) || string.IsNullOrWhiteSpace(web["ClientSecret"]))

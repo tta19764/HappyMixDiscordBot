@@ -4,7 +4,7 @@ Reviewed: 2026-11-20.
 
 Development started: 2026-11-09 (Day 1). Counting calendar days inclusively, November 20 is Day 12 and November 21 is Day 13. Dates use Europe/Kiev.
 
-Reviewed repository tags and the English, Ukrainian and Russian release manifests through `v0.0.12` (`78409c9`). GitHub has no separate Release entries; tags and `src/HappyMix.Bot/Releases/v*.json` provide the release history. Basic voting has already been presented; watchlists, series progress, logs and the dashboard redesign have not. The two-day catch-up below covers implemented features without scheduling them for development again. Tagged source does not establish the currently deployed version or completion of a live walkthrough.
+Reviewed repository tags and the English, Ukrainian and Russian release manifests through `v0.0.13`. GitHub has no separate Release entries; tags and `src/HappyMix.Bot/Releases/v*.json` provide the release history. Basic voting has already been presented; watchlists, series progress, logs and the dashboard redesign have not. v0.0.13 adds My games, Steam linking/import, the group Live tab and Discord command parity; they are not yet scheduled for a presentation. The two-day catch-up below covers implemented features without scheduling them for development again. Tagged source does not establish the currently deployed version or completion of a live walkthrough.
 
 ## Presentation catch-up
 
@@ -26,7 +26,7 @@ Open `docs/progress.html` directly in a browser. No server, npm install, or paid
 Commit the Markdown and generated HTML together. The dashboard is read-only; it never silently saves changes in browser storage.
 
 Statuses: `done`, `partial`, `planned`, `blocked`. Done means the acceptance criterion is implemented and verified; partial means some implementation exists. Record evidence when changing status.
-Development days count from November 9. The track now has 12 implemented milestones and 19 remaining days with partial or planned scope. Future day assignments are adjustable. Presentation dates above do not change implementation status.
+Development days count from November 9. The track now has 13 implemented milestones and 18 remaining days with partial or planned scope. Future day assignments are adjustable. Presentation dates above do not change implementation status.
 Progress is counted by completed items, not estimated hours. Baseline capabilities and completed development milestones are counted separately. Elapsed days alone do not mark a feature done.
 
 ## Current baseline
@@ -47,6 +47,7 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 | B12 | Administration | done | Admin Logs, open groups and game suggestions | v0.0.9: server-scoped admin access, filters, Live, CSV and retention; join requests, game suggestions and multi-platform catalog support; live workflow verification remains |
 | B13 | Dashboard | done | Redesigned dashboard | v0.0.11–v0.0.12: side panel, Night/Sand themes, group tabs, icons, localized labels and unclipped menus; unrelated local edits are not included |
 | B14 | Notifications | done | News source controls and recurring-event improvements | v0.0.2–v0.0.5, v0.0.10 and v0.0.12: notification routes, whole-series responses, cleanup, selectable Steam feeds and whole-series confirmation; live delivery checks remain |
+| B15 | Players | done | My games, Live and Discord command parity | v0.0.13: Want/Can/Won't marks, group interest and vote ranking; opt-in Live tab with DM/channel notices from Discord presence (config-gated) or verified Steam; `/games`, `/watch`, `/availability who`, event/group/news commands and DM buttons. Live delivery against real Discord presence not yet verified |
 
 ## Development checklist
 
@@ -67,9 +68,9 @@ Days 1–12 summarize the scope implemented by November 20, regrouped from the r
 | 11 | Media | done | Watchlists and series progress | v0.0.7 and v0.0.9: add catalog titles or vote winners; Planned/Watching/Watched/Dropped; next episode, season rollover, resume timestamps, valid season/episode limits and Finish series. Not yet presented: demo on Day 12. | 10 |
 | 12 | Dashboard and community | done | Redesign, admin Logs, open groups and latest UX | v0.0.9–v0.0.12: Night/Sand themes, side panel, group tabs and icons; server-scoped admin Logs with Live/CSV/retention; open-group requests, game suggestions and multi-platform search; vote sub-tabs and whole-series event confirmation. Implemented scope is complete; presentation is split across Days 12–13 above. | 8, 9, 10, 11 |
 | 13 | Availability | partial | Exceptions, opt-in prompts and shared windows | Existing dated/weekly availability and definite/tentative hours provide the foundation. Remaining: explicit exception precedence, snooze/quiet hours, weekly confirmed-versus-expected overview and shared windows of a requested duration. Keep new implementation light during the second catch-up presentation. | 6, 12 |
-| 14 | Steam | planned | Profile linking and library import | Import a public library by Steam ID/profile URL; resolve vanity names; show privacy errors; label the link self-declared. | 3, 12 |
-| 15 | Steam | planned | Willingness, refresh and disconnect | Search/paginate imported games; save want/open/not-interested; daily/manual refresh preserves preferences and never clears the library on failure; disconnect removes imported association/data. | 14 |
-| 16 | Steam | planned | Common game recommendations | Rank shared owned games using willingness; allow catalog additions for missing free games; explain suggestions. | 4, 13, 15 |
+| 14 | Steam | done | Profile linking and library import | v0.0.13: link by Steam sign-in, Discord connection or pasted ID/profile URL (vanity names resolved); pasted links are labelled unverified; private libraries and a missing API key show clear errors. | 3, 12 |
+| 15 | Steam | partial | Willingness, refresh and disconnect | v0.0.13: Want/Can/Won't marks on web and `/games`; manual re-import keeps marks and never clears on failure; unlink removes imported games. Remaining: daily automatic refresh and search/pagination for large libraries. | 14 |
+| 16 | Steam | partial | Common game recommendations | v0.0.13: "Popular with members" on group pages and vote suggestions ranked by members' Want marks. Remaining: ranking by shared ownership and explaining each suggestion. | 4, 13, 15 |
 | 17 | Sessions | partial | Capacity, attendance, waitlist and readiness | Released events provide scheduling and responses. Add server/role audiences, capacity enforcement on every interaction, concurrency-safe joins, timed promotion of the next eligible waitlisted member and readiness controls. | 8, 16 |
 | 18 | Sessions | partial | Durable session reminders | Reuse released event notification routes and voice-aware reminders. Cover session preferences, capacity/waitlist changes, time zones, restart recovery and cancellation suppression. | 17 |
 | 19 | Voting | partial | Buying poll creation | Reuse released polls, catalogs, audiences and deadlines. Add minimum buyers and verify role-based electorate snapshots and buying-specific eligibility. | 10, 14 |
@@ -100,7 +101,6 @@ Days 1–12 summarize the scope implemented by November 20, regrouped from the r
 ## Stretch backlog
 
 - Join-to-create voice lobby with ownership transfer.
-- Verified Steam sign-in (requires an additional web authentication flow).
 - Advanced availability poll voting. Recurring events are included in Day 8.
 - Match prediction leaderboard without money or betting.
 - Regional price alerts from a verified permitted data source.

@@ -15,8 +15,9 @@ public enum GroupNoticeKind
 }
 
 /// <summary>A short message about a group for one person, e.g. a direct message.</summary>
+/// <param name="SuggestionId">For <see cref="GroupNoticeKind.GameSuggested"/>: the suggestion, so the message can offer Add and Dismiss.</param>
 public sealed record GroupNotice(GroupNoticeKind Kind, ulong GuildId, Guid GroupId, string GroupName, ulong RecipientId, ulong ActorId,
-    string? Detail = null);
+    string? Detail = null, Guid? SuggestionId = null);
 
 /// <summary>Delivers group notices. Delivery is best effort: a closed inbox never fails the action.</summary>
 public interface IGroupNotifier

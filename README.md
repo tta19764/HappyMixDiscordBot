@@ -400,6 +400,14 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 - `ConfirmEventSeriesCommand` (POST `/events/{guild}/{event}/confirm-all`) confirms every pending upcoming date; each person who accepted one gets a single Confirmed message for their first newly confirmed date.
 - Event date boxes show weekday, day and month; compact series rows show only the times, with status and count underneath. Side panel menus open beside the panel (`position: fixed`) so its scroll area no longer clips them.
 
+### v0.0.13 my games, Steam and Live
+
+- **My games** (`/games/{guild}`, `PlayerGameRequests`, migration `20261130000100_AddPlayerGames`): a per-person list with Want / Can / Won't marks. Steam links by Steam OpenID sign-in (verified), the Discord `connections` scope (verified when Discord says so) or a pasted profile (unverified). Library import needs `Steam__ApiKey` and public Game details; re-importing keeps marks, unlinking removes only imported games.
+- Group pages show members' marks on the group's games and "Popular with members"; vote suggestions rank games members want first (`PollSuggestion.Wanted`).
+- **Live** (`LiveRequests`, migration `20261201000100_AddLiveActivity`): a group tab with who plays now and recent sessions. Members opt in per group to share and, separately, to get DMs; organizers can also post in the group's notification channel. Notices only for the group's games or games another member marked Want/Can, one per player, game and group every 2 hours; sessions are kept 14 days.
+- Live sources: Discord "Playing" statuses when `Live__DiscordPresence=true` (also turn on Presence Intent on the Developer Portal Bot page first, or Discord refuses the connection), and Steam statuses every 2 minutes for verified Steam accounts when `Steam__ApiKey` is set.
+- Discord parity: game news runs through MediatR commands; new `/games`, `/watch`, `/availability who`, `/event confirm all-dates`, `/event transfer`, `/group request-join|withdraw-request|suggest-game|open|tags` and `/game-news sources`; join requests and game suggestions arrive as DMs with Accept/Decline buttons.
+
 ### CI runs and deployment diagnostics
 
 Pull requests targeting main run validation. New PR commits cancel older in-progress checks. Main pushes do not repeat those checks; version tags run validation plus image publication and deployment. Completed checks for earlier PR commits remain in history because they validated different code.

@@ -194,7 +194,8 @@
                     <div class="hm-poll-suggest" role="group" aria-label="@T["Polls_Suggestions"]">
                         @foreach (var item in board.Suggestions)
                         {
-                            string meta = item.TimesWon > 0 && item.LastWon is { } won ? T["Polls_LastPicked", Ago(won)].Value
+                            string meta = item.Wanted > 0 ? T["Games_GroupWant", item.Wanted].Value
+                                : item.TimesWon > 0 && item.LastWon is { } won ? T["Polls_LastPicked", Ago(won)].Value
                                 : item.Source == "group" ? T["Polls_FromGroup"].Value
                                 : item.Source == "watchlist" ? T["Polls_FromWatchlist"].Value
                                 : item.TimesOffered > 0 ? T["Polls_OfferedBefore", item.TimesOffered].Value : "";

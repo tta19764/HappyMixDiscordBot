@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using HappyMix.Bot.Services;
-using HappyMix.Infrastructure.Persistence;
+using HappyMix.Application.Abstractions.News;
 
 namespace HappyMix.Application.Tests.Matches;
 

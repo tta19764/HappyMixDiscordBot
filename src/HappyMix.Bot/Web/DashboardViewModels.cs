@@ -187,6 +187,7 @@ public static class DashboardIcons
         ["guide"] = ["M5 4h10l4 4v12H5z", "M15 4v4h4", "M9 13h6", "M9 16h4"],
         ["overview"] = ["M4 4h7v7H4z", "M13 4h7v4h-7z", "M13 10h7v10h-7z", "M4 13h7v7H4z"],
         ["watch"] = ["M3 5h18v12H3z", "M8 21h8", "M10 8v6l5-3z"],
+        ["live"] = ["M3 12h4l2-5 4 10 2-5h6"],
         // Basic controls
         ["collapse"] = ["M3 4h18v16H3z", "M9 4v16", "M16 9l-3 3 3 3"],
         ["expand"] = ["M3 4h18v16H3z", "M9 4v16", "M13 9l3 3-3 3"],

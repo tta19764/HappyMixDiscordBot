@@ -67,6 +67,12 @@ public sealed record GroupPage(
     public IReadOnlyDictionary<Guid, HappyMix.Application.Abstractions.Media.MediaInfo> GameDetails { get; init; } =
         new Dictionary<Guid, HappyMix.Application.Abstractions.Media.MediaInfo>();
 
+    /// <summary>How members marked the group's games, and games they want that the group doesn't have. Members only.</summary>
+    public HappyMix.Application.Players.GroupGameInterest? Interest { get; init; }
+
+    /// <summary>Who is playing now and the viewer's Live choices. Members only.</summary>
+    public LiveModel? Live { get; init; }
+
     /// <summary>The group's tags, shown under its name.</summary>
     public IReadOnlyList<string> Tags { get; init; } = [];
 
@@ -169,3 +175,14 @@ public sealed record ConfirmModel(string Trigger, string Question, string Action
     IReadOnlyDictionary<string, string>? Fields = null, string? DismissLabel = null);
 
 public sealed record AvatarModel(MemberProfile Profile, string Name, bool Small = false);
+
+/// <summary>The Live tab: the viewer's choices, who plays now and recent sessions, with times in the community's zone.</summary>
+public sealed record LiveModel(HappyMix.Application.Live.GroupLive State, TimeZoneInfo Zone, DateTimeOffset Now, bool IsMember, bool SteamVerified)
+{
+    public string Time(DateTimeOffset at) =>
+        TimeZoneInfo.ConvertTime(at, Zone).ToString(TimeZoneInfo.ConvertTime(at, Zone).Date == TimeZoneInfo.ConvertTime(Now, Zone).Date ? "HH:mm" : "d MMM, HH:mm",
+            System.Globalization.CultureInfo.CurrentCulture);
+
+    /// <summary>Whole minutes between two moments, at least one.</summary>
+    public static int Minutes(DateTimeOffset from, DateTimeOffset to) => Math.Max(1, (int)(to - from).TotalMinutes);
+}

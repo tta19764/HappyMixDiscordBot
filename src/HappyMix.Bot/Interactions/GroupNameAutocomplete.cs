@@ -20,7 +20,7 @@ public sealed class GroupNameAutocomplete : AutocompleteHandler
         string search = (autocompleteInteraction.Data.Current.Value as string)?.Trim() ?? "";
         var sender = services.GetRequiredService<ISender>();
         var result = await sender.Send(new SuggestGroupNamesQuery(
-            new GroupActor(context.Guild.Id, userId, canModerate), command.Name, search));
+            new GroupActor(context.Guild.Id, userId, canModerate), command.Module.SlashGroupName == "watch" ? "watch-" + command.Name : command.Name, search));
         return AutocompletionResult.FromSuccess(result.Value.Select(name => new AutocompleteResult(name, name)));
     }
 }

@@ -2450,4 +2450,102 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Events_SeriesConfirmedDetail" xml:space="preserve"><value>{0} dates confirmed. Everyone who accepted gets one Discord message.</value></data>
 <data name="Events_NothingToConfirm" xml:space="preserve"><value>Every upcoming date is already confirmed</value></data>
 <data name="This_series_was_canceled" xml:space="preserve"><value>This series was canceled.</value></data>
+<data name="Games_Title" xml:space="preserve"><value>My games</value></data>
+<data name="Games_Lead" xml:space="preserve"><value>Mark the games you want to play, can play or won’t play. Your groups use the marks when choosing what to play.</value></data>
+<data name="Games_All" xml:space="preserve"><value>All</value></data>
+<data name="Games_Want" xml:space="preserve"><value>Want to play</value></data>
+<data name="Games_Can" xml:space="preserve"><value>Can play</value></data>
+<data name="Games_Wont" xml:space="preserve"><value>Won’t play</value></data>
+<data name="Games_Mark" xml:space="preserve"><value>Your mark</value></data>
+<data name="Games_SteamHelp" xml:space="preserve"><value>Link your Steam account to import your library. HappyMix only stores your SteamID, never your password.</value></data>
+<data name="Games_Verified" xml:space="preserve"><value>Verified</value></data>
+<data name="Games_NotVerified" xml:space="preserve"><value>Not verified</value></data>
+<data name="Games_DiscordSteam" xml:space="preserve"><value>Your Discord profile has Steam connected: {0}.</value></data>
+<data name="Games_UseDiscordSteam" xml:space="preserve"><value>Use this Steam account</value></data>
+<data name="Games_SignInAgain" xml:space="preserve"><value>Connected Steam on Discord? Sign out and back in once so HappyMix can see it, or link it below.</value></data>
+<data name="Games_SteamInput" xml:space="preserve"><value>Steam profile link or SteamID64</value></data>
+<data name="Games_SteamInputHelp" xml:space="preserve"><value>A pasted profile is enough to import public game lists. It shows as not verified until you sign in with Steam.</value></data>
+<data name="Games_LinkSteam" xml:space="preserve"><value>Link</value></data>
+<data name="Games_SignInWithSteam" xml:space="preserve"><value>Sign in with Steam</value></data>
+<data name="Games_SignInWithSteamHelp" xml:space="preserve"><value>Proves the account is yours. Steam only shares your SteamID.</value></data>
+<data name="Games_Verify" xml:space="preserve"><value>Verify with Steam</value></data>
+<data name="Games_Profile" xml:space="preserve"><value>Profile</value></data>
+<data name="Games_LinkedOn" xml:space="preserve"><value>Linked</value></data>
+<data name="Games_LastImport" xml:space="preserve"><value>Last import</value></data>
+<data name="Games_NeverImported" xml:space="preserve"><value>Not yet</value></data>
+<data name="Games_Import" xml:space="preserve"><value>Import library</value></data>
+<data name="Games_Resync" xml:space="preserve"><value>Sync library again</value></data>
+<data name="Games_Unlink" xml:space="preserve"><value>Unlink Steam</value></data>
+<data name="Games_UnlinkQuestion" xml:space="preserve"><value>Unlink Steam? Games imported from Steam are removed; games you added by hand stay.</value></data>
+<data name="Games_PrivateHelp" xml:space="preserve"><value>Import needs Game details set to Public. You can switch it to Public, import, then switch it back: the list stays here.</value></data>
+<data name="Games_PrivacySettings" xml:space="preserve"><value>Steam privacy settings</value></data>
+<data name="Games_ImportOff" xml:space="preserve"><value>Library import isn’t set up on this bot yet. Add games by hand below.</value></data>
+<data name="Games_Add" xml:space="preserve"><value>Add a game</value></data>
+<data name="Games_AddButton" xml:space="preserve"><value>Add to my games</value></data>
+<data name="Games_MarksHelp" xml:space="preserve"><value>Search finds games on any platform. Adding a game that’s already on your list just changes its mark.</value></data>
+<data name="Games_List" xml:space="preserve"><value>Your games</value></data>
+<data name="Games_Search" xml:space="preserve"><value>Find in your games</value></data>
+<data name="Games_Empty" xml:space="preserve"><value>No games yet. Import your Steam library or add games above.</value></data>
+<data name="Games_NoMatch" xml:space="preserve"><value>No games match.</value></data>
+<data name="Games_AddedByHand" xml:space="preserve"><value>Added by hand</value></data>
+<data name="Games_Hours" xml:space="preserve"><value>{0} h</value></data>
+<data name="Games_PlayedRecently" xml:space="preserve"><value>played recently</value></data>
+<data name="Games_RemoveGame" xml:space="preserve"><value>Remove {0}</value></data>
+<data name="Games_SteamLinked" xml:space="preserve"><value>Steam account linked</value></data>
+<data name="Games_SteamVerified" xml:space="preserve"><value>Steam account verified</value></data>
+<data name="Games_SteamUnlinked" xml:space="preserve"><value>Steam unlinked</value></data>
+<data name="Games_Imported" xml:space="preserve"><value>Library imported: {0} new, {1} updated</value></data>
+<data name="Games_Added" xml:space="preserve"><value>{0} is on your list</value></data>
+<data name="Games_Marked" xml:space="preserve"><value>Mark saved for {0}</value></data>
+<data name="Games_Removed" xml:space="preserve"><value>Game removed</value></data>
+<data name="Games_GroupWant" xml:space="preserve"><value>Want: {0}</value></data>
+<data name="Games_GroupCan" xml:space="preserve"><value>Can: {0}</value></data>
+<data name="Games_GroupWont" xml:space="preserve"><value>Won’t: {0}</value></data>
+<data name="Games_NoMarks" xml:space="preserve"><value>Nobody has marked this game yet.</value></data>
+<data name="Games_Popular" xml:space="preserve"><value>Popular with members</value></data>
+<data name="Games_PopularHelp" xml:space="preserve"><value>Games at least two members want to play that the group doesn’t have yet.</value></data>
+<data name="Games_MarkYours" xml:space="preserve"><value>Mark your games</value></data>
+<data name="Players_Err_SteamInput" xml:space="preserve"><value>Paste your SteamID64 or Steam profile link.</value></data>
+<data name="Players_Err_SteamNotFound" xml:space="preserve"><value>That Steam profile wasn’t found. Paste your SteamID64 or the link to your profile.</value></data>
+<data name="Players_Err_SteamTaken" xml:space="preserve"><value>Someone else has linked that Steam account. If it’s yours, verify it with Steam sign-in.</value></data>
+<data name="Players_Err_SteamSignIn" xml:space="preserve"><value>Steam didn’t confirm the sign-in. Try again.</value></data>
+<data name="Players_Err_VerifiedElsewhere" xml:space="preserve"><value>That Steam account is already verified by another Discord account.</value></data>
+<data name="Players_Err_NotLinked" xml:space="preserve"><value>Link your Steam account first.</value></data>
+<data name="Players_Err_ImportOff" xml:space="preserve"><value>Steam library import isn’t set up on this bot yet. Add games by hand for now.</value></data>
+<data name="Players_Err_Private" xml:space="preserve"><value>Steam didn’t share your games: set Game details to Public in your Steam privacy settings, import, then switch it back.</value></data>
+<data name="Players_Err_Unavailable" xml:space="preserve"><value>Steam didn’t answer. Try again in a minute.</value></data>
+<data name="Players_Err_GameName" xml:space="preserve"><value>Enter a game name of 1 to 80 characters.</value></data>
+<data name="Players_Err_Preference" xml:space="preserve"><value>Choose Want to play, Can play or Won’t play.</value></data>
+<data name="Players_Err_TooMany" xml:space="preserve"><value>Your list is full. Remove games you no longer play first.</value></data>
+<data name="Players_Err_GameMissing" xml:space="preserve"><value>That game isn’t on your list anymore.</value></data>
+<data name="Players_Err_NoDiscordSteam" xml:space="preserve"><value>Your Discord profile has no Steam connection.</value></data>
+<data name="Players_Err_GroupMissing" xml:space="preserve"><value>That group doesn’t exist.</value></data>
+<data name="Guide_my-games_Title" xml:space="preserve"><value>My games</value></data>
+<data name="Guide_my-games_Body" xml:space="preserve"><value>Keep a list of your games and mark each one Want to play, Can play or Won’t play. Add games from any platform with the search, or link Steam: use the Steam account connected to your Discord profile, paste your profile link, or sign in with Steam to verify it. With a Steam link you can import your library; Steam only shares it while Game details are public, and the imported list stays after you switch them back. Groups show how their members marked each game and list games several members want. Unlinking Steam removes imported games; games you added yourself stay.</value></data>
+<data name="Availability_Lead" xml:space="preserve"><value>Tell the group when you can play. HappyMix uses this to plan sessions.</value></data>
+<data name="Live_Title" xml:space="preserve"><value>Live</value></data>
+<data name="Live_Lead" xml:space="preserve"><value>See who in the group is playing right now. Only members who turn on sharing appear here, and only while they play.</value></data>
+<data name="Live_PlayingNow" xml:space="preserve"><value>Playing now</value></data>
+<data name="Live_NobodyShares" xml:space="preserve"><value>Nobody shares what they play with this group yet. Turn it on below to be the first.</value></data>
+<data name="Live_NobodyPlaying" xml:space="preserve"><value>Nobody is playing right now. {0} member(s) share with this group.</value></data>
+<data name="Live_Since" xml:space="preserve"><value>since {0}</value></data>
+<data name="Live_Recent" xml:space="preserve"><value>Recent sessions</value></data>
+<data name="Live_Minutes" xml:space="preserve"><value>{0} min</value></data>
+<data name="Live_YourChoices" xml:space="preserve"><value>Your choices</value></data>
+<data name="Live_Share" xml:space="preserve"><value>Share what I play with this group</value></data>
+<data name="Live_Share_Help" xml:space="preserve"><value>Uses your Discord status and, if your Steam account is verified, Steam. Nothing is shared with other groups.</value></data>
+<data name="Live_Notify" xml:space="preserve"><value>Message me when members start a game</value></data>
+<data name="Live_Notify_Help" xml:space="preserve"><value>A Discord DM when someone starts one of the group's games or a game other members want to play. At most once every two hours per player and game.</value></data>
+<data name="Live_SteamHint" xml:space="preserve"><value>To include Steam, sign in with Steam on</value></data>
+<data name="Live_MembersOnly" xml:space="preserve"><value>Only members of the group can share what they play or get Live messages.</value></data>
+<data name="Live_Channel" xml:space="preserve"><value>Group channel</value></data>
+<data name="Live_Channel_Post" xml:space="preserve"><value>Also post Live messages in the group's notification channel</value></data>
+<data name="Live_Channel_Help" xml:space="preserve"><value>Uses the channel from the group's notification settings. Members still choose for themselves whether they're shown.</value></data>
+<data name="Live_Saved" xml:space="preserve"><value>Live settings saved</value></data>
+<data name="Live_Started" xml:space="preserve"><value>🎮 {0} started **{1}** · {2}</value></data>
+<data name="Live_AlsoWant" xml:space="preserve"><value>Also want to play it: {0}</value></data>
+<data name="Live_Err_NotMember" xml:space="preserve"><value>Only members of the group can share or get Live messages.</value></data>
+<data name="Live_Err_Forbidden" xml:space="preserve"><value>Only the organizer or a moderator can change this.</value></data>
+<data name="Guide_live_Title" xml:space="preserve"><value>Live</value></data>
+<data name="Guide_live_Body" xml:space="preserve"><value>The Live tab of a group shows who is playing right now. It is opt-in on both sides: you choose to share what you play with a group, and separately whether you want a Discord message when members start a game. Messages only go out for the group's games or games another member marked Want or Can, at most once every two hours per player and game. HappyMix reads your Discord status (when the server owner turned on presence) and, if you signed in with Steam, your Steam status. The organizer can also post these messages in the group's notification channel.</value></data>
 </root>
