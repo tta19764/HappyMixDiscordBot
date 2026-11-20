@@ -2440,4 +2440,14 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Refresh_list" xml:space="preserve"><value>Refresh list</value></data>
 <data name="Set_availability" xml:space="preserve"><value>Set availability</value></data>
 <data name="No_hours_set_for_today" xml:space="preserve"><value>No hours set for today</value></data>
+<data name="Polls_TabActive" xml:space="preserve"><value>Active</value></data>
+<data name="Polls_TabResults" xml:space="preserve"><value>Results</value></data>
+<data name="Polls_NoneRunning" xml:space="preserve"><value>No votes are running right now.</value></data>
+<data name="Polls_NoResults" xml:space="preserve"><value>No finished votes yet. Results show up here once a vote ends.</value></data>
+<data name="Events_ConfirmAll" xml:space="preserve"><value>Confirm all pending dates ({0})</value></data>
+<data name="Events_ConfirmAllHelp" xml:space="preserve"><value>Confirms every upcoming date that is still pending. Each person who accepted gets one Discord message, not one per date.</value></data>
+<data name="Events_SeriesConfirmed" xml:space="preserve"><value>Dates confirmed</value></data>
+<data name="Events_SeriesConfirmedDetail" xml:space="preserve"><value>{0} dates confirmed. Everyone who accepted gets one Discord message.</value></data>
+<data name="Events_NothingToConfirm" xml:space="preserve"><value>Every upcoming date is already confirmed</value></data>
+<data name="This_series_was_canceled" xml:space="preserve"><value>This series was canceled.</value></data>
 </root>

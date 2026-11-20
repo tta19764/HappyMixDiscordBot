@@ -47,7 +47,7 @@ public sealed partial class DashboardDesignTests
 
             Assert.Equal(collapse, text["Side_Collapse"].Value);
             string[] keys = ["Side_Menu", "Side_SwitchServer", "Side_Server", "Side_Admin", "Side_Expand", "Signed_in", "HappyMix_home",
-                "Refresh_list", "Set_availability", "No_hours_set_for_today", "Light", "Dark", "System", "Theme", "Language", "Sign_out", "Info"];
+                "Refresh_list", "Set_availability", "No_hours_set_for_today", "Polls_TabActive", "Polls_TabResults", "Polls_NoneRunning", "Polls_NoResults", "Light", "Dark", "System", "Theme", "Language", "Sign_out", "Info"];
             Assert.All(keys, key => Assert.False(text[key].ResourceNotFound, key));
         }
         finally

@@ -191,6 +191,45 @@ document.querySelector("[data-theme-form]")?.addEventListener("submit", event =>
     });
 })();
 
+// Sub-tabs inside a section (votes: Active, New vote, Results): one panel at a time, arrow keys move between tabs,
+// and an address that points into a panel opens it. Without scripts every panel stays on the page with its heading.
+for (const list of document.querySelectorAll("[data-tabs]")) {
+    const root = list.parentElement;
+    const buttons = [...list.querySelectorAll("[data-tab]")];
+    const panels = buttons.map(button => document.getElementById(button.dataset.tab)).filter(Boolean);
+    const select = (id, focus = false) => {
+        for (const button of buttons) {
+            const on = button.dataset.tab === id;
+            button.setAttribute("aria-selected", String(on));
+            button.tabIndex = on ? 0 : -1;
+            if (on && focus) button.focus();
+        }
+        for (const panel of panels) panel.classList.toggle("is-shown", panel.id === id);
+    };
+    const fromAddress = () => {
+        const id = decodeURIComponent(location.hash.slice(1));
+        const target = id ? document.getElementById(id) : null;
+        const panel = target && panels.find(item => item === target || item.contains(target));
+        if (panel) select(panel.id);
+    };
+    list.hidden = false;
+    root.classList.add("hm-subtabs-on");
+    select(list.dataset.defaultTab || buttons[0]?.dataset.tab);
+    fromAddress();
+    window.addEventListener("hashchange", fromAddress);
+    for (const button of buttons) button.addEventListener("click", () => select(button.dataset.tab));
+    list.addEventListener("keydown", event => {
+        const index = buttons.indexOf(document.activeElement);
+        if (index < 0) return;
+        const next = { ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: buttons.length - 1 }[event.key];
+        if (next === undefined) return;
+        event.preventDefault();
+        select(buttons[(next + buttons.length) % buttons.length].dataset.tab, true);
+    });
+    for (const link of root.querySelectorAll("[data-tab-link]"))
+        link.addEventListener("click", event => { event.preventDefault(); select(link.dataset.tabLink, true); });
+}
+
 // Group tabs: with scripts on, one section shows at a time, picked by the address (#events, #settings…).
 // Without scripts every section stays on the page and the tabs work as anchors.
 (() => {

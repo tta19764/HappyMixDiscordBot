@@ -81,7 +81,7 @@ public sealed partial class DashboardController
         if (result.IsSuccess)
             await SyncPollAsync(messages, guildId, result.Value);
         return PollRedirect(guildId, groupId, returnUrl, result.IsSuccess ? text["Polls_Started"].Value : null,
-            result.IsFailure ? text.Message(result.Error.Description).Value : null);
+            result.IsFailure ? text.Message(result.Error.Description).Value : null, result.IsSuccess ? "active" : "new");
     }
 
     [HttpPost("/votes/{guildId}/{pollId:guid}/vote")]
@@ -179,7 +179,8 @@ public sealed partial class DashboardController
         }
     }
 
-    private RedirectResult PollRedirect(ulong guildId, Guid? groupId, string? returnUrl, string? success, string? error)
+    /// <summary>Back to the votes, on the tab that fits: Active after voting or starting a vote, New vote after a failed start.</summary>
+    private RedirectResult PollRedirect(ulong guildId, Guid? groupId, string? returnUrl, string? success, string? error, string tab = "active")
     {
         if (success is not null)
             TempData["GroupBannerTitle"] = success;
@@ -187,6 +188,11 @@ public sealed partial class DashboardController
             TempData["PollError"] = error;
         string fallback = groupId is { } id ? $"/groups/{guildId}/{id}" : $"/votes/{guildId}";
         string target = returnUrl is not null && Url.IsLocalUrl(returnUrl) && returnUrl.StartsWith('/') ? returnUrl : fallback;
-        return Redirect(target.Split('#')[0] + "#votes");
+        string path = target.Split('#')[0];
+        // Tab panels are named after the board: votes-<group>-<tab> on a group page, votes-server-<tab> on the Votes page.
+        string anchor = path.StartsWith("/groups/", StringComparison.Ordinal)
+            ? groupId is { } group ? $"votes-{group:N}-{tab}" : "votes"
+            : $"votes-server-{tab}";
+        return Redirect(path + "#" + anchor);
     }
 }

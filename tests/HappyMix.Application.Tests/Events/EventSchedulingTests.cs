@@ -127,6 +127,30 @@ public sealed class EventSchedulingTests
     }
 
     [Fact]
+    public async Task ConfirmingASeriesConfirmsEveryPendingDateAndSendsOneMessagePerPerson()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var id = (await fixture.Sender.Send(Create(Organizer) with { Invitees = [Kai, Mira],
+            Recurrence = EventRecurrence.Daily, Until = Thursday.AddDays(3) })).Value.EventId;
+        await fixture.Sender.Send(new RespondToEventCommand(Guild, Kai, id, Thursday, true));
+        await fixture.Sender.Send(new RespondToEventCommand(Guild, Mira, id, Thursday, true));
+        await fixture.Sender.Send(new RespondToEventCommand(Guild, Mira, id, Thursday, false)); // can't make the first date only
+        await fixture.Sender.Send(new CancelEventCommand(Guild, Organizer, id, Thursday.AddDays(3)));
+
+        Assert.True((await fixture.Sender.Send(new ConfirmEventSeriesCommand(Guild, Kai, id))).IsFailure);
+        Assert.Equal(3, (await fixture.Sender.Send(new ConfirmEventSeriesCommand(Guild, Organizer, id))).Value);
+        Assert.Equal(0, (await fixture.Sender.Send(new ConfirmEventSeriesCommand(Guild, Organizer, id))).Value);
+
+        var details = (await fixture.Sender.Send(new GetEventQuery(Guild, Organizer, id))).Value.Details;
+        Assert.Equal([OccurrenceStatus.Confirmed, OccurrenceStatus.Confirmed, OccurrenceStatus.Confirmed, OccurrenceStatus.Canceled],
+            details.Occurrences.OrderBy(item => item.Date).Select(item => item.Status));
+
+        await fixture.Sender.Send(new DispatchEventMessagesCommand(100));
+        var confirmed = fixture.Notifier.Sent.Where(item => item.Kind == EventNotificationKind.Confirmed).ToArray();
+        Assert.Equal([(Kai, Thursday), (Mira, Thursday.AddDays(1))], confirmed.OrderBy(item => item.UserId).Select(item => (item.UserId, item.Occurrence.Date)));
+    }
+
+    [Fact]
     public async Task CancelingADateOrTheSeriesNotifiesThoseWhoExpectedItAndOnlyTheOrganizerCan()
     {
         using var fixture = await Fixture.CreateAsync();
