@@ -8,7 +8,7 @@ Reviewed repository tags and the English, Ukrainian and Russian release manifest
 
 ## Presentation catch-up
 
-Dates use Europe/Kiev. Both presentations are planned; mark each done only after presenting it. Allow about 15–20 minutes each. Use the current behavior described below: later releases supersede some earlier voting controls. The development checklist uses numbered work slots; elapsed development days below are counted from November 9.
+Dates use Europe/Kiev. Both presentations are planned; mark each done only after presenting it. Allow about 15–20 minutes each. Use the current behavior described below: later releases supersede some earlier voting controls. The current 31-day development track below is rebased to the implemented results; today is Day 12.
 
 | Date | Focus | Status | Features | Walkthrough / completion criterion | Release sources |
 | --- | --- | --- | --- | --- | --- |
@@ -26,8 +26,8 @@ Open `docs/progress.html` directly in a browser. No server, npm install, or paid
 Commit the Markdown and generated HTML together. The dashboard is read-only; it never silently saves changes in browser storage.
 
 Statuses: `done`, `partial`, `planned`, `blocked`. Done means the acceptance criterion is implemented and verified; partial means some implementation exists. Record evidence when changing status.
-Checklist slots are adjustable units of work, not elapsed development days or date promises. The first seven slots summarize delivered work, with later rows separating remaining scope from released foundations. Presentation dates above do not change implementation status.
-Progress is counted by completed items, not estimated hours. Baseline capabilities and completed work slots are counted separately from elapsed development days.
+Development days count from November 9. The track now has 12 implemented milestones and 19 remaining days with partial or planned scope. Future day assignments are adjustable. Presentation dates above do not change implementation status.
+Progress is counted by completed items, not estimated hours. Baseline capabilities and completed development milestones are counted separately. Elapsed days alone do not mark a feature done.
 
 ## Current baseline
 
@@ -50,44 +50,46 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 
 ## Development checklist
 
-| Slot | Area | Status | Deliverable | Acceptance criterion | Depends on |
+Days 1–12 summarize the scope implemented by November 20, regrouped from the released features rather than asserting an exact daily commit history. Days 13–31 retain the remaining scope. Presentation completion is tracked separately above; live deployment and recovery checks remain explicit future work.
+
+| Day | Area | Status | Deliverable | Acceptance criterion | Depends on |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Reliability | done | SQLite and MediatR foundation | Startup migrations, persistent announcement history, application command and query handlers, and architecture tests. | B02 |
-| 2 | Operations | done | Oracle deployment and HTTPS | ARM64 images deploy through GitHub Actions and GHCR over Tailscale. Caddy served the dashboard through Duck DNS with a valid certificate. Recovery and spending checks remain on Slot 30. | 1 |
+| 2 | Operations | done | Oracle deployment and HTTPS | ARM64 images deploy through GitHub Actions and GHCR over Tailscale. Caddy served the dashboard through Duck DNS with a valid certificate. Recovery and spending checks remain on Day 30. | 1 |
 | 3 | Settings | done | Server settings and esports delivery | Discord and web settings share persisted preferences. CS2 and Dota 2 have separate routing, team catalogs, reminders, and Twitch preferences. Web announcement selectors accept standard text channels. | 1 |
 | 4 | Groups | done | Groups, membership, and game attachments | Invite-only groups, descriptions, rosters, role repair, and the web workspace. Games can be attached with an optional Steam App ID. | 3 |
 | 5 | Availability | done | Personal and recurring availability | Today and weekly timetable entry, named time zones, fixed offsets, overnight windows, and full-day shortcuts. MVC dashboard and English, Ukrainian, and Russian resources. | 2, 3 |
 | 6 | Availability | done | Group member availability board | Seven day tabs, member rows with No data, and distinct one-off and recurring hours with overnight carryover. Authorization and schedule behavior covered by tests. | 4, 5 |
-| 7 | Identity, dashboard and events | done | Linked accounts, localized dashboard and recurring events | Included in v0.0.1–v0.0.5, with the completed redesign in v0.0.11–v0.0.12. Linked accounts share membership and availability while Discord permissions stay per account. Recurring events support series answers, per-date withdrawals, notifications and whole-series confirmation. en/uk/ru release manifests and README document the delivered behavior; historical test counts are not current validation. | 4, 6 |
-| 8 | Steam and Discord | partial | Released news and notification features; live walkthrough outstanding | v0.0.1–v0.0.5 and v0.0.10 include subscription channels/roles, dashboard and command controls, notification defaults, channel updates and selectable news sources. Verify resource creation, role pings, cleanup, linking and events on the deployed build. Presentation coverage is scheduled separately above. | 7 |
-| 9 | Availability | planned | Exceptions and opt-in prompts | Date exception overrides recurrence; snooze and quiet hours prevent unwanted prompts; keep commitment reasons private | 6, 8 |
-| 10 | Availability | planned | Weekly overview and overlap finder | Show confirmed versus expected hours separately; find shared windows of a requested duration | 9 |
-| 11 | Steam | planned | Profile linking and library import | Import a real public library by Steam ID/profile URL; resolve vanity names; show privacy errors; label link self-declared | 3 |
-| 12 | Steam | planned | Willingness preferences | Search/paginate imported games; save want/open/not-interested per member | 11 |
-| 13 | Steam | planned | Refresh and disconnect | Daily/manual sync preserves preferences; failed sync never clears library; disconnect removes imported association/data | 12 |
-| 14 | Steam | planned | Common game recommendations | Rank shared owned games using willingness; permit catalog additions for missing free games; show why each is suggested | 4, 10, 13 |
-| 15 | Sessions | partial | Session creation and attendance | Released events already support creation, responses, confirmation, cancellation and reminders (v0.0.1–v0.0.5, v0.0.12). Remaining: server/role audience selection and capacity-enforced session behavior; reuse events where suitable. | 4, 14 |
-| 16 | Sessions | planned | Waitlist and readiness | Concurrent joins cannot exceed capacity; timed slot offer promotes next eligible member; readiness buttons work | 15 |
-| 17 | Sessions | partial | Durable session reminders | Released event notification routes and voice-aware reminders provide a foundation (v0.0.2–v0.0.5). Remaining: verify session-specific reminders, capacity/waitlist changes, preference handling and restart recovery after Slot 16. | 16 |
-| 18 | Voting | partial | Game-buying poll creation | General group/server polls, audience controls, catalog suggestions and deadlines shipped in v0.0.6–v0.0.9. Remaining: buying-specific minimum-buyer settings and role-based electorate snapshot semantics; audit existing poll storage before extending it. | 4, 11 |
-| 19 | Voting | partial | Buying decisions and result calculation | General votes and results shipped in v0.0.6–v0.0.9, with Active / Start a vote / Results in v0.0.12. Remaining: would-buy/already-own/pass per candidate, eligibility guarantees for that model and explicit buying-result/tie rules. | 18 |
-| 20 | Voting | planned | Vote-to-group workflow | Close poll durably, retain summary, create group and propose first session; store links rather than assuming universal prices | 15, 19 |
-| 21 | Groups | planned | Temporary roles and text spaces | Optional bot-owned role/channel grants only intended access; creation limits and organizer controls work; recover partial creation failures | 4, 20 |
-| 22 | Groups | planned | Temporary voice spaces | Create room; organizer can rename/lock/set capacity through bot; permissions remain scoped to their room | 21 |
-| 23 | Reliability | planned | Resource lifecycle and cleanup | Persist IDs/expiry; extend/close controls; lock text before later deletion; never remove occupied voice room or unrelated resource; reconcile after restart | 22 |
-| 24 | Esports | planned | Live provider and routing regression pass | Verify saved per-game channels and team filters against live CS2 and Dota 2 notifications. | 3, 8 |
-| 25 | Esports | planned | Announcement recovery verification | Verify deduplication across restart and recovery from provider errors in the live workflow. | 24 |
-| 26 | Esports | planned | Schedule changes and spoiler controls | Persist message references; update reschedules/cancellations; track cross-midnight matches; suppress or hide result spoilers per channel setting | 1, 25 |
-| 27 | Esports | planned | Watch parties | Match notification creates group/session with attendance; participant reminders; optional temporary room | 17, 23, 26 |
-| 28 | Notifications | planned | Digest and targeted invitations | Weekly digest combines sessions/esports/availability; game-interest opt-in invitations; snooze, quiet hours and mention limits | 10, 17, 27 |
-| 29 | Quality | planned | End-to-end pilot and recovery checks | Friends exercise availability -> suggestion -> vote -> group -> session; verify unauthorized interactions and retries after failures | 28 |
-| 30 | Operations | planned | Backup, restore and resource budget | Restore SQLite to a fresh instance; measure idle/peak memory on chosen host; inspect API allowance and monthly spend; document rollback | 29 |
-| 31 | Release | planned | Fixes, walkthrough and next backlog | Resolve pilot blockers; document commands and permissions; review acceptance criteria; explicitly carry incomplete scope forward | 30 |
+| 7 | Identity | done | Linked accounts and shared schedules | v0.0.1: primary/alternate consent, conflict previews, shared availability and group membership, unlink restore, and per-account Discord permissions. | 4, 6 |
+| 8 | Events and notifications | done | Recurring events, invitations and notification routes | v0.0.1–v0.0.5: group/standalone events, series acceptance and decline, per-date withdrawal, confirmation/cancellation, cleanup, inherited notification routes, voice-aware reminders and localized Twitch discovery. Live recovery checks remain on Days 25 and 29. | 3, 7 |
+| 9 | Game news | done | Subscriptions, delivery and source controls | v0.0.1–v0.0.5 and v0.0.10: create/join/delete news subscriptions, category-aware channels and roles, paginated Steam feeds, per-post history, Patch notes / Announcements / Press articles and no backfill for newly enabled sources. Live role and cleanup checks remain on Day 29. | 3, 7 |
+| 10 | Voting | done | Tags, catalog search and Discord polls | v0.0.6–v0.0.9: group/server votes, deadlines, catalog suggestions and cards, native Discord polls, private threads for selected members, voter lists and day/week results. Buying-specific work remains on Days 19–21. | 4, 8 |
+| 11 | Media | done | Watchlists and series progress | v0.0.7 and v0.0.9: add catalog titles or vote winners; Planned/Watching/Watched/Dropped; next episode, season rollover, resume timestamps, valid season/episode limits and Finish series. Not yet presented: demo on Day 12. | 10 |
+| 12 | Dashboard and community | done | Redesign, admin Logs, open groups and latest UX | v0.0.9–v0.0.12: Night/Sand themes, side panel, group tabs and icons; server-scoped admin Logs with Live/CSV/retention; open-group requests, game suggestions and multi-platform search; vote sub-tabs and whole-series event confirmation. Implemented scope is complete; presentation is split across Days 12–13 above. | 8, 9, 10, 11 |
+| 13 | Availability | partial | Exceptions, opt-in prompts and shared windows | Existing dated/weekly availability and definite/tentative hours provide the foundation. Remaining: explicit exception precedence, snooze/quiet hours, weekly confirmed-versus-expected overview and shared windows of a requested duration. Keep new implementation light during the second catch-up presentation. | 6, 12 |
+| 14 | Steam | planned | Profile linking and library import | Import a public library by Steam ID/profile URL; resolve vanity names; show privacy errors; label the link self-declared. | 3, 12 |
+| 15 | Steam | planned | Willingness, refresh and disconnect | Search/paginate imported games; save want/open/not-interested; daily/manual refresh preserves preferences and never clears the library on failure; disconnect removes imported association/data. | 14 |
+| 16 | Steam | planned | Common game recommendations | Rank shared owned games using willingness; allow catalog additions for missing free games; explain suggestions. | 4, 13, 15 |
+| 17 | Sessions | partial | Capacity, attendance, waitlist and readiness | Released events provide scheduling and responses. Add server/role audiences, capacity enforcement on every interaction, concurrency-safe joins, timed promotion of the next eligible waitlisted member and readiness controls. | 8, 16 |
+| 18 | Sessions | partial | Durable session reminders | Reuse released event notification routes and voice-aware reminders. Cover session preferences, capacity/waitlist changes, time zones, restart recovery and cancellation suppression. | 17 |
+| 19 | Voting | partial | Buying poll creation | Reuse released polls, catalogs, audiences and deadlines. Add minimum buyers and verify role-based electorate snapshots and buying-specific eligibility. | 10, 14 |
+| 20 | Voting | partial | Buying decisions and results | Add would-buy/already-own/pass per candidate, changes before deadline, eligible one-vote-per-candidate rules and explicit buying-result/tie calculation. | 19 |
+| 21 | Voting | planned | Vote-to-group workflow | Close buying poll durably, retain summary, create a group and propose its first session; use links instead of assuming universal prices. Adding a winner to a watchlist already exists. | 17, 20 |
+| 22 | Groups | partial | Temporary roles and text spaces | Persistent group roles already exist. Add opt-in temporary bot-owned roles/text channels, scoped access, creation limits, organizer controls and recovery from partial resource creation. | 4, 21 |
+| 23 | Groups | planned | Temporary voice spaces | Create a room; organizer can rename, lock and set capacity through the bot; permissions remain scoped to that room. | 22 |
+| 24 | Reliability | planned | Resource lifecycle and cleanup | Persist bot-owned resource IDs/expiry; extend/close controls; lock text before later deletion; preserve occupied voice rooms and unrelated resources; reconcile after restart. | 23 |
+| 25 | Esports | planned | Live routing and announcement recovery | Verify saved per-game channels and exact main-team filters against live CS2/Dota 2 notifications; verify restart deduplication and recovery from provider errors. | 3, 8, 9 |
+| 26 | Esports | planned | Schedule changes and spoiler controls | Persist message references, update reschedules/cancellations, track cross-midnight matches and suppress/hide spoilers per channel setting. | 1, 25 |
+| 27 | Esports | planned | Watch parties | Match notifications create a group/session with attendance, participant reminders and optional temporary room. | 18, 24, 26 |
+| 28 | Notifications | planned | Digest and targeted invitations | Weekly sessions/esports/availability digest; game-interest opt-in invitations; snooze, quiet hours and mention limits. | 13, 18, 27 |
+| 29 | Quality | planned | End-to-end pilot and recovery checks | Exercise availability -> suggestion -> vote -> group -> session, plus existing account linking, news role/cleanup, watchlist and event flows; verify unauthorized interactions and retries after failures on the deployed build. | 28 |
+| 30 | Operations | planned | Backup, restore and resource budget | Restore SQLite to a fresh instance; measure idle/peak memory, provider allowance and spend; document rollback and verify the deployed tag. | 29 |
+| 31 | Release | planned | Fixes, walkthrough and next backlog | Resolve pilot blockers; document commands and permissions; review acceptance criteria; explicitly carry incomplete scope forward. | 30 |
 
 ## Scope and operating decisions
 
 - One .NET process, existing Clean Architecture, SQLite and existing Quartz scheduler. No React runtime, Redis or managed database required.
-- Oracle deployment is documented in DEPLOYMENT_RUNBOOK.md; its recorded commit is historical. Verify the current deployed tag, restore procedure and resource budget on Slot 30 rather than treating an earlier hosting proposal as current state.
+- Oracle deployment is documented in DEPLOYMENT_RUNBOOK.md; its recorded commit is historical. Verify the current deployed tag, restore procedure and resource budget on Day 30 rather than treating an earlier hosting proposal as current state.
 - The bot should run continuously; do not use a sleeping web tier for precise reminders. No domain is required for the initial gateway-based Discord bot.
 - Steam import uses the official API and visible libraries. It does not bypass profile privacy or prove ownership of the linked account.
 - Daily availability means one refreshed board per date in a configured channel, with optional daily discussion thread. Dedicated channels for every date are not the default.
@@ -99,7 +101,7 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 
 - Join-to-create voice lobby with ownership transfer.
 - Verified Steam sign-in (requires an additional web authentication flow).
-- Advanced availability poll voting. Recurring events are included in Slot 7.
+- Advanced availability poll voting. Recurring events are included in Day 8.
 - Match prediction leaderboard without money or betting.
 - Regional price alerts from a verified permitted data source.
 - Calendar export and optional external calendar synchronization.
@@ -119,6 +121,6 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 
 - Exact main-team allowlists replace the general CS2 tier feed. Administrators can change their server's list with `/settings teams`. PandaScore returned no FUT Dota main roster.
 - The daily schedule publishes once per persisted destination/local date, not at a configured morning time, and does not edit schedule changes.
-- Announcement state is now persisted per destination channel and discipline. Guild-specific notification preferences are implemented; live routing verification remains on Slot 24.
+- Announcement state is now persisted per destination channel and discipline. Guild-specific notification preferences are implemented; live routing verification remains on Day 25.
 - Existing local changes were present during this review; this roadmap does not certify them as released.
 - The repository still pins SDK 10.0.102 with latestPatch. Tests were successfully executed with installed SDK 10.0.402 from work/sdk-validation using a local SDK selection file; the root pin is unchanged. Normal root-directory dotnet commands still require the pinned SDK or an explicitly reviewed SDK-policy update.
