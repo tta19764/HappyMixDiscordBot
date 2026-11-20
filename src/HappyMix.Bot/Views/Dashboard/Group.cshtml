@@ -7,6 +7,7 @@
     ViewData["Title"] = group.Name;
     SideNav.Set(ViewData, Model.GuildId, Model.GuildName, "groups", Model.Viewer.CanConfigure);
     string Localize(string key) => T.Message(key);
+    string People(IReadOnlyList<ulong> ids) => string.Join(", ", ids.Select(id => Model.Names.Name(id, Localize)));
     var organizerStack = MemberStacks.For(Model, Model.Group.OrganizerId, Localize, small: true);
     BannerModel ErrorBanner(string message) => new("error", message, null, false);
     var organizer = Model.Names.Get(group.OrganizerId);
@@ -94,6 +95,15 @@
             <span class="hm-count">@detail.Games.Length</span>
         }
     </a>
+    @if (Model.Live is { } liveTab)
+    {
+        <a class="hm-tab-c-live" href="#live" data-tab="live">@DashboardIcons.Render("live")@T["Live_Title"]
+            @if (liveTab.State.Playing.Count > 0)
+            {
+                <span class="hm-count hm-count--live">@liveTab.State.Playing.Count</span>
+            }
+        </a>
+    }
     @if (manage || Model.Notifications is not null)
     {
         <a class="hm-tab-c-settings" href="#settings" data-tab="settings">@DashboardIcons.Render("settings")@T["Group_settings"]</a>
@@ -393,6 +403,21 @@
                                         <span>@T["Groups_NoStoreLink"]</span>
                                     }
                                 </span>
+                                @if (Model.Interest?.Games.GetValueOrDefault(game.Id) is { } interest)
+                                {
+                                    <span class="hm-interest">
+                                        @if (interest.Any)
+                                        {
+                                            <span class="hm-interest__want" title="@People(interest.Want)">@T["Games_GroupWant", interest.Want.Count]</span>
+                                            <span class="hm-interest__can" title="@People(interest.Can)">@T["Games_GroupCan", interest.Can.Count]</span>
+                                            <span class="hm-interest__wont" title="@People(interest.Wont)">@T["Games_GroupWont", interest.Wont.Count]</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="hm-subtle">@T["Games_NoMarks"]</span>
+                                        }
+                                    </span>
+                                }
                             </div>
                             @if (manage)
                             {
@@ -424,6 +449,40 @@
                 </ul>
             }
 
+            @if (Model.Interest is { Popular.Count: > 0 } wanted)
+            {
+                <div class="hm-suggestions">
+                    <h3 class="hm-row" style="gap: var(--hm-space-2)">@DashboardIcons.Render("trophy", cssClass: "hm-heading-icon")@T["Games_Popular"]</h3>
+                    <p class="hm-help">@T["Games_PopularHelp"]</p>
+                    <ul class="hm-roster">
+                        @foreach (var popular in wanted.Popular)
+                        {
+                            <li class="hm-roster__item">
+                                <span class="hm-roster__name"><span class="hm-roster__game">@DashboardIcons.Render("games")@popular.Name</span>
+                                    <small class="hm-interest"><span class="hm-interest__want" title="@People(popular.Want)">@T["Games_GroupWant", popular.Want.Count]</span>
+                                        @if (popular.Wont.Count > 0)
+                                        {
+                                            <span class="hm-interest__wont" title="@People(popular.Wont)">@T["Games_GroupWont", popular.Wont.Count]</span>
+                                        }
+                                    </small></span>
+                                <form method="post" action="@Model.Url/@(manage ? "games" : "suggest")" asp-antiforgery="false">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="name" value="@popular.Name">
+                                    <input type="hidden" name="provider" value="@popular.Provider">
+                                    <input type="hidden" name="externalId" value="@popular.ExternalId">
+                                    <input type="hidden" name="steam" value="@(popular.Provider == "steam" ? popular.ExternalId : null)">
+                                    <button class="hm-btn hm-btn--sm @(manage ? "hm-btn--primary" : "")">@T[manage ? "Groups_AddSuggested" : "Groups_SendSuggestion"]</button>
+                                </form>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+            @if (detail.CanViewRoster)
+            {
+                <p class="hm-help"><a href="/games/@Model.GuildId">@T["Games_MarkYours"]</a></p>
+            }
+
             @if (detail.Suggestions.Length > 0)
             {
                 <div class="hm-suggestions">
@@ -432,7 +491,7 @@
                         @foreach (var suggestion in detail.Suggestions)
                         {
                             <li class="hm-roster__item">
-                                <span class="hm-roster__name">@DashboardIcons.Render("games")@suggestion.Name
+                                <span class="hm-roster__name"><span class="hm-roster__game">@DashboardIcons.Render("games")@suggestion.Name</span>
                                     <small class="hm-subtle">@T["Groups_SuggestedBy", Model.Names.Name(suggestion.SuggestedBy, Localize)]</small></span>
                                 @if (manage)
                                 {
@@ -489,6 +548,101 @@
             </form>
         }
     </section>
+
+    @* ---------- Live (members) ---------- *@
+    @if (Model.Live is { } live)
+    {
+        var state = live.State;
+        <section class="hm-card hm-section hm-stack hm-live" id="live" aria-labelledby="live-title" data-group-panel="live">
+            <div>
+                <h2 id="live-title">@DashboardIcons.Render("live", cssClass: "hm-heading-icon")@T["Live_Title"]</h2>
+                <p class="hm-help">@T["Live_Lead"]</p>
+            </div>
+            @if (Model.ErrorFor("live") is { } liveError)
+            {
+                <partial name="_Banner" model="ErrorBanner(liveError)" />
+            }
+
+            <div class="hm-live__now">
+                <h3>@T["Live_PlayingNow"]</h3>
+                @if (state.Playing.Count == 0)
+                {
+                    <p class="hm-help">@(state.Sharers == 0 ? T["Live_NobodyShares"] : T["Live_NobodyPlaying", state.Sharers])</p>
+                }
+                else
+                {
+                    <ul class="hm-live__list">
+                        @foreach (var player in state.Playing)
+                        {
+                            <li class="hm-live__item">
+                                <span class="hm-live__dot" aria-hidden="true"></span>
+                                <span class="hm-live__who">@Model.Names.Name(player.UserId, Localize)</span>
+                                <span class="hm-live__game">@player.Game</span>
+                                <span class="hm-live__since">@T["Live_Since", live.Time(player.Since)]</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+
+            @if (state.Recent.Count > 0)
+            {
+                <details class="hm-live__recent">
+                    <summary>@T["Live_Recent"] <span class="hm-count">@state.Recent.Count</span></summary>
+                    <ul class="hm-live__list">
+                        @foreach (var session in state.Recent)
+                        {
+                            <li class="hm-live__item hm-live__item--past">
+                                <span class="hm-live__who">@Model.Names.Name(session.UserId, Localize)</span>
+                                <span class="hm-live__game">@session.Game</span>
+                                <span class="hm-live__since">@live.Time(session.StartedAt) · @T["Live_Minutes", LiveModel.Minutes(session.StartedAt, session.EndedAt ?? live.Now)]</span>
+                            </li>
+                        }
+                    </ul>
+                </details>
+            }
+
+            @if (live.IsMember)
+            {
+                <form class="hm-stack hm-stack--sm hm-live__choices" method="post" action="@Model.Url/live" asp-antiforgery="false">
+                    @Html.AntiForgeryToken()
+                    <h3>@T["Live_YourChoices"]</h3>
+                    <div class="hm-checks">
+                        <label class="hm-check">
+                            <input type="checkbox" name="share" value="true" checked="@state.Share" />
+                            <span>@T["Live_Share"]<small>@T["Live_Share_Help"]</small></span>
+                        </label>
+                        <label class="hm-check">
+                            <input type="checkbox" name="notify" value="true" checked="@state.Notify" />
+                            <span>@T["Live_Notify"]<small>@T["Live_Notify_Help"]</small></span>
+                        </label>
+                    </div>
+                    @if (!live.SteamVerified)
+                    {
+                        <p class="hm-help">@T["Live_SteamHint"] <a href="/games/@Model.GuildId">@T["Games_Title"]</a></p>
+                    }
+                    <div><button class="hm-btn hm-btn--primary">@T["Save"]</button></div>
+                </form>
+            }
+            else
+            {
+                <p class="hm-help">@T["Live_MembersOnly"]</p>
+            }
+
+            @if (state.CanManage)
+            {
+                <form class="hm-stack hm-stack--sm hm-live__channel" method="post" action="@Model.Url/live/channel" asp-antiforgery="false">
+                    @Html.AntiForgeryToken()
+                    <h3>@T["Live_Channel"]</h3>
+                    <label class="hm-check">
+                        <input type="checkbox" name="post" value="true" checked="@state.PostInChannel" />
+                        <span>@T["Live_Channel_Post"]<small>@T["Live_Channel_Help"]</small></span>
+                    </label>
+                    <div><button class="hm-btn">@T["Save"]</button></div>
+                </form>
+            }
+        </section>
+    }
 
     @* ---------- Settings (organizer, moderators, administrators) ---------- *@
     @if (manage || Model.Notifications is not null)

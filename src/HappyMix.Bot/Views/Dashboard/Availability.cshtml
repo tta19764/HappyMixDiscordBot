@@ -6,7 +6,7 @@
     string baseUrl = $"/availability/{Model.GuildId}";
     string weeklyUrl = baseUrl + "?view=weekly";
     var nav = new ServerNavModel(Model.GuildId, Model.GuildName, "availability", Model.CanConfigure, "Availability",
-        "Tell the group when you can play. HappyMix uses this to plan sessions.");
+        T["Availability_Lead"]);
     var todayRange = new TimeRangeModel("today", T["Today"], Model.Form.Start, Model.Form.End, Model.Form.Offset,
         Model.TimeZone, Model.TimeZoneOffset, Model.Form.AllDay);
 }

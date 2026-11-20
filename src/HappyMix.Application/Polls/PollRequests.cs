@@ -113,7 +113,9 @@ public static class PollRules
 }
 
 /// <summary>A ready-made option for the "new vote" form, with what the group remembers about it.</summary>
-public sealed record PollSuggestion(string Label, string Kind, string? Url, string Source, int TimesOffered, int TimesWon, DateTimeOffset? LastWon);
+/// <param name="Wanted">Group members who marked this game "Want to play" on My games.</param>
+public sealed record PollSuggestion(string Label, string Kind, string? Url, string Source, int TimesOffered, int TimesWon, DateTimeOffset? LastWon,
+    int Wanted = 0);
 
 /// <summary>Everything the vote section needs: who may do what, the polls, and suggestions for a new one.</summary>
 public sealed record PollBoard(ulong ViewerId, Guid? GroupId, bool CanManageTags, IReadOnlyList<string> Tags, string DefaultQuestion,
@@ -188,7 +190,10 @@ internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLi
         // Server polls are listed only to the people they were for.
         var visible = all.Where(poll => group is not null || poll.Everyone || poll.Audience.Contains(viewer) || poll.CreatorId == viewer).ToArray();
         var tracked = query.GroupId is { } id ? await watchlist.ListAsync(actor.GuildId, id) : [];
-        var suggestions = Suggest(group, tags, all, tracked);
+        // Members' marks: games they want rank first, and games several want join the list even if the group lacks them.
+        var interest = group is not null && await sender.Send(new HappyMix.Application.Players.GetGroupGameInterestQuery(actor, group.Summary.Id), cancellationToken)
+            is { IsSuccess: true } marks ? marks.Value : null;
+        var suggestions = Suggest(group, tags, all, tracked, interest);
         var open = visible.Where(poll => !poll.IsClosed(now)).ToArray();
         var media = new Dictionary<MediaRef, MediaInfo>();
         foreach (var reference in open.SelectMany(poll => poll.Options).Select(option => option.Media).OfType<MediaRef>().Distinct())
@@ -384,14 +389,26 @@ internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLi
     /// was offered and won. Options nobody picked recently come first, so the list nudges toward something new.
     /// </summary>
     private PollSuggestion[] Suggest(GroupDetail? group, IReadOnlyList<string> tags,
-        IReadOnlyList<Poll> history, IReadOnlyList<WatchItem> tracked)
+        IReadOnlyList<Poll> history, IReadOnlyList<WatchItem> tracked, HappyMix.Application.Players.GroupGameInterest? interest = null)
     {
+        var wanted = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        if (group is not null && interest is not null)
+            foreach (var game in group.Games)
+                if (interest.Games.TryGetValue(game.Id, out var marks) && marks.Want.Count > 0)
+                    wanted[game.Name] = marks.Want.Count;
         var kinds = tags.Where(GroupTags.IsBuiltIn).Select(GroupTags.Kind).ToHashSet();
         var items = new Dictionary<string, (string Label, string Kind, string? Url, string Source, int Offered, int Won, DateTimeOffset? LastWon)>(
             StringComparer.OrdinalIgnoreCase);
         if (group is not null && kinds.Contains("game"))
             foreach (var game in group.Games)
                 items[game.Name] = (game.Name, "game", game.SteamAppId is { } app ? $"https://store.steampowered.com/app/{app}" : null, "group", 0, 0, null);
+        if (interest is not null && kinds.Contains("game"))
+            foreach (var popular in interest.Popular)
+            {
+                items.TryAdd(popular.Name, (popular.Name, "game", popular.Provider == "steam" ? $"https://store.steampowered.com/app/{popular.ExternalId}" : null,
+                    "wanted", 0, 0, null));
+                wanted[popular.Name] = popular.Want.Count;
+            }
         foreach (var item in tracked.Where(item => item.Status is WatchStatus.Planned or WatchStatus.Watching))
             items[item.Title] = (item.Title, item.Kind, item.Url, "watchlist", 0, 0, null);
         var now = clock.UtcNow;
@@ -410,11 +427,13 @@ internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLi
             }
         }
         return items.Values
-            .OrderBy(item => item.LastWon ?? DateTimeOffset.MinValue)
+            .OrderByDescending(item => wanted.GetValueOrDefault(item.Label))
+            .ThenBy(item => item.LastWon ?? DateTimeOffset.MinValue)
             .ThenByDescending(item => item.Offered)
             .ThenBy(item => item.Label, StringComparer.CurrentCultureIgnoreCase)
             .Take(24)
-            .Select(item => new PollSuggestion(item.Label, item.Kind, item.Url, item.Source, item.Offered, item.Won, item.LastWon))
+            .Select(item => new PollSuggestion(item.Label, item.Kind, item.Url, item.Source, item.Offered, item.Won, item.LastWon,
+                wanted.GetValueOrDefault(item.Label)))
             .ToArray();
     }
 

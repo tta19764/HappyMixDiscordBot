@@ -1818,6 +1818,49 @@ a:hover { color: var(--hm-text); text-decoration-color: var(--hm-text); }
     .hm-side .hm-menu__panel, .hm-collapsed .hm-side .hm-menu__panel { left: var(--hm-space-4); right: var(--hm-space-4); bottom: var(--hm-space-4); max-width: none; }
 }
 
+/* Group cards: the name gets the full width, the role and Open badges sit in one row underneath. */
+.hm-group-card__head { flex-direction: column; align-items: stretch; justify-content: flex-start; gap: var(--hm-space-2); }
+.hm-group-card__head .hm-server__name { font-family: var(--hm-font-cond); font-size: var(--hm-fs-xl); line-height: 1.2; overflow-wrap: break-word; word-break: normal; }
+.hm-group-card__badges { display: flex; flex-wrap: wrap; align-items: center; gap: var(--hm-space-1); }
+.hm-group-card__badges:empty { display: none; }
+
+/* My games: Steam link, add form and the list with Want / Can / Won't marks. */
+.hm-sec-my-games { --hm-accent: var(--hm-c-mint); --hm-accent-tint: var(--hm-c-mint-tint); }
+.hm-side__c-my-games { --hm-side-c: #72ddb4; }
+.hm-games-discord { display: flex; flex-wrap: wrap; align-items: center; gap: var(--hm-space-3); padding: var(--hm-space-3) var(--hm-space-4);
+    border: 1px solid var(--hm-accent); border-radius: var(--hm-radius-md); background: var(--hm-accent-tint); }
+.hm-games-discord p { flex: 1 1 16rem; margin: 0; }
+.hm-games-link { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--hm-space-3); align-items: end; }
+.hm-games-steam { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: var(--hm-space-3); margin: 0; }
+.hm-games-steam dt { font-family: var(--hm-font-mono); font-size: .6875rem; letter-spacing: .06em; text-transform: uppercase; color: var(--hm-text-subtle); }
+.hm-games-steam dd { margin: 2px 0 0; }
+.hm-games-add { display: grid; gap: var(--hm-space-3); grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); align-items: end; }
+.hm-mygames { list-style: none; margin: 0; padding: 0; display: grid; }
+.hm-mygames__item { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: var(--hm-space-3); align-items: center; padding: var(--hm-space-3) 0;
+    border-top: 1px solid var(--hm-border); }
+.hm-mygames__item:first-child { border-top: 0; }
+.hm-mygames__name { display: grid; gap: 2px; min-width: 0; }
+.hm-mygames__title { display: flex; align-items: center; gap: var(--hm-space-2); font-weight: 600; }
+.hm-mygames__title .hm-icon { color: var(--hm-text-subtle); }
+.hm-mygames__name small { color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); }
+.hm-mygames__recent { color: var(--hm-mint); }
+.hm-marks { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--hm-border-strong); border-radius: var(--hm-radius-md); overflow: hidden; }
+.hm-marks__option { min-height: 2.25rem; padding: 0 var(--hm-space-3); border: 0; border-right: 1px solid var(--hm-border-strong); background: transparent;
+    color: var(--hm-text-muted); font: inherit; font-size: var(--hm-fs-sm); font-weight: 500; cursor: pointer; }
+.hm-marks__option:last-child { border-right: 0; }
+.hm-marks__option:hover { background: var(--hm-surface-2); color: var(--hm-text); }
+.hm-marks__option[aria-pressed="true"] { color: var(--hm-text); font-weight: 600; }
+.hm-marks__option--want[aria-pressed="true"] { background: var(--hm-c-mint-tint); box-shadow: inset 0 -3px 0 var(--hm-c-mint); }
+.hm-marks__option--can[aria-pressed="true"] { background: var(--hm-c-sky-tint); box-shadow: inset 0 -3px 0 var(--hm-c-sky); }
+.hm-marks__option--wont[aria-pressed="true"] { background: var(--hm-c-coral-tint); box-shadow: inset 0 -3px 0 var(--hm-c-coral); }
+@media (max-width: 47.99rem) { .hm-mygames__item { grid-template-columns: minmax(0, 1fr) auto; } .hm-marks { grid-column: 1 / -1; } }
+.hm-roster__game { display: inline-flex; align-items: center; gap: var(--hm-space-2); }
+.hm-roster__game .hm-icon { color: var(--hm-text-subtle); }
+/* Member interest on a group's games. */
+.hm-interest { display: flex; flex-wrap: wrap; gap: var(--hm-space-1) var(--hm-space-3); font-size: var(--hm-fs-sm); }
+.hm-interest span { font-family: var(--hm-font-mono); font-size: var(--hm-fs-xs); }
+.hm-interest__want { color: var(--hm-c-mint); } .hm-interest__can { color: var(--hm-c-sky); } .hm-interest__wont { color: var(--hm-c-coral); }
+
 /* Scrollbars: thin, squared and in the theme's line colors instead of the browser's default. */
 :root { --hm-scroll-thumb: var(--hm-border-strong); --hm-scroll-thumb-hover: var(--hm-text-subtle); }
 * { scrollbar-width: thin; scrollbar-color: var(--hm-scroll-thumb) transparent; }
@@ -1833,3 +1876,30 @@ a:hover { color: var(--hm-text); text-decoration-color: var(--hm-text); }
 .hm-day__actions .hm-btn__label, .hm-week .hm-day__actions .hm-btn__label { display: inline !important; }
 .hm-day__actions .hm-btn, .hm-week .hm-day__actions .hm-btn { width: auto !important; padding: 0 var(--hm-space-3) !important; }
 .hm-day__actions { flex-wrap: wrap; }
+
+/* Live: who in the group plays now. */
+.hm-tab-c-live { --hm-tab-c: var(--hm-c-coral); }
+.hm-count--live { background: var(--hm-c-coral-tint); color: var(--hm-text); }
+.hm-live h3 { font-size: var(--hm-fs-md); margin: 0 0 var(--hm-space-2); }
+.hm-live__list { list-style: none; margin: 0; padding: 0; display: grid; }
+.hm-live__item { display: grid; grid-template-columns: auto minmax(0, 10rem) minmax(0, 1fr) auto; gap: var(--hm-space-3); align-items: center;
+    padding: var(--hm-space-2) 0; border-top: 1px solid var(--hm-border); }
+.hm-live__item:first-child { border-top: 0; }
+.hm-live__item--past { grid-template-columns: minmax(0, 10rem) minmax(0, 1fr) auto; color: var(--hm-text-muted); }
+.hm-live__dot { width: 0.6rem; height: 0.6rem; background: var(--hm-c-mint); box-shadow: 0 0 0 3px var(--hm-c-mint-tint); }
+.hm-live__who { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm-live__game { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm-live__since { color: var(--hm-text-subtle); font-family: var(--hm-font-mono); font-size: var(--hm-fs-xs); }
+.hm-live__recent summary { cursor: pointer; font-weight: 600; }
+.hm-live__choices, .hm-live__channel { border-top: 1px solid var(--hm-border); padding-top: var(--hm-space-4); }
+@media (max-width: 47.99rem) {
+    .hm-live__item { grid-template-columns: auto minmax(0, 1fr) auto; row-gap: 2px; }
+    .hm-live__item .hm-live__dot { grid-column: 1; grid-row: 1; }
+    .hm-live__item .hm-live__who { grid-column: 2; grid-row: 1; }
+    .hm-live__item .hm-live__since { grid-column: 3; grid-row: 1; }
+    .hm-live__item .hm-live__game { grid-column: 2 / -1; grid-row: 2; }
+    .hm-live__item--past { grid-template-columns: minmax(0, 1fr) auto; }
+    .hm-live__item--past .hm-live__who { grid-column: 1; }
+    .hm-live__item--past .hm-live__since { grid-column: 2; }
+    .hm-live__item--past .hm-live__game { grid-column: 1 / -1; }
+}

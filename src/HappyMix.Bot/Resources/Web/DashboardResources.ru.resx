@@ -2450,4 +2450,102 @@
 <data name="Events_SeriesConfirmedDetail" xml:space="preserve"><value>Подтверждено дат: {0}. Каждый, кто принял приглашение, получит одно сообщение в Discord.</value></data>
 <data name="Events_NothingToConfirm" xml:space="preserve"><value>Все предстоящие даты уже подтверждены</value></data>
 <data name="This_series_was_canceled" xml:space="preserve"><value>Эта серия отменена.</value></data>
+<data name="Games_Title" xml:space="preserve"><value>Мои игры</value></data>
+<data name="Games_Lead" xml:space="preserve"><value>Отметьте игры, в которые хотите играть, можете играть или не будете. Ваши группы учитывают отметки, когда выбирают игру.</value></data>
+<data name="Games_All" xml:space="preserve"><value>Все</value></data>
+<data name="Games_Want" xml:space="preserve"><value>Хочу играть</value></data>
+<data name="Games_Can" xml:space="preserve"><value>Могу играть</value></data>
+<data name="Games_Wont" xml:space="preserve"><value>Не буду играть</value></data>
+<data name="Games_Mark" xml:space="preserve"><value>Ваша отметка</value></data>
+<data name="Games_SteamHelp" xml:space="preserve"><value>Привяжите аккаунт Steam, чтобы импортировать библиотеку. HappyMix хранит только ваш SteamID, никогда не пароль.</value></data>
+<data name="Games_Verified" xml:space="preserve"><value>Подтверждён</value></data>
+<data name="Games_NotVerified" xml:space="preserve"><value>Не подтверждён</value></data>
+<data name="Games_DiscordSteam" xml:space="preserve"><value>К вашему профилю Discord подключён Steam: {0}.</value></data>
+<data name="Games_UseDiscordSteam" xml:space="preserve"><value>Использовать этот аккаунт Steam</value></data>
+<data name="Games_SignInAgain" xml:space="preserve"><value>Подключили Steam в Discord? Выйдите и войдите снова, чтобы HappyMix его увидел, или привяжите ниже.</value></data>
+<data name="Games_SteamInput" xml:space="preserve"><value>Ссылка на профиль Steam или SteamID64</value></data>
+<data name="Games_SteamInputHelp" xml:space="preserve"><value>Вставленного профиля достаточно для импорта публичного списка игр. Он помечен как неподтверждённый, пока вы не войдёте через Steam.</value></data>
+<data name="Games_LinkSteam" xml:space="preserve"><value>Привязать</value></data>
+<data name="Games_SignInWithSteam" xml:space="preserve"><value>Войти через Steam</value></data>
+<data name="Games_SignInWithSteamHelp" xml:space="preserve"><value>Подтверждает, что аккаунт ваш. Steam передаёт только ваш SteamID.</value></data>
+<data name="Games_Verify" xml:space="preserve"><value>Подтвердить через Steam</value></data>
+<data name="Games_Profile" xml:space="preserve"><value>Профиль</value></data>
+<data name="Games_LinkedOn" xml:space="preserve"><value>Привязан</value></data>
+<data name="Games_LastImport" xml:space="preserve"><value>Последний импорт</value></data>
+<data name="Games_NeverImported" xml:space="preserve"><value>Ещё не было</value></data>
+<data name="Games_Import" xml:space="preserve"><value>Импортировать библиотеку</value></data>
+<data name="Games_Resync" xml:space="preserve"><value>Синхронизировать снова</value></data>
+<data name="Games_Unlink" xml:space="preserve"><value>Отвязать Steam</value></data>
+<data name="Games_UnlinkQuestion" xml:space="preserve"><value>Отвязать Steam? Игры, импортированные из Steam, будут удалены; добавленные вручную останутся.</value></data>
+<data name="Games_PrivateHelp" xml:space="preserve"><value>Для импорта нужно, чтобы «Сведения об играх» были публичными. Можно сделать их публичными, импортировать и вернуть как было: список останется здесь.</value></data>
+<data name="Games_PrivacySettings" xml:space="preserve"><value>Настройки приватности Steam</value></data>
+<data name="Games_ImportOff" xml:space="preserve"><value>Импорт библиотеки на этом боте ещё не настроен. Добавьте игры вручную ниже.</value></data>
+<data name="Games_Add" xml:space="preserve"><value>Добавить игру</value></data>
+<data name="Games_AddButton" xml:space="preserve"><value>Добавить в мои игры</value></data>
+<data name="Games_MarksHelp" xml:space="preserve"><value>Поиск находит игры на любой платформе. Если игра уже есть в списке, изменится только отметка.</value></data>
+<data name="Games_List" xml:space="preserve"><value>Ваши игры</value></data>
+<data name="Games_Search" xml:space="preserve"><value>Искать в ваших играх</value></data>
+<data name="Games_Empty" xml:space="preserve"><value>Игр пока нет. Импортируйте библиотеку Steam или добавьте игры выше.</value></data>
+<data name="Games_NoMatch" xml:space="preserve"><value>Нет подходящих игр.</value></data>
+<data name="Games_AddedByHand" xml:space="preserve"><value>Добавлено вручную</value></data>
+<data name="Games_Hours" xml:space="preserve"><value>{0} ч</value></data>
+<data name="Games_PlayedRecently" xml:space="preserve"><value>играли недавно</value></data>
+<data name="Games_RemoveGame" xml:space="preserve"><value>Удалить {0}</value></data>
+<data name="Games_SteamLinked" xml:space="preserve"><value>Аккаунт Steam привязан</value></data>
+<data name="Games_SteamVerified" xml:space="preserve"><value>Аккаунт Steam подтверждён</value></data>
+<data name="Games_SteamUnlinked" xml:space="preserve"><value>Steam отвязан</value></data>
+<data name="Games_Imported" xml:space="preserve"><value>Библиотека импортирована: новых {0}, обновлено {1}</value></data>
+<data name="Games_Added" xml:space="preserve"><value>{0} в вашем списке</value></data>
+<data name="Games_Marked" xml:space="preserve"><value>Отметка для {0} сохранена</value></data>
+<data name="Games_Removed" xml:space="preserve"><value>Игра удалена</value></data>
+<data name="Games_GroupWant" xml:space="preserve"><value>Хотят: {0}</value></data>
+<data name="Games_GroupCan" xml:space="preserve"><value>Могут: {0}</value></data>
+<data name="Games_GroupWont" xml:space="preserve"><value>Не будут: {0}</value></data>
+<data name="Games_NoMarks" xml:space="preserve"><value>Эту игру ещё никто не отметил.</value></data>
+<data name="Games_Popular" xml:space="preserve"><value>Популярные у участников</value></data>
+<data name="Games_PopularHelp" xml:space="preserve"><value>Игры, в которые хотят играть минимум двое участников и которых ещё нет в группе.</value></data>
+<data name="Games_MarkYours" xml:space="preserve"><value>Отметить свои игры</value></data>
+<data name="Players_Err_SteamInput" xml:space="preserve"><value>Вставьте свой SteamID64 или ссылку на профиль Steam.</value></data>
+<data name="Players_Err_SteamNotFound" xml:space="preserve"><value>Такой профиль Steam не найден. Вставьте свой SteamID64 или ссылку на профиль.</value></data>
+<data name="Players_Err_SteamTaken" xml:space="preserve"><value>Этот аккаунт Steam уже привязал кто-то другой. Если он ваш, подтвердите его входом через Steam.</value></data>
+<data name="Players_Err_SteamSignIn" xml:space="preserve"><value>Steam не подтвердил вход. Попробуйте ещё раз.</value></data>
+<data name="Players_Err_VerifiedElsewhere" xml:space="preserve"><value>Этот аккаунт Steam уже подтверждён другим аккаунтом Discord.</value></data>
+<data name="Players_Err_NotLinked" xml:space="preserve"><value>Сначала привяжите аккаунт Steam.</value></data>
+<data name="Players_Err_ImportOff" xml:space="preserve"><value>Импорт библиотеки Steam на этом боте ещё не настроен. Пока добавляйте игры вручную.</value></data>
+<data name="Players_Err_Private" xml:space="preserve"><value>Steam не показал ваши игры: сделайте «Сведения об играх» публичными в настройках приватности Steam, импортируйте и верните как было.</value></data>
+<data name="Players_Err_Unavailable" xml:space="preserve"><value>Steam не ответил. Попробуйте через минуту.</value></data>
+<data name="Players_Err_GameName" xml:space="preserve"><value>Введите название игры от 1 до 80 символов.</value></data>
+<data name="Players_Err_Preference" xml:space="preserve"><value>Выберите «Хочу играть», «Могу играть» или «Не буду играть».</value></data>
+<data name="Players_Err_TooMany" xml:space="preserve"><value>Ваш список заполнен. Сначала удалите игры, в которые больше не играете.</value></data>
+<data name="Players_Err_GameMissing" xml:space="preserve"><value>Этой игры уже нет в вашем списке.</value></data>
+<data name="Players_Err_NoDiscordSteam" xml:space="preserve"><value>К вашему профилю Discord не подключён Steam.</value></data>
+<data name="Players_Err_GroupMissing" xml:space="preserve"><value>Такой группы нет.</value></data>
+<data name="Guide_my-games_Title" xml:space="preserve"><value>Мои игры</value></data>
+<data name="Guide_my-games_Body" xml:space="preserve"><value>Ведите список своих игр и отмечайте каждую: «Хочу играть», «Могу играть» или «Не буду играть». Добавляйте игры с любой платформы через поиск или привяжите Steam: используйте аккаунт Steam, подключённый к профилю Discord, вставьте ссылку на профиль или войдите через Steam, чтобы подтвердить его. С привязанным Steam можно импортировать библиотеку; Steam показывает её, только пока «Сведения об играх» публичны, а импортированный список остаётся и после того, как вы их скроете. Группы показывают, как участники отметили каждую игру, и предлагают игры, которые хотят несколько участников. Если отвязать Steam, импортированные игры исчезнут; добавленные вручную останутся.</value></data>
+<data name="Availability_Lead" xml:space="preserve"><value>Скажите группе, когда можете играть. HappyMix учитывает это при планировании сессий.</value></data>
+<data name="Live_Title" xml:space="preserve"><value>Сейчас</value></data>
+<data name="Live_Lead" xml:space="preserve"><value>Смотрите, кто из группы сейчас играет. Здесь появляются только участники, которые включили показ, и только пока играют.</value></data>
+<data name="Live_PlayingNow" xml:space="preserve"><value>Сейчас играют</value></data>
+<data name="Live_NobodyShares" xml:space="preserve"><value>Пока никто не показывает этой группе, во что играет. Включите это ниже, чтобы быть первым.</value></data>
+<data name="Live_NobodyPlaying" xml:space="preserve"><value>Сейчас никто не играет. Участников, которые показывают игру этой группе: {0}.</value></data>
+<data name="Live_Since" xml:space="preserve"><value>с {0}</value></data>
+<data name="Live_Recent" xml:space="preserve"><value>Недавние сессии</value></data>
+<data name="Live_Minutes" xml:space="preserve"><value>{0} мин</value></data>
+<data name="Live_YourChoices" xml:space="preserve"><value>Ваш выбор</value></data>
+<data name="Live_Share" xml:space="preserve"><value>Показывать этой группе, во что я играю</value></data>
+<data name="Live_Share_Help" xml:space="preserve"><value>Использует ваш статус в Discord и, если аккаунт Steam подтверждён, Steam. Другим группам ничего не показывается.</value></data>
+<data name="Live_Notify" xml:space="preserve"><value>Писать мне, когда участники начинают игру</value></data>
+<data name="Live_Notify_Help" xml:space="preserve"><value>Личное сообщение в Discord, когда кто-то запускает игру группы или игру, которую хотят другие участники. Не чаще раза в два часа для игрока и игры.</value></data>
+<data name="Live_SteamHint" xml:space="preserve"><value>Чтобы добавить Steam, войдите через Steam на странице</value></data>
+<data name="Live_MembersOnly" xml:space="preserve"><value>Только участники группы могут показывать, во что играют, или получать сообщения.</value></data>
+<data name="Live_Channel" xml:space="preserve"><value>Канал группы</value></data>
+<data name="Live_Channel_Post" xml:space="preserve"><value>Также публиковать сообщения в канале уведомлений группы</value></data>
+<data name="Live_Channel_Help" xml:space="preserve"><value>Используется канал из настроек уведомлений группы. Участники всё равно сами решают, показывать ли их.</value></data>
+<data name="Live_Saved" xml:space="preserve"><value>Настройки сохранены</value></data>
+<data name="Live_Started" xml:space="preserve"><value>🎮 {0} запускает **{1}** · {2}</value></data>
+<data name="Live_AlsoWant" xml:space="preserve"><value>Тоже хотят поиграть: {0}</value></data>
+<data name="Live_Err_NotMember" xml:space="preserve"><value>Только участники группы могут показывать игру или получать сообщения.</value></data>
+<data name="Live_Err_Forbidden" xml:space="preserve"><value>Изменить это может только организатор или модератор.</value></data>
+<data name="Guide_live_Title" xml:space="preserve"><value>Сейчас</value></data>
+<data name="Guide_live_Body" xml:space="preserve"><value>Вкладка «Сейчас» в группе показывает, кто сейчас играет. Это работает только по согласию с обеих сторон: вы сами решаете, показывать ли группе, во что играете, и отдельно — получать ли сообщения в Discord, когда участники запускают игру. Сообщения приходят только об играх группы или играх, которые другой участник отметил «Хочу» или «Могу», не чаще раза в два часа для игрока и игры. HappyMix берёт ваш статус в Discord (если владелец сервера включил присутствие) и, если вы вошли через Steam, статус в Steam. Организатор также может публиковать эти сообщения в канале уведомлений группы.</value></data>
 </root>

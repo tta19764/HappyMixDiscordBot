@@ -1,0 +1,221 @@
+@using System.Globalization
+@using HappyMix.Application.Abstractions.Players
+@model MyGamesPage
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = T["Games_Title"];
+    var nav = new ServerNavModel(Model.GuildId, Model.GuildName, "my-games", Model.CanConfigure, "Games_Title", T["Games_Lead"]);
+    var steam = Model.Data.Steam;
+    var matching = Model.Matching;
+    int pages = Math.Max(1, (int)Math.Ceiling(matching.Count / (double)MyGamesPage.PageSize));
+    int page = Math.Min(Model.Page, pages);
+    var shown = matching.Skip((page - 1) * MyGamesPage.PageSize).Take(MyGamesPage.PageSize).ToArray();
+    string returnUrl = Model.Link(page: page);
+    string MarkLabel(GamePreference preference) => preference switch
+    {
+        GamePreference.Want => T["Games_Want"].Value, GamePreference.Can => T["Games_Can"].Value, _ => T["Games_Wont"].Value
+    };
+    string Source(PlayerGame game) => game.Provider switch { "steam" => "Steam", "igdb" => "IGDB", _ => T["Games_AddedByHand"].Value };
+    string When(DateTimeOffset at) => at.ToLocalTime().ToString("d MMM yyyy", CultureInfo.CurrentCulture);
+    var unlink = new ConfirmModel(T["Games_Unlink"], T["Games_UnlinkQuestion"], $"{Model.Url}/steam/unlink", T["Games_Unlink"], Icon: null);
+    var filters = new (string Key, string Label, int Count)[]
+    {
+        ("all", T["Games_All"].Value, Model.Count(null)), ("want", T["Games_Want"].Value, Model.Count(GamePreference.Want)),
+        ("can", T["Games_Can"].Value, Model.Count(GamePreference.Can)), ("wont", T["Games_Wont"].Value, Model.Count(GamePreference.Wont))
+    };
+}
+<partial name="_ServerNav" model="nav" />
+@if (Model.Banner is { } banner)
+{
+    <div style="margin-bottom: var(--hm-space-4)"><partial name="_Banner" model="banner" /></div>
+}
+
+<div class="hm-stack hm-stack--lg">
+    <section class="hm-card hm-stack" id="steam" aria-labelledby="steam-title">
+        <div class="hm-card__head" style="margin: 0">
+            <div>
+                <h2 id="steam-title">Steam</h2>
+                <p>@T["Games_SteamHelp"]</p>
+            </div>
+            @if (steam is not null)
+            {
+                <span class="hm-badge @(steam.Verified ? "hm-badge--mint" : "")">@DashboardIcons.Render(steam.Verified ? "check" : "info")@T[steam.Verified ? "Games_Verified" : "Games_NotVerified"]</span>
+            }
+        </div>
+
+        @if (steam is null)
+        {
+            @if (Model.DiscordSteam is { } connected)
+            {
+                <form class="hm-games-discord" method="post" action="@Model.Url/steam/discord" asp-antiforgery="false">
+                    @Html.AntiForgeryToken()
+                    <p>@T["Games_DiscordSteam", connected.Name.Length > 0 ? connected.Name : connected.Id]</p>
+                    <button class="hm-btn hm-btn--primary">@T["Games_UseDiscordSteam"]</button>
+                </form>
+            }
+            else if (!Model.ConnectionsChecked)
+            {
+                <p class="hm-help">@T["Games_SignInAgain"]</p>
+            }
+            <form class="hm-games-link" method="post" action="@Model.Url/steam" asp-antiforgery="false">
+                @Html.AntiForgeryToken()
+                <div class="hm-field">
+                    <label class="hm-label" for="steam-input">@T["Games_SteamInput"]</label>
+                    <input class="hm-input" id="steam-input" name="steam" required maxlength="200" autocomplete="off" spellcheck="false"
+                           placeholder="steamcommunity.com/id/yourname" aria-describedby="steam-input-help">
+                </div>
+                <button class="hm-btn">@T["Games_LinkSteam"]</button>
+            </form>
+            <p class="hm-help" id="steam-input-help">@T["Games_SteamInputHelp"]</p>
+            <div class="hm-row"><a class="hm-btn" href="@Model.Url/steam/signin">@T["Games_SignInWithSteam"]</a><span class="hm-help">@T["Games_SignInWithSteamHelp"]</span></div>
+        }
+        else
+        {
+            <dl class="hm-games-steam">
+                <div><dt>@T["Games_Profile"]</dt><dd><a href="@steam.ProfileUrl" target="_blank" rel="noopener noreferrer" class="hm-mono">@steam.SteamId</a></dd></div>
+                <div><dt>@T["Games_LinkedOn"]</dt><dd>@When(steam.LinkedAt)</dd></div>
+                <div><dt>@T["Games_LastImport"]</dt><dd>@(steam.ImportedAt is { } imported ? When(imported) : T["Games_NeverImported"].Value)</dd></div>
+            </dl>
+            <div class="hm-row">
+                @if (Model.Data.CanImport)
+                {
+                    <form method="post" action="@Model.Url/import" asp-antiforgery="false">
+                        @Html.AntiForgeryToken()
+                        <button class="hm-btn hm-btn--primary">@T[steam.ImportedAt is null ? "Games_Import" : "Games_Resync"]</button>
+                    </form>
+                }
+                @if (!steam.Verified)
+                {
+                    <a class="hm-btn" href="@Model.Url/steam/signin">@T["Games_Verify"]</a>
+                }
+                <partial name="_Confirm" model="unlink" />
+            </div>
+            <p class="hm-help">
+                @if (Model.Data.CanImport)
+                {
+                    @T["Games_PrivateHelp"] <a href="https://steamcommunity.com/my/edit/settings" target="_blank" rel="noopener noreferrer">@T["Games_PrivacySettings"]</a>
+                }
+                else
+                {
+                    @T["Games_ImportOff"]
+                }
+            </p>
+        }
+    </section>
+
+    <section class="hm-card hm-stack" id="add" aria-labelledby="add-title">
+        <form class="hm-stack hm-stack--sm" method="post" action="@Model.Url/add" asp-antiforgery="false" data-game-form>
+            @Html.AntiForgeryToken()
+            <h2 id="add-title">@T["Games_Add"]</h2>
+            <div class="hm-field hm-media-search" data-media-search data-game-picker data-url="/media/@Model.GuildId/search" data-add-label="@T["Groups_PickGame"]"
+                 data-empty="@T["Media_NoResults"]" data-failed="@T["Media_SearchFailed"]" hidden>
+                <span class="hm-label">@T["Groups_FindGame"]</span>
+                <div class="hm-row hm-media-search__bar">
+                    <select class="hm-select" data-media-kind aria-label="@T["Media_Kind"]" hidden><option value="game" selected>@T["Tag_games"]</option></select>
+                    <input class="hm-input" type="search" data-media-query placeholder="League of Legends, Fortnite, Counter-Strike 2…" aria-label="@T["Groups_FindGame"]">
+                </div>
+                <ul class="hm-media-search__results" data-media-results aria-live="polite"></ul>
+            </div>
+            <input type="hidden" name="provider" data-game-provider>
+            <input type="hidden" name="externalId" data-game-id>
+            <div class="hm-games-add">
+                <div class="hm-field">
+                    <label class="hm-label" for="game-name">@T["Game_name"]</label>
+                    <input class="hm-input" id="game-name" name="name" required maxlength="80" placeholder="League of Legends" data-game-name>
+                </div>
+                <div class="hm-field">
+                    <label class="hm-label" for="game-steam">@T["Steam_App_ID_or_link"] <span class="hm-label__opt">@T["Optional"]</span></label>
+                    <input class="hm-input" id="game-steam" name="steam" maxlength="200" inputmode="url" placeholder="730" data-game-steam>
+                </div>
+                <div class="hm-field">
+                    <label class="hm-label" for="game-mark">@T["Games_Mark"]</label>
+                    <select class="hm-select" id="game-mark" name="preference">
+                        <option value="1">@T["Games_Want"]</option>
+                        <option value="2">@T["Games_Can"]</option>
+                        <option value="3">@T["Games_Wont"]</option>
+                    </select>
+                </div>
+                <button class="hm-btn hm-btn--primary">@T["Games_AddButton"]</button>
+            </div>
+            <p class="hm-help">@T["Games_MarksHelp"]</p>
+        </form>
+    </section>
+
+    <section class="hm-card hm-stack" id="list" aria-labelledby="list-title">
+        <div class="hm-card__head" style="margin: 0">
+            <h2 id="list-title">@T["Games_List"] <span class="hm-count">@Model.Count(null)</span></h2>
+            <form class="hm-row" method="get" action="@Model.Url" role="search">
+                @if (Model.Mark != "all")
+                {
+                    <input type="hidden" name="mark" value="@Model.Mark">
+                }
+                <input class="hm-input" type="search" name="q" value="@Model.Search" placeholder="@T["Games_Search"]" aria-label="@T["Games_Search"]" style="width: auto; min-width: 12rem">
+                <button class="hm-btn">@T["Search"]</button>
+            </form>
+        </div>
+        <nav class="hm-row" style="gap: var(--hm-space-2)" aria-label="@T["Games_Mark"]">
+            @foreach (var (key, label, count) in filters)
+            {
+                <a class="hm-chip" href="@Model.Link(mark: key, page: 1)" aria-current="@(Model.Mark == key ? "page" : null)">@label <span class="hm-count">@count</span></a>
+            }
+        </nav>
+        @if (shown.Length == 0)
+        {
+            <p class="hm-empty-note">@T[Model.Data.Games.Count == 0 ? "Games_Empty" : "Games_NoMatch"]</p>
+        }
+        else
+        {
+            <ul class="hm-mygames">
+                @foreach (var game in shown)
+                {
+                    <li class="hm-mygames__item hm-mygames__item--@game.Preference.ToString().ToLowerInvariant()">
+                        <div class="hm-mygames__name">
+                            <span class="hm-mygames__title">@DashboardIcons.Render("games")@game.Name</span>
+                            <small>
+                                @Source(game)
+                                @if (game.PlaytimeMinutes is > 0 and var minutes)
+                                {
+                                    <span>· @T["Games_Hours", Math.Max(1, (int)Math.Round(minutes / 60.0))]</span>
+                                }
+                                @if (game.RecentMinutes is > 0)
+                                {
+                                    <span class="hm-mygames__recent">· @T["Games_PlayedRecently"]</span>
+                                }
+                            </small>
+                        </div>
+                        <form class="hm-marks" method="post" action="@Model.Url/mark" asp-antiforgery="false" aria-label="@game.Name">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="key" value="@game.Key">
+                            <input type="hidden" name="returnUrl" value="@returnUrl">
+                            @foreach (var preference in new[] { GamePreference.Want, GamePreference.Can, GamePreference.Wont })
+                            {
+                                <button class="hm-marks__option hm-marks__option--@preference.ToString().ToLowerInvariant()" name="preference" value="@((int)preference)"
+                                        aria-pressed="@(game.Preference == preference ? "true" : "false")">@MarkLabel(preference)</button>
+                            }
+                        </form>
+                        <form method="post" action="@Model.Url/remove" asp-antiforgery="false">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="key" value="@game.Key">
+                            <input type="hidden" name="returnUrl" value="@returnUrl">
+                            <button class="hm-btn hm-btn--ghost hm-btn--sm" aria-label="@T["Games_RemoveGame", game.Name]">@T["Remove"]</button>
+                        </form>
+                    </li>
+                }
+            </ul>
+            @if (pages > 1)
+            {
+                <nav class="hm-pager" aria-label="@T["Pages"]">
+                    @if (page > 1)
+                    {
+                        <a class="hm-btn" href="@Model.Link(page: page - 1)" rel="prev">@T["Previous"]</a>
+                    }
+                    <span class="hm-pager__status">@T["Page_Arg0_of_Arg1", page, pages]</span>
+                    @if (page < pages)
+                    {
+                        <a class="hm-btn" href="@Model.Link(page: page + 1)" rel="next">@T["Next"]</a>
+                    }
+                </nav>
+            }
+        }
+    </section>
+</div>

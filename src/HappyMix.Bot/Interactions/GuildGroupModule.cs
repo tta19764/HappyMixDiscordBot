@@ -109,6 +109,53 @@ public sealed partial class GuildGroupModule(ISender sender, Microsoft.Extension
         [MaxLength(DescriptionLimit)] string? description = null) =>
         ExecuteAsync(new EditGroupDescriptionCommand(Actor, name, description), "Group description updated.");
 
+    [SlashCommand("request-join", "Ask to join an open group; its organizer gets a message.")]
+    public Task RequestJoinAsync([Autocomplete<GroupNameAutocomplete>] string name) =>
+        WithGroupAsync(name, id => new RequestToJoinGroupCommand(Actor, id), "Request sent. The organizer will get a message.");
+
+    [SlashCommand("withdraw-request", "Withdraw your request to join a group.")]
+    public Task WithdrawRequestAsync([Autocomplete<GroupNameAutocomplete>] string name) =>
+        WithGroupAsync(name, id => new CancelJoinRequestCommand(Actor, id), "Request withdrawn.");
+
+    [SlashCommand("suggest-game", "Suggest a game for a group you belong to.")]
+    public Task SuggestGameAsync([Autocomplete<GroupNameAutocomplete>] string name, string game,
+        [Summary(description: "Steam App ID or store link (optional).")] string? steam = null) =>
+        WithGroupAsync(name, id => new SuggestGroupGameCommand(Actor, id, game, steam), "Suggestion sent to the organizer.");
+
+    [SlashCommand("open", "Make a group open (anyone can ask to join) or invitation only.")]
+    public Task OpenAsync([Autocomplete<GroupNameAutocomplete>] string name,
+        [Summary(description: "On: anyone can ask to join. Off: invitation only, pending requests are dropped.")] bool open) =>
+        WithGroupAsync(name, id => new SetGroupOpenCommand(Actor, id, open),
+            open ? "The group is open: anyone can ask to join." : "The group is invitation only.");
+
+    [SlashCommand("tags", "Set a group's tags; they shape vote suggestions and the watchlist.")]
+    public async Task TagsAsync([Autocomplete<GroupNameAutocomplete>] string name,
+        [Summary(description: "games, series, films, anime and your own, separated by commas. Leave empty to clear.")] string? tags = null)
+    {
+        await DeferAsync(ephemeral: true);
+        var found = await sender.Send(new FindGroupQuery(Actor, name));
+        if (found.IsFailure)
+        {
+            await ReplyAsync(found.Error.Description);
+            return;
+        }
+        var list = (tags ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var result = await sender.Send(new HappyMix.Application.Polls.SetGroupTagsCommand(Actor, found.Value, list));
+        await ReplyAsync(result.IsFailure ? result.Error.Description
+            : result.Value.Count == 0 ? "Tags cleared." : "Tags saved: " + string.Join(", ", result.Value) + ".");
+    }
+
+    private async Task WithGroupAsync(string name, Func<Guid, GroupCommand> command, string message)
+    {
+        var found = await sender.Send(new FindGroupQuery(Actor, name));
+        if (found.IsFailure)
+        {
+            await RespondAsync(found.Error.Description, ephemeral: true);
+            return;
+        }
+        await ExecuteAsync(command(found.Value), message);
+    }
+
     [SlashCommand("me", "List groups you belong to in this server.")]
     public Task MeAsync([MinValue(1)] int page = 1) => ListGroupsAsync(page, membersOnly: true);
 

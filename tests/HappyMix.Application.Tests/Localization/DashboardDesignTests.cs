@@ -29,6 +29,16 @@ public sealed partial class DashboardDesignTests
         Assert.Empty(offenders);
     }
 
+    [Fact]
+    public void PageLeadsAndSentencesComeFromTheResources()
+    {
+        // A sentence passed as a plain string literal (for example a page lead) shows in English for every language.
+        var offenders = ViewFiles().SelectMany(file => File.ReadAllLines(file).Select((line, index) => (file, line, index)))
+            .Where(item => HardCodedSentence().IsMatch(item.line))
+            .Select(item => $"{Path.GetFileName(item.file)}:{item.index + 1}").ToArray();
+        Assert.Empty(offenders);
+    }
+
     [Theory]
     [InlineData("en", "Collapse menu")]
     [InlineData("uk", "Згорнути меню")]
@@ -64,6 +74,9 @@ public sealed partial class DashboardDesignTests
         Assert.NotNull(directory);
         return Directory.GetFiles(Path.Combine(directory.FullName, "src", "HappyMix.Bot", "Views"), "*.cshtml", SearchOption.AllDirectories);
     }
+
+    [GeneratedRegex("(?<!T\\[|Message\\(|\\w)\"[A-Z][a-z]+ [a-z][^\"@]{20,}[.!?]\"\\)")]
+    private static partial Regex HardCodedSentence();
 
     [GeneratedRegex("DashboardIcons\\.Render\\(\"([a-z-]+)\"")]
     private static partial Regex IconName();

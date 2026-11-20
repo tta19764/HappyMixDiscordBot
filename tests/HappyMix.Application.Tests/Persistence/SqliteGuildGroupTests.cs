@@ -70,6 +70,8 @@ public sealed class SqliteGuildGroupTests
         Assert.True((await sender.Send(command)).IsFailure);
     }
 
+    private static readonly string[] NewGroupCommands = ["request-join", "withdraw-request", "suggest-game", "open", "tags"];
+
     [Fact]
     public async Task DiscordDiscoversTheGuildGroupCommands()
     {
@@ -82,7 +84,9 @@ public sealed class SqliteGuildGroupTests
 
         var guide = CommandHelp.Read(interactions);
         Assert.Contains(guide, command => command.Path == "group game-add" && command.Options.Any(option => option.Name == "steam"));
-        Assert.Equal(16, module.SlashCommands.Count);
+        Assert.Equal(21, module.SlashCommands.Count);
+        Assert.All(NewGroupCommands,
+            name => Assert.Contains(module.SlashCommands, command => command.Name == name));
         Assert.Contains(module.SlashCommands, command => command.Name == "repair-roles");
         Assert.Single(module.ComponentCommands);
         Assert.Contains(module.SlashCommands, command => command.Name == "me");
@@ -91,13 +95,15 @@ public sealed class SqliteGuildGroupTests
         Assert.Contains(module.SlashCommands, command => command.Name == "join");
         Assert.Contains(module.SlashCommands, command => command.Name == "decline");
         var buttons = await interactions.AddModuleAsync<GroupInvitationModule>(services);
-        Assert.Single(buttons.ComponentCommands);
+        // Invitation answers, join requests and game suggestions, all from direct messages.
+        Assert.Equal(3, buttons.ComponentCommands.Count);
         Assert.Contains(module.Preconditions, condition => condition is RequireContextAttribute);
     }
 
     private static ServiceProvider CreateApplicationServices(IGuildGroupStore store, IGuildSettingsStore settings) =>
         new ServiceCollection().AddLogging().AddSingleton(store).AddSingleton(settings).AddSingleton<IAccountLinkStore>(new NoLinks())
-            .AddSingleton<IGroupRoleGateway, TestGroupRoleGateway>().AddSingleton(Microsoft.Extensions.Options.Options.Create(new HappyMix.Infrastructure.PandaScore.PandaScoreOptions())).AddApplication().BuildServiceProvider();
+            .AddSingleton<IGroupRoleGateway, TestGroupRoleGateway>().AddSingleton(Microsoft.Extensions.Options.Options.Create(new HappyMix.Infrastructure.PandaScore.PandaScoreOptions()))
+            .AddSingleton(Microsoft.Extensions.Options.Options.Create(new CommunityDefaults())).AddApplication().BuildServiceProvider();
 
     private sealed class NoLinks : IAccountLinkStore
     {

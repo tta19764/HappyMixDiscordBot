@@ -12,7 +12,7 @@ namespace HappyMix.Bot.Interactions;
 /// <summary>Manages the calling member's one-off availability in this server.</summary>
 [Group("availability", "Manage your gaming availability.")]
 [RequireContext(ContextType.Guild)]
-public sealed partial class AvailabilityModule(ISender sender, IConfiguration configuration) : InteractionModuleBase<SocketInteractionContext>
+public sealed partial class AvailabilityModule(ISender sender, IConfiguration configuration, IServiceProvider services) : InteractionModuleBase<SocketInteractionContext>
 {
     [SlashCommand("dashboard", "Open the web availability editor.")]
     public async Task DashboardAsync()

@@ -123,17 +123,40 @@ public sealed class EventModule(ISender sender, IOptions<PandaScoreOptions> opti
         await ReplyAsync(result.IsFailure ? result.Error.Description : attending ? "Accepted." : "You are no longer attending.");
     }
 
-    [SlashCommand("confirm", "Confirm an event date you organize.")]
-    public async Task ConfirmAsync(string id, string date)
+    [SlashCommand("confirm", "Confirm an event date you organize, or every pending date of a series.")]
+    public async Task ConfirmAsync(string id, string? date = null,
+        [Summary("all-dates", "Confirm every upcoming date that is still pending.")] bool allDates = false)
     {
-        if (!Guid.TryParse(id, out var eventId) || !ParseDate(date, out var day))
+        if (!Guid.TryParse(id, out var eventId) || (!allDates && !ParseDate(date, out _)))
         {
-            await RespondAsync("Enter an event ID and a date in YYYY-MM-DD format.", ephemeral: true);
+            await RespondAsync("Enter an event ID and a date in YYYY-MM-DD format, or set all-dates.", ephemeral: true);
             return;
         }
         await DeferAsync(ephemeral: true);
+        if (allDates)
+        {
+            var series = await sender.Send(new ConfirmEventSeriesCommand(Context.Guild.Id, Context.User.Id, eventId));
+            await ReplyAsync(series.IsFailure ? series.Error.Description
+                : series.Value == 0 ? "Every upcoming date is already confirmed."
+                : $"{series.Value} dates confirmed. Everyone who accepted gets one Discord message.");
+            return;
+        }
+        ParseDate(date, out var day);
         var result = await sender.Send(new ConfirmEventCommand(Context.Guild.Id, Context.User.Id, eventId, day));
         await ReplyAsync(result.IsSuccess ? $"Confirmed with {result.Value.Accepted} attending." : result.Error.Description);
+    }
+
+    [SlashCommand("transfer", "Hand an event you organize over to another invited member.")]
+    public async Task TransferAsync(string id, [Summary(description: "The new organizer; they must be invited to the event.")] IUser organizer)
+    {
+        if (!Guid.TryParse(id, out var eventId))
+        {
+            await RespondAsync("Enter an event ID from /event list.", ephemeral: true);
+            return;
+        }
+        await DeferAsync(ephemeral: true);
+        var result = await sender.Send(new TransferEventCommand(Context.Guild.Id, Context.User.Id, eventId, organizer.Id));
+        await ReplyAsync(result.IsSuccess ? $"{organizer.Mention} now organizes this event. You stay invited as going." : result.Error.Description);
     }
 
     [SlashCommand("cancel", "Cancel a date or explicitly cancel the entire series.")]

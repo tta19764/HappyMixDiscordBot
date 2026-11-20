@@ -41,6 +41,28 @@ public sealed class PollTests
     }
 
     [Fact]
+    public async Task MembersWantedGamesLeadTheVoteSuggestions()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var group = await fixture.GroupAsync(Organizer, [Kai]);
+        var games = fixture.Database.GetRequiredService<IGuildGroupStore>();
+        await games.SaveGameAsync(Guild, new GroupGame(Guid.NewGuid(), group, "Deep Rock Galactic", "steam", "548430"));
+        await games.SaveGameAsync(Guild, new GroupGame(Guid.NewGuid(), group, "Dota 2", "steam", "570"));
+        await fixture.Sender.Send(new SetGroupTagsCommand(Actor(Organizer), group, ["games"]));
+        foreach (ulong member in new[] { Organizer, Kai })
+        {
+            await fixture.Sender.Send(new HappyMix.Application.Players.AddPlayerGameCommand(member, "Dota 2", "570", null, null, HappyMix.Application.Abstractions.Players.GamePreference.Want));
+            await fixture.Sender.Send(new HappyMix.Application.Players.AddPlayerGameCommand(member, "Helldivers 2", "553850", null, null, HappyMix.Application.Abstractions.Players.GamePreference.Want));
+        }
+
+        var suggestions = (await fixture.Sender.Send(new GetPollBoardQuery(Actor(Kai), group))).Value.Suggestions;
+        Assert.Equal(2, suggestions.Single(item => item.Label == "Dota 2").Wanted);
+        var wanted = suggestions.Single(item => item.Label == "Helldivers 2");
+        Assert.Equal(("wanted", 2, "https://store.steampowered.com/app/553850"), (wanted.Source, wanted.Wanted, wanted.Url));
+        Assert.Equal("Deep Rock Galactic", suggestions[^1].Label); // nobody wants it, so it comes last
+    }
+
+    [Fact]
     public async Task GroupVotesUseTagSuggestionsAndRememberWinners()
     {
         using var fixture = await Fixture.CreateAsync();
@@ -102,6 +124,18 @@ public sealed class PollTests
         Assert.Null(board.Ended[0].Leader);
     }
 
+    internal sealed class NoSteam : HappyMix.Application.Abstractions.Players.ISteamDirectory
+    {
+        public bool CanImport => false;
+        public Task<string?> ResolveAsync(string input, CancellationToken cancellationToken) => Task.FromResult<string?>(null);
+        public Task<HappyMix.Application.Abstractions.Players.SteamLibrary> GetOwnedGamesAsync(string steamId, CancellationToken cancellationToken) =>
+            Task.FromResult(new HappyMix.Application.Abstractions.Players.SteamLibrary(HappyMix.Application.Abstractions.Players.SteamLibraryStatus.NotConfigured, []));
+        public Task<string?> VerifySignInAsync(IReadOnlyDictionary<string, string> response, string returnTo, CancellationToken cancellationToken) =>
+            Task.FromResult<string?>(null);
+        public Task<IReadOnlyDictionary<string, string>> GetPlayingAsync(IReadOnlyCollection<string> steamIds, CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyDictionary<string, string>>(new Dictionary<string, string>());
+    }
+
     internal sealed class Fixture : IDisposable
     {
         private SqliteTestDatabase database = null!;
@@ -123,6 +157,8 @@ public sealed class PollTests
                 .AddSingleton<HappyMix.Application.Abstractions.Media.IMediaCatalog>(new FakeCatalog())
                 .AddSingleton(storage.GetRequiredService<HappyMix.Application.Abstractions.Events.IEventStore>())
                 .AddSingleton<IClock>(fixture.Clock)
+                .AddSingleton(storage.GetRequiredService<HappyMix.Application.Abstractions.Players.IPlayerGameStore>())
+                .AddSingleton<HappyMix.Application.Abstractions.Players.ISteamDirectory>(new NoSteam())
                 .AddApplication().BuildServiceProvider();
             return fixture;
         }
