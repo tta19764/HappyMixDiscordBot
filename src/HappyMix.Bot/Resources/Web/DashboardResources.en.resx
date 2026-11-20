@@ -1182,12 +1182,8 @@
   <data name="System" xml:space="preserve">
     <value>System</value>
   </data>
-  <data name="Light" xml:space="preserve">
-    <value>Light</value>
-  </data>
-  <data name="Dark" xml:space="preserve">
-    <value>Dark</value>
-  </data>
+<data name="Light" xml:space="preserve"><value>Sand (light)</value></data>
+<data name="Dark" xml:space="preserve"><value>Night (dark)</value></data>
   <data name="Info" xml:space="preserve">
     <value>Info</value>
   </data>
@@ -1982,7 +1978,7 @@
 <data name="Guide_weekly_Title" xml:space="preserve"><value>Weekly timetable and copying</value></data>
 <data name="Guide_weekly_Body" xml:space="preserve"><value>Open Weekly timetable and edit a weekday. Add one or more time ranges, set certainty for each, then save the day. The schedule repeats weekly. Copy day includes hours, certainty and time zone. Paste the copied text into another day’s editor, apply it, then save that day. Ctrl+C and Ctrl+V work in the copy field.</value></data>
 <data name="Guide_groups_Title" xml:space="preserve"><value>Groups and shared availability</value></data>
-<data name="Guide_groups_Body" xml:space="preserve"><value>Create a group, add its description and games, and invite server members. Invitees accept in Discord or the dashboard to join and receive the group role. The group board shows members’ availability. An open group is listed for everyone under “Open to join”: people ask to join and the organizer lets them in. Members can suggest games, found on any platform, for the organizer to add. Organizers and moderators manage the group. Role repair restores roles from saved membership. Leaving removes your group role. Closing a group deletes its membership records and role.</value></data>
+<data name="Guide_groups_Body" xml:space="preserve"><value>Create a group, add its description and games, and invite server members. Inside a group, the tab row at the top switches between Overview, Availability, Members, Events, Votes, Watchlist, Games and Settings. Invitees accept in Discord or the dashboard to join and receive the group role. The group board shows members’ availability. An open group is listed for everyone under “Open to join”: people ask to join and the organizer lets them in. Members can suggest games, found on any platform, for the organizer to add. Organizers and moderators manage the group. Role repair restores roles from saved membership. Leaving removes your group role. Closing a group deletes its membership records and role.</value></data>
 <data name="Guide_events_Title" xml:space="preserve"><value>Events and invitations</value></data>
 <data name="Guide_events_Body" xml:space="preserve"><value>Create an event for a group or choose individual members. Set its dates, hours and time zone. For a recurring event, accept once to join the series; decline or withdraw from individual dates without changing the others. The organizer confirms each date when enough people can attend, and can cancel one date or the remaining series. Confirmed events appear in availability. Open Channel notifications on a group or event to choose or create a channel named after it, set the language and reminder lead time, and optionally post updates when events are scheduled, confirmed or canceled. Events use their group’s settings until they get their own. Reminders mention accepted participants and the organizer only when they are absent from every server voice channel, including linked accounts. A repeating event sends each person one invitation: Accept all dates or Decline all dates answers the whole series. Canceled events and dates are erased a few minutes after cancellation.</value></data>
 <data name="Guide_game-news_Title" xml:space="preserve"><value>Game news subscriptions</value></data>
@@ -2433,4 +2429,15 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="News_Err_PickOne" xml:space="preserve"><value>Pick at least one kind of news.</value></data>
 <data name="News_Err_OnlyOwnerSources" xml:space="preserve"><value>Only the subscription creator or a server administrator can choose its news.</value></data>
 <data name="News_Err_SteamDown" xml:space="preserve"><value>Steam didn't answer. Try again in a minute.</value></data>
+<data name="Signed_in" xml:space="preserve"><value>Signed in</value></data>
+<data name="HappyMix_home" xml:space="preserve"><value>HappyMix home</value></data>
+<data name="Side_Menu" xml:space="preserve"><value>Menu</value></data>
+<data name="Side_SwitchServer" xml:space="preserve"><value>Switch server</value></data>
+<data name="Side_Server" xml:space="preserve"><value>Server</value></data>
+<data name="Side_Admin" xml:space="preserve"><value>Admin</value></data>
+<data name="Side_Collapse" xml:space="preserve"><value>Collapse menu</value></data>
+<data name="Side_Expand" xml:space="preserve"><value>Expand menu</value></data>
+<data name="Refresh_list" xml:space="preserve"><value>Refresh list</value></data>
+<data name="Set_availability" xml:space="preserve"><value>Set availability</value></data>
+<data name="No_hours_set_for_today" xml:space="preserve"><value>No hours set for today</value></data>
 </root>

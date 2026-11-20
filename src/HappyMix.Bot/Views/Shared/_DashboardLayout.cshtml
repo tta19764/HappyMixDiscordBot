@@ -1,13 +1,33 @@
 @using System.Security.Claims
 @{
-    string userName = User.FindFirstValue(ClaimTypes.Name) ?? "Signed in";
-    string? guildName = ViewData["NavGuildName"] as string;
+    bool signedIn = User.Identity?.IsAuthenticated == true;
+    string userName = User.FindFirstValue(ClaimTypes.Name) ?? T["Signed_in"].Value;
+    var side = SideNav.Get(ViewData, Context);
+    string? guildName = side?.GuildName ?? ViewData["NavGuildName"] as string;
     string? theme = DashboardTheme.Read(Context.Request);
     string culture = System.Globalization.CultureInfo.CurrentUICulture.Name;
     string returnUrl = Context.Request.Path + Context.Request.QueryString;
     var languages = new[] { ("en", "English"), ("uk", "Українська"), ("ru", "Русский") };
     var themes = new[] { ("system", "monitor", T["System"].Value), ("light", "sun", T["Light"].Value), ("dark", "moon", T["Dark"].Value) };
     string currentTheme = theme ?? "system";
+    string currentThemeLabel = themes.First(item => item.Item1 == currentTheme).Item3;
+    string section = side?.Active ?? "";
+    // Section links in the side panel: key, URL segment, label, icon.
+    var serverLinks = new (string Key, string Path, string Label, string Icon)[]
+    {
+        ("availability", "availability", T["Availability"].Value, "availability"),
+        ("events", "events", T["Events"].Value, "events"),
+        ("game-news", "game-news", T["GameNews_Title"].Value, "news"),
+        ("groups", "groups", T["Groups"].Value, "groups"),
+        ("votes", "votes", T["Polls_Title"].Value, "votes"),
+        ("links", "links", T["Linked_accounts"].Value, "links")
+    };
+    var adminLinks = new (string Key, string Path, string Label, string Icon)[]
+    {
+        ("settings", "settings", T["Settings"].Value, "settings"),
+        ("logs", "logs", T["Logs_Title"].Value, "logs")
+    };
+    string serverInitials = guildName is null ? "" : DashboardIcons.Initials(guildName);
 }
 <!doctype html>
 <html lang="@culture" data-theme="@theme">
@@ -15,72 +35,133 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="@(theme ?? "dark light")">
-    <meta name="theme-color" content="#0e0f1c" media="(prefers-color-scheme: dark)" data-theme-color="dark">
-    <meta name="theme-color" content="#f4f5fb" media="(prefers-color-scheme: light)" data-theme-color="light">
+    <meta name="theme-color" content="#0b0c0e" media="(prefers-color-scheme: dark)" data-theme-color="dark">
+    <meta name="theme-color" content="#28241e" media="(prefers-color-scheme: light)" data-theme-color="light">
     <title>@ViewData["Title"] · HappyMix</title>
     <link rel="icon" type="image/svg+xml" href="~/happymix.svg" asp-append-version="true">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true">
+    <script>try { if (localStorage.getItem("hm-side") === "collapsed") document.documentElement.classList.add("hm-collapsed"); } catch (e) { }</script>
     <script src="~/js/dashboard.js" asp-append-version="true" defer></script>
 </head>
-<body>
-    <header class="hm-header">
-        <div class="hm-shell hm-header__inner">
-            <a class="hm-brand" href="/" aria-label="HappyMix home"><img src="~/happymix.svg" asp-append-version="true" alt="" width="32" height="32"><span class="@(guildName is null ? "" : "hm-header__name")">HappyMix</span></a>
-            @if (guildName is not null)
-            {
-                <a class="hm-switcher" href="/" aria-label="Switch server, current: @guildName">
-                    <span>@guildName</span>@DashboardIcons.Render("chevron")
+<body class="@(section.Length > 0 ? "hm-sec-" + section : "")">
+<div class="hm-app">
+    @if (signedIn)
+    {
+        <aside class="hm-side" aria-label="HappyMix">
+            <div class="hm-side__top">
+                <a class="hm-side__brand" href="/" aria-label="@T["HappyMix_home"]"><span class="hm-side__mark" aria-hidden="true">HM</span><span class="hm-side__brand-name">HappyMix</span></a>
+                <button class="hm-side__btn hm-side__menu" type="button" aria-expanded="false" aria-controls="hm-side-panel" data-side-menu>
+                    @DashboardIcons.Render("menu")<span>@T["Side_Menu"]</span>
+                </button>
+            </div>
+            <div class="hm-side__collapsible hm-side__group" id="hm-side-panel" style="gap: var(--hm-space-4)">
+                <a class="hm-side__btn hm-side__server" href="/" title="@T["Side_SwitchServer"]" aria-label="@(guildName is null ? T["Pick_a_server"].Value : T["Side_SwitchServer"].Value + ": " + guildName)">
+                    @if (guildName is null)
+                    {
+                        @DashboardIcons.Render("switch")<span class="hm-side__text">@T["Pick_a_server"]</span>
+                    }
+                    else
+                    {
+                        <span class="hm-side__server-mark" aria-hidden="true">@serverInitials</span><span class="hm-side__text">@guildName</span>@DashboardIcons.Render("switch", cssClass: "hm-side__text")
+                    }
                 </a>
-            }
-            <span class="hm-header__spacer"></span>
-            <span class="hm-user hm-header__name">
-                <span class="hm-user__avatar" aria-hidden="true">@DashboardIcons.Initials(userName)[..1]</span>
-                <span class="hm-muted" style="font-size: var(--hm-fs-sm); font-weight: 600">@userName</span>
-            </span>
-            <a class="hm-btn hm-btn--ghost" href="/info" aria-current="@(Context.Request.Path == "/info" ? "page" : null)">@T["Info"]</a>
-            <details class="hm-menu" data-menu>
-                <summary class="hm-btn hm-btn--ghost hm-menu__button" aria-label="@T["Theme"]: @themes.First(item => item.Item1 == currentTheme).Item3" data-theme-summary>
-                    @foreach (var (value, icon, _) in themes)
-                    {
-                        <span class="hm-menu__icon" data-theme-icon="@value" hidden="@(value != currentTheme)">@DashboardIcons.Render(icon)</span>
-                    }
-                </summary>
-                <form class="hm-menu__panel" method="post" action="/theme" asp-antiforgery="false" aria-label="@T["Theme"]" data-theme-form>
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="returnUrl" value="@returnUrl">
-                    <p class="hm-menu__title">@T["Theme"]</p>
-                    @foreach (var (value, icon, label) in themes)
-                    {
-                        <button class="hm-menu__item" name="theme" value="@value" aria-pressed="@(value == currentTheme ? "true" : "false")">
-                            @DashboardIcons.Render(icon)<span>@label</span>@DashboardIcons.Render("check")
-                        </button>
-                    }
-                </form>
-            </details>
-            <details class="hm-menu" data-menu>
-                <summary class="hm-btn hm-btn--ghost hm-menu__button" aria-label="@T["Language"]: @languages.First(item => item.Item1 == culture).Item2">
-                    @DashboardIcons.Render("globe")<span class="hm-menu__code">@culture.ToUpperInvariant()</span>
-                </summary>
-                <form class="hm-menu__panel" method="post" action="/language" asp-antiforgery="false" aria-label="@T["Language"]">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="returnUrl" value="@returnUrl">
-                    <p class="hm-menu__title">@T["Language"]</p>
-                    @foreach (var (code, label) in languages)
-                    {
-                        <button class="hm-menu__item" name="culture" value="@code" lang="@code" aria-pressed="@(code == culture ? "true" : "false")">
-                            <span class="hm-menu__badge">@code.ToUpperInvariant()</span><span>@label</span>@DashboardIcons.Render("check")
-                        </button>
-                    }
-                </form>
-            </details>
-            <form action="/logout" method="post" asp-antiforgery="false">
-                @Html.AntiForgeryToken()
-                <button class="hm-btn hm-btn--ghost" aria-label="@T["Sign_out"]">@DashboardIcons.Render("logout")<span class="hm-signout__label">@T["Sign_out"]</span></button>
-            </form>
-        </div>
-    </header>
-    <main class="hm-shell hm-main">
-        @RenderBody()
-    </main>
+                @if (side is not null)
+                {
+                    <nav class="hm-side__nav" aria-label="@T["Side_Server"]">
+                        <div class="hm-side__group">
+                            <span class="hm-side__label">@T["Side_Server"]</span>
+                            <div class="hm-side__nav">
+                                @foreach (var link in serverLinks)
+                                {
+                                    <a class="hm-side__link hm-side__c-@link.Key" href="/@link.Path/@side.GuildId" title="@link.Label" aria-current="@(section == link.Key ? "page" : null)">
+                                        @DashboardIcons.Render(link.Icon)<span class="hm-side__text">@link.Label</span>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                        @if (side.CanConfigure)
+                        {
+                            <div class="hm-side__group" style="margin-top: var(--hm-space-3)">
+                                <span class="hm-side__label">@T["Side_Admin"]</span>
+                                <div class="hm-side__nav">
+                                    @foreach (var link in adminLinks)
+                                    {
+                                        <a class="hm-side__link hm-side__c-@link.Key" href="/@link.Path/@side.GuildId" title="@link.Label" aria-current="@(section == link.Key ? "page" : null)">
+                                            @DashboardIcons.Render(link.Icon)<span class="hm-side__text">@link.Label</span>
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </nav>
+                }
+            </div>
+            <div class="hm-side__spacer"></div>
+            <div class="hm-side__collapsible hm-side__foot">
+                <a class="hm-side__link" href="/info@(side is null ? "" : "?guildId=" + side.GuildId)" title="@T["Info"]" aria-current="@(Context.Request.Path == "/info" ? "page" : null)">
+                    @DashboardIcons.Render("guide")<span class="hm-side__text">@T["Info"]</span>
+                </a>
+                <div class="hm-side__prefs">
+                    <details class="hm-menu" data-menu>
+                        <summary class="hm-side__btn hm-menu__button" title="@T["Theme"]" aria-label="@T["Theme"]: @currentThemeLabel" data-theme-summary>
+                            @foreach (var (value, icon, label) in themes)
+                            {
+                                <span class="hm-menu__icon" data-theme-icon="@value" hidden="@(value != currentTheme)">@DashboardIcons.Render(icon)</span>
+                            }
+                            <span class="hm-side__text" data-theme-name>@currentThemeLabel</span>
+                        </summary>
+                        <form class="hm-menu__panel" method="post" action="/theme" asp-antiforgery="false" aria-label="@T["Theme"]" data-theme-form>
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="returnUrl" value="@returnUrl">
+                            <p class="hm-menu__title">@T["Theme"]</p>
+                            @foreach (var (value, icon, label) in themes)
+                            {
+                                <button class="hm-menu__item" name="theme" value="@value" aria-pressed="@(value == currentTheme ? "true" : "false")" data-theme-label="@label">
+                                    @DashboardIcons.Render(icon)<span>@label</span>@DashboardIcons.Render("check")
+                                </button>
+                            }
+                        </form>
+                    </details>
+                    <details class="hm-menu" data-menu>
+                        <summary class="hm-side__btn hm-menu__button" title="@T["Language"]" aria-label="@T["Language"]: @languages.First(item => item.Item1 == culture).Item2">
+                            @DashboardIcons.Render("globe")<span class="hm-side__code">@culture.ToUpperInvariant()</span>
+                        </summary>
+                        <form class="hm-menu__panel" method="post" action="/language" asp-antiforgery="false" aria-label="@T["Language"]">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="returnUrl" value="@returnUrl">
+                            <p class="hm-menu__title">@T["Language"]</p>
+                            @foreach (var (code, label) in languages)
+                            {
+                                <button class="hm-menu__item" name="culture" value="@code" lang="@code" aria-pressed="@(code == culture ? "true" : "false")">
+                                    <span class="hm-menu__badge">@code.ToUpperInvariant()</span><span>@label</span>@DashboardIcons.Render("check")
+                                </button>
+                            }
+                        </form>
+                    </details>
+                </div>
+                <div class="hm-side__user">
+                    <span class="hm-side__avatar" aria-hidden="true">@DashboardIcons.Initials(userName)[..1]</span>
+                    <span class="hm-side__name">@userName</span>
+                    <form action="/logout" method="post" asp-antiforgery="false">
+                        @Html.AntiForgeryToken()
+                        <button class="hm-side__btn" title="@T["Sign_out"]" aria-label="@T["Sign_out"]">@DashboardIcons.Render("logout")</button>
+                    </form>
+                </div>
+                <button class="hm-side__btn hm-side__fold" type="button" data-side-toggle aria-expanded="true">
+                    <span class="hm-side__collapse">@DashboardIcons.Render("collapse")</span><span class="hm-side__expand">@DashboardIcons.Render("expand")</span>
+                    <span class="hm-side__text" data-side-label data-collapse="@T["Side_Collapse"]" data-expand="@T["Side_Expand"]">@T["Side_Collapse"]</span>
+                </button>
+            </div>
+        </aside>
+    }
+    <div class="hm-app__main">
+        <main class="hm-shell hm-main">
+            @RenderBody()
+        </main>
+    </div>
+</div>
 </body>
 </html>

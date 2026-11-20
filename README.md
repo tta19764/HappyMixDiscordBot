@@ -386,6 +386,14 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 - Each game news subscription chooses patch notes, Steam page announcements and/or press articles (`GameNews.Sources`, migration `20261129000100_AddGameNewsSources`; existing subscriptions keep patch notes and announcements). Newly ticked kinds start from that moment. Discord headings name patch notes or the press site.
 - `PublishReleaseNotesJob` stops before calling Discord once every note of the current version is posted, and logs only when it posts.
 
+### v0.0.11 dashboard redesign
+
+- Squared, flat design: 2–4 px corners, no gradients or glows, IBM Plex Sans/Condensed/Mono (Latin and Cyrillic) from Google Fonts. Tokens in section 1 of `dashboard.css`; the redesign layer is section 35.
+- Themes: **Night** (dark, warm charcoal) and **Sand** (light: sand page, oat panels, espresso side panel; no white). Section colors stay: Availability green, Events amber, Game news coral, Groups pink, Votes violet, Linked accounts blue, Settings and Logs slate; the layout puts `hm-sec-<section>` on `<body>`.
+- The header and server tabs are replaced by a retractable side panel (`_DashboardLayout`): server switcher, sections, admin links, guide, theme, language, account and sign-out. Collapsed state is kept in `localStorage`; on phones it is a bar with a Menu button. Pages report their section through `SideNav` (`_ServerNav` does it for most pages).
+- Group pages have a tab row (`data-group-tabs`); with scripts on, one `data-group-panel` shows at a time, chosen by the address hash, so existing `#section` redirects open the right tab. Availability and Members keep their server-side mode (`?tab=roster`).
+- `DashboardIcons` is HappyMix's own icon set (24 px grid, square caps). Icons mark navigation, tabs, headings, cards and tags; buttons are words only apart from collapse, switch server, theme, language and sign-out. `DashboardDesignTests` checks icon names and that views use no emoji.
+
 ### CI runs and deployment diagnostics
 
 Pull requests targeting main run validation. New PR commits cancel older in-progress checks. Main pushes do not repeat those checks; version tags run validation plus image publication and deployment. Completed checks for earlier PR commits remain in history because they validated different code.

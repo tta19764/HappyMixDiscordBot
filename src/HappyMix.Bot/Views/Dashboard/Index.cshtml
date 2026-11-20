@@ -15,7 +15,7 @@
             <span class="hm-empty__icon">@DashboardIcons.Render("users", "width: 1.5rem; height: 1.5rem")</span>
             <h2>@T["No_servers_yet"]</h2>
             <p>@T["HappyMix_shows_servers_where_you_and_the_bot_are_both_members_Ask"]</p>
-            <a class="hm-btn" href="/">@DashboardIcons.Render("refresh")Refresh list</a>
+            <a class="hm-btn" href="/">@T["Refresh_list"]</a>
         </div>
     </section>
 }
@@ -50,15 +50,15 @@ else
                         }
                         else
                         {
-                            <span class="hm-dot hm-dot--off"></span>@("No hours set for today")
+                            <span class="hm-dot hm-dot--off"></span>@T["No_hours_set_for_today"]
                         }
                     </p>
                 </div>
                 <div class="hm-server__actions">
-                    <a class="hm-btn hm-btn--primary" href="/availability/@server.Id">@DashboardIcons.Render("clock")Set availability</a>
+                    <a class="hm-btn hm-btn--primary" href="/availability/@server.Id">@T["Set_availability"]</a>
                     @if (server.CanConfigure)
                     {
-                        <a class="hm-btn" href="/settings/@server.Id">@DashboardIcons.Render("sliders")@T["Settings"]<span class="hm-badge">@T["Admin"]</span></a>
+                        <a class="hm-btn" href="/settings/@server.Id">@T["Settings"]<span class="hm-badge">@T["Admin"]</span></a>
                     }
                 </div>
             </section>

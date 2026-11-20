@@ -22,7 +22,7 @@
                    aria-controls="@Model.Id-options" aria-describedby="@Model.Id-status">
             <ul class="hm-combo__list" id="@Model.Id-options" role="listbox" hidden data-list-options></ul>
         </div>
-        <button class="hm-btn" type="button" data-list-commit>@DashboardIcons.Render("plus")<span>@T["Add"]</span></button>
+        <button class="hm-btn" type="button" data-list-commit><span>@T["Add"]</span></button>
     </div>
     <p class="hm-help hm-listedit__status" id="@Model.Id-status" aria-live="polite" data-list-status></p>
 
@@ -35,6 +35,6 @@
 
     <div class="hm-listedit__foot" data-list-foot hidden>
         <span class="hm-subtle" data-list-count></span>
-        <button class="hm-btn hm-btn--ghost hm-btn--sm" type="button" data-list-toggle aria-pressed="false">@DashboardIcons.Render("pencil")<span>@T["Edit_as_text"]</span></button>
+        <button class="hm-btn hm-btn--ghost hm-btn--sm" type="button" data-list-toggle aria-pressed="false"><span>@T["Edit_as_text"]</span></button>
     </div>
 </div>

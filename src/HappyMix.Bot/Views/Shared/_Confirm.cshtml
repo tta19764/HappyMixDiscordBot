@@ -1,10 +1,6 @@
 @model ConfirmModel
 <details class="hm-confirm @(Model.Danger ? "" : "hm-confirm--neutral") @(Model.Inline ? "hm-confirm--inline" : "")">
     <summary class="hm-btn @(Model.Danger ? "hm-btn--danger" : "")" aria-label="@(Model.TriggerLabel ?? Model.Trigger)">
-        @if (Model.Icon is { } icon)
-        {
-            @DashboardIcons.Render(icon)
-        }
         <span class="hm-btn__label">@Model.Trigger</span>
     </summary>
     <div class="hm-confirm__panel">

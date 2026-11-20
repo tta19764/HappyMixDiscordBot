@@ -13,6 +13,26 @@ public sealed record BannerModel(string Kind, string Title, string? Text = null,
 public sealed record ServerNavModel(ulong GuildId, string GuildName, string Active, bool CanConfigure,
     string Title, string Lead);
 
+/// <summary>What the side panel needs: the server, the active section and whether to show the admin links.</summary>
+public sealed record SideNav(ulong GuildId, string GuildName, string Active, bool CanConfigure)
+{
+    public const string Key = "Side";
+
+    /// <summary>Records the side panel context for the layout (views render before their layout).</summary>
+    public static void Set(Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary viewData, ulong guildId, string guildName, string active, bool canConfigure)
+    {
+        viewData[Key] = new SideNav(guildId, guildName, active, canConfigure);
+        viewData["NavGuildName"] = guildName;
+    }
+
+    /// <summary>The same from a partial: partials get their own copy of ViewData, so the request carries it to the layout.</summary>
+    public static void Set(Microsoft.AspNetCore.Http.HttpContext context, ulong guildId, string guildName, string active, bool canConfigure) =>
+        context.Items[Key] = new SideNav(guildId, guildName, active, canConfigure);
+
+    public static SideNav? Get(Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary viewData, Microsoft.AspNetCore.Http.HttpContext context) =>
+        viewData[Key] as SideNav ?? context.Items[Key] as SideNav;
+}
+
 public sealed record ForbiddenPage(string Title, string Text, string ActionUrl, string ActionLabel);
 
 public sealed record DashboardServer(ulong Id, string Name, string? IconUrl, bool CanConfigure,
@@ -146,41 +166,90 @@ public static class AvailabilityFormat
         "UTC" + (offset < TimeSpan.Zero ? "−" : "+") + offset.Duration().ToString(@"hh\:mm", Culture);
 }
 
+/// <summary>
+/// HappyMix's own icon set: a 24 px grid, 1.75 px strokes, square caps and mitred joins, straight lines first and curves
+/// only where the object needs one. Icons mark navigation, tabs, headings, cards and tags; buttons are words only,
+/// apart from the basic controls (collapse, switch server, theme, language, sign in and out).
+/// </summary>
 public static class DashboardIcons
 {
-    private static readonly Dictionary<string, string> Paths = new(StringComparer.Ordinal)
+    private static readonly Dictionary<string, string[]> Shapes = new(StringComparer.Ordinal)
     {
-        ["chevron"] = "<path d=\"m6 9 6 6 6-6\"/>",
-        ["search"] = "<circle cx=\"11\" cy=\"11\" r=\"6.5\"/><path d=\"m20 20-4.2-4.2\"/>",
-        ["twitch"] = "<path d=\"M5 3.5 3.5 7v12.5h4.5V22l2.5-2.5h3.5L20.5 13V3.5zM11 8v5M15.5 8v5\"/>",
-        ["minus"] = "<path d=\"M5 12h14\"/>",
-        ["back"] = "<path d=\"M19 12H5M11 6l-6 6 6 6\"/>",
-        ["arrow"] = "<path d=\"M5 12h14M13 6l6 6-6 6\"/>",
-        ["globe"] = "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18\"/>",
-        ["sun"] = "<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4\"/>",
-        ["monitor"] = "<rect x=\"3\" y=\"4\" width=\"18\" height=\"12\" rx=\"2\"/><path d=\"M8 20h8M12 16v4\"/>",
-        ["moon"] = "<path d=\"M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z\"/>",
-        ["check"] = "<path d=\"m5 12 5 5 9-10\"/>",
-        ["alert"] = "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7.5v5.5M12 16.5h.01\"/>",
-        ["bang"] = "<path d=\"M12 7.5v5.5M12 16.5h.01\"/>",
-        ["trash"] = "<path d=\"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3\"/>",
-        ["pencil"] = "<path d=\"M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4\"/>",
-        ["sliders"] = "<path d=\"M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12\"/><circle cx=\"16\" cy=\"6\" r=\"2\"/><circle cx=\"10\" cy=\"12\" r=\"2\"/><circle cx=\"18\" cy=\"18\" r=\"2\"/>",
-        ["calendar"] = "<rect x=\"3.5\" y=\"5\" width=\"17\" height=\"15\" rx=\"2\"/><path d=\"M3.5 10h17M8 3v4M16 3v4\"/>",
-        ["clock"] = "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 2\"/>",
-        ["plus"] = "<path d=\"M12 5v14M5 12h14\"/>",
-        ["refresh"] = "<path d=\"M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5\"/>",
-        ["shield"] = "<path d=\"M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z\"/>",
-        ["info"] = "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 11v5M12 8h.01\"/>",
-        ["logout"] = "<path d=\"M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11\"/>",
-        ["copy"] = "<rect x=\"8\" y=\"8\" width=\"12\" height=\"12\" rx=\"2\"/><path d=\"M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3\"/>",
-        ["grip"] = "<path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\" stroke-width=\"3\"/>",
-        ["bell"] = "<path d=\"M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4\"/>",
-        ["users"] = "<circle cx=\"9\" cy=\"9\" r=\"3.5\"/><path d=\"M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6\"/>"
+        // Sections
+        ["availability"] = ["M4 6h16v14H4z", "M4 10h16", "M8 3v4", "M16 3v4", "M8 14h3", "M13 14h3", "M8 17h3"],
+        ["events"] = ["M6 21V3", "M6 4h12l-3 4 3 4H6"],
+        ["news"] = ["M4 5h12v14H4z", "M16 9h4v10h-4", "M7 9h6", "M7 12h6", "M7 15h4"],
+        ["groups"] = ["M6 5h4v4H6z", "M4 19v-6h8v6", "M15 7h4v4h-4z", "M14 19v-5h7v5"],
+        ["votes"] = ["M4 20h16", "M6 20v-8h3v8", "M11 20V6h3v14", "M16 20v-5h3v5"],
+        ["links"] = ["M10 7H5v10h5", "M14 7h5v10h-5", "M8 12h8"],
+        ["settings"] = ["M4 7h9", "M17 7h3", "M13 4v6", "M4 17h3", "M11 17h9", "M7 14v6"],
+        ["logs"] = ["M5 4h14v16H5z", "M8 8h8", "M8 12h8", "M8 16h5"],
+        ["guide"] = ["M5 4h10l4 4v12H5z", "M15 4v4h4", "M9 13h6", "M9 16h4"],
+        ["overview"] = ["M4 4h7v7H4z", "M13 4h7v4h-7z", "M13 10h7v10h-7z", "M4 13h7v7H4z"],
+        ["watch"] = ["M3 5h18v12H3z", "M8 21h8", "M10 8v6l5-3z"],
+        // Basic controls
+        ["collapse"] = ["M3 4h18v16H3z", "M9 4v16", "M16 9l-3 3 3 3"],
+        ["expand"] = ["M3 4h18v16H3z", "M9 4v16", "M13 9l3 3-3 3"],
+        ["menu"] = ["M4 6h16", "M4 12h16", "M4 18h16"],
+        ["switch"] = ["M8 9l4-4 4 4", "M8 15l4 4 4-4"],
+        ["logout"] = ["M13 4H5v16h8", "M10 12h10", "M17 9l3 3-3 3"],
+        ["login"] = ["M11 4h8v16h-8", "M4 12h10", "M11 9l3 3-3 3"],
+        ["sun"] = ["M9 9h6v6H9z", "M12 3v3", "M12 18v3", "M3 12h3", "M18 12h3", "M5.6 5.6l2 2", "M16.4 16.4l2 2", "M5.6 18.4l2-2", "M16.4 7.6l2-2"],
+        ["moon"] = ["M14 3h-1a9 9 0 0 0 0 18h1a9 9 0 0 0 7-4 8 8 0 0 1-7-14z"],
+        ["monitor"] = ["M3 5h18v11H3z", "M8 20h8", "M12 16v4"],
+        ["globe"] = ["M4 19 9 5l5 14", "M6 14h6", "M15 8h6", "M18 6v2", "M20 8c0 4-2 7-5 9", "M16 12c1 2 3 4 5 4"],
+        // Tags
+        ["games"] = ["M3 8h18v9H3z", "M7 10.5v4", "M5 12.5h4", "M15 11.5h1", "M18 13.5h1"],
+        ["series"] = ["M4 7h16v12H4z", "M9 3l3 4 3-4"],
+        ["films"] = ["M5 4h14v16H5z", "M8 4v16", "M16 4v16", "M5 9h3", "M5 15h3", "M16 9h3", "M16 15h3"],
+        ["anime"] = ["M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"],
+        ["hash"] = ["M10 4 8 20", "M16 4l-2 16", "M5 9h15", "M4 15h15"],
+        // Headings, cards and details
+        ["clock"] = ["M4 4h16v16H4z", "M12 8v5h4"],
+        ["zone"] = ["M12 3l7 4v10l-7 4-7-4V7z", "M5 7l7 4 7-4", "M12 11v10"],
+        ["request"] = ["M7 5h4v4H7z", "M5 19v-6h8v6", "M18 9v6", "M15 12h6"],
+        ["idea"] = ["M8 4h8v8l-2 3h-4l-2-3z", "M10 18h4", "M11 21h2"],
+        ["done"] = ["M4 4h16v16H4z", "M8 12l3 3 5-6"],
+        ["repeat"] = ["M4 9h13l-3-3", "M20 15H7l3 3"],
+        ["voice"] = ["M10 4h4v9h-4z", "M6 11v2a6 6 0 0 0 12 0v-2", "M12 19v2"],
+        ["search"] = ["M5 5h10v10H5z", "M15 15l5 5"],
+        ["platform"] = ["M3 5h18v11H3z", "M8 20h8", "M12 16v4"],
+        ["lock"] = ["M6 11h12v9H6z", "M9 11V7h6v4"],
+        ["door"] = ["M6 3h12v18H6z", "M14 12h1"],
+        ["bell"] = ["M6 17v-7a6 6 0 0 1 12 0v7", "M4 17h16", "M10 20h4"],
+        ["pencil"] = ["M4 20h4L19 9l-4-4L4 16z", "M13 7l4 4"],
+        ["alert"] = ["M12 4l9 16H3z", "M12 10v4", "M12 17v1"],
+        ["trophy"] = ["M7 4h10v6a5 5 0 0 1-10 0z", "M7 6H4v3h3", "M17 6h3v3h-3", "M12 15v4", "M8 20h8"],
+        ["shield"] = ["M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"],
+        ["info"] = ["M4 4h16v16H4z", "M12 11v6", "M12 7v1"],
+        ["bang"] = ["M12 6v8", "M12 17v1"],
+        ["calendar"] = ["M4 6h16v14H4z", "M4 10h16", "M8 3v4", "M16 3v4"],
+        ["users"] = ["M6 5h4v4H6z", "M4 19v-6h8v6", "M15 7h4v4h-4z", "M14 19v-5h7v5"],
+        ["sliders"] = ["M4 7h9", "M17 7h3", "M13 4v6", "M4 17h3", "M11 17h9", "M7 14v6"],
+        ["twitch"] = ["M5 4h15v10l-4 4h-4l-3 3v-3H5z", "M11 8v4", "M15 8v4"],
+        // Small marks used inside controls and lists
+        ["check"] = ["M5 12l5 5 9-10"],
+        ["plus"] = ["M12 5v14", "M5 12h14"],
+        ["minus"] = ["M5 12h14"],
+        ["chevron"] = ["M6 9l6 6 6-6"],
+        ["back"] = ["M19 12H5", "M11 6l-6 6 6 6"],
+        ["arrow"] = ["M5 12h14", "M13 6l6 6-6 6"],
+        ["trash"] = ["M4 7h16", "M10 11v6", "M14 11v6", "M6 7l1 13h10l1-13", "M9 7V4h6v3"],
+        ["refresh"] = ["M20 12a8 8 0 1 1-2.3-5.7", "M20 4v5h-5"],
+        ["copy"] = ["M8 8h12v12H8z", "M16 8V4H4v12h4"],
+        ["grip"] = ["M9 6h1", "M15 6h1", "M9 12h1", "M15 12h1", "M9 18h1", "M15 18h1"]
     };
 
-    public static IHtmlContent Render(string name, string? style = null) => new HtmlString(
-        $"<svg class=\"hm-icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\" focusable=\"false\"{(style is null ? "" : $" style=\"{style}\"")}>{Paths[name]}</svg>");
+    private static readonly Dictionary<string, string> Paths = Shapes.ToDictionary(pair => pair.Key,
+        pair => string.Concat(pair.Value.Select(d => $"<path d=\"{d}\"/>")), StringComparer.Ordinal);
+
+    public static bool Has(string name) => Paths.ContainsKey(name);
+
+    public static IHtmlContent Render(string name, string? style = null, string? cssClass = null) => new HtmlString(
+        $"<svg class=\"hm-icon{(cssClass is null ? "" : " " + cssClass)}\" viewBox=\"0 0 24 24\" aria-hidden=\"true\" focusable=\"false\"{(style is null ? "" : $" style=\"{style}\"")}>{Paths[name]}</svg>");
+
+    /// <summary>The icon for a group tag: games, series, films and anime have their own; any other tag is a hash.</summary>
+    public static IHtmlContent Tag(string tag) => Render(tag is "games" or "series" or "films" or "anime" ? tag : "hash");
 
     public static string Initials(string name)
     {

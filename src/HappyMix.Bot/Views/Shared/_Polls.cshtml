@@ -6,7 +6,7 @@
 @{
     var board = Model.Board;
     string Localize(string key) => T.Message(key);
-    string Icon(string kind) => kind switch { "game" => "🎮", "series" => "📺", "film" => "🎬", "anime" => "🌸", _ => "•" };
+    Microsoft.AspNetCore.Html.IHtmlContent Icon(string kind) => DashboardIcons.Render(kind switch { "game" => "games", "series" => "series", "film" => "films", "anime" => "anime", _ => "hash" });
     string Span(TimeSpan span) => span.TotalHours >= 24
         ? T["Polls_Span_dh", (int)span.TotalDays, span.Hours].Value
         : span.TotalMinutes >= 60 ? T["Polls_Span_hm", (int)span.TotalHours, span.Minutes].Value : T["Polls_Span_m", Math.Max(1, (int)Math.Ceiling(span.TotalMinutes))].Value;
@@ -41,7 +41,7 @@
                 <input type="hidden" name="url" value="@leader.Url">
                 <input type="hidden" name="source" value="@leader.Media?.Source">
                 <input type="hidden" name="externalId" value="@leader.Media?.ExternalId">
-                <button class="hm-btn hm-btn--ghost hm-btn--sm">➕ @T["Watch_AddToList"]</button>
+                <button class="hm-btn hm-btn--ghost hm-btn--sm">@T["Watch_AddToList"]</button>
             </form>
         }
     }
@@ -49,7 +49,7 @@
 <section class="hm-card hm-section hm-stack hm-polls" id="votes" aria-labelledby="votes-title">
     <div class="hm-row hm-row--between">
         <div>
-            <h2 id="votes-title">🗳️ @T["Polls_Title"]</h2>
+            <h2 id="votes-title">@DashboardIcons.Render("votes", cssClass: "hm-heading-icon")@T["Polls_Title"]</h2>
             <p class="hm-help">@T[Model.IsGroup ? "Polls_HelpGroup" : "Polls_HelpServer"]</p>
         </div>
         @if (Model.IsGroup)
@@ -131,14 +131,14 @@
                 @if (inDiscord && Model.DiscordUrl(poll) is { } jump)
                 {
                     <div class="hm-row">
-                        <a class="hm-btn hm-btn--primary" href="@jump" target="_blank" rel="noopener noreferrer">💬 @T["Polls_VoteInDiscord"]</a>
+                        <a class="hm-btn hm-btn--primary" href="@jump" target="_blank" rel="noopener noreferrer">@T["Polls_VoteInDiscord"]</a>
                         <span class="hm-help">@T["Polls_VoteInDiscordHelp"]</span>
                     </div>
                 }
                 else
                 {
                     <div class="hm-row">
-                        <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("check")@T[mine.Length == 0 ? "Polls_Vote" : "Polls_ChangeVote"]</button>
+                        <button class="hm-btn hm-btn--primary">@T[mine.Length == 0 ? "Polls_Vote" : "Polls_ChangeVote"]</button>
                         @if (mine.Length > 0)
                         {
                             <button class="hm-btn hm-btn--ghost" name="clear" value="true">@T["Polls_ClearVote"]</button>
@@ -158,7 +158,7 @@
     }
 
     <details class="hm-poll-new" open="@startOpen">
-        <summary class="hm-btn @(startOpen ? "" : "hm-btn--primary")">@DashboardIcons.Render("plus")@T["Polls_Start"]</summary>
+        <summary class="hm-btn @(startOpen ? "" : "hm-btn--primary")">@T["Polls_Start"]</summary>
         <form class="hm-stack" id="@formId" method="post" action="@Model.NewUrl" asp-antiforgery="false" data-poll-form>
             @Html.AntiForgeryToken()
             <input type="hidden" name="requestId" value="@Guid.NewGuid()">
@@ -198,10 +198,10 @@
                 <span class="hm-label">@T["Media_FindTitle"]</span>
                 <div class="hm-row hm-media-search__bar">
                     <select class="hm-select" data-media-kind aria-label="@T["Media_Kind"]">
-                        <option value="game">🎮 @T["Tag_games"]</option>
-                        <option value="series">📺 @T["Tag_series"]</option>
-                        <option value="anime">🌸 @T["Tag_anime"]</option>
-                        <option value="film">🎬 @T["Tag_films"]</option>
+                        <option value="game">@T["Tag_games"]</option>
+                        <option value="series">@T["Tag_series"]</option>
+                        <option value="anime">@T["Tag_anime"]</option>
+                        <option value="film">@T["Tag_films"]</option>
                     </select>
                     <input class="hm-input" type="search" data-media-query placeholder="@T["Media_SearchPlaceholder"]" aria-label="@T["Media_FindTitle"]">
                 </div>
@@ -215,7 +215,7 @@
                     <input class="hm-input" name="options" maxlength="300" aria-label="@T["Polls_OptionN", index + 1]"
                            placeholder="@(index == 0 ? T["Polls_OptionPlaceholder"].Value : "")" data-poll-option>
                 }
-                <button type="button" class="hm-btn hm-btn--ghost hm-btn--sm" data-poll-more hidden>@DashboardIcons.Render("plus")@T["Polls_AddOption"]</button>
+                <button type="button" class="hm-btn hm-btn--ghost hm-btn--sm" data-poll-more hidden>@T["Polls_AddOption"]</button>
                 <p class="hm-help">@T["Polls_OptionsHelp"]</p>
             </fieldset>
 
@@ -234,7 +234,7 @@
 
             @if (Model.IsGroup)
             {
-                <p class="hm-help hm-poll-new__where">💬 @(Model.GroupChannel is { } where ? T["Polls_PostedIn", where] : T["Polls_GroupNoChannel"])</p>
+                <p class="hm-help hm-poll-new__where">@DashboardIcons.Render("hash")@(Model.GroupChannel is { } where ? T["Polls_PostedIn", where] : T["Polls_GroupNoChannel"])</p>
             }
             else
             {
@@ -275,7 +275,7 @@
                 </fieldset>
             }
 
-            <div><button class="hm-btn hm-btn--primary">🗳️ @T["Polls_StartButton"]</button></div>
+            <div><button class="hm-btn hm-btn--primary">@T["Polls_StartButton"]</button></div>
         </form>
     </details>
 
@@ -292,7 +292,7 @@
                     int max = Math.Max(1, poll.Options.Max(option => poll.Count(option.Position)));
                     <article class="hm-poll hm-poll--ended">
                         <header class="hm-poll__head">
-                            <h4>🏁 @poll.Question</h4>
+                            <h4 class="hm-row" style="gap: var(--hm-space-2)">@DashboardIcons.Render("done", cssClass: "hm-heading-icon")@poll.Question</h4>
                             <p class="hm-help">@T["Polls_EndedAt", Local(poll.EndedAt).ToString(period == "today" ? "HH:mm" : "ddd d MMM, HH:mm", CultureInfo.CurrentCulture)] ·
                                 @T["Polls_Voted_Count", Model.VoterCount(poll)]</p>
                         </header>
@@ -302,7 +302,7 @@
                                 int count = poll.Count(option.Position);
                                 bool winner = leader?.Position == option.Position;
                                 <div class="hm-poll__option @(winner ? "is-winner" : "")" style="--share: @((count * 100 / max).ToString(CultureInfo.InvariantCulture))%">
-                                    <span class="hm-poll__label"><span>@(winner ? "🏆 " : "")<span aria-hidden="true">@Icon(option.Kind)</span> @option.Label
+                                    <span class="hm-poll__label"><span>@if (winner) {@DashboardIcons.Render("trophy", cssClass: "hm-heading-icon")}<span aria-hidden="true">@Icon(option.Kind)</span> @option.Label
                                         @if (option.Url is { } url)
                                         {
                                             <a href="@url" target="_blank" rel="noopener noreferrer" class="hm-poll__link" aria-label="@T["Polls_OpenLink", option.Label]">↗</a>
@@ -341,7 +341,7 @@
                             <span class="hm-poll-history__winner">
                                 @if (leader is not null)
                                 {
-                                    <span>🏆 @Icon(leader.Kind) @leader.Label</span>
+                                    <span>@DashboardIcons.Render("trophy", cssClass: "hm-heading-icon")@Icon(leader.Kind) @leader.Label</span>
                                     <small>@T["Polls_VotesOf", poll.Count(leader.Position), Model.VoterCount(poll)] · @Voters(poll, leader.Position)</small>
                                     await AddToWatchlist(leader);
                                 }

@@ -43,7 +43,7 @@
     </template>
 
     <div class="hm-row hm-weditor__tools">
-        <button class="hm-btn" type="button" data-add-range hidden>@DashboardIcons.Render("plus")@T["Add_time_range"]</button>
+        <button class="hm-btn" type="button" data-add-range hidden>@T["Add_time_range"]</button>
         <details class="hm-tz" open="@Model.CustomZone">
             <summary>@DashboardIcons.Render("globe")<span class="hm-tz__zone">@Model.Zone</span><span class="hm-tz__change">@T["Change"]</span></summary>
             <div class="hm-tz__panel">
@@ -63,6 +63,6 @@
 
     <div class="hm-row" style="justify-content: flex-end">
         <a class="hm-btn hm-btn--ghost" href="@Model.WeeklyUrl#@row.Anchor">@T["Cancel"]</a>
-        <button class="hm-btn hm-btn--primary" name="action" value="weekly-day">@DashboardIcons.Render("check")@T["Save_Arg0", row.Name]</button>
+        <button class="hm-btn hm-btn--primary" name="action" value="weekly-day">@T["Save_Arg0", row.Name]</button>
     </div>
 </form>

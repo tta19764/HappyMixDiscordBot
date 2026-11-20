@@ -39,7 +39,7 @@
                         <input class="hm-input" type="search" placeholder="@T["News_Find_a_game"]" aria-label="@T["News_Find_a_game"]" autocomplete="off">
                     </label>
                 }
-                <a class="hm-btn hm-btn--primary" href="#news-add">@DashboardIcons.Render("plus")<span class="hm-btn__label">@T["GameNews_Create"]</span></a>
+                <a class="hm-btn hm-btn--primary" href="#news-add"><span class="hm-btn__label">@T["GameNews_Create"]</span></a>
             </div>
         </div>
         @if (games.Length == 0)
@@ -97,7 +97,7 @@
                                                 </label>
                                             }
                                         </div>
-                                        <button class="hm-btn hm-btn--sm hm-btn--primary" name="action" value="sources">@DashboardIcons.Render("check")@T["News_Sources_Save"]</button>
+                                        <button class="hm-btn hm-btn--sm hm-btn--primary" name="action" value="sources">@T["News_Sources_Save"]</button>
                                     </form>
                                 </details>
                             }
@@ -116,7 +116,7 @@
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="game" value="@subscription.AppId" />
                                         <button class="hm-btn hm-btn--sm @(joined ? "" : "hm-btn--primary")" name="action" value="@(joined ? "unsubscribe" : "subscribe")">
-                                            @DashboardIcons.Render(joined ? "minus" : "bell")@T[joined ? "GameNews_Unsubscribe" : "GameNews_Subscribe"]
+                                            @T[joined ? "GameNews_Unsubscribe" : "GameNews_Subscribe"]
                                         </button>
                                     </form>
                                 }
@@ -153,7 +153,7 @@
                 <label class="hm-label" for="game-news-name">@T["Game_name"]</label>
                 <input class="hm-input" id="game-news-name" name="name" required maxlength="65" placeholder="Counter-Strike 2" />
             </div>
-            <button class="hm-btn hm-btn--primary" name="action" value="create">@DashboardIcons.Render("plus")@T["GameNews_Create"]</button>
+            <button class="hm-btn hm-btn--primary" name="action" value="create">@T["GameNews_Create"]</button>
         </div>
         <fieldset class="hm-choice hm-news-add__sources">
             <legend>@T["News_Sources"]</legend>

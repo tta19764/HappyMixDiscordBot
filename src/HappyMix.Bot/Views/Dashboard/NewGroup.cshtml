@@ -2,7 +2,7 @@
 @{
     Layout = "_DashboardLayout";
     ViewData["Title"] = T["New_group"];
-    ViewData["NavGuildName"] = Model.GuildName;
+    SideNav.Set(ViewData, Model.GuildId, Model.GuildName, "groups", Model.Viewer.CanConfigure);
     string? FieldError(string field) => Model.ErrorField == field ? Model.Error : null;
     BannerModel? topError = Model.Error is not null && Model.ErrorField is "" or null
         ? new BannerModel("error", T["Group_not_created"], Model.Error) : null;
@@ -88,7 +88,7 @@ else
 
         <div class="hm-row hm-sticky-action" style="justify-content: flex-end">
             <a class="hm-btn hm-btn--ghost" href="/groups/@Model.GuildId">@T["Cancel"]</a>
-            <button class="hm-btn hm-btn--primary hm-btn--lg">@DashboardIcons.Render("check")@T["Create_group"]</button>
+            <button class="hm-btn hm-btn--primary hm-btn--lg">@T["Create_group"]</button>
         </div>
     </form>
 }

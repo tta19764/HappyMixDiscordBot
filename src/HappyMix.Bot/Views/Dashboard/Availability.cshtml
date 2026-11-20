@@ -128,7 +128,7 @@ else if (!Model.IsWeekly)
             <hr class="hm-divider" style="margin: 0">
             <p class="hm-help">@T["Nothing_is_shared_until_you_save"]</p>
             <div class="hm-sticky-action" style="display: flex; justify-content: flex-end; margin-top: calc(-1 * var(--hm-space-2))">
-                <button class="hm-btn hm-btn--primary hm-btn--lg" name="action" value="today" data-range-save>@DashboardIcons.Render("check")@T["Add_range"]</button>
+                <button class="hm-btn hm-btn--primary hm-btn--lg" name="action" value="today" data-range-save>@T["Add_range"]</button>
             </div>
         </form>
 
@@ -169,7 +169,7 @@ else if (!Model.IsWeekly)
             <section class="hm-card hm-stack hm-stack--sm" aria-labelledby="weekly-link-title">
                 <h2 id="weekly-link-title" style="font-size: var(--hm-fs-lg)">@T["Weekly_timetable"]</h2>
                 <p class="hm-help">@Model.WeeklyCount of 7 days set. Weekly hours repeat every week.</p>
-                <a class="hm-link-btn" href="@weeklyUrl">Open weekly timetable @DashboardIcons.Render("arrow")</a>
+                <a class="hm-link-btn" href="@weeklyUrl">Open weekly timetable </a>
             </section>
         </aside>
     </div>
@@ -281,11 +281,11 @@ else
                         }
                     </a>
                     <div class="hm-day__actions">
-                        <a class="hm-btn" href="@editUrl" aria-label="@T["Edit_Arg0", row.Name]">@DashboardIcons.Render(row.Windows.Count == 0 ? "plus" : "pencil")<span class="hm-btn__label">@T.Message(row.Windows.Count == 0 ? "Add hours" : "Edit")</span></a>
+                        <a class="hm-btn" href="@editUrl" aria-label="@T["Edit_Arg0", row.Name]"><span class="hm-btn__label">@T.Message(row.Windows.Count == 0 ? "Add hours" : "Edit")</span></a>
                         @if (hasHours)
                         {
                             <details class="hm-copyto" data-copy-to>
-                                <summary class="hm-btn" aria-label="@T["Copy_Arg0_to_other_days", row.Name]">@DashboardIcons.Render("copy")<span class="hm-btn__label">@T["Copy_to"]</span></summary>
+                                <summary class="hm-btn" aria-label="@T["Copy_Arg0_to_other_days", row.Name]"><span class="hm-btn__label">@T["Copy_to"]</span></summary>
                                 <form class="hm-copyto__panel" method="post" action="@baseUrl" asp-antiforgery="false">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="day" value="@row.Day">
@@ -304,7 +304,7 @@ else
                                     <p class="hm-help">@T["Replaces_the_hours_on_the_days_you_pick"]</p>
                                     <div class="hm-row" style="justify-content: flex-end">
                                         <button class="hm-btn hm-btn--ghost hm-btn--sm" type="button" data-close-details hidden>@T["Cancel"]</button>
-                                        <button class="hm-btn hm-btn--primary hm-btn--sm" name="action" value="copy-weekly">@DashboardIcons.Render("copy")@T["Copy"]</button>
+                                        <button class="hm-btn hm-btn--primary hm-btn--sm" name="action" value="copy-weekly">@T["Copy"]</button>
                                     </div>
                                 </form>
                             </details>
@@ -339,7 +339,7 @@ else
         <p data-drop-message></p>
         <div class="hm-row" style="justify-content: flex-end">
             <button class="hm-btn hm-btn--ghost" value="cancel">@T["Cancel"]</button>
-            <button class="hm-btn hm-btn--primary" value="ok" data-drop-ok>@DashboardIcons.Render("copy")<span data-drop-ok-label data-replace="@T["Replace"]" data-copy="@T["Copy"]">@T["Copy"]</span></button>
+            <button class="hm-btn hm-btn--primary" value="ok" data-drop-ok><span data-drop-ok-label data-replace="@T["Replace"]" data-copy="@T["Copy"]">@T["Copy"]</span></button>
         </div>
     </form>
 </dialog>

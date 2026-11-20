@@ -5,52 +5,98 @@
    ===================================================================== */
 
 /* ---------- 1. Tokens ---------- */
+/* Night (dark): warm charcoal, light ink, flat surfaces. Sand (light): sand page, oat panels, espresso side panel; no white. */
 :root {
     color-scheme: dark;
-
-    /* Ground */
-    --hm-bg: #0e0f1c;
-    --hm-surface: #171a2c;
-    --hm-surface-2: #1f2339;
-    --hm-sunken: #0b0c17;
-    --hm-border: #31375a;
-    --hm-border-strong: #4c548a;
-
-    /* Text (all ≥ 4.5:1 on --hm-surface) */
-    --hm-text: #f3f4ff;
-    --hm-text-muted: #b7bcda;
-    --hm-text-subtle: #9aa1c4;
-
-    /* Brand — from the icon */
-    --hm-brand: #c9bfff;
-    --hm-brand-hover: #ddd7ff;
-    --hm-brand-ink: #16112e;
-    --hm-brand-deep: #262049;
-    --hm-brand-tint: #2a2452;
-
-    /* Semantic */
-    --hm-mint: #8ef2cd;        /* available / saved */
+    --hm-bg: #121417;
+    --hm-surface: #1a1d21;
+    --hm-surface-2: #22262b;
+    --hm-sunken: #0e1012;
+    --hm-border: #2c3036;
+    --hm-border-strong: #3d424a;
+    --hm-text: #ece8e0;
+    --hm-text-muted: #b8b4ab;
+    --hm-text-subtle: #a6a299;
+    --hm-brand: #ece8e0;
+    --hm-brand-hover: #ffffff;
+    --hm-brand-ink: #121417;
+    --hm-brand-deep: #2a2e34;
+    --hm-brand-tint: #272b31;
+    --hm-mint: #72ddb4;
+    --hm-mint-fill: #72ddb4;
     --hm-mint-ink: #062a20;
-    --hm-mint-tint: #12352e;
-    --hm-danger: #ffa3ad;
-    --hm-danger-line: #ff6b7b;
-    --hm-danger-tint: #3a1822;
-    --hm-warn: #ffd27a;
-    --hm-warn-tint: #352a10;
-    --hm-inherit: #aebcff;     /* inherited values */
-    --hm-inherit-tint: #1c2348;
-    --hm-focus: #94e7ff;
+    --hm-mint-tint: #15302a;
+    --hm-danger: #ff8a7e;
+    --hm-danger-line: #ff6b5e;
+    --hm-danger-tint: #3a1a17;
+    --hm-warn: #f2b64b;
+    --hm-warn-tint: #33280f;
+    --hm-inherit: #8fc0f0;
+    --hm-inherit-tint: #172331;
+    --hm-focus: #9ccbff;
+    --hm-shadow: 0 .5rem 1.5rem rgb(0 0 0 / .5);
+    --hm-hover: #272b31;
+    --hm-border-hover: #565c66;
+    --hm-overlay: rgb(18 20 23 / .96);
+    --hm-shadow-color: rgb(0 0 0 / .45);
+    --hm-shade: rgb(0 0 0 / .24);
+    --hm-mint-line: #23574a;
+    --hm-inherit-line: #3e5a7a;
+    --hm-brand-line: #4a4f57;
+    --hm-warn-line: #6a5420;
+    --hm-warn-ink: #2a1c00;
+    --hm-warn-fill: rgb(242 182 75 / .3);
+    --hm-danger-border: #6b2c26;
+    --hm-danger-zone: #5a2a26;
+    --hm-danger-ink: #2a0c08;
+    --hm-grid-line: rgb(18 20 23 / .7);
+    --hm-busy: #2a2e34;
+    --hm-empty: #16191d;
+    --hm-empty-track: #15181b;
+    --hm-stripe: rgb(166 162 153 / .3);
+    --hm-stripe-faint: rgb(166 162 153 / .12);
+    --hm-heat-1: #173a30;
+    --hm-heat-2: #1f5c4a;
+    --hm-heat-3: #3ea688;
+    --hm-mint-stripe: #5fc79f;
+    --hm-now: #f2906f;
+    --hm-now-ink: #2a1200;
+    --hm-card-shadow: none;
+    --hm-field: var(--hm-sunken);
+    --hm-field-shadow: none;
+    --hm-band: #16191c;
+    --hm-segment-on: var(--hm-text);
+    --hm-segment-on-ink: var(--hm-bg);
+    --hm-segment-on-shadow: none;
+    --hm-mode-on: var(--hm-surface-2);
+    --hm-tab-on: var(--hm-text);
+    --hm-btn-shadow: none;
+    --hm-primary-shadow: none;
+    --hm-side: #0b0c0e;
+    --hm-side-ink: #eee8dd;
+    --hm-side-muted: #9b978f;
+    --hm-side-line: #212428;
+    --hm-side-hover: #17191c;
+    --hm-side-active: #22252a;
+    --hm-c-sky: #6cb8f2;
+    --hm-c-pink: #ee8ec6;
+    --hm-c-amber: #f2b64b;
+    --hm-c-coral: #f2906f;
+    --hm-c-mint: #72ddb4;
+    --hm-c-violet: #afa2ff;
+    --hm-c-slate: #b9c1cc;
 
-    /* Type */
-    --hm-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --hm-font-mono: "Cascadia Mono", ui-monospace, "SF Mono", Consolas, monospace;
+    /* Type: IBM Plex covers Latin and Cyrillic, so en, uk and ru set the same way. */
+    --hm-font: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --hm-font-cond: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+    --hm-font-mono: "IBM Plex Mono", "Cascadia Mono", ui-monospace, Consolas, monospace;
     --hm-fs-xs: .75rem;
     --hm-fs-sm: .8125rem;
     --hm-fs-md: .9375rem;
     --hm-fs-lg: 1.0625rem;
     --hm-fs-xl: 1.25rem;
-    --hm-fs-2xl: 1.625rem;
-    --hm-fs-3xl: 2rem;
+    --hm-fs-2xl: 2.125rem;
+    --hm-fs-3xl: 2.5rem;
     --hm-lh: 1.45;
 
     /* Space (4px grid) */
@@ -63,198 +109,181 @@
     --hm-space-8: 2rem;
     --hm-space-10: 2.5rem;
 
-    /* Shape & size */
-    --hm-radius-sm: .375rem;
-    --hm-radius-md: .625rem;
-    --hm-radius-lg: .875rem;
-    --hm-radius-pill: 999px;
-    --hm-target: 2.75rem;      /* 44px minimum touch target */
-    --hm-target-lg: 3.25rem;   /* 52px time inputs, mobile primary */
-    --hm-shell: 70rem;
-    --hm-header-h: 3.5rem;
-    --hm-shadow: 0 .5rem 1.5rem rgb(0 0 0 / .45);
+    /* Shape & size: squared. Even "pill" shapes get small corners. */
+    --hm-radius-sm: 2px;
+    --hm-radius-md: 3px;
+    --hm-radius-lg: 4px;
+    --hm-radius-pill: 3px;
+    --hm-target: 2.75rem;
+    --hm-target-lg: 3.25rem;
+    --hm-shell: 72rem;
+    --hm-header-h: 0rem;
+    --hm-side-w: 15.75rem;
+    --hm-side-w-collapsed: 4.25rem;
     --hm-ease: 120ms ease-out;
-
-    /* Theme-dependent details (lines, overlays, the availability grid) */
-    --hm-hover: #2a2f4b;
-    --hm-border-hover: #6a73ad;
-    --hm-overlay: rgb(14 15 28 / .94);
-    --hm-shadow-color: rgb(0 0 0 / .45);
-    --hm-shade: rgb(0 0 0 / .24);
-    --hm-mint-line: #1f5a4b;
-    --hm-inherit-line: #5b68b0;
-    --hm-brand-line: #574c9c;
-    --hm-warn-line: #6a5420;
-    --hm-warn-ink: #3a2a00;
-    --hm-warn-fill: rgb(255 210 122 / .3);
-    --hm-danger-border: #6f2a39;
-    --hm-danger-zone: #5a2a36;
-    --hm-danger-ink: #3a0d16;
-    --hm-grid-line: rgb(14 15 28 / .65);
-    --hm-busy: #2a2e45;
-    --hm-empty: #121424;
-    --hm-empty-track: #101222;
-    --hm-stripe: rgb(154 161 196 / .3);
-    --hm-stripe-faint: rgb(154 161 196 / .13);
-    --hm-heat-1: #163a33;
-    --hm-heat-2: #1d5a4a;
-    --hm-heat-3: #3ea688;
-    --hm-mint-stripe: #6fd8b2;
-    --hm-now: #ffb86b;
-    --hm-now-ink: #2a1600;
-
-    /* Surface treatment tokens: the light theme lifts cards with shadows and white fields. */
-    --hm-mint-fill: #8ef2cd;
-    --hm-card-shadow: none;
-    --hm-field: var(--hm-sunken);
-    --hm-field-shadow: none;
-    --hm-band: var(--hm-sunken);
-    --hm-segment-on: var(--hm-brand);
-    --hm-segment-on-ink: var(--hm-brand-ink);
-    --hm-segment-on-shadow: none;
-    --hm-mode-on: var(--hm-surface-2);
-    --hm-tab-on: var(--hm-text);
-    --hm-btn-shadow: none;
-    --hm-primary-shadow: none;
+    --hm-accent: var(--hm-c-slate);
 }
 
-/* Light theme: chosen explicitly, or following the system when no choice is saved. */
-/* Light theme, "Lavender paper": a softly tinted page, white cards lifted by shadow, ink-violet accents.
-   Chosen explicitly, or following the system when no choice is saved. */
 :root[data-theme="light"] {
     color-scheme: light;
-    --hm-bg: #eceef6;
-    --hm-surface: #ffffff;
-    --hm-surface-2: #f5f6fb;
-    --hm-sunken: #f0f2f8;
-    --hm-border: #dde0ec;
-    --hm-border-strong: #c3c8dc;
-    --hm-text: #1c1e33;
-    --hm-text-muted: #474c69;
-    --hm-text-subtle: #5f6584;
-    --hm-brand: #5a45cf;
-    --hm-brand-hover: #4734b2;
-    --hm-brand-ink: #ffffff;
-    --hm-brand-deep: #e3defc;
-    --hm-brand-tint: #ece9fd;
-    --hm-mint: #0a7352;
-    --hm-mint-fill: #43c99a;
+    --hm-bg: #e2daca;
+    --hm-surface: #ece5d6;
+    --hm-surface-2: #e4dcca;
+    --hm-sunken: #f3eee4;
+    --hm-border: #cdc2ac;
+    --hm-border-strong: #b3a78f;
+    --hm-text: #211d17;
+    --hm-text-muted: #463f35;
+    --hm-text-subtle: #575044;
+    --hm-brand: #211d17;
+    --hm-brand-hover: #3a342b;
+    --hm-brand-ink: #f1ebdf;
+    --hm-brand-deep: #d8cfbc;
+    --hm-brand-tint: #ddd4c2;
+    --hm-mint: #0a6a4a;
+    --hm-mint-fill: #3fae84;
     --hm-mint-ink: #04301f;
-    --hm-mint-tint: #def4eb;
-    --hm-danger: #b3261e;
-    --hm-danger-line: #d9443a;
-    --hm-danger-tint: #fde9e7;
-    --hm-warn: #8a5300;
-    --hm-warn-tint: #fcf0d6;
-    --hm-inherit: #2f52b8;
-    --hm-inherit-tint: #e7ecfb;
-    --hm-focus: #4c63e0;
-    --hm-shadow: 0 2px 4px rgb(30 33 66 / .06), 0 10px 28px rgb(30 33 66 / .12);
-    --hm-hover: #eef0f8;
-    --hm-border-hover: #9ea5c4;
-    --hm-overlay: rgb(246 247 251 / .9);
-    --hm-shadow-color: rgb(30 33 66 / .18);
-    --hm-shade: rgb(40 45 90 / .06);
-    --hm-mint-line: #9cd9c2;
-    --hm-inherit-line: #a8baee;
-    --hm-brand-line: #c9c0f6;
-    --hm-warn-line: #d9a03a;
-    --hm-warn-ink: #ffffff;
-    --hm-warn-fill: rgb(240 170 40 / .24);
-    --hm-danger-border: #efb1ab;
-    --hm-danger-zone: #efb1ab;
-    --hm-danger-ink: #ffffff;
-    --hm-grid-line: rgb(255 255 255 / .9);
-    --hm-busy: #e2e5ef;
-    --hm-empty: #eef0f6;
-    --hm-empty-track: #f3f4f9;
-    --hm-stripe: rgb(70 80 130 / .22);
-    --hm-stripe-faint: rgb(70 80 130 / .09);
-    --hm-heat-1: #d6f0e5;
-    --hm-heat-2: #9fdcc3;
-    --hm-heat-3: #3cae86;
-    --hm-mint-stripe: #8ddfbe;
-    --hm-now: #cc5f16;
-    --hm-now-ink: #ffffff;
-    --hm-card-shadow: 0 1px 2px rgb(30 33 66 / .06), 0 2px 8px rgb(30 33 66 / .04);
-    --hm-field: #ffffff;
-    --hm-field-shadow: inset 0 1px 2px rgb(30 33 66 / .05);
-    --hm-band: #e5e8f2;
-    --hm-segment-on: #ffffff;
-    --hm-segment-on-ink: #1c1e33;
-    --hm-segment-on-shadow: 0 1px 2px rgb(30 33 66 / .08), 0 2px 6px rgb(30 33 66 / .06);
-    --hm-tab-on: #5a45cf;
-    --hm-mode-on: #ffffff;
-    --hm-btn-shadow: 0 1px 1px rgb(30 33 66 / .05);
-    --hm-primary-shadow: 0 1px 2px rgb(71 52 178 / .3);
+    --hm-mint-tint: #d5e2d0;
+    --hm-danger: #a32d1b;
+    --hm-danger-line: #c2412c;
+    --hm-danger-tint: #f0d9cc;
+    --hm-warn: #7e5100;
+    --hm-warn-tint: #eedfc0;
+    --hm-inherit: #1c5d93;
+    --hm-inherit-tint: #d6dcdc;
+    --hm-focus: #1c5d93;
+    --hm-shadow: 0 2px 4px rgb(60 45 20 / .08), 0 10px 28px rgb(60 45 20 / .16);
+    --hm-hover: #e4dcca;
+    --hm-border-hover: #8e826b;
+    --hm-overlay: rgb(226 218 202 / .96);
+    --hm-shadow-color: rgb(60 45 20 / .2);
+    --hm-shade: rgb(60 45 20 / .06);
+    --hm-mint-line: #8fc2a9;
+    --hm-inherit-line: #8fafcb;
+    --hm-brand-line: #b3a78f;
+    --hm-warn-line: #c7922e;
+    --hm-warn-ink: #f7ebd3;
+    --hm-warn-fill: rgb(200 140 30 / .25);
+    --hm-danger-border: #d9a595;
+    --hm-danger-zone: #d9a595;
+    --hm-danger-ink: #f7e6de;
+    --hm-grid-line: rgb(236 229 214 / .9);
+    --hm-busy: #d6ccb8;
+    --hm-empty: #e8e1d2;
+    --hm-empty-track: #e9e2d4;
+    --hm-stripe: rgb(90 75 50 / .22);
+    --hm-stripe-faint: rgb(90 75 50 / .09);
+    --hm-heat-1: #cfe2cf;
+    --hm-heat-2: #9ccbb0;
+    --hm-heat-3: #3fae84;
+    --hm-mint-stripe: #7cc3a2;
+    --hm-now: #a23c1c;
+    --hm-now-ink: #f7ebd3;
+    --hm-card-shadow: none;
+    --hm-field: #f3eee4;
+    --hm-field-shadow: none;
+    --hm-band: #dcd3c0;
+    --hm-segment-on: #211d17;
+    --hm-segment-on-ink: #f1ebdf;
+    --hm-segment-on-shadow: none;
+    --hm-tab-on: #211d17;
+    --hm-mode-on: #ece5d6;
+    --hm-btn-shadow: none;
+    --hm-primary-shadow: none;
+    --hm-side: #28241e;
+    --hm-side-ink: #eee8dd;
+    --hm-side-muted: #b3aa9b;
+    --hm-side-line: #3a352d;
+    --hm-side-hover: #322d26;
+    --hm-side-active: #3e3830;
+    --hm-c-sky: #1c5d93;
+    --hm-c-pink: #992a67;
+    --hm-c-amber: #7e5100;
+    --hm-c-coral: #a23c1c;
+    --hm-c-mint: #0a6a4a;
+    --hm-c-violet: #5240bf;
+    --hm-c-slate: #46505c;
 }
 @media (prefers-color-scheme: light) {
     :root:not([data-theme]) {
         color-scheme: light;
-        --hm-bg: #eceef6;
-        --hm-surface: #ffffff;
-        --hm-surface-2: #f5f6fb;
-        --hm-sunken: #f0f2f8;
-        --hm-border: #dde0ec;
-        --hm-border-strong: #c3c8dc;
-        --hm-text: #1c1e33;
-        --hm-text-muted: #474c69;
-        --hm-text-subtle: #5f6584;
-        --hm-brand: #5a45cf;
-        --hm-brand-hover: #4734b2;
-        --hm-brand-ink: #ffffff;
-        --hm-brand-deep: #e3defc;
-        --hm-brand-tint: #ece9fd;
-        --hm-mint: #0a7352;
-        --hm-mint-fill: #43c99a;
+        --hm-bg: #e2daca;
+        --hm-surface: #ece5d6;
+        --hm-surface-2: #e4dcca;
+        --hm-sunken: #f3eee4;
+        --hm-border: #cdc2ac;
+        --hm-border-strong: #b3a78f;
+        --hm-text: #211d17;
+        --hm-text-muted: #463f35;
+        --hm-text-subtle: #575044;
+        --hm-brand: #211d17;
+        --hm-brand-hover: #3a342b;
+        --hm-brand-ink: #f1ebdf;
+        --hm-brand-deep: #d8cfbc;
+        --hm-brand-tint: #ddd4c2;
+        --hm-mint: #0a6a4a;
+        --hm-mint-fill: #3fae84;
         --hm-mint-ink: #04301f;
-        --hm-mint-tint: #def4eb;
-        --hm-danger: #b3261e;
-        --hm-danger-line: #d9443a;
-        --hm-danger-tint: #fde9e7;
-        --hm-warn: #8a5300;
-        --hm-warn-tint: #fcf0d6;
-        --hm-inherit: #2f52b8;
-        --hm-inherit-tint: #e7ecfb;
-        --hm-focus: #4c63e0;
-        --hm-shadow: 0 2px 4px rgb(30 33 66 / .06), 0 10px 28px rgb(30 33 66 / .12);
-        --hm-hover: #eef0f8;
-        --hm-border-hover: #9ea5c4;
-        --hm-overlay: rgb(246 247 251 / .9);
-        --hm-shadow-color: rgb(30 33 66 / .18);
-        --hm-shade: rgb(40 45 90 / .06);
-        --hm-mint-line: #9cd9c2;
-        --hm-inherit-line: #a8baee;
-        --hm-brand-line: #c9c0f6;
-        --hm-warn-line: #d9a03a;
-        --hm-warn-ink: #ffffff;
-        --hm-warn-fill: rgb(240 170 40 / .24);
-        --hm-danger-border: #efb1ab;
-        --hm-danger-zone: #efb1ab;
-        --hm-danger-ink: #ffffff;
-        --hm-grid-line: rgb(255 255 255 / .9);
-        --hm-busy: #e2e5ef;
-        --hm-empty: #eef0f6;
-        --hm-empty-track: #f3f4f9;
-        --hm-stripe: rgb(70 80 130 / .22);
-        --hm-stripe-faint: rgb(70 80 130 / .09);
-        --hm-heat-1: #d6f0e5;
-        --hm-heat-2: #9fdcc3;
-        --hm-heat-3: #3cae86;
-        --hm-mint-stripe: #8ddfbe;
-        --hm-now: #cc5f16;
-        --hm-now-ink: #ffffff;
-        --hm-card-shadow: 0 1px 2px rgb(30 33 66 / .06), 0 2px 8px rgb(30 33 66 / .04);
-        --hm-field: #ffffff;
-        --hm-field-shadow: inset 0 1px 2px rgb(30 33 66 / .05);
-        --hm-band: #e5e8f2;
-        --hm-segment-on: #ffffff;
-        --hm-segment-on-ink: #1c1e33;
-        --hm-segment-on-shadow: 0 1px 2px rgb(30 33 66 / .08), 0 2px 6px rgb(30 33 66 / .06);
-        --hm-tab-on: #5a45cf;
-        --hm-mode-on: #ffffff;
-        --hm-btn-shadow: 0 1px 1px rgb(30 33 66 / .05);
-        --hm-primary-shadow: 0 1px 2px rgb(71 52 178 / .3);
+        --hm-mint-tint: #d5e2d0;
+        --hm-danger: #a32d1b;
+        --hm-danger-line: #c2412c;
+        --hm-danger-tint: #f0d9cc;
+        --hm-warn: #7e5100;
+        --hm-warn-tint: #eedfc0;
+        --hm-inherit: #1c5d93;
+        --hm-inherit-tint: #d6dcdc;
+        --hm-focus: #1c5d93;
+        --hm-shadow: 0 2px 4px rgb(60 45 20 / .08), 0 10px 28px rgb(60 45 20 / .16);
+        --hm-hover: #e4dcca;
+        --hm-border-hover: #8e826b;
+        --hm-overlay: rgb(226 218 202 / .96);
+        --hm-shadow-color: rgb(60 45 20 / .2);
+        --hm-shade: rgb(60 45 20 / .06);
+        --hm-mint-line: #8fc2a9;
+        --hm-inherit-line: #8fafcb;
+        --hm-brand-line: #b3a78f;
+        --hm-warn-line: #c7922e;
+        --hm-warn-ink: #f7ebd3;
+        --hm-warn-fill: rgb(200 140 30 / .25);
+        --hm-danger-border: #d9a595;
+        --hm-danger-zone: #d9a595;
+        --hm-danger-ink: #f7e6de;
+        --hm-grid-line: rgb(236 229 214 / .9);
+        --hm-busy: #d6ccb8;
+        --hm-empty: #e8e1d2;
+        --hm-empty-track: #e9e2d4;
+        --hm-stripe: rgb(90 75 50 / .22);
+        --hm-stripe-faint: rgb(90 75 50 / .09);
+        --hm-heat-1: #cfe2cf;
+        --hm-heat-2: #9ccbb0;
+        --hm-heat-3: #3fae84;
+        --hm-mint-stripe: #7cc3a2;
+        --hm-now: #a23c1c;
+        --hm-now-ink: #f7ebd3;
+        --hm-card-shadow: none;
+        --hm-field: #f3eee4;
+        --hm-field-shadow: none;
+        --hm-band: #dcd3c0;
+        --hm-segment-on: #211d17;
+        --hm-segment-on-ink: #f1ebdf;
+        --hm-segment-on-shadow: none;
+        --hm-tab-on: #211d17;
+        --hm-mode-on: #ece5d6;
+        --hm-btn-shadow: none;
+        --hm-primary-shadow: none;
+        --hm-side: #28241e;
+        --hm-side-ink: #eee8dd;
+        --hm-side-muted: #b3aa9b;
+        --hm-side-line: #3a352d;
+        --hm-side-hover: #322d26;
+        --hm-side-active: #3e3830;
+        --hm-c-sky: #1c5d93;
+        --hm-c-pink: #992a67;
+        --hm-c-amber: #7e5100;
+        --hm-c-coral: #a23c1c;
+        --hm-c-mint: #0a6a4a;
+        --hm-c-violet: #5240bf;
+        --hm-c-slate: #46505c;
     }
 }
 
@@ -1168,84 +1197,30 @@ form[data-dirty="true"] .hm-savebar__clean { display: none; }
 .hm-calendar__day.is-configured { font-weight:700; }
 .hm-calendar__day span { font-size:8px; }
 
-/* ---------- 28. Colour: section accents, copying availability, game news ---------- */
-/* A small accent palette. Each server tab has its own hue, and the page picks it up as --hm-accent, so pages stop
-   being one violet: Availability is sky, Events amber, Game news coral, Groups pink, Linked accounts mint. */
-:root {
-    --hm-c-sky: #7cc8ff;     --hm-c-sky-tint: #14304a;
-    --hm-c-pink: #ff9bd2;    --hm-c-pink-tint: #3d1a33;
-    --hm-c-amber: #ffc46b;   --hm-c-amber-tint: #3a2a10;
-    --hm-c-coral: #ff9a7a;   --hm-c-coral-tint: #3d1d16;
-    --hm-c-mint: #8ef2cd;    --hm-c-mint-tint: #12352e;
-    --hm-c-violet: #c9bfff;  --hm-c-violet-tint: #2a2452;
-    --hm-accent: var(--hm-c-violet);
-    --hm-accent-tint: var(--hm-c-violet-tint);
-    --hm-glow-a: rgb(124 200 255 / .10);
-    --hm-glow-b: rgb(255 155 210 / .08);
-    --hm-primary-grad: linear-gradient(135deg, #c9bfff, #f0b4ff);
-}
-:root[data-theme="light"] {
-    --hm-c-sky: #1765a8;     --hm-c-sky-tint: #e3f0fc;
-    --hm-c-pink: #b02a72;    --hm-c-pink-tint: #fbe6f1;
-    --hm-c-amber: #8a5300;   --hm-c-amber-tint: #fdf0d8;
-    --hm-c-coral: #b23d1e;   --hm-c-coral-tint: #fde8e1;
-    --hm-c-mint: #0a7352;    --hm-c-mint-tint: #ddf5ea;
-    --hm-c-violet: #5a45cf;  --hm-c-violet-tint: #ece9fd;
-    --hm-glow-a: rgb(23 101 168 / .08);
-    --hm-glow-b: rgb(176 42 114 / .06);
-    --hm-primary-grad: linear-gradient(135deg, #5a45cf, #8b3fc4);
-}
-@media (prefers-color-scheme: light) {
-    :root:not([data-theme]) {
-        --hm-c-sky: #1765a8;     --hm-c-sky-tint: #e3f0fc;
-        --hm-c-pink: #b02a72;    --hm-c-pink-tint: #fbe6f1;
-        --hm-c-amber: #8a5300;   --hm-c-amber-tint: #fdf0d8;
-        --hm-c-coral: #b23d1e;   --hm-c-coral-tint: #fde8e1;
-        --hm-c-mint: #0a7352;    --hm-c-mint-tint: #ddf5ea;
-        --hm-c-violet: #5a45cf;  --hm-c-violet-tint: #ece9fd;
-        --hm-glow-a: rgb(23 101 168 / .08);
-        --hm-glow-b: rgb(176 42 114 / .06);
-        --hm-primary-grad: linear-gradient(135deg, #5a45cf, #8b3fc4);
-    }
-}
+/* ---------- 28. Colour: section accents ---------- */
+/* Each section keeps its color: Availability green, Events amber, Game news coral, Groups pink, Votes violet,
+   Linked accounts blue, Settings and Logs slate. The layout puts the section on <body>. */
+:root { --hm-c-sky-tint: color-mix(in srgb, var(--hm-c-sky) 16%, var(--hm-surface)); --hm-c-pink-tint: color-mix(in srgb, var(--hm-c-pink) 16%, var(--hm-surface));
+    --hm-c-amber-tint: color-mix(in srgb, var(--hm-c-amber) 16%, var(--hm-surface)); --hm-c-coral-tint: color-mix(in srgb, var(--hm-c-coral) 16%, var(--hm-surface));
+    --hm-c-mint-tint: color-mix(in srgb, var(--hm-c-mint) 16%, var(--hm-surface)); --hm-c-violet-tint: color-mix(in srgb, var(--hm-c-violet) 16%, var(--hm-surface));
+    --hm-c-slate-tint: color-mix(in srgb, var(--hm-c-slate) 14%, var(--hm-surface)); --hm-accent-tint: var(--hm-c-slate-tint); }
+.hm-sec-availability { --hm-accent: var(--hm-c-mint); --hm-accent-tint: var(--hm-c-mint-tint); }
+.hm-sec-events { --hm-accent: var(--hm-c-amber); --hm-accent-tint: var(--hm-c-amber-tint); }
+.hm-sec-game-news { --hm-accent: var(--hm-c-coral); --hm-accent-tint: var(--hm-c-coral-tint); }
+.hm-sec-groups { --hm-accent: var(--hm-c-pink); --hm-accent-tint: var(--hm-c-pink-tint); }
+.hm-sec-votes { --hm-accent: var(--hm-c-violet); --hm-accent-tint: var(--hm-c-violet-tint); }
+.hm-sec-links { --hm-accent: var(--hm-c-sky); --hm-accent-tint: var(--hm-c-sky-tint); }
+.hm-sec-settings, .hm-sec-logs { --hm-accent: var(--hm-c-slate); --hm-accent-tint: var(--hm-c-slate-tint); }
 
-/* The active server tab sets the page accent. */
-.hm-main:has(.hm-tabs a[href^="/availability/"][aria-current="page"]) { --hm-accent: var(--hm-c-sky); --hm-accent-tint: var(--hm-c-sky-tint); }
-.hm-main:has(.hm-tabs a[href^="/events/"][aria-current="page"]) { --hm-accent: var(--hm-c-amber); --hm-accent-tint: var(--hm-c-amber-tint); }
-.hm-main:has(.hm-tabs a[href^="/game-news/"][aria-current="page"]) { --hm-accent: var(--hm-c-coral); --hm-accent-tint: var(--hm-c-coral-tint); }
-.hm-main:has(.hm-tabs a[href^="/groups/"][aria-current="page"]) { --hm-accent: var(--hm-c-pink); --hm-accent-tint: var(--hm-c-pink-tint); }
-.hm-main:has(.hm-tabs a[href^="/links/"][aria-current="page"]) { --hm-accent: var(--hm-c-mint); --hm-accent-tint: var(--hm-c-mint-tint); }
-
-body { background: radial-gradient(60rem 28rem at 8% -6rem, var(--hm-glow-a), transparent 70%),
-    radial-gradient(50rem 26rem at 96% -4rem, var(--hm-glow-b), transparent 70%), var(--hm-bg); background-repeat: no-repeat; }
-.hm-header { box-shadow: 0 1px 0 var(--hm-border), 0 2px 0 -1px var(--hm-accent); border-bottom-color: transparent; }
-
-.hm-page-head { position: relative; padding: var(--hm-space-4) var(--hm-space-5); border-radius: var(--hm-radius-lg);
-    background: linear-gradient(110deg, var(--hm-accent-tint), transparent 75%); border-left: 4px solid var(--hm-accent); }
-
-/* Tabs: a coloured dot per tab, and the underline in that tab's colour. */
-.hm-tabs a::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--tab, var(--hm-c-violet)); opacity: .55; flex: none; }
-.hm-tabs a[href^="/availability/"] { --tab: var(--hm-c-sky); }
-.hm-tabs a[href^="/events/"] { --tab: var(--hm-c-amber); }
-.hm-tabs a[href^="/game-news/"] { --tab: var(--hm-c-coral); }
-.hm-tabs a[href^="/groups/"] { --tab: var(--hm-c-pink); }
-.hm-tabs a[href^="/links/"] { --tab: var(--hm-c-mint); }
-.hm-tabs a:hover::before, .hm-tabs a[aria-current="page"]::before { opacity: 1; }
-.hm-tabs a[aria-current="page"] { border-bottom-color: var(--tab, var(--hm-brand)); border-bottom-width: 3px; }
-
-/* Cards: an accent edge and a marker beside each card title. */
-.hm-main .hm-card { border-top: 3px solid var(--hm-accent); }
-.hm-card__head h2::before { content: ""; display: inline-block; width: .3rem; height: .95em; margin-right: var(--hm-space-2); border-radius: 2px; background: var(--hm-accent); vertical-align: -.08em; }
-
-.hm-btn--primary { background: var(--hm-primary-grad); border-color: transparent; }
-.hm-btn--primary:hover { background: var(--hm-primary-grad); filter: brightness(1.08); border-color: transparent; }
-.hm-badge { background: var(--hm-accent-tint); color: var(--hm-text); border-color: transparent; }
+.hm-card__head h2::before { content: ""; display: inline-block; width: .5rem; height: .5rem; margin-right: var(--hm-space-2); background: var(--hm-accent); vertical-align: .12em; }
+.hm-btn--primary { background: var(--hm-brand); border-color: var(--hm-brand); }
+.hm-btn--primary:hover { background: var(--hm-brand-hover); border-color: var(--hm-brand-hover); }
 .hm-segment a[aria-current="page"] .hm-icon { color: inherit; }
 
 /* Weekly timetable rows: weekend names in pink, today in the accent. */
 .hm-day--weekend .hm-day__name { color: var(--hm-c-pink); }
-.hm-day--today { background: linear-gradient(90deg, var(--hm-accent-tint), transparent 60%); box-shadow: inset 4px 0 0 var(--hm-accent); }
-.hm-day--saved { background: linear-gradient(90deg, var(--hm-mint-tint), transparent 80%); }
+.hm-day--today { background: var(--hm-accent-tint); box-shadow: inset 3px 0 0 var(--hm-accent); }
+.hm-day--saved { background: var(--hm-mint-tint); }
 
 /* Drag a day or a date onto another to copy it. */
 .hm-day[draggable="true"] .hm-day__label { cursor: grab; }
@@ -1275,7 +1250,7 @@ body { background: radial-gradient(60rem 28rem at 8% -6rem, var(--hm-glow-a), tr
 /* Drop confirmation. */
 .hm-dialog { width: min(26rem, calc(100vw - 2rem)); padding: var(--hm-space-5); border: 1px solid var(--hm-border-strong); border-top: 3px solid var(--hm-accent);
     border-radius: var(--hm-radius-lg); background: var(--hm-surface); color: var(--hm-text); box-shadow: var(--hm-shadow); }
-.hm-dialog::backdrop { background: rgb(8 9 20 / .55); backdrop-filter: blur(2px); }
+.hm-dialog::backdrop { background: rgb(10 9 7 / .55); }
 .hm-dialog h2 { font-size: var(--hm-fs-lg); }
 .hm-dialog p { color: var(--hm-text-muted); }
 
@@ -1295,10 +1270,10 @@ form:has([data-repeat-toggle]:not(:checked)) [data-repeat-through] { display: no
 .hm-news-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr)); gap: var(--hm-space-4); }
 .hm-news-grid .hm-news-card { display: flex; flex-direction: column; gap: 0; padding: 0; border-radius: var(--hm-radius-lg); background: var(--hm-surface-2);
     transition: transform var(--hm-ease), border-color var(--hm-ease); }
-.hm-news-grid .hm-news-card:hover { transform: translateY(-2px); border-color: var(--hm-accent); }
+.hm-news-grid .hm-news-card:hover { border-color: var(--hm-accent); }
 .hm-news-card.is-joined { border-color: var(--hm-mint-line); box-shadow: 0 0 0 1px var(--hm-mint-line); }
 .hm-news-card.is-deleting { opacity: .6; }
-.hm-news-grid .hm-news-card__art { position: relative; border-radius: 0; min-height: 0; background: linear-gradient(135deg, var(--hm-accent-tint), var(--hm-c-pink-tint)); aspect-ratio: 460 / 215; }
+.hm-news-grid .hm-news-card__art { position: relative; border-radius: 0; min-height: 0; background: var(--hm-surface-2); aspect-ratio: 460 / 215; }
 .hm-news-card__flag { position: absolute; top: var(--hm-space-2); left: var(--hm-space-2); display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;
     border-radius: var(--hm-radius-pill); background: var(--hm-mint-fill); color: var(--hm-mint-ink); font-size: var(--hm-fs-xs); font-weight: 700; }
 .hm-news-card__flag .hm-icon { width: .8rem; height: .8rem; stroke-width: 3; }
@@ -1485,10 +1460,10 @@ form:has([data-repeat-toggle]:not(:checked)) [data-repeat-through] { display: no
 .hm-group-settings .hm-danger-zone h3 { margin: 0; font-size: var(--hm-fs-md); }
 
 /* ---------- 32. Group tags and votes ---------- */
-.hm-tag--games { background: color-mix(in srgb, #6ee7b7 22%, transparent); }
-.hm-tag--series { background: color-mix(in srgb, #93c5fd 24%, transparent); }
-.hm-tag--films { background: color-mix(in srgb, #fca5a5 22%, transparent); }
-.hm-tag--anime { background: color-mix(in srgb, #f9a8d4 24%, transparent); }
+.hm-tag--games { --hm-tag-c: var(--hm-c-mint); }
+.hm-tag--series { --hm-tag-c: var(--hm-c-sky); }
+.hm-tag--films { --hm-tag-c: var(--hm-c-amber); }
+.hm-tag--anime { --hm-tag-c: var(--hm-c-pink); }
 .hm-tag-picker { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: var(--hm-space-2); }
 .hm-tag-picker__item { display: flex; gap: var(--hm-space-2); align-items: flex-start; padding: var(--hm-space-3); border: 1px solid var(--hm-border);
     border-radius: var(--hm-radius-md); background: var(--hm-surface); cursor: pointer; }
@@ -1641,7 +1616,7 @@ form:has([data-repeat-toggle]:not(:checked)) [data-repeat-through] { display: no
 
 /* Group tags on lists and headers */
 .hm-group-tags { display: flex; flex-wrap: wrap; gap: var(--hm-space-1); margin: var(--hm-space-2) 0; }
-.hm-tag--custom { background: var(--hm-surface-2); color: var(--hm-text-muted); }
+.hm-tag--custom { --hm-tag-c: var(--hm-c-slate); }
 
 /* Open groups, join requests and game suggestions */
 .hm-badge--open { background: color-mix(in srgb, var(--hm-mint) 22%, transparent); }
@@ -1664,3 +1639,166 @@ form:has([data-repeat-toggle]:not(:checked)) [data-repeat-through] { display: no
 .hm-news-add__sources { margin-top: var(--hm-space-4); }
 .hm-news-add__sources .hm-check { flex-wrap: nowrap; align-items: center; font-size: var(--hm-fs-sm); }
 .hm-check > span { min-width: 0; }
+
+/* ---------- 35. Redesign: side panel, page head, group tabs, flat and squared ---------- */
+/* Layout: a retractable side panel holds the server switcher, every section, the guide, theme, language and the account.
+   Collapsed it keeps the same icons in the same order. On a phone it becomes a bar with a menu button. */
+body { background: var(--hm-bg); }
+h1 { font-family: var(--hm-font-cond); font-size: var(--hm-fs-2xl); line-height: 1.1; letter-spacing: 0; font-weight: 700; }
+h2 { font-family: var(--hm-font-cond); letter-spacing: 0; font-weight: 600; }
+h3 { letter-spacing: 0; }
+.hm-icon { stroke-width: 1.75; stroke-linecap: square; stroke-linejoin: miter; }
+:focus-visible { border-radius: 0; }
+a { color: var(--hm-text); text-decoration-color: var(--hm-border-strong); }
+a:hover { color: var(--hm-text); text-decoration-color: var(--hm-text); }
+
+.hm-app { display: flex; min-height: 100vh; }
+.hm-app__main { flex: 1 1 auto; min-width: 0; }
+.hm-main { padding: var(--hm-space-8) var(--hm-space-10) var(--hm-space-10); }
+.hm-shell.hm-main { width: auto; max-width: calc(var(--hm-shell) + 2 * var(--hm-space-10)); margin-inline: auto; }
+
+.hm-side { position: sticky; top: 0; align-self: flex-start; height: 100vh; flex: 0 0 var(--hm-side-w); width: var(--hm-side-w); box-sizing: border-box;
+    display: flex; flex-direction: column; gap: var(--hm-space-4); padding: var(--hm-space-4) var(--hm-space-3); overflow-y: auto; overflow-x: hidden;
+    background: var(--hm-side); color: var(--hm-side-ink); z-index: 20; scrollbar-width: thin; }
+.hm-side a { color: inherit; text-decoration: none; }
+.hm-side__top { display: flex; align-items: center; gap: var(--hm-space-2); min-height: 2.25rem; }
+.hm-side__brand { display: inline-flex; align-items: center; gap: var(--hm-space-3); min-height: 2.25rem; padding-left: 2px; font-family: var(--hm-font-cond); font-size: var(--hm-fs-lg); font-weight: 700; }
+.hm-side__mark { display: grid; place-items: center; width: 2rem; height: 2rem; flex: none; border-radius: var(--hm-radius-sm); background: var(--hm-side-ink); color: #1a1714;
+    font-family: var(--hm-font-mono); font-size: .8125rem; font-weight: 600; }
+.hm-side .hm-side__menu { display: none; margin-left: auto; width: auto; }
+.hm-side__label { padding: 0 var(--hm-space-3); font-family: var(--hm-font-mono); font-size: .6875rem; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--hm-side-muted); }
+.hm-side__nav { display: grid; gap: 2px; }
+.hm-side__group { display: grid; gap: var(--hm-space-1); }
+.hm-side__link, .hm-side__btn { display: flex; align-items: center; gap: var(--hm-space-3); width: 100%; min-height: 2.5rem; padding: 0 var(--hm-space-3); box-sizing: border-box;
+    border: 0; border-radius: var(--hm-radius-md); background: transparent; color: var(--hm-side-ink); font: inherit; font-size: var(--hm-fs-md); font-weight: 500; text-align: left; cursor: pointer; }
+.hm-side__btn { border: 1px solid var(--hm-side-line); font-size: var(--hm-fs-sm); }
+.hm-side__link:hover, .hm-side__btn:hover, .hm-side .hm-menu[open] > .hm-side__btn { background: var(--hm-side-hover); color: var(--hm-side-ink); }
+.hm-side__link[aria-current="page"] { background: var(--hm-side-active); font-weight: 600; }
+.hm-side__link[aria-current="page"] .hm-icon { color: var(--hm-side-c, var(--hm-side-ink)); }
+.hm-side__link .hm-icon, .hm-side__btn .hm-icon { width: 1.25rem; height: 1.25rem; flex: none; }
+.hm-side__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm-side__link .hm-side__text { white-space: normal; line-height: 1.2; padding-block: 4px; overflow-wrap: anywhere; }
+.hm-side__link:focus-visible, .hm-side__btn:focus-visible { outline: 2px solid var(--hm-side-ink); outline-offset: -2px; }
+.hm-side__server { font-weight: 600; }
+.hm-side__server .hm-side__text { flex: 1; }
+.hm-side__server-mark { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; flex: none; border-radius: var(--hm-radius-sm); background: #3e6b54; color: #eef7f1;
+    font-family: var(--hm-font-mono); font-size: .6875rem; font-weight: 600; overflow: hidden; }
+.hm-side__server-mark img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.hm-side__spacer { flex: 1; }
+.hm-side__foot { display: grid; gap: var(--hm-space-2); }
+.hm-side__prefs { display: flex; flex-wrap: wrap; gap: var(--hm-space-2); }
+.hm-side__prefs .hm-menu { flex: 1 1 5.5rem; }
+.hm-side__prefs .hm-side__btn { width: 100%; }
+.hm-side__code { font-family: var(--hm-font-mono); font-size: var(--hm-fs-xs); font-weight: 600; }
+.hm-side__user { display: flex; align-items: center; gap: var(--hm-space-2); padding: var(--hm-space-2) 2px 0; border-top: 1px solid var(--hm-side-line); }
+.hm-side__avatar { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; flex: none; border-radius: var(--hm-radius-sm); background: #3c3566; color: #e4defe;
+    font-family: var(--hm-font-mono); font-size: var(--hm-fs-xs); font-weight: 600; }
+.hm-side__name { flex: 1; min-width: 0; font-size: var(--hm-fs-sm); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm-side__user .hm-side__btn { width: 2.5rem; padding: 0; justify-content: center; flex: none; }
+.hm-side .hm-menu__panel { top: auto; bottom: calc(100% + var(--hm-space-2)); left: 0; right: auto; color: var(--hm-text); }
+.hm-side__c-availability { --hm-side-c: #72ddb4; } .hm-side__c-events { --hm-side-c: #f2b64b; } .hm-side__c-game-news { --hm-side-c: #f2906f; }
+.hm-side__c-groups { --hm-side-c: #ee8ec6; } .hm-side__c-votes { --hm-side-c: #afa2ff; } .hm-side__c-links { --hm-side-c: #6cb8f2; }
+.hm-side__c-settings, .hm-side__c-logs { --hm-side-c: #b9c1cc; }
+
+/* Collapsed: icons only, names stay as tooltips and accessible names. The choice is remembered per browser. */
+.hm-collapsed .hm-side { flex-basis: var(--hm-side-w-collapsed); width: var(--hm-side-w-collapsed); }
+.hm-collapsed .hm-side__text, .hm-collapsed .hm-side__label, .hm-collapsed .hm-side__name, .hm-collapsed .hm-side__brand-name, .hm-collapsed .hm-side__code { display: none; }
+.hm-collapsed .hm-side__link, .hm-collapsed .hm-side__btn { justify-content: center; padding: 0; }
+.hm-collapsed .hm-side__user { flex-direction: column; }
+.hm-collapsed .hm-side__prefs { flex-direction: column; }
+.hm-collapsed .hm-side__prefs .hm-menu { flex: none; }
+.hm-collapsed .hm-side .hm-menu__panel { left: calc(100% + var(--hm-space-2)); bottom: 0; }
+.hm-side__expand { display: none; }
+.hm-collapsed .hm-side__collapse { display: none; }
+.hm-collapsed .hm-side__expand { display: inline-flex; }
+
+@media (max-width: 47.99rem) {
+    .hm-app { flex-direction: column; }
+    .hm-side, .hm-collapsed .hm-side { position: sticky; top: 0; align-self: stretch; height: auto; max-height: 100vh; width: auto; flex: none; gap: var(--hm-space-3); padding: var(--hm-space-2) var(--hm-space-3); }
+    .hm-side .hm-side__menu { display: inline-flex; }
+    .hm-side__collapsible { display: none; }
+    .hm-side-open .hm-side__collapsible { display: grid; }
+    .hm-side-open .hm-side__nav .hm-side__group > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; }
+    .hm-side__spacer, .hm-side__fold { display: none !important; }
+    .hm-collapsed .hm-side__text, .hm-collapsed .hm-side__label, .hm-collapsed .hm-side__name, .hm-collapsed .hm-side__brand-name, .hm-collapsed .hm-side__code { display: revert; }
+    .hm-collapsed .hm-side__link, .hm-collapsed .hm-side__btn { justify-content: flex-start; padding: 0 var(--hm-space-3); }
+    .hm-collapsed .hm-side__user, .hm-collapsed .hm-side__prefs { flex-direction: row; }
+    .hm-main { padding: var(--hm-space-5) var(--hm-space-4) var(--hm-space-10); }
+}
+
+/* Page head: a section marker and breadcrumb, the title, one line of context and the page's main action. */
+.hm-page-head { position: static; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--hm-space-4) var(--hm-space-6);
+    margin: 0 0 var(--hm-space-6); padding: 0 0 var(--hm-space-5); border: 0; border-bottom: 1px solid var(--hm-border); border-radius: 0; background: none; }
+.hm-page-head > div:first-child { display: grid; gap: var(--hm-space-2); min-width: 0; max-width: 46rem; }
+.hm-page-head p { margin: 0; color: var(--hm-text-muted); }
+.hm-page-head__crumb { display: flex; flex-wrap: wrap; align-items: center; gap: var(--hm-space-2); font-family: var(--hm-font-mono); font-size: .6875rem; font-weight: 500;
+    letter-spacing: .06em; text-transform: uppercase; color: var(--hm-text-subtle); }
+.hm-page-head__crumb::before { content: ""; width: .625rem; height: .625rem; flex: none; background: var(--hm-accent); }
+.hm-page-head__crumb a { color: inherit; text-decoration: none; }
+.hm-page-head__crumb a:hover { color: var(--hm-text); text-decoration: underline; }
+.hm-crumbs { font-family: var(--hm-font-mono); font-size: .6875rem; letter-spacing: .06em; text-transform: uppercase; margin-bottom: var(--hm-space-2); }
+.hm-crumbs::before { content: ""; width: .625rem; height: .625rem; flex: none; background: var(--hm-accent); }
+
+/* Group tabs: icon, name and count, underlined in that section's color; they scroll sideways when names are long. */
+/* The tabs wrap onto more rows instead of scrolling; once they wrap, every row stretches to the full width. */
+.hm-gtabs { display: flex; flex-wrap: wrap; margin: 0 0 var(--hm-space-6); }
+.hm-gtabs a { display: inline-flex; align-items: center; justify-content: center; gap: var(--hm-space-2); flex: 0 0 auto; min-height: var(--hm-target); padding: 0 var(--hm-space-4);
+    color: var(--hm-text-muted); font-weight: 500; text-decoration: none; white-space: nowrap; box-shadow: inset 0 -1px 0 var(--hm-border-strong); }
+.hm-gtabs::after { content: ""; flex: 1 1 0; min-width: 0; box-shadow: inset 0 -1px 0 var(--hm-border-strong); }
+.hm-gtabs.is-wrapped a { flex: 1 1 auto; }
+.hm-gtabs.is-wrapped::after { display: none; }
+.hm-gtabs a:hover { color: var(--hm-text); background: var(--hm-surface-2); }
+.hm-gtabs a[aria-current="page"], .hm-gtabs a[aria-selected="true"] { color: var(--hm-text); font-weight: 600; box-shadow: inset 0 -3px 0 var(--hm-tab-c, var(--hm-accent)); }
+.hm-gtabs a[aria-current="page"] .hm-icon, .hm-gtabs a[aria-selected="true"] .hm-icon { color: var(--hm-tab-c, var(--hm-accent)); }
+.hm-gtabs .hm-count { font-family: var(--hm-font-mono); font-size: var(--hm-fs-xs); color: var(--hm-text-subtle); background: none; padding: 0; min-width: 0; }
+.hm-tab-c-overview, .hm-tab-c-members { --hm-tab-c: var(--hm-c-pink); } .hm-tab-c-availability, .hm-tab-c-games { --hm-tab-c: var(--hm-c-mint); }
+.hm-tab-c-events { --hm-tab-c: var(--hm-c-amber); } .hm-tab-c-votes { --hm-tab-c: var(--hm-c-violet); } .hm-tab-c-watchlist { --hm-tab-c: var(--hm-c-sky); }
+.hm-tab-c-settings { --hm-tab-c: var(--hm-c-slate); }
+/* With scripts on, one group panel shows at a time; without them every section stays on the page. */
+.hm-tabbed [data-group-panel]:not(.is-shown) { display: none !important; }
+.hm-panel-availability { --hm-accent: var(--hm-c-mint); --hm-accent-tint: var(--hm-c-mint-tint); }
+.hm-panel-events { --hm-accent: var(--hm-c-amber); --hm-accent-tint: var(--hm-c-amber-tint); }
+.hm-panel-votes { --hm-accent: var(--hm-c-violet); --hm-accent-tint: var(--hm-c-violet-tint); }
+.hm-panel-watchlist { --hm-accent: var(--hm-c-sky); --hm-accent-tint: var(--hm-c-sky-tint); }
+
+/* Flat components: no gradients, glows or lifted cards. */
+.hm-card { box-shadow: none; }
+.hm-card__head h2, .hm-section h2 { display: flex; align-items: center; gap: var(--hm-space-2); }
+.hm-heading-icon { color: var(--hm-accent); width: 1.25rem; height: 1.25rem; }
+.hm-btn { font-weight: 500; }
+.hm-btn--primary { color: var(--hm-brand-ink); }
+.hm-btn--ghost { border-color: transparent; }
+.hm-btn--danger { border-color: var(--hm-danger-line); }
+.hm-chip { font-weight: 500; }
+.hm-chip[aria-pressed="true"], .hm-chip[aria-current="page"], .hm-chip[aria-current="true"] { background: transparent; border-color: var(--hm-accent); box-shadow: inset 0 -3px 0 var(--hm-accent); color: var(--hm-text); }
+.hm-chip .hm-count { background: none; font-family: var(--hm-font-mono); color: var(--hm-text-subtle); }
+.hm-badge { background: transparent; border-color: var(--hm-border-strong); color: var(--hm-text-muted); font-family: var(--hm-font-mono); font-weight: 500;
+    font-size: .6875rem; letter-spacing: .04em; text-transform: uppercase; border-radius: var(--hm-radius-sm); }
+.hm-tag { gap: 6px; min-height: 1.5rem; padding: 0 8px; border-radius: var(--hm-radius-sm); font-weight: 500; color: var(--hm-tag-c, var(--hm-c-violet));
+    border: 1px solid color-mix(in srgb, var(--hm-tag-c, var(--hm-c-violet)) 45%, transparent); background: color-mix(in srgb, var(--hm-tag-c, var(--hm-c-violet)) 9%, transparent); }
+.hm-tag .hm-icon { width: .875rem; height: .875rem; stroke-width: 2; }
+.hm-tag--cs2 { --hm-tag-c: var(--hm-c-amber); }
+.hm-tag--dota2 { --hm-tag-c: var(--hm-c-coral); }
+.hm-avatar, .hm-user__avatar, .hm-avstack img, .hm-news-members img { border-radius: var(--hm-radius-sm); }
+.hm-input, .hm-select, .hm-textarea { border-radius: var(--hm-radius-md); }
+.hm-segment { padding: 0; gap: 0; background: transparent; border-color: var(--hm-border-strong); overflow: hidden; }
+.hm-segment a { border-radius: 0; border-right: 1px solid var(--hm-border-strong); font-weight: 500; }
+.hm-segment a:last-child { border-right: 0; }
+.hm-news-card__flag { border-radius: var(--hm-radius-sm); }
+.hm-poll { border-left-width: 3px; }
+.hm-mono { font-family: var(--hm-font-mono); }
+/* Scrollbars: thin, squared and in the theme's line colors instead of the browser's default. */
+:root { --hm-scroll-thumb: var(--hm-border-strong); --hm-scroll-thumb-hover: var(--hm-text-subtle); }
+* { scrollbar-width: thin; scrollbar-color: var(--hm-scroll-thumb) transparent; }
+*:hover { --hm-scroll-thumb: var(--hm-border-hover); }
+.hm-side { --hm-scroll-thumb: var(--hm-side-line); --hm-scroll-thumb-hover: var(--hm-side-muted); }
+.hm-side:hover { --hm-scroll-thumb: var(--hm-side-muted); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--hm-scroll-thumb); border: 3px solid transparent; background-clip: padding-box; border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: var(--hm-scroll-thumb-hover); background-clip: padding-box; }
+::-webkit-scrollbar-button { display: none; }
+/* Buttons are words only, so row actions keep their labels at every width and wrap instead. */
+.hm-day__actions .hm-btn__label, .hm-week .hm-day__actions .hm-btn__label { display: inline !important; }
+.hm-day__actions .hm-btn, .hm-week .hm-day__actions .hm-btn { width: auto !important; padding: 0 var(--hm-space-3) !important; }
+.hm-day__actions { flex-wrap: wrap; }

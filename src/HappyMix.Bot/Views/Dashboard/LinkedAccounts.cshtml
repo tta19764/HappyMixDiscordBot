@@ -67,7 +67,7 @@
                         {
                             <div class="hm-roster__actions">
                                 <a class="hm-btn hm-btn--danger" href="/links/@Model.GuildId/unlink/@link.AlternateId" aria-label="@T["Unlink_Arg0", name]">
-                                    @DashboardIcons.Render("trash")<span class="hm-btn__label">@T["Unlink"]</span>
+                                    <span class="hm-btn__label">@T["Unlink"]</span>
                                 </a>
                             </div>
                         }
@@ -109,7 +109,7 @@
                 {
                     <form method="post" action="/links/@Model.GuildId/requests" asp-antiforgery="false">
                         @Html.AntiForgeryToken()
-                        <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("plus")@T["Create_link"]</button>
+                        <button class="hm-btn hm-btn--primary">@T["Create_link"]</button>
                     </form>
                 }
                 else

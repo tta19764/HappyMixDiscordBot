@@ -37,7 +37,7 @@
     </nav>
     @if (Model.CanCreate)
     {
-        <a class="hm-btn hm-btn--primary" href="/groups/@Model.GuildId/new">@DashboardIcons.Render("plus")@T["New_group"]</a>
+        <a class="hm-btn hm-btn--primary" href="/groups/@Model.GuildId/new">@T["New_group"]</a>
     }
 </div>
 
@@ -77,7 +77,7 @@
                 <p>@T["Groups_are_invite_only_Ask_an_organizer_to_invite_you_or_start"]</p>
                 @if (Model.CanCreate)
                 {
-                    <a class="hm-btn hm-btn--primary" href="/groups/@Model.GuildId/new">@DashboardIcons.Render("plus")@T["New_group"]</a>
+                    <a class="hm-btn hm-btn--primary" href="/groups/@Model.GuildId/new">@T["New_group"]</a>
                 }
             }
         </div>
@@ -98,7 +98,7 @@ else
                     <span class="hm-row" style="gap: var(--hm-space-1)">
                         @if (group.Open)
                         {
-                            <span class="hm-badge hm-badge--open">🔓 @T["Groups_Open"]</span>
+                            <span class="hm-badge hm-badge--open">@DashboardIcons.Render("door")@T["Groups_Open"]</span>
                         }
                         <partial name="_GroupBadge" model="(group.Relation, Model.Viewer.CanModerate)" />
                     </span>
@@ -137,7 +137,7 @@ else
                     {
                         <form method="post" action="/groups/@Model.GuildId/@group.Id/invitation" asp-antiforgery="false">
                             @Html.AntiForgeryToken()
-                            <button class="hm-btn hm-btn--primary" name="decision" value="accept">@DashboardIcons.Render("check")@T["Accept"]</button>
+                            <button class="hm-btn hm-btn--primary" name="decision" value="accept">@T["Accept"]</button>
                             <button class="hm-btn" name="decision" value="decline">@T["Decline"]</button>
                         </form>
                     }
@@ -151,15 +151,15 @@ else
                             }
                             else
                             {
-                                <button class="hm-btn hm-btn--primary">🙋 @T["Groups_RequestToJoin"]</button>
+                                <button class="hm-btn hm-btn--primary">@T["Groups_RequestToJoin"]</button>
                             }
                         </form>
-                        <a class="hm-btn hm-btn--ghost" href="@url">@T["Open"] @DashboardIcons.Render("arrow")</a>
+                        <a class="hm-btn hm-btn--ghost" href="@url">@T["Open"] </a>
                     }
                     else
                     {
-                        <a class="hm-btn" href="@url#members">@DashboardIcons.Render("users")@T["Roster"]</a>
-                        <a class="hm-btn hm-btn--ghost" href="@url">@T["Open"] @DashboardIcons.Render("arrow")</a>
+                        <a class="hm-btn" href="@url?tab=roster#members">@T["Roster"]</a>
+                        <a class="hm-btn hm-btn--ghost" href="@url">@T["Open"] </a>
                     }
                 </div>
             </section>
@@ -171,12 +171,12 @@ else
         <nav class="hm-pager" aria-label="@T["Pages"]">
             @if (directory.Page > 1)
             {
-                <a class="hm-btn" href="@Model.Url(page: directory.Page - 1)" rel="prev">← @T["Previous"]</a>
+                <a class="hm-btn" href="@Model.Url(page: directory.Page - 1)" rel="prev">@T["Previous"]</a>
             }
             <span class="hm-pager__status">@T["Page_Arg0_of_Arg1", directory.Page, directory.PageCount]</span>
             @if (directory.Page < directory.PageCount)
             {
-                <a class="hm-btn" href="@Model.Url(page: directory.Page + 1)" rel="next">@T["Next"] →</a>
+                <a class="hm-btn" href="@Model.Url(page: directory.Page + 1)" rel="next">@T["Next"]</a>
             }
         </nav>
     }
@@ -185,7 +185,7 @@ else
 @if (Model.CanCreate)
 {
     <div class="hm-sticky-action hm-mobile-only" style="margin-top: var(--hm-space-6)">
-        <a class="hm-btn hm-btn--primary hm-btn--lg" href="/groups/@Model.GuildId/new">@DashboardIcons.Render("plus")@T["New_group"]</a>
+        <a class="hm-btn hm-btn--primary hm-btn--lg" href="/groups/@Model.GuildId/new">@T["New_group"]</a>
     </div>
 }
 

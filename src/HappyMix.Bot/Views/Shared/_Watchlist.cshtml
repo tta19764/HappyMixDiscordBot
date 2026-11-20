@@ -4,13 +4,13 @@
 @model WatchModel
 @{
     var board = Model.Board;
-    string Icon(string kind) => kind switch { "series" => "📺", "film" => "🎬", "anime" => "🌸", _ => "•" };
+    Microsoft.AspNetCore.Html.IHtmlContent Icon(string kind) => DashboardIcons.Render(kind switch { "series" => "series", "film" => "films", "anime" => "anime", _ => "watch" });
     var groups = board.Entries.GroupBy(entry => entry.Item.Status).ToDictionary(group => group.Key, group => group.ToArray());
     WatchStatus[] order = [WatchStatus.Watching, WatchStatus.Planned, WatchStatus.Watched, WatchStatus.Dropped];
 }
 <section class="hm-card hm-section hm-stack hm-watch" id="watchlist" aria-labelledby="watchlist-title">
     <div>
-        <h2 id="watchlist-title">📺 @T["Watch_Title"]</h2>
+        <h2 id="watchlist-title">@DashboardIcons.Render("watch", cssClass: "hm-heading-icon")@T["Watch_Title"]</h2>
         <p class="hm-help">@T[board.CanEdit ? "Watch_HelpEdit" : "Watch_HelpView"]</p>
     </div>
     @if (Model.Error is not null)
@@ -21,18 +21,18 @@
     @if (board.CanEdit)
     {
         <details class="hm-watch-add" open="@(board.Entries.Count == 0)">
-            <summary class="hm-btn">@DashboardIcons.Render("plus")@T["Watch_Add"]</summary>
+            <summary class="hm-btn">@T["Watch_Add"]</summary>
             <div class="hm-stack hm-watch-add__body">
                 <div class="hm-field hm-media-search" data-media-search data-url="/media/@Model.GuildId/search" data-add-label="@T["Watch_AddThis"]"
                      data-empty="@T["Media_NoResults"]" data-failed="@T["Media_SearchFailed"]" data-watch-url="@Model.Url" hidden>
                     <span class="hm-label">@T["Media_FindTitle"]</span>
                     <div class="hm-row hm-media-search__bar">
                         <select class="hm-select" data-media-kind aria-label="@T["Media_Kind"]">
-                            <option value="series">📺 @T["Tag_series"]</option>
-                            <option value="anime">🌸 @T["Tag_anime"]</option>
+                            <option value="series">@T["Tag_series"]</option>
+                            <option value="anime">@T["Tag_anime"]</option>
                             @if (board.SupportsFilms)
                             {
-                                <option value="film">🎬 @T["Tag_films"]</option>
+                                <option value="film">@T["Tag_films"]</option>
                             }
                         </select>
                         <input class="hm-input" type="search" data-media-query placeholder="@T["Media_SearchPlaceholder"]" aria-label="@T["Media_FindTitle"]">
@@ -45,13 +45,13 @@
                     <span class="hm-label">@T["Watch_OrLink"]</span>
                     <div class="hm-watch-add__manual">
                         <select class="hm-select" name="kind" aria-label="@T["Media_Kind"]">
-                            <option value="series">📺 @T["Tag_series"]</option>
-                            <option value="anime">🌸 @T["Tag_anime"]</option>
-                            <option value="film">🎬 @T["Tag_films"]</option>
+                            <option value="series">@T["Tag_series"]</option>
+                            <option value="anime">@T["Tag_anime"]</option>
+                            <option value="film">@T["Tag_films"]</option>
                         </select>
                         <input class="hm-input" name="url" inputmode="url" maxlength="300" placeholder="https://www.imdb.com/title/… · tvmaze.com/shows/… · myanimelist.net/anime/…" aria-label="@T["Watch_Link"]">
                         <input class="hm-input" name="title" maxlength="120" placeholder="@T["Watch_TitlePlaceholder"]" aria-label="@T["Watch_TitleLabel"]">
-                        <button class="hm-btn hm-btn--primary">@DashboardIcons.Render("plus")@T["Watch_AddButton"]</button>
+                        <button class="hm-btn hm-btn--primary">@T["Watch_AddButton"]</button>
                     </div>
                     <p class="hm-help">@T[board.SupportsFilms ? "Watch_LinkHelp" : "Watch_LinkHelpNoFilms"]</p>
                 </form>
@@ -116,7 +116,7 @@
                             }
                             else if (item.FinishedAt is { } finished)
                             {
-                                <p class="hm-help">✅ @T["Watch_FinishedOn", finished.ToLocalTime().ToString("d MMM yyyy", System.Globalization.CultureInfo.CurrentCulture)]</p>
+                                <p class="hm-help">@DashboardIcons.Render("done")@T["Watch_FinishedOn", finished.ToLocalTime().ToString("d MMM yyyy", System.Globalization.CultureInfo.CurrentCulture)]</p>
                             }
 
                             @if (board.CanEdit)
@@ -127,11 +127,11 @@
                                         <form class="hm-row" method="post" action="@Model.ItemUrl(item)" asp-antiforgery="false">
                                             @Html.AntiForgeryToken()
                                             <button class="hm-btn hm-btn--primary hm-btn--sm" name="action" value="next">
-                                                ✓ @(episodes ? T["Watch_MarkEpisode", item.Season, item.Episode] : T["Watch_MarkWatched"])
+                                                @(episodes ? T["Watch_MarkEpisode", item.Season, item.Episode] : T["Watch_MarkWatched"])
                                             </button>
                                             @if (episodes)
                                             {
-                                                <button class="hm-btn hm-btn--sm" name="action" value="finish" data-confirm="@T["Watch_FinishConfirm", item.Title]">🏁 @T["Watch_Finish"]</button>
+                                                <button class="hm-btn hm-btn--sm" name="action" value="finish" data-confirm="@T["Watch_FinishConfirm", item.Title]">@T["Watch_Finish"]</button>
                                             }
                                         </form>
                                     }
@@ -163,7 +163,7 @@
                                             <label class="hm-field"><span class="hm-label">@T["Watch_StoppedAtLabel"]</span>
                                                 <input class="hm-input hm-tnum" name="position" placeholder="12:30" pattern="\d{1,2}(:\d{2}){0,2}"
                                                        value="@(item.PositionSeconds is { } at ? WatchKinds.FormatPosition(at) : "")"></label>
-                                            <button class="hm-btn hm-btn--sm">@DashboardIcons.Render("check")@T["Save"]</button>
+                                            <button class="hm-btn hm-btn--sm">@T["Save"]</button>
                                         </form>
                                         <form class="hm-row" method="post" action="@Model.ItemUrl(item)" asp-antiforgery="false">
                                             @Html.AntiForgeryToken()

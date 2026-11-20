@@ -3,7 +3,7 @@
 @{
     Layout = "_DashboardLayout";
     ViewData["Title"] = Model.Title;
-    ViewData["NavGuildName"] = Model.GuildName;
+    SideNav.Set(ViewData, Model.GuildId, Model.GuildName, "events", Model.CanConfigure);
     var occurrence = Model.Occurrence;
     string date = occurrence.Date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
     string baseUrl = $"/events/{Model.GuildId}/{Model.View.Details.Event.Id}";
@@ -41,7 +41,7 @@
         <p>@Model.When · @Model.View.Details.Event.TimeZone</p>
         <p class="hm-subtle">@Model.Schedule</p>
     </div>
-    <a class="hm-btn" href="/events/@Model.GuildId">@DashboardIcons.Render("back")@T["All_events"]</a>
+    <a class="hm-btn" href="/events/@Model.GuildId">@T["All_events"]</a>
 </div>
 
 @if (Model.Banner is { } banner)
@@ -88,7 +88,7 @@
                     @if (Model.MyAnswer != true)
                     {
                         @if (Model.Repeats) { <p class="hm-help">@T["Events_SeriesHelp"]</p> }
-                        <button class="hm-btn hm-btn--primary" name="answer" value="accept">@DashboardIcons.Render("check")@T["Accept"]</button>
+                        <button class="hm-btn hm-btn--primary" name="answer" value="accept">@T["Accept"]</button>
                     }
                     @if (Model.MyAnswer == true)
                     {
@@ -158,7 +158,7 @@
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="date" value="@date">
                         <input type="hidden" name="returnUrl" value="@self">
-                        <button class="hm-btn hm-btn--primary" style="width: 100%">@DashboardIcons.Render("check")@T["Confirm_with_Arg0_of_Arg1_going", counts.Accepted, invited]</button>
+                        <button class="hm-btn hm-btn--primary" style="width: 100%">@T["Confirm_with_Arg0_of_Arg1_going", counts.Accepted, invited]</button>
                     </form>
                 }
                 else
@@ -169,7 +169,7 @@
                 @if (!Model.SeriesCanceled && Model.Responses.Count > 0)
                 {
                     <details class="hm-confirm hm-confirm--neutral hm-confirm--inline">
-                        <summary class="hm-btn">@DashboardIcons.Render("users")<span class="hm-btn__label">@T["Hand_over_organizer"]</span></summary>
+                        <summary class="hm-btn"><span class="hm-btn__label">@T["Hand_over_organizer"]</span></summary>
                         <form class="hm-confirm__panel" method="post" action="@baseUrl/transfer" asp-antiforgery="false">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="date" value="@date">

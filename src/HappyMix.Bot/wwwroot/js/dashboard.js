@@ -157,10 +157,76 @@ document.querySelector("[data-theme-form]")?.addEventListener("submit", event =>
     for (const button of form.querySelectorAll("[name=theme]")) button.setAttribute("aria-pressed", String(button.value === theme));
     for (const icon of document.querySelectorAll("[data-theme-icon]")) icon.hidden = icon.dataset.themeIcon !== theme;
     const summary = document.querySelector("[data-theme-summary]");
-    summary.setAttribute("aria-label", `${form.getAttribute("aria-label")}: ${event.submitter.textContent.trim()}`);
+    const label = event.submitter.dataset.themeLabel || event.submitter.textContent.trim();
+    summary.setAttribute("aria-label", `${form.getAttribute("aria-label")}: ${label}`);
+    const name = summary.querySelector("[data-theme-name]");
+    if (name) name.textContent = label;
     form.closest("[data-menu]").open = false;
     summary.focus();
 });
+
+// Side panel: collapse to icons (remembered in this browser); on a phone the menu button opens the panel.
+(() => {
+    const root = document.documentElement;
+    const toggle = document.querySelector("[data-side-toggle]");
+    const label = document.querySelector("[data-side-label]");
+    const sync = () => {
+        const collapsed = root.classList.contains("hm-collapsed");
+        if (toggle) {
+            toggle.setAttribute("aria-expanded", String(!collapsed));
+            const text = collapsed ? label?.dataset.expand : label?.dataset.collapse;
+            if (text) { toggle.setAttribute("aria-label", text); toggle.title = text; label.textContent = text; }
+        }
+    };
+    toggle?.addEventListener("click", () => {
+        const collapsed = root.classList.toggle("hm-collapsed");
+        try { localStorage.setItem("hm-side", collapsed ? "collapsed" : "expanded"); } catch { /* private mode: not remembered */ }
+        sync();
+    });
+    sync();
+    const menu = document.querySelector("[data-side-menu]");
+    menu?.addEventListener("click", () => {
+        const open = root.classList.toggle("hm-side-open");
+        menu.setAttribute("aria-expanded", String(open));
+    });
+})();
+
+// Group tabs: with scripts on, one section shows at a time, picked by the address (#events, #settings…).
+// Without scripts every section stays on the page and the tabs work as anchors.
+(() => {
+    const tabs = document.querySelector("[data-group-tabs]");
+    if (!tabs) return;
+    const panels = [...document.querySelectorAll("[data-group-panel]")];
+    const links = [...tabs.querySelectorAll("a[data-tab]")];
+    const fallback = tabs.dataset.defaultTab || "overview";
+    const keysOf = panel => panel.dataset.groupPanel.split(" ");
+    const show = () => {
+        const id = decodeURIComponent(location.hash.slice(1));
+        let key = links.some(link => link.dataset.tab === id) ? id : null;
+        if (!key && id) {
+            const target = document.getElementById(id);
+            const panel = target?.closest("[data-group-panel]");
+            if (panel) key = keysOf(panel).includes(fallback) ? fallback : keysOf(panel)[0];
+        }
+        key ||= fallback;
+        if (!panels.some(panel => keysOf(panel).includes(key))) key = fallback;
+        for (const panel of panels) panel.classList.toggle("is-shown", keysOf(panel).includes(key));
+        for (const link of links) link.setAttribute("aria-current", link.dataset.tab === key ? "page" : "false");
+        document.body.classList.add("hm-tabbed");
+    };
+    window.addEventListener("hashchange", show);
+    show();
+
+    // When the tabs no longer fit one row they wrap; then each row stretches to the full width.
+    const measure = () => {
+        const tops = new Set(links.map(link => link.offsetTop));
+        tabs.classList.toggle("is-wrapped", tops.size > 1);
+    };
+    if ("ResizeObserver" in window) new ResizeObserver(measure).observe(tabs);
+    else window.addEventListener("resize", measure);
+    document.fonts?.ready.then(measure);
+    measure();
+})();
 
 // Weekly day editor: a 30-hour track (the day plus the early hours of the next) drawn over the server-rendered
 // range list. The list's inputs stay the source of truth, so saving and the no-JavaScript form behave the same.

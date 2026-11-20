@@ -2,7 +2,7 @@
 @{
     Layout = "_DashboardLayout";
     ViewData["Title"] = T["Unlink_account"];
-    ViewData["NavGuildName"] = Model.GuildName;
+    SideNav.Set(ViewData, Model.GuildId, Model.GuildName, "links", Model.Viewer.CanConfigure);
     string Localize(string key) => T.Message(key);
     var preview = Model.Preview;
     string alternateName = Model.Names.Name(preview.AlternateId, Localize);
@@ -37,6 +37,6 @@
     <p class="hm-help">@T["Memberships_and_invitations_accepted_while_linked_stay_with_Arg0_Unrelated_Discord_roles", primaryName]</p>
     <div class="hm-row" style="justify-content: flex-end">
         <a class="hm-btn hm-btn--ghost" href="/links/@Model.GuildId">@T["Cancel"]</a>
-        <button class="hm-btn hm-btn--danger">@DashboardIcons.Render("trash")@T["Unlink_Arg0", alternateName]</button>
+        <button class="hm-btn hm-btn--danger">@T["Unlink_Arg0", alternateName]</button>
     </div>
 </form>

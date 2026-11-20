@@ -1182,12 +1182,8 @@
   <data name="System" xml:space="preserve">
     <value>Как в системе</value>
   </data>
-  <data name="Light" xml:space="preserve">
-    <value>Светлая</value>
-  </data>
-  <data name="Dark" xml:space="preserve">
-    <value>Тёмная</value>
-  </data>
+<data name="Light" xml:space="preserve"><value>Песок (светлая)</value></data>
+<data name="Dark" xml:space="preserve"><value>Ночь (тёмная)</value></data>
   <data name="Info" xml:space="preserve">
     <value>Справка</value>
   </data>
@@ -1982,7 +1978,7 @@
 <data name="Guide_weekly_Title" xml:space="preserve"><value>Недельное расписание и копирование</value></data>
 <data name="Guide_weekly_Body" xml:space="preserve"><value>Откройте недельное расписание и выберите день. Добавьте промежутки времени, укажите для каждого «Точно» или «Возможно» и сохраните день. Расписание повторяется еженедельно. Копирование дня включает часы, уверенность и часовой пояс. Вставьте текст в редактор другого дня, примените и сохраните. В поле копирования работают Ctrl+C и Ctrl+V.</value></data>
 <data name="Guide_groups_Title" xml:space="preserve"><value>Группы и общее расписание</value></data>
-<data name="Guide_groups_Body" xml:space="preserve"><value>Создайте группу, добавьте описание и игры, пригласите участников сервера. Приглашённые принимают приглашение в Discord или на сайте и получают роль группы. На доске группы видна доступность участников. Открытую группу видят все в разделе «Открыты для вступления»: люди просятся, а организатор их принимает. Участники могут предлагать игры с любой платформы, а организатор добавляет их. Организаторы и модераторы управляют группой. Восстановление ролей назначает их по сохранённому составу. Выход снимает роль группы. Закрытие удаляет состав и роль.</value></data>
+<data name="Guide_groups_Body" xml:space="preserve"><value>Создайте группу, добавьте описание и игры, пригласите участников сервера. На странице группы строка вкладок вверху переключает обзор, доступность, участников, события, голосования, список просмотра, игры и настройки. Приглашённые принимают приглашение в Discord или на сайте и получают роль группы. На доске группы видна доступность участников. Открытую группу видят все в разделе «Открыты для вступления»: люди просятся, а организатор их принимает. Участники могут предлагать игры с любой платформы, а организатор добавляет их. Организаторы и модераторы управляют группой. Восстановление ролей назначает их по сохранённому составу. Выход снимает роль группы. Закрытие удаляет состав и роль.</value></data>
 <data name="Guide_events_Title" xml:space="preserve"><value>События и приглашения</value></data>
 <data name="Guide_events_Body" xml:space="preserve"><value>Создайте событие для группы или выберите отдельных участников. Задайте даты, часы и часовой пояс. Для повторяющегося события согласитесь один раз, чтобы присоединиться к серии; отказывайтесь или отменяйте участие в отдельных датах, не меняя остальных. Организатор подтверждает каждую дату, когда достаточно людей могут прийти, и может отменить одну дату или оставшуюся серию. Подтверждённые события отображаются в доступности. Откройте «Уведомления в канале» группы или события, чтобы выбрать канал или создать канал с её названием, задать язык и время напоминания и при желании публиковать обновления о запланированных, подтверждённых или отменённых событиях. События используют настройки группы, пока не получат собственные. Напоминания упоминают согласившихся участников и организатора, только если их нет ни в одном голосовом канале сервера, с учётом связанных аккаунтов. Повторяющееся событие отправляет каждому одно приглашение: «Принять все даты» или «Отклонить все даты» отвечает за всю серию. Отменённые события и даты удаляются через несколько минут после отмены.</value></data>
 <data name="Guide_game-news_Title" xml:space="preserve"><value>Подписки на новости игр</value></data>
@@ -2433,4 +2429,15 @@
 <data name="News_Err_PickOne" xml:space="preserve"><value>Выберите хотя бы один тип новостей.</value></data>
 <data name="News_Err_OnlyOwnerSources" xml:space="preserve"><value>Выбирать новости подписки могут только её автор или администратор сервера.</value></data>
 <data name="News_Err_SteamDown" xml:space="preserve"><value>Steam не ответил. Попробуйте через минуту.</value></data>
+<data name="Signed_in" xml:space="preserve"><value>Вы вошли</value></data>
+<data name="HappyMix_home" xml:space="preserve"><value>Главная HappyMix</value></data>
+<data name="Side_Menu" xml:space="preserve"><value>Меню</value></data>
+<data name="Side_SwitchServer" xml:space="preserve"><value>Сменить сервер</value></data>
+<data name="Side_Server" xml:space="preserve"><value>Сервер</value></data>
+<data name="Side_Admin" xml:space="preserve"><value>Администрирование</value></data>
+<data name="Side_Collapse" xml:space="preserve"><value>Свернуть меню</value></data>
+<data name="Side_Expand" xml:space="preserve"><value>Развернуть меню</value></data>
+<data name="Refresh_list" xml:space="preserve"><value>Обновить список</value></data>
+<data name="Set_availability" xml:space="preserve"><value>Указать своё время</value></data>
+<data name="No_hours_set_for_today" xml:space="preserve"><value>На сегодня время не указано</value></data>
 </root>
