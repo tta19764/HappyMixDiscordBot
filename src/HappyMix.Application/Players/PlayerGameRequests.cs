@@ -177,7 +177,7 @@ internal sealed class PlayerGameHandlers(IPlayerGameStore store, ISteamDirectory
         foreach (var owned in library.Games.OrderByDescending(game => game.RecentMinutes).ThenByDescending(game => game.PlaytimeMinutes))
         {
             string key = GameKeys.For("steam", owned.AppId, owned.Name);
-            var match = existing.GetValueOrDefault(key) ?? existing.Values.FirstOrDefault(game => game.Provider is null && GameKeys.Same(game, owned.Name, null, null));
+            var match = existing.GetValueOrDefault(key) ?? existing.Values.FirstOrDefault(game => game.Provider is not "steam" && GameKeys.Same(game, owned.Name, null, null));
             if (match is not null)
             {
                 // Keep the player's mark; refresh the name, the Steam reference and the playtimes.

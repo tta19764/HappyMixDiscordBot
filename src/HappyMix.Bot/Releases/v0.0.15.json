@@ -1,0 +1,11 @@
+{
+  "en": [
+    "**v0.0.15 · My games fixes**\nNewer Steam games such as PEAK and WARDOGS now show their pictures on My games and Game news. Steam leaves some played free games, like Dota 2, out of the library it shares, so **Sync library again** now also adds the games you played in the last two weeks, with your hours. Games picked from the search keep their Steam link, and a game you added from the search before becomes the Steam game on the next sync, keeping your mark."
+  ],
+  "uk": [
+    "**v0.0.15 · Виправлення «Моїх ігор»**\nНові ігри зі Steam, як-от PEAK і WARDOGS, тепер показують зображення на сторінках «Мої ігри» та «Новини ігор». Steam не включає деякі безкоштовні ігри, у які ви грали (наприклад, Dota 2), до бібліотеки, якою ділиться, тому **Синхронізувати знову** тепер також додає ігри, у які ви грали за останні два тижні, разом із годинами. Ігри, вибрані в пошуку, зберігають зв'язок зі Steam, а гра, раніше додана через пошук, під час наступної синхронізації стане грою Steam і збереже вашу позначку."
+  ],
+  "ru": [
+    "**v0.0.15 · Исправления «Моих игр»**\nНовые игры из Steam, например PEAK и WARDOGS, теперь показывают изображения на страницах «Мои игры» и «Новости игр». Steam не включает некоторые бесплатные игры, в которые вы играли (например, Dota 2), в библиотеку, которой делится, поэтому **Синхронизировать снова** теперь также добавляет игры, в которые вы играли за последние две недели, вместе с часами. Игры, выбранные в поиске, сохраняют связь со Steam, а игра, ранее добавленная через поиск, при следующей синхронизации станет игрой Steam и сохранит вашу отметку."
+  ]
+}

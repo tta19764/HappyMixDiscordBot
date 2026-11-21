@@ -400,6 +400,12 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 - `ConfirmEventSeriesCommand` (POST `/events/{guild}/{event}/confirm-all`) confirms every pending upcoming date; each person who accepted one gets a single Confirmed message for their first newly confirmed date.
 - Event date boxes show weekday, day and month; compact series rows show only the times, with status and count underneath. Side panel menus open beside the panel (`position: fixed`) so its scroll area no longer clips them.
 
+### v0.0.15 My games fixes
+
+- Steam pictures for games released from about 2025: their header only exists under a hashed path, so a failed fixed address (`header.jpg`) falls back to `/steam-art/{appId}`, which reads `header_image` from the store's `appdetails` once and caches it (`SteamArt`). Also used on Game news; pictures that failed before the script ran are caught too.
+- Steam import also reads `GetRecentlyPlayedGames` and adds games the owned list omits (Steam leaves some played free games, such as Dota 2, out of `GetOwnedGames`). Same-name entries picked from the IGDB search become the Steam game on import, keeping their mark.
+- IGDB search recognises a game's Steam store link by its address (IGDB moved website kinds from `category` to `type`), so Steam games picked from search keep their Steam App ID.
+
 ### v0.0.14 sign-in, My games and do not disturb
 
 - **Sign-in** (`/login`, `DiscordProfileClaims`, migration `20261202000100_AddUserProfiles`): a sign-in page with "Keep me signed in" (persistent cookie, 30-day sliding expiry; unticked it ends with the browser). Discord OAuth uses `prompt=none`, so people who already allowed HappyMix skip the Authorize screen. Name, display name, avatar and the Discord-connected Steam account are saved in `UserProfiles`; the cookie copy is refreshed on each request when the saved profile is newer. `POST /account/sync` ("Sync with Discord") re-reads them without signing out.

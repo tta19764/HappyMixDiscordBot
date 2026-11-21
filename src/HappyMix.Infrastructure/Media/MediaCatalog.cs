@@ -143,7 +143,7 @@ internal sealed partial class MediaCatalog(IHttpClientFactory clients, IDbContex
 
     // ---------- IGDB (games on every platform) ----------
 
-    private const string IgdbFields = "fields name,slug,url,first_release_date,summary,total_rating,cover.image_id,genres.name,platforms.abbreviation,platforms.name,websites.category,websites.url;";
+    private const string IgdbFields = "fields name,slug,url,first_release_date,summary,total_rating,cover.image_id,genres.name,platforms.abbreviation,platforms.name,websites.category,websites.type,websites.url;";
 
     private async Task<IReadOnlyList<MediaInfo>> SearchIgdbAsync(string query, CancellationToken cancellationToken)
     {
@@ -213,11 +213,12 @@ internal sealed partial class MediaCatalog(IHttpClientFactory clients, IDbContex
             ? $"https://images.igdb.com/igdb/image/upload/t_cover_big/{imageId}.jpg" : null;
         int? year = Number(game, "first_release_date") is { } released ? DateTimeOffset.FromUnixTimeSeconds((long)released).Year : null;
         var websites = Items(game, "websites");
-        // IGDB marks Steam store links with category 13; keeping the app id lets Steam features (news) work for the game.
-        string? steam = websites.Where(site => Int(site, "category") == 13).Select(site => Text(site, "url"))
+        // Keeping the Steam app id lets Steam features (pictures, news, library matching) work for the game. IGDB moved
+        // website kinds from "category" to "type", so the Steam store link is recognised by its address instead.
+        string? steam = websites.Select(site => Text(site, "url"))
             .Select(url => url is null ? null : Regex.Match(url, @"store\.steampowered\.com/app/(\d+)", RegexOptions.None, TimeSpan.FromMilliseconds(50)))
             .Where(match => match is { Success: true }).Select(match => match!.Groups[1].Value).FirstOrDefault();
-        string? official = websites.Where(site => Int(site, "category") == 1).Select(site => Text(site, "url")).FirstOrDefault();
+        string? official = websites.Where(site => (Int(site, "type") ?? Int(site, "category")) == 1).Select(site => Text(site, "url")).FirstOrDefault();
         var platforms = Items(game, "platforms").Select(platform => Text(platform, "abbreviation") ?? Text(platform, "name")).OfType<string>()
             .Distinct().Take(6).ToArray();
         return new MediaInfo("game", "igdb", id, name, official ?? Text(game, "url"), cover, year, Clean(Text(game, "summary")),

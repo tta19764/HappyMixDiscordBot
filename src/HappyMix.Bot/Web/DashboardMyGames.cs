@@ -14,10 +14,12 @@ public sealed record MyGamesPage(ulong GuildId, string GuildName, bool CanConfig
     /// <summary>List orders: by mark (the default), hours played, A–Z or recently played.</summary>
     public static readonly string[] Sorts = ["mark", "hours", "name", "recent"];
 
-    /// <summary>The cover from Steam's image servers for Steam games; other games show a placeholder.</summary>
-    public static string? Art(PlayerGame game) => game.Provider == "steam" && game.ExternalId is { Length: > 0 } appId && appId.All(char.IsAsciiDigit)
-        ? $"https://cdn.akamai.steamstatic.com/steam/apps/{appId}/header.jpg"
-        : null;
+    /// <summary>The Steam App ID of a Steam game, for its picture; other games show a placeholder.</summary>
+    public static string? SteamAppId(PlayerGame game) =>
+        game.Provider == "steam" && game.ExternalId is { } appId && HappyMix.Bot.Services.SteamArt.IsAppId(appId) ? appId : null;
+
+    /// <summary>The cover at Steam's fixed address; newer games fall back to <see cref="HappyMix.Bot.Services.SteamArt.Fallback"/>.</summary>
+    public static string? Art(PlayerGame game) => SteamAppId(game) is { } appId ? HappyMix.Bot.Services.SteamArt.Header(appId) : null;
 
     public const int PageSize = 50;
     public string Url => $"/games/{GuildId}";
@@ -63,6 +65,19 @@ internal static class PlayerGameOrder
 public sealed partial class DashboardController
 {
     private const string SteamStateCookie = "hm_steam_state";
+
+    /// <summary>
+    /// The picture of a Steam game whose fixed header address failed (newer games): a redirect to the address Steam's
+    /// store lists, or 404 when it has none. Browsers keep the answer for a day.
+    /// </summary>
+    [HttpGet("/steam-art/{appId}")]
+    [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Client)]
+    public async Task<IActionResult> SteamArtImage(string appId, [FromServices] HappyMix.Bot.Services.SteamArt art)
+    {
+        if (!HappyMix.Bot.Services.SteamArt.IsAppId(appId))
+            return NotFound();
+        return await art.HeaderAsync(appId, HttpContext.RequestAborted) is { } url ? Redirect(url) : NotFound();
+    }
 
     [HttpGet("/games/{guildId}")]
     public async Task<IActionResult> MyGames(ulong guildId, string? mark, string? q, string? sort, int page = 1)
