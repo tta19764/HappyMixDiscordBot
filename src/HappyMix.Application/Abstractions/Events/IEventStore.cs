@@ -102,4 +102,7 @@ public interface IEventStore
 
     /// <summary>Marks a message sent, or failed: retried at <paramref name="retryAt"/>, or never again when it is null.</summary>
     Task MarkAsync(Guid eventId, DateOnly day, ulong userId, EventNotificationKind kind, bool sent, string? failure, DateTimeOffset? retryAt);
+
+    /// <summary>Holds a message until the recipient's do-not-disturb ends, without counting it as a failed attempt.</summary>
+    Task DeferAsync(Guid eventId, DateOnly day, ulong userId, EventNotificationKind kind, DateTimeOffset until);
 }

@@ -2462,7 +2462,7 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Games_NotVerified" xml:space="preserve"><value>Not verified</value></data>
 <data name="Games_DiscordSteam" xml:space="preserve"><value>Your Discord profile has Steam connected: {0}.</value></data>
 <data name="Games_UseDiscordSteam" xml:space="preserve"><value>Use this Steam account</value></data>
-<data name="Games_SignInAgain" xml:space="preserve"><value>Connected Steam on Discord? Sign out and back in once so HappyMix can see it, or link it below.</value></data>
+<data name="Games_SignInAgain" xml:space="preserve"><value>Connected Steam on Discord? Sync with Discord so HappyMix can see it, or link it below.</value></data>
 <data name="Games_SteamInput" xml:space="preserve"><value>Steam profile link or SteamID64</value></data>
 <data name="Games_SteamInputHelp" xml:space="preserve"><value>A pasted profile is enough to import public game lists. It shows as not verified until you sign in with Steam.</value></data>
 <data name="Games_LinkSteam" xml:space="preserve"><value>Link</value></data>
@@ -2548,4 +2548,52 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Live_Err_Forbidden" xml:space="preserve"><value>Only the organizer or a moderator can change this.</value></data>
 <data name="Guide_live_Title" xml:space="preserve"><value>Live</value></data>
 <data name="Guide_live_Body" xml:space="preserve"><value>The Live tab of a group shows who is playing right now. It is opt-in on both sides: you choose to share what you play with a group, and separately whether you want a Discord message when members start a game. Messages only go out for the group's games or games another member marked Want or Can, at most once every two hours per player and game. HappyMix reads your Discord status (when the server owner turned on presence) and, if you signed in with Steam, your Steam status. The organizer can also post these messages in the group's notification channel.</value></data>
+<data name="Login_Title" xml:space="preserve"><value>Sign in to HappyMix</value></data>
+<data name="Login_Lead" xml:space="preserve"><value>HappyMix uses your Discord account, so there's no separate password. Discord sends you straight back once you've allowed HappyMix.</value></data>
+<data name="Login_Remember" xml:space="preserve"><value>Keep me signed in</value></data>
+<data name="Login_Remember_Help" xml:space="preserve"><value>Stay signed in on this device for 30 days after your last visit. Untick on a shared computer.</value></data>
+<data name="Login_Discord" xml:space="preserve"><value>Sign in with Discord</value></data>
+<data name="Login_Privacy" xml:space="preserve"><value>HappyMix reads your Discord name, avatar and connected accounts (to find your Steam). It never posts as you.</value></data>
+<data name="Login_SignedOut" xml:space="preserve"><value>You're signed out.</value></data>
+<data name="Sync_Discord" xml:space="preserve"><value>Sync with Discord</value></data>
+<data name="Sync_Last" xml:space="preserve"><value>Last synced {0}.</value></data>
+<data name="Games_SyncHint" xml:space="preserve"><value>Connected Steam on Discord recently? Sync to pick it up without signing out.</value></data>
+<data name="Games_SortBy" xml:space="preserve"><value>Sort by</value></data>
+<data name="Games_SortMark" xml:space="preserve"><value>By mark</value></data>
+<data name="Games_SortHours" xml:space="preserve"><value>Hours played</value></data>
+<data name="Games_SortName" xml:space="preserve"><value>A–Z</value></data>
+<data name="Games_SortRecent" xml:space="preserve"><value>Recently played</value></data>
+<data name="Games_SaveMarks" xml:space="preserve"><value>Save changes</value></data>
+<data name="Games_SaveHelp" xml:space="preserve"><value>Pick Want, Can or Won't for any games, then save.</value></data>
+<data name="Games_Unsaved" xml:space="preserve"><value>Unsaved changes: {0}</value></data>
+<data name="Games_LeaveUnsaved" xml:space="preserve"><value>Your marks aren't saved yet. Leave anyway?</value></data>
+<data name="Games_Undo" xml:space="preserve"><value>Undo</value></data>
+<data name="Games_MarksSaved" xml:space="preserve"><value>Marks saved ({0})</value></data>
+<data name="Games_NothingChanged" xml:space="preserve"><value>Nothing to save</value></data>
+<data name="Dnd_Title" xml:space="preserve"><value>Do not disturb</value></data>
+<data name="Dnd_Lead" xml:space="preserve"><value>HappyMix sends you no personal messages during these times. They arrive when the time ends, if they still matter then. Your groups and server see these times on availability boards.</value></data>
+<data name="Dnd_OnUntil" xml:space="preserve"><value>On until {0}</value></data>
+<data name="Dnd_Waiting" xml:space="preserve"><value>Messages waiting: {0}. They arrive when do-not-disturb ends.</value></data>
+<data name="Dnd_NoneWeekly" xml:space="preserve"><value>No weekly do-not-disturb hours yet. For example, add weeknights 23:00–08:00.</value></data>
+<data name="Dnd_NoneDates" xml:space="preserve"><value>No do-not-disturb dates coming up. Add a date, a run of dates or a holiday.</value></data>
+<data name="Dnd_Days" xml:space="preserve"><value>Days</value></data>
+<data name="Dnd_From" xml:space="preserve"><value>From</value></data>
+<data name="Dnd_Until" xml:space="preserve"><value>Until</value></data>
+<data name="Dnd_FormHelp" xml:space="preserve"><value>Times in {0}. An end before the start runs past midnight.</value></data>
+<data name="Dnd_Add" xml:space="preserve"><value>Add do-not-disturb</value></data>
+<data name="Dnd_Remove" xml:space="preserve"><value>Remove do-not-disturb {0}</value></data>
+<data name="Dnd_Overnight" xml:space="preserve"><value>Past midnight</value></data>
+<data name="Dnd_Saved" xml:space="preserve"><value>Do-not-disturb saved</value></data>
+<data name="Dnd_Removed" xml:space="preserve"><value>Do-not-disturb removed</value></data>
+<data name="Dnd_Arg0" xml:space="preserve"><value>Do not disturb: {0}</value></data>
+<data name="Quiet_Err_Day" xml:space="preserve"><value>Choose at least one day.</value></data>
+<data name="Quiet_Err_Date" xml:space="preserve"><value>Choose a date.</value></data>
+<data name="Quiet_Err_Range" xml:space="preserve"><value>Choose an end date on or after the start date, at most 62 days later.</value></data>
+<data name="Quiet_Err_Passed" xml:space="preserve"><value>That time has already passed.</value></data>
+<data name="Quiet_Err_TooMany" xml:space="preserve"><value>You already have the most do-not-disturb times allowed. Remove one first.</value></data>
+<data name="Quiet_Err_Missing" xml:space="preserve"><value>That do-not-disturb time no longer exists.</value></data>
+<data name="Guide_dnd_Title" xml:space="preserve"><value>Do not disturb</value></data>
+<data name="Guide_dnd_Body" xml:space="preserve"><value>On the Availability page, add do-not-disturb hours to your usual week (for example weeknights 23:00–08:00) or to specific dates. While do-not-disturb is on, HappyMix holds your personal messages: event invitations and updates, group requests and invitations, and Live notices. When it ends, each message is checked again and only sent if it still matters, so a canceled date, an answered request or a finished game is dropped. Do-not-disturb belongs to your Discord account, so it covers every server, and it shows on the server and group availability boards as a striped purple band.</value></data>
+<data name="Quiet_Err_Zone" xml:space="preserve"><value>Choose a time zone like Europe/Kyiv or enter a UTC offset like +02:00.</value></data>
+<data name="Quiet_Err_Times" xml:space="preserve"><value>Enter 24-hour times like 17 or 00:30.</value></data>
 </root>

@@ -1632,3 +1632,53 @@ for (const image of document.querySelectorAll("[data-game-art]")) {
         });
     }
 })();
+
+// ---------------------------------------------------------------------------------------------------------------
+// My games: marks change nothing until Save. Changed rows are highlighted, the bar counts them, Undo puts them back
+// and leaving the page with unsaved marks asks first. Sort menus apply as soon as they change.
+(() => {
+    for (const select of document.querySelectorAll("select[data-auto-submit]")) {
+        select.addEventListener("change", () => select.form?.requestSubmit());
+    }
+
+    const form = document.querySelector("[data-marks-form]");
+    const bar = document.querySelector("[data-marks-bar]");
+    if (!form || !bar) return;
+    const note = bar.querySelector("[data-marks-note]");
+    const reset = bar.querySelector("[data-marks-reset]");
+    const idle = note.textContent;
+    const radios = [...document.querySelectorAll(`input[type="radio"][form="${form.id}"]`)];
+    let saving = false;
+
+    const changedRows = () => {
+        const rows = new Set();
+        for (const radio of radios) {
+            if (radio.checked !== (radio.dataset.initial === "1")) rows.add(radio.closest("li"));
+        }
+        return rows;
+    };
+    const refresh = () => {
+        const rows = changedRows();
+        for (const radio of radios) radio.closest("li")?.classList.toggle("is-changed", rows.has(radio.closest("li")));
+        bar.classList.toggle("is-dirty", rows.size > 0);
+        reset.hidden = rows.size === 0;
+        note.textContent = rows.size > 0 ? note.dataset.template.replace("{0}", String(rows.size)) : idle;
+    };
+    for (const radio of radios) radio.addEventListener("change", refresh);
+    form.addEventListener("reset", () => setTimeout(refresh));
+    form.addEventListener("submit", () => { saving = true; });
+    window.addEventListener("beforeunload", event => {
+        if (saving || changedRows().size === 0) return;
+        event.preventDefault();
+        event.returnValue = note.dataset.leave;
+    });
+})();
+
+// Do not disturb: "All day" switches the time fields off.
+for (const form of document.querySelectorAll("[data-dnd-form]")) {
+    const allDay = form.querySelector("[data-dnd-allday]");
+    const times = form.querySelectorAll("[data-dnd-time]");
+    const sync = () => { for (const input of times) input.disabled = allDay.checked; };
+    allDay?.addEventListener("change", sync);
+    sync();
+}

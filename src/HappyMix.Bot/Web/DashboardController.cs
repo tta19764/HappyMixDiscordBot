@@ -29,11 +29,38 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
     private const string LastServerCookie = "hm_last_server";
     private static readonly CultureInfo Culture = CultureInfo.InvariantCulture;
 
+    /// <summary>The sign-in page: "Keep me signed in" and the "Sign in with Discord" button.</summary>
     [AllowAnonymous]
     [HttpGet("/login")]
-    public IActionResult Login(string? returnUrl) =>
-        Challenge(new AuthenticationProperties { RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/" }, "Discord");
+    public IActionResult Login(string? returnUrl, bool signedOut = false)
+    {
+        string back = Url.IsLocalUrl(returnUrl) ? returnUrl! : "/";
+        if (User.Identity?.IsAuthenticated == true)
+            return LocalRedirect(back);
+        return View("Login", new LoginPage(back, signedOut));
+    }
 
+    [AllowAnonymous]
+    [HttpPost("/login")]
+    public IActionResult LoginWithDiscord(string? returnUrl, bool remember = false) =>
+        Challenge(new AuthenticationProperties { RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/", IsPersistent = remember }, "Discord");
+
+    /// <summary>
+    /// "Sync with Discord": a quick trip through Discord (no prompt for people who already allowed HappyMix) that saves
+    /// the latest name, avatar and Steam connection. "Keep me signed in" carries over.
+    /// </summary>
+    [HttpPost("/account/sync")]
+    public async Task<IActionResult> SyncWithDiscord(string? returnUrl)
+    {
+        var current = await HttpContext.AuthenticateAsync();
+        return Challenge(new AuthenticationProperties
+        {
+            RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/",
+            IsPersistent = current.Properties?.IsPersistent == true
+        }, "Discord");
+    }
+
+    [AllowAnonymous]
     [HttpPost("/language")]
     public IActionResult SetLanguage(string culture, string? returnUrl)
     {
@@ -48,6 +75,7 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
     }
 
     // Fallback for browsers without JavaScript; dashboard.js switches the theme in place and writes the same cookie.
+    [AllowAnonymous]
     [HttpPost("/theme")]
     public IActionResult SetTheme(string theme, string? returnUrl)
     {
@@ -63,11 +91,11 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
     }
 
     [HttpPost("/logout")]
-    public IActionResult Logout() => SignOut(new AuthenticationProperties { RedirectUri = "/signed-out" });
+    public IActionResult Logout() => SignOut(new AuthenticationProperties { RedirectUri = "/login?signedOut=true" });
 
     [AllowAnonymous]
     [HttpGet("/signed-out")]
-    public IActionResult SignedOut() => Content("Signed out of HappyMix.");
+    public IActionResult SignedOut() => LocalRedirect("/login?signedOut=true");
 
     [HttpGet("/")]
     public async Task<IActionResult> Index()
@@ -92,10 +120,48 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
 
         RememberServer(guildId);
         var banner = TempData["MessageTitle"] is string title
-            ? new BannerModel("success", title, TempData["Message"] as string)
+            ? new BannerModel(TempData["MessageKind"] as string ?? "success", title, TempData["Message"] as string)
             : null;
         return await RenderAvailabilityAsync(guildId, member, view is "weekly" or "members" ? view : "today",
             edit, saved, banner, new AvailabilityForm());
+    }
+
+    /// <summary>Adds do-not-disturb: weekly hours on chosen days, or hours (or whole days) on a run of dates.</summary>
+    [HttpPost("/availability/{guildId}/dnd")]
+    public async Task<IActionResult> AddDoNotDisturb(ulong guildId, string? view, string? zone, DayOfWeek[]? days, DateOnly? first, DateOnly? last,
+        string? start, string? end, bool fullDay = false)
+    {
+        if (await GetDiscordMemberAsync(guildId) is not { } member)
+            return NotMember();
+        bool weekly = view == "weekly";
+        string timeZone = zone is { Length: > 0 } ? zone : (await GetGuildZoneAsync(guildId, HttpContext.RequestAborted)).Id;
+        var result = weekly
+            ? await sender.Send(new HappyMix.Application.Quiet.AddQuietWeeklyCommand(member.Id, days ?? [], start ?? "", end ?? "", fullDay, timeZone),
+                HttpContext.RequestAborted)
+            : first is { } from
+                ? await sender.Send(new HappyMix.Application.Quiet.AddQuietDatesCommand(member.Id, from, last is { } to && to > from ? to : from,
+                    start ?? "", end ?? "", fullDay, timeZone), HttpContext.RequestAborted)
+                : HappyMix.Domain.Abstractions.Result.Failure<int>(new("Quiet.Invalid", "Choose a date."));
+        return DoNotDisturbDone(guildId, weekly, result.IsSuccess ? text["Dnd_Saved"].Value : text["That_didn_t_work"].Value,
+            result.IsFailure ? text.Message(result.Error.Description).Value : null, result.IsFailure);
+    }
+
+    [HttpPost("/availability/{guildId}/dnd/remove")]
+    public async Task<IActionResult> RemoveDoNotDisturb(ulong guildId, Guid id, string? view)
+    {
+        if (await GetDiscordMemberAsync(guildId) is not { } member)
+            return NotMember();
+        var result = await sender.Send(new HappyMix.Application.Quiet.RemoveQuietCommand(member.Id, id), HttpContext.RequestAborted);
+        return DoNotDisturbDone(guildId, view == "weekly", result.IsSuccess ? text["Dnd_Removed"].Value : text["That_didn_t_work"].Value,
+            result.IsFailure ? text.Message(result.Error.Description).Value : null, result.IsFailure);
+    }
+
+    private RedirectResult DoNotDisturbDone(ulong guildId, bool weekly, string title, string? body, bool failed)
+    {
+        TempData["MessageTitle"] = title;
+        TempData["Message"] = body;
+        TempData["MessageKind"] = failed ? "error" : "success";
+        return Redirect($"/availability/{guildId}{(weekly ? "?view=weekly" : "")}#dnd");
     }
 
     [HttpPost("/availability/{guildId}")]
@@ -264,6 +330,8 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
             (selectedDate == today ? GetPresets(now, weekly.FirstOrDefault(item => item.Day == now.DayOfWeek)) : []), banner, form)
         {
             MyEvents = accepted.Take(6).ToArray(), EventInvitations = invitations.Count,
+            DoNotDisturb = view == "members" ? null
+                : (await sender.Send(new HappyMix.Application.Quiet.GetQuietOverviewQuery(member.Id), cancellationToken)).Value,
             EventBlocks = eventBlocks, Members = membersBoard,
             SelectedDate = selectedDate,
             ConfiguredDates = upcoming.SelectMany(window =>

@@ -9,8 +9,16 @@ namespace HappyMix.Bot.Web;
 /// <param name="DiscordSteam">The Steam account connected to the viewer's Discord profile, when sign-in could read it.</param>
 /// <param name="ConnectionsChecked">Whether sign-in asked Discord for connections at all (older sessions didn't).</param>
 public sealed record MyGamesPage(ulong GuildId, string GuildName, bool CanConfigure, MyGames Data, (string Id, string Name, bool Verified)? DiscordSteam,
-    bool ConnectionsChecked, string Mark, string? Search, int Page, BannerModel? Banner)
+    bool ConnectionsChecked, string Mark, string? Search, int Page, BannerModel? Banner, string Sort = "mark", DateTimeOffset? SyncedAt = null)
 {
+    /// <summary>List orders: by mark (the default), hours played, A–Z or recently played.</summary>
+    public static readonly string[] Sorts = ["mark", "hours", "name", "recent"];
+
+    /// <summary>The cover from Steam's image servers for Steam games; other games show a placeholder.</summary>
+    public static string? Art(PlayerGame game) => game.Provider == "steam" && game.ExternalId is { Length: > 0 } appId && appId.All(char.IsAsciiDigit)
+        ? $"https://cdn.akamai.steamstatic.com/steam/apps/{appId}/header.jpg"
+        : null;
+
     public const int PageSize = 50;
     public string Url => $"/games/{GuildId}";
 
@@ -18,19 +26,36 @@ public sealed record MyGamesPage(ulong GuildId, string GuildName, bool CanConfig
         .Where(game => Mark switch { "want" => game.Preference == GamePreference.Want, "can" => game.Preference == GamePreference.Can,
             "wont" => game.Preference == GamePreference.Wont, _ => true })
         .Where(game => Search is null || game.Name.Contains(Search, StringComparison.CurrentCultureIgnoreCase))
-        .OrderBy(game => game.Preference).ThenByDescending(game => game.RecentMinutes ?? 0).ThenByDescending(game => game.PlaytimeMinutes ?? 0)
-        .ThenBy(game => game.Name, StringComparer.CurrentCultureIgnoreCase).ToArray();
+        .Sorted(Sort).ToArray();
 
     public int Count(GamePreference? preference) => preference is { } value ? Data.Games.Count(game => game.Preference == value) : Data.Games.Count;
 
-    public string Link(string? mark = null, int? page = null, string? search = null)
+    public string Link(string? mark = null, int? page = null, string? search = null, string? sort = null)
     {
         var query = new List<string>();
         string m = mark ?? Mark;
         if (m != "all") query.Add("mark=" + m);
+        if ((sort ?? Sort) is var order && order != "mark") query.Add("sort=" + order);
         if ((search ?? Search) is { Length: > 0 } q) query.Add("q=" + Uri.EscapeDataString(q));
         if ((page ?? 1) > 1) query.Add("page=" + (page ?? 1).ToString(CultureInfo.InvariantCulture));
         return Url + (query.Count > 0 ? "?" + string.Join('&', query) : "");
+    }
+}
+
+internal static class PlayerGameOrder
+{
+    public static IEnumerable<PlayerGame> Sorted(this IEnumerable<PlayerGame> games, string sort)
+    {
+        var byName = StringComparer.CurrentCultureIgnoreCase;
+        return sort switch
+        {
+            "hours" => games.OrderByDescending(game => game.PlaytimeMinutes ?? 0).ThenBy(game => game.Name, byName),
+            "name" => games.OrderBy(game => game.Name, byName),
+            "recent" => games.OrderByDescending(game => game.RecentMinutes ?? 0).ThenByDescending(game => game.PlaytimeMinutes ?? 0)
+                .ThenBy(game => game.Name, byName),
+            _ => games.OrderBy(game => game.Preference).ThenByDescending(game => game.RecentMinutes ?? 0)
+                .ThenByDescending(game => game.PlaytimeMinutes ?? 0).ThenBy(game => game.Name, byName)
+        };
     }
 }
 
@@ -40,7 +65,7 @@ public sealed partial class DashboardController
     private const string SteamStateCookie = "hm_steam_state";
 
     [HttpGet("/games/{guildId}")]
-    public async Task<IActionResult> MyGames(ulong guildId, string? mark, string? q, int page = 1)
+    public async Task<IActionResult> MyGames(ulong guildId, string? mark, string? q, string? sort, int page = 1)
     {
         if (await GetGroupActorAsync(guildId) is not ({ } actor, { } viewer, _))
             return NotMember();
@@ -49,7 +74,8 @@ public sealed partial class DashboardController
         string filter = mark is "want" or "can" or "wont" ? mark : "all";
         string? search = string.IsNullOrWhiteSpace(q) ? null : q.Trim()[..Math.Min(60, q.Trim().Length)];
         return View("MyGames", new MyGamesPage(guildId, GuildName(guildId), viewer.CanConfigure, data, DiscordConnections.FromUser(User),
-            DiscordConnections.Checked(User), filter, search, Math.Max(1, page), TakeGamesBanner()));
+            DiscordConnections.Checked(User), filter, search, Math.Max(1, page), TakeGamesBanner(),
+            MyGamesPage.Sorts.Contains(sort) ? sort! : "mark", DiscordProfileClaims.SyncedAt(User)));
     }
 
     [HttpPost("/games/{guildId}/steam")]
@@ -122,6 +148,23 @@ public sealed partial class DashboardController
     public Task<IActionResult> MarkPlayerGame(ulong guildId, string? key, int preference, string? returnUrl) =>
         GamesActionAsync(guildId, userId => sender.Send(new SetGamePreferenceCommand(userId, key ?? "", (GamePreference)preference), HttpContext.RequestAborted),
             game => text["Games_Marked", game.Name].Value, returnUrl);
+
+    /// <summary>
+    /// The Save button: each listed game posts <c>k{i}</c> (its key) and <c>m{i}</c> (the chosen mark), so one save
+    /// covers the whole page and nothing changes until it is pressed.
+    /// </summary>
+    [HttpPost("/games/{guildId}/marks")]
+    public Task<IActionResult> SavePlayerGameMarks(ulong guildId, string? returnUrl)
+    {
+        var marks = new Dictionary<string, GamePreference>(StringComparer.Ordinal);
+        foreach (var (name, value) in Request.Form)
+            if (name.Length > 1 && name[0] == 'k' && int.TryParse(name.AsSpan(1), NumberStyles.None, CultureInfo.InvariantCulture, out int index)
+                && value.ToString() is { Length: > 0 } key && marks.Count < MyGamesPage.PageSize
+                && int.TryParse(Request.Form["m" + index.ToString(CultureInfo.InvariantCulture)], NumberStyles.None, CultureInfo.InvariantCulture, out int mark))
+                marks[key] = (GamePreference)mark;
+        return GamesActionAsync(guildId, userId => sender.Send(new SetGamePreferencesCommand(userId, marks), HttpContext.RequestAborted),
+            changed => changed == 0 ? text["Games_NothingChanged"].Value : text["Games_MarksSaved", changed].Value, returnUrl);
+    }
 
     [HttpPost("/games/{guildId}/remove")]
     public Task<IActionResult> RemovePlayerGame(ulong guildId, string? key, string? returnUrl) =>

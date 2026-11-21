@@ -36,7 +36,7 @@ public sealed partial class GuildGroupModule(ISender sender, Microsoft.Extension
 
         Guid token = Guid.NewGuid();
         await ExecuteAsync(new InviteGroupMemberCommand(Actor, name, member.Id, token), async () =>
-            await GroupInviteMessages.SendAsync(member, Context.Guild.Id, Context.Guild.Name, name, token)
+            await GroupInviteMessages.SendAsync(sender, member, Context.Guild.Id, Context.Guild.Name, name, token)
                 ? "Invitation saved and sent by DM."
                 : "Invitation saved. DM delivery failed. The member can use /group list, then /group join or /group decline.");
     }

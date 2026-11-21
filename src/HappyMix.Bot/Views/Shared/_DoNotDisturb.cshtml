@@ -1,0 +1,135 @@
+@using System.Globalization
+@using HappyMix.Application.Abstractions.Quiet
+@model DoNotDisturbModel
+@{
+    var culture = CultureInfo.CurrentCulture;
+    var zone = HappyMix.Application.Guilds.LocalTimes.FindZone(Model.TimeZone) ?? TimeZoneInfo.Utc;
+    var schedule = Model.Overview.Schedule;
+    var days = new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday };
+    string Hours(TimeOnly start, TimeOnly end) => start == end ? T["All_day"].Value : AvailabilityFormat.Time(start) + "–" + AvailabilityFormat.Time(end);
+    string Local(DateTimeOffset at) => TimeZoneInfo.ConvertTime(at, zone).ToString("ddd d MMM, HH:mm", culture);
+    string DateRange(QuietDates range)
+    {
+        var start = TimeZoneInfo.ConvertTime(range.Start, zone);
+        var end = TimeZoneInfo.ConvertTime(range.End, zone);
+        bool wholeDays = start.TimeOfDay == TimeSpan.Zero && end.TimeOfDay == TimeSpan.Zero;
+        if (wholeDays)
+        {
+            var last = end.AddDays(-1);
+            return last.Date == start.Date ? start.ToString("ddd d MMM", culture) + " · " + T["All_day"].Value
+                : start.ToString("d MMM", culture) + " – " + last.ToString("d MMM", culture) + " · " + T["All_day"].Value;
+        }
+        return start.ToString("ddd d MMM", culture) + " · " + start.ToString("HH:mm", culture) + "–" + end.ToString("HH:mm", culture);
+    }
+    var weekly = schedule.Weekly;
+    var dates = schedule.Dates.Where(range => range.End > DateTimeOffset.UtcNow).ToArray();
+    string prefix = Model.Weekly ? "dnd-week" : "dnd-date";
+}
+<section class="hm-card hm-stack hm-dnd" id="dnd" aria-labelledby="@prefix-title">
+    <div class="hm-card__head" style="margin: 0">
+        <div>
+            <h2 id="@prefix-title" style="font-size: var(--hm-fs-lg)">@DashboardIcons.Render("moon")@T["Dnd_Title"]</h2>
+            <p>@T["Dnd_Lead"]</p>
+        </div>
+        @if (Model.Overview.QuietUntil is { } until)
+        {
+            <span class="hm-badge hm-dnd__on">@T["Dnd_OnUntil", Local(until)]</span>
+        }
+    </div>
+    @if (Model.Overview.Held > 0)
+    {
+        <p class="hm-help">@T["Dnd_Waiting", Model.Overview.Held]</p>
+    }
+
+    @if ((Model.Weekly ? weekly.Count : dates.Length) > 0)
+    {
+        <ul class="hm-list hm-dnd__list">
+            @if (Model.Weekly)
+            {
+                @foreach (var range in weekly.OrderBy(range => ((int)range.Day + 6) % 7).ThenBy(range => range.Start))
+                {
+                    string title = culture.DateTimeFormat.GetDayName(range.Day) + " · " + Hours(range.Start, range.End);
+                    <li class="hm-list__item">
+                        <div class="hm-list__main">
+                            <p class="hm-list__title">@title</p>
+                            <p class="hm-list__meta">@(range.End < range.Start && !range.IsFullDay ? T["Dnd_Overnight"].Value + " · " : "")@range.TimeZone</p>
+                        </div>
+                        <form method="post" action="@Model.Url/remove" asp-antiforgery="false">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@range.Id">
+                            <input type="hidden" name="view" value="weekly">
+                            <button class="hm-btn hm-btn--ghost hm-btn--icon" aria-label="@T["Dnd_Remove", title]">@DashboardIcons.Render("trash")</button>
+                        </form>
+                    </li>
+                }
+            }
+            else
+            {
+                @foreach (var range in dates)
+                {
+                    string title = DateRange(range);
+                    <li class="hm-list__item">
+                        <div class="hm-list__main"><p class="hm-list__title">@title</p></div>
+                        <form method="post" action="@Model.Url/remove" asp-antiforgery="false">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@range.Id">
+                            <button class="hm-btn hm-btn--ghost hm-btn--icon" aria-label="@T["Dnd_Remove", title]">@DashboardIcons.Render("trash")</button>
+                        </form>
+                    </li>
+                }
+            }
+        </ul>
+    }
+    else
+    {
+        <p class="hm-help">@T[Model.Weekly ? "Dnd_NoneWeekly" : "Dnd_NoneDates"]</p>
+    }
+
+    <form class="hm-stack hm-stack--sm hm-dnd__form" method="post" action="@Model.Url" asp-antiforgery="false" data-dnd-form>
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="zone" value="@Model.TimeZone">
+        @if (Model.Weekly)
+        {
+            <input type="hidden" name="view" value="weekly">
+            <fieldset class="hm-dnd__days">
+                <legend class="hm-label">@T["Dnd_Days"]</legend>
+                @foreach (var day in days)
+                {
+                    <label class="hm-chip hm-dnd__day">
+                        <input type="checkbox" name="days" value="@day" checked="@(day is not (DayOfWeek.Saturday or DayOfWeek.Sunday))">
+                        @culture.DateTimeFormat.GetAbbreviatedDayName(day)
+                    </label>
+                }
+            </fieldset>
+        }
+        else
+        {
+            <div class="hm-dnd__row">
+                <div class="hm-field">
+                    <label class="hm-label" for="dnd-first">@T["Calendar_Date"]</label>
+                    <input class="hm-input" id="dnd-first" type="date" name="first" required value="@Model.Date.ToString("yyyy-MM-dd")">
+                </div>
+                <div class="hm-field">
+                    <label class="hm-label" for="dnd-last">@T["Repeat_through"] <span class="hm-label__opt">@T["Optional"]</span></label>
+                    <input class="hm-input" id="dnd-last" type="date" name="last" min="@Model.Date.ToString("yyyy-MM-dd")">
+                </div>
+            </div>
+        }
+        <div class="hm-dnd__row">
+            <div class="hm-field">
+                <label class="hm-label" for="@prefix-start">@T["Dnd_From"]</label>
+                <input class="hm-input" id="@prefix-start" type="time" name="start" value="23:00" step="900" data-dnd-time>
+            </div>
+            <div class="hm-field">
+                <label class="hm-label" for="@prefix-end">@T["Dnd_Until"]</label>
+                <input class="hm-input" id="@prefix-end" type="time" name="end" value="08:00" step="900" data-dnd-time>
+            </div>
+            <label class="hm-check hm-dnd__allday">
+                <input type="checkbox" name="fullDay" value="true" data-dnd-allday>
+                <span>@T["All_day"]</span>
+            </label>
+        </div>
+        <p class="hm-help">@T["Dnd_FormHelp", Model.TimeZone]</p>
+        <div><button class="hm-btn">@DashboardIcons.Render("moon")@T["Dnd_Add"]</button></div>
+    </form>
+</section>

@@ -85,12 +85,17 @@ public static class DependencyInjection
         services.AddHttpClient("SteamNews", client => client.Timeout = TimeSpan.FromSeconds(10));
         services.AddSingleton<GameNewsService>();
         services.AddSingleton<HappyMix.Application.Abstractions.News.IGameNewsGateway, DiscordGameNewsGateway>();
-        services.AddSingleton<HappyMix.Application.Abstractions.Live.ILiveNotifier, DiscordLiveNotifier>();
+        services.AddSingleton<DiscordLiveNotifier>();
+        services.AddSingleton<HappyMix.Application.Abstractions.Live.ILiveNotifier>(provider => provider.GetRequiredService<DiscordLiveNotifier>());
+        services.AddSingleton<HappyMix.Application.Abstractions.Quiet.IHeldMessageSender>(provider => provider.GetRequiredService<DiscordLiveNotifier>());
+        services.AddSingleton<HappyMix.Application.Abstractions.Quiet.IHeldMessageSender, HeldGroupInviteSender>();
         services.AddHostedService<LivePresenceWatcher>();
         services.AddSingleton<NotificationChannels>();
         services.AddSingleton<EventNotificationSettings>();
         services.AddSingleton<PollMessages>();
-        services.AddSingleton<IGroupNotifier, DiscordGroupNotifier>();
+        services.AddSingleton<DiscordGroupNotifier>();
+        services.AddSingleton<IGroupNotifier>(provider => provider.GetRequiredService<DiscordGroupNotifier>());
+        services.AddSingleton<HappyMix.Application.Abstractions.Quiet.IHeldMessageSender>(provider => provider.GetRequiredService<DiscordGroupNotifier>());
         services.AddSingleton<DiscordMatchAnnouncementPublisher>();
         services.AddSingleton<IGuildAnnouncementPublisher>(provider =>
             provider.GetRequiredService<DiscordMatchAnnouncementPublisher>());
@@ -120,6 +125,11 @@ public static class DependencyInjection
 
             JobKey newsKey = new("publish-game-news");
             scheduler.AddJob<PublishGameNewsJob>(job => job.WithIdentity(newsKey));
+            JobKey heldKey = new("release-held-messages");
+            scheduler.AddJob<ReleaseHeldMessagesJob>(job => job.WithIdentity(heldKey));
+            scheduler.AddTrigger(trigger => trigger.ForJob(heldKey).StartNow()
+                .WithSimpleSchedule(schedule => schedule.WithIntervalInMinutes(1).RepeatForever()));
+
             JobKey liveKey = new("sync-steam-playing");
             scheduler.AddJob<SyncSteamPlayingJob>(job => job.WithIdentity(liveKey));
             scheduler.AddTrigger(trigger => trigger.ForJob(liveKey).StartNow()

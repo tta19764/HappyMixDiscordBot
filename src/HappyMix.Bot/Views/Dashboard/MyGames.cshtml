@@ -18,6 +18,10 @@
     string Source(PlayerGame game) => game.Provider switch { "steam" => "Steam", "igdb" => "IGDB", _ => T["Games_AddedByHand"].Value };
     string When(DateTimeOffset at) => at.ToLocalTime().ToString("d MMM yyyy", CultureInfo.CurrentCulture);
     var unlink = new ConfirmModel(T["Games_Unlink"], T["Games_UnlinkQuestion"], $"{Model.Url}/steam/unlink", T["Games_Unlink"], Icon: null);
+    var sorts = new (string Key, string Label)[]
+    {
+        ("mark", T["Games_SortMark"].Value), ("hours", T["Games_SortHours"].Value), ("name", T["Games_SortName"].Value), ("recent", T["Games_SortRecent"].Value)
+    };
     var filters = new (string Key, string Label, int Count)[]
     {
         ("all", T["Games_All"].Value, Model.Count(null)), ("want", T["Games_Want"].Value, Model.Count(GamePreference.Want)),
@@ -53,10 +57,18 @@
                     <button class="hm-btn hm-btn--primary">@T["Games_UseDiscordSteam"]</button>
                 </form>
             }
-            else if (!Model.ConnectionsChecked)
-            {
-                <p class="hm-help">@T["Games_SignInAgain"]</p>
-            }
+            <form class="hm-row" method="post" action="/account/sync" asp-antiforgery="false">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="returnUrl" value="@(Model.Url + "#steam")">
+                <span class="hm-help" style="flex: 1; min-width: 14rem">
+                    @T[Model.ConnectionsChecked ? "Games_SyncHint" : "Games_SignInAgain"]
+                    @if (Model.SyncedAt is { } synced)
+                    {
+                        <span>@T["Sync_Last", When(synced)]</span>
+                    }
+                </span>
+                <button class="hm-btn">@DashboardIcons.Render("refresh")@T["Sync_Discord"]</button>
+            </form>
             <form class="hm-games-link" method="post" action="@Model.Url/steam" asp-antiforgery="false">
                 @Html.AntiForgeryToken()
                 <div class="hm-field">
@@ -150,6 +162,12 @@
                     <input type="hidden" name="mark" value="@Model.Mark">
                 }
                 <input class="hm-input" type="search" name="q" value="@Model.Search" placeholder="@T["Games_Search"]" aria-label="@T["Games_Search"]" style="width: auto; min-width: 12rem">
+                <select class="hm-select" name="sort" aria-label="@T["Games_SortBy"]" style="width: auto" data-auto-submit>
+                    @foreach (var (key, label) in sorts)
+                    {
+                        <option value="@key" selected="@(Model.Sort == key)">@label</option>
+                    }
+                </select>
                 <button class="hm-btn">@T["Search"]</button>
             </form>
         </div>
@@ -165,12 +183,25 @@
         }
         else
         {
+            <form id="marks-form" method="post" action="@Model.Url/marks" asp-antiforgery="false" data-marks-form>
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="returnUrl" value="@returnUrl">
+            </form>
             <ul class="hm-mygames">
-                @foreach (var game in shown)
+                @for (int i = 0; i < shown.Length; i++)
                 {
+                    var game = shown[i];
+                    string index = i.ToString(CultureInfo.InvariantCulture);
                     <li class="hm-mygames__item hm-mygames__item--@game.Preference.ToString().ToLowerInvariant()">
+                        <span class="hm-mygames__art" aria-hidden="true">
+                            @DashboardIcons.Render("games")
+                            @if (MyGamesPage.Art(game) is { } art)
+                            {
+                                <img src="@art" alt="" loading="lazy" decoding="async" width="92" height="43" data-game-art>
+                            }
+                        </span>
                         <div class="hm-mygames__name">
-                            <span class="hm-mygames__title">@DashboardIcons.Render("games")@game.Name</span>
+                            <span class="hm-mygames__title">@game.Name</span>
                             <small>
                                 @Source(game)
                                 @if (game.PlaytimeMinutes is > 0 and var minutes)
@@ -183,16 +214,16 @@
                                 }
                             </small>
                         </div>
-                        <form class="hm-marks" method="post" action="@Model.Url/mark" asp-antiforgery="false" aria-label="@game.Name">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="key" value="@game.Key">
-                            <input type="hidden" name="returnUrl" value="@returnUrl">
+                        <fieldset class="hm-marks" aria-label="@game.Name">
+                            <input type="hidden" name="k@(index)" value="@game.Key" form="marks-form">
                             @foreach (var preference in new[] { GamePreference.Want, GamePreference.Can, GamePreference.Wont })
                             {
-                                <button class="hm-marks__option hm-marks__option--@preference.ToString().ToLowerInvariant()" name="preference" value="@((int)preference)"
-                                        aria-pressed="@(game.Preference == preference ? "true" : "false")">@MarkLabel(preference)</button>
+                                <label class="hm-marks__option hm-marks__option--@preference.ToString().ToLowerInvariant()">
+                                    <input type="radio" name="m@(index)" value="@((int)preference)" form="marks-form" checked="@(game.Preference == preference)"
+                                           data-initial="@(game.Preference == preference ? "1" : "0")">@MarkLabel(preference)
+                                </label>
                             }
-                        </form>
+                        </fieldset>
                         <form method="post" action="@Model.Url/remove" asp-antiforgery="false">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="key" value="@game.Key">
@@ -202,6 +233,11 @@
                     </li>
                 }
             </ul>
+            <div class="hm-marksbar" data-marks-bar>
+                <span class="hm-marksbar__note" data-marks-note data-template="@T["Games_Unsaved"]" data-leave="@T["Games_LeaveUnsaved"]">@T["Games_SaveHelp"]</span>
+                <button class="hm-btn" type="reset" form="marks-form" data-marks-reset hidden>@T["Games_Undo"]</button>
+                <button class="hm-btn hm-btn--primary" form="marks-form">@T["Games_SaveMarks"]</button>
+            </div>
             @if (pages > 1)
             {
                 <nav class="hm-pager" aria-label="@T["Pages"]">

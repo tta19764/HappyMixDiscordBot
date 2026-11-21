@@ -2,6 +2,9 @@ using Discord;
 using Discord.WebSocket;
 using HappyMix.Application.Abstractions.Guilds;
 using HappyMix.Application.Abstractions.Live;
+using HappyMix.Application.Abstractions.Quiet;
+using HappyMix.Application.Quiet;
+using MediatR;
 using Microsoft.Extensions.Options;
 
 namespace HappyMix.Bot.Services;
@@ -9,10 +12,13 @@ namespace HappyMix.Bot.Services;
 /// <summary>
 /// Live notices: a DM to each member who asked for them, and a post in the group's notification channel when the
 /// organizer turned that on. Messages use the community language; delivery problems are logged, never thrown.
+/// A recipient with do-not-disturb on gets the DM when it ends, if the player is still in that game.
 /// </summary>
 internal sealed partial class DiscordLiveNotifier(DiscordSocketClient discord, EventNotificationSettings notificationSettings,
-    IOptions<CommunityDefaults> community, ILogger<DiscordLiveNotifier> logger) : ILiveNotifier
+    IOptions<CommunityDefaults> community, ISender sender, ILogger<DiscordLiveNotifier> logger) : ILiveNotifier, IHeldMessageSender
 {
+    public string Kind => HeldKinds.Live;
+
     public async Task NotifyAsync(LiveNotice notice, CancellationToken cancellationToken)
     {
         if (discord.ConnectionState != ConnectionState.Connected)
@@ -21,18 +27,12 @@ internal sealed partial class DiscordLiveNotifier(DiscordSocketClient discord, E
         string text = Text(notice, language);
         foreach (ulong recipient in notice.DmRecipients)
         {
-            try
-            {
-                var user = await discord.Rest.GetUserAsync(recipient, new RequestOptions { CancelToken = cancellationToken });
-                if (user is null)
-                    continue;
-                var channel = await user.CreateDMChannelAsync(new RequestOptions { CancelToken = cancellationToken });
-                await channel.SendMessageAsync(text, allowedMentions: AllowedMentions.None, options: new RequestOptions { CancelToken = cancellationToken });
-            }
-            catch (Discord.Net.HttpException error)
-            {
-                LogNotSent(logger, notice.GuildId, recipient, error);
-            }
+            var single = notice with { DmRecipients = [recipient], PostInChannel = false };
+            string key = $"{notice.GroupId:N}:{notice.PlayerId}:{notice.Game.ToUpperInvariant()}";
+            if ((await sender.Send(new HoldIfQuietCommand(recipient, Kind, key,
+                    System.Text.Json.JsonSerializer.Serialize(single, HeldKinds.Json)), cancellationToken)).Value)
+                continue;
+            await SendDmAsync(notice.GuildId, recipient, text, cancellationToken);
         }
 
         if (notice.PostInChannel && await notificationSettings.GetEffectiveAsync(notice.GuildId, "group", notice.GroupId) is { } effective
@@ -46,6 +46,34 @@ internal sealed partial class DiscordLiveNotifier(DiscordSocketClient discord, E
             {
                 LogChannelFailed(logger, notice.GuildId, groupChannel.Id, error);
             }
+        }
+    }
+
+    public async Task<HeldDelivery> SendAsync(HeldMessage message, CancellationToken cancellationToken)
+    {
+        if (discord.ConnectionState != ConnectionState.Connected)
+            return HeldDelivery.RetryLater;
+        if (System.Text.Json.JsonSerializer.Deserialize<LiveNotice>(message.Payload, HeldKinds.Json) is not { } notice)
+            return HeldDelivery.Dropped;
+        return await SendDmAsync(notice.GuildId, message.UserId, Text(notice, community.Value.LanguageCode), cancellationToken)
+            ? HeldDelivery.Sent : HeldDelivery.Dropped;
+    }
+
+    private async Task<bool> SendDmAsync(ulong guildId, ulong recipient, string text, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var user = await discord.Rest.GetUserAsync(recipient, new RequestOptions { CancelToken = cancellationToken });
+            if (user is null)
+                return false;
+            var channel = await user.CreateDMChannelAsync(new RequestOptions { CancelToken = cancellationToken });
+            await channel.SendMessageAsync(text, allowedMentions: AllowedMentions.None, options: new RequestOptions { CancelToken = cancellationToken });
+            return true;
+        }
+        catch (Discord.Net.HttpException error)
+        {
+            LogNotSent(logger, guildId, recipient, error);
+            return false;
         }
     }
 

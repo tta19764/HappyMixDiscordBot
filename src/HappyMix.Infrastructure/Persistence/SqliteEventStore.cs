@@ -322,6 +322,17 @@ internal sealed class SqliteEventStore(IDbContextFactory<HappyMixDbContext> fact
         await context.SaveChangesAsync();
     }
 
+    public async Task DeferAsync(Guid eventId, DateOnly day, ulong userId, EventNotificationKind kind, DateTimeOffset until)
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        var row = await context.Set<EventNotificationRecord>().FindAsync(eventId, Date(day), Id(userId), (int)kind);
+        if (row is null)
+            return;
+        row.Error = "Waiting for do-not-disturb to end";
+        row.NextAttemptUtc = until.ToUnixTimeSeconds();
+        await context.SaveChangesAsync();
+    }
+
     private static async Task<IReadOnlyList<EventDetails>> LoadAsync(HappyMixDbContext context, List<EventRecord> rows, long? since,
         bool includeCanceled = true)
     {

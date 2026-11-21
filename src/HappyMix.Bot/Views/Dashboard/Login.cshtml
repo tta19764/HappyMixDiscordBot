@@ -1,0 +1,41 @@
+@model LoginPage
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = T["Login_Title"];
+    string culture = System.Globalization.CultureInfo.CurrentUICulture.Name;
+    var signedOut = new BannerModel("success", T["Login_SignedOut"].Value, Focus: false);
+    string here = "/login" + (Model.ReturnUrl == "/" ? "" : "?returnUrl=" + Uri.EscapeDataString(Model.ReturnUrl));
+}
+<section class="hm-card hm-login" aria-labelledby="login-title">
+    <span class="hm-login__mark" aria-hidden="true">HM</span>
+    <h1 id="login-title">@T["Login_Title"]</h1>
+    <p class="hm-login__lead">@T["Login_Lead"]</p>
+    @if (Model.SignedOut)
+    {
+        <partial name="_Banner" model="signedOut" />
+    }
+    <form class="hm-stack" method="post" action="/login">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="returnUrl" value="@Model.ReturnUrl">
+        <label class="hm-check hm-login__remember">
+            <input type="checkbox" name="remember" value="true" checked>
+            <span>
+                @T["Login_Remember"]
+                <small>@T["Login_Remember_Help"]</small>
+            </span>
+        </label>
+        <button class="hm-btn hm-btn--primary hm-login__discord">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20.3 4.4A19.6 19.6 0 0 0 15.4 3l-.6 1.3a18 18 0 0 0-5.6 0L8.6 3a19.5 19.5 0 0 0-4.9 1.4C.6 9 0 13.5.3 18a19.8 19.8 0 0 0 6 3l1.3-2.1a12.8 12.8 0 0 1-2-1l.5-.4a14 14 0 0 0 11.8 0l.5.4-2 1 1.3 2.1a19.7 19.7 0 0 0 6-3c.4-5.2-.7-9.6-3.4-13.6ZM8.5 15.3c-1.2 0-2.1-1-2.1-2.3 0-1.3.9-2.3 2.1-2.3s2.2 1 2.1 2.3c0 1.3-.9 2.3-2.1 2.3Zm7 0c-1.2 0-2.1-1-2.1-2.3 0-1.3.9-2.3 2.1-2.3s2.2 1 2.1 2.3c0 1.3-.9 2.3-2.1 2.3Z"/></svg>
+            @T["Login_Discord"]
+        </button>
+    </form>
+    <p class="hm-help">@T["Login_Privacy"]</p>
+    <form class="hm-login__lang" method="post" action="/language" aria-label="@T["Language"]">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="returnUrl" value="@here">
+        @foreach (var (code, label) in new[] { ("en", "English"), ("uk", "Українська"), ("ru", "Русский") })
+        {
+            <button class="hm-btn hm-btn--ghost hm-btn--sm" name="culture" value="@code" aria-current="@(culture == code ? "true" : null)">@label</button>
+        }
+    </form>
+</section>

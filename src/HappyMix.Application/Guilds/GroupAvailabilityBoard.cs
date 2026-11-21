@@ -20,10 +20,14 @@ public enum AvailabilitySource
 public sealed record BoardRange(AvailabilitySource Source, TimeOnly Start, TimeOnly End, bool FromPreviousDay,
     bool IntoNextDay, bool AllDay, bool Tentative = false);
 
-/// <summary>One saved group member. An empty <see cref="Ranges"/> list means no data, not "unavailable".</summary>
-public sealed record BoardRow(ulong UserId, BoardRange[] Ranges)
+/// <summary>
+/// One saved group member. An empty <see cref="Ranges"/> list means no data, not "unavailable".
+/// <see cref="Quiet"/> holds the member's do-not-disturb on that date: shown on boards, never counted as free time.
+/// </summary>
+public sealed record BoardRow(ulong UserId, BoardRange[] Ranges, BoardRange[]? Quiet = null)
 {
     public bool HasData => Ranges.Length > 0;
+    public BoardRange[] QuietRanges => Quiet ?? [];
 }
 
 /// <summary>
@@ -54,7 +58,8 @@ public sealed record GetGroupAvailabilityBoardQuery(GroupActor Actor, Guid Group
     : IQuery<GroupAvailabilityBoard>;
 
 internal sealed class GroupAvailabilityBoardQueries(IGuildGroupStore groups, IAvailabilityStore availability,
-    IGuildSettingsStore settings, IClock clock, IAccountLinkStore accountLinks) : IQueryHandler<GetGroupAvailabilityBoardQuery, GroupAvailabilityBoard>
+    IGuildSettingsStore settings, IClock clock, IAccountLinkStore accountLinks, IEnumerable<HappyMix.Application.Abstractions.Quiet.IQuietStore> quiet)
+    : IQueryHandler<GetGroupAvailabilityBoardQuery, GroupAvailabilityBoard>
 {
     internal const int Days = 7;
 
@@ -79,7 +84,7 @@ internal sealed class GroupAvailabilityBoardQueries(IGuildGroupStore groups, IAv
         var members = links.Representatives(group!.Members);
         var snapshot = await availability.ListForMembersAsync(actor.GuildId, links.Members(members), dayStart, dayEnd);
 
-        var rows = BoardRows.Build(links, members, snapshot, date, zone);
+        var rows = BoardRows.Build(links, members, snapshot, date, zone, await BoardRows.QuietAsync(quiet, links, members));
 
         var freeByHour = Enumerable.Range(0, 24).Select(hour => rows.Count(row => row.Ranges.Any(range =>
             !range.Tentative && GroupAvailabilityBoard.StartHours(range) < hour + 1 && GroupAvailabilityBoard.EndHours(range) > hour))).ToArray();

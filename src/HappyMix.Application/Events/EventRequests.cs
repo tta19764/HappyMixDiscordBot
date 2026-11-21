@@ -91,7 +91,7 @@ public static class EventRules
 public sealed record TransferEventCommand(ulong GuildId, ulong UserId, Guid EventId, ulong NewOrganizerId) : ICommand;
 
 internal sealed class EventHandlers(IEventStore store, IGuildGroupStore groups, IAccountLinkStore accountLinks,
-    IGuildSettingsStore settings, IClock clock, IEventNotifier notifier) :
+    IGuildSettingsStore settings, IClock clock, IEventNotifier notifier, IEnumerable<HappyMix.Application.Abstractions.Quiet.IQuietStore> quiet) :
     ICommandHandler<CreateEventCommand, EventCreated>,
     ICommandHandler<RespondToEventCommand, EventAnswer>,
     ICommandHandler<ConfirmEventCommand, EventCounts>,
@@ -335,6 +335,14 @@ internal sealed class EventHandlers(IEventStore store, IGuildGroupStore groups, 
             if (stale)
             {
                 await store.MarkAsync(item.Event.Id, item.Occurrence.Date, item.UserId, item.Kind, false, "No longer needed", null);
+                continue;
+            }
+
+            // Do-not-disturb: wait until it ends. The checks above run again then, so a date canceled meanwhile is never sent.
+            if (quiet.FirstOrDefault() is { } quietStore
+                && HappyMix.Application.Quiet.QuietHours.Until(await quietStore.GetAsync(item.UserId), now) is { } until)
+            {
+                await store.DeferAsync(item.Event.Id, item.Occurrence.Date, item.UserId, item.Kind, until);
                 continue;
             }
 

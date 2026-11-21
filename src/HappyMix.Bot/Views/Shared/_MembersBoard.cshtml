@@ -95,11 +95,18 @@
                     }
                 </span>
                 <span class="hm-tgrid__cellwrap" role="cell">
-                    <span class="hm-sr-only">@(row.HasData ? T["Free_Arg0", string.Join(", ", row.Ranges.Select(range => RangeText(range) + " (" + Kind(range) + ")"))] : T["No_data"])</span>
+                    <span class="hm-sr-only">@(row.HasData ? T["Free_Arg0", string.Join(", ", row.Ranges.Select(range => RangeText(range) + " (" + Kind(range) + ")"))] : T["No_data"])@(row.QuietRanges.Length > 0 ? ". " + T["Dnd_Arg0", string.Join(", ", row.QuietRanges.Select(RangeText))] : "")</span>
                     <span class="hm-tgrid__track" aria-hidden="true">
-                        @if (!row.HasData)
+                        @if (!row.HasData && row.QuietRanges.Length == 0)
                         {
                             <span class="hm-tgrid__nodata">@T["No_data"]</span>
+                        }
+                        @foreach (var quiet in row.QuietRanges)
+                        {
+                            double quietLeft = GroupAvailabilityBoard.StartHours(quiet) / 24 * 100;
+                            double quietWidth = Math.Max(0.5, GroupAvailabilityBoard.EndHours(quiet) / 24 * 100 - quietLeft);
+                            <span class="hm-tgrid__block hm-tgrid__block--dnd @(quietLeft > 55 ? "hm-tgrid__block--end" : "")"
+                                  style="left: @Css(quietLeft); width: @Css(quietWidth)" data-tip="@($"{name} · {RangeText(quiet)} · {T["Dnd_Title"]}")"></span>
                         }
                         @foreach (var range in row.Ranges)
                         {
@@ -131,6 +138,7 @@
         <span><i class="hm-swatch hm-swatch--oneoff"></i>@T["Free_one_off_for_this_date"]</span>
         <span><i class="hm-swatch hm-swatch--weekly"></i>@T["Weekly"]</span>
         <span><i class="hm-swatch hm-swatch--tentative"></i>@T["Tentative"]</span>
+        <span><i class="hm-swatch hm-swatch--dnd"></i>@T["Dnd_Title"]</span>
         <span><i class="hm-swatch hm-swatch--nodata"></i>@T["No_data"]</span>
         <span><i class="hm-swatch hm-swatch--event"></i>@T["Confirmed_event"]</span>
         @if (Model.Selectable)

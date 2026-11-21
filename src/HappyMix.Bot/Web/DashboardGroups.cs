@@ -129,7 +129,7 @@ public sealed partial class DashboardController
                 new GroupFormState("members", text.Message(result.Error.Description), Member: member));
 
         bool delivered = discord.GetGuild(guildId) is { } guild &&
-            await GroupInviteMessages.SendAsync(target.Value.User, guildId, guild.Name, group.Name, token);
+            await GroupInviteMessages.SendAsync(sender, target.Value.User, guildId, guild.Name, group.Name, token);
         TempData["GroupBannerTitle"] = text["Invitation_sent_to_Arg0", target.Value.Name].Value;
         TempData["GroupBannerText"] = delivered
             ? text["They_got_a_Discord_message_with_Accept_and_Decline_buttons_and_can"].Value
