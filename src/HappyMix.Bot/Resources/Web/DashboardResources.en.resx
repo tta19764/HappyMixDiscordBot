@@ -2593,7 +2593,13 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Quiet_Err_TooMany" xml:space="preserve"><value>You already have the most do-not-disturb times allowed. Remove one first.</value></data>
 <data name="Quiet_Err_Missing" xml:space="preserve"><value>That do-not-disturb time no longer exists.</value></data>
 <data name="Guide_dnd_Title" xml:space="preserve"><value>Do not disturb</value></data>
-<data name="Guide_dnd_Body" xml:space="preserve"><value>On the Availability page, add do-not-disturb hours to your usual week (for example weeknights 23:00–08:00) or to specific dates. While do-not-disturb is on, HappyMix holds your personal messages: event invitations and updates, group requests and invitations, and Live notices. When it ends, each message is checked again and only sent if it still matters, so a canceled date, an answered request or a finished game is dropped. Do-not-disturb belongs to your Discord account, so it covers every server, and it shows on the server and group availability boards as a striped purple band.</value></data>
+<data name="Guide_dnd_Body" xml:space="preserve"><value>Add do-not-disturb hours on the Availability page: in the Weekly timetable, edit a day and choose “Do not disturb” as the kind of a range (for example weeknights 23:00–08:00); on the By date tab, add dates with a summary of what will be saved. While do-not-disturb is on, HappyMix holds your personal messages: event invitations and updates, group requests and invitations, and Live notices. When it ends, each message is checked again and only sent if it still matters, so a canceled date, an answered request or a finished game is dropped. Do-not-disturb belongs to your Discord account, so it covers every server, and it shows as a striped purple band on your week, on your day and on the server and group availability boards.</value></data>
 <data name="Quiet_Err_Zone" xml:space="preserve"><value>Choose a time zone like Europe/Kyiv or enter a UTC offset like +02:00.</value></data>
 <data name="Quiet_Err_Times" xml:space="preserve"><value>Enter 24-hour times like 17 or 00:30.</value></data>
+<data name="Dnd_WeekHelp" xml:space="preserve"><value>For do-not-disturb hours, edit a day and choose “Do not disturb” as the kind of a range. They cover every server: HappyMix holds your personal messages until they end.</value></data>
+<data name="Your_day_Arg0" xml:space="preserve"><value>Your day: {0}</value></data>
+<data name="Your_day_Empty" xml:space="preserve"><value>No free hours, do-not-disturb or events on this day yet.</value></data>
+<data name="Dnd_SummaryTitle" xml:space="preserve"><value>Do not disturb will be on:</value></data>
+<data name="Dnd_SummaryMore" xml:space="preserve"><value>…and {0} more days</value></data>
+<data name="Dnd_SummaryInvalid" xml:space="preserve"><value>Pick a date, and a From and Until time that differ (or All day).</value></data>
 </root>

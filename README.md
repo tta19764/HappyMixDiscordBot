@@ -400,6 +400,11 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 - `ConfirmEventSeriesCommand` (POST `/events/{guild}/{event}/confirm-all`) confirms every pending upcoming date; each person who accepted one gets a single Confirmed message for their first newly confirmed date.
 - Event date boxes show weekday, day and month; compact series rows show only the times, with status and count underneath. Side panel menus open beside the panel (`position: fixed`) so its scroll area no longer clips them.
 
+### v0.1.1 do not disturb in the schedule
+
+- Weekly do-not-disturb is edited in the day editor: each range's kind is Definite, Tentative or Do not disturb (`rangeKind=dnd`). Saving splits the day into free hours (`SetWeeklyDayCommand`, this server) and do-not-disturb (`SetQuietDayCommand`, the Discord account, all servers). The week table draws do-not-disturb as a purple band with overnight carry-over; Clear and Copy to… include it. The separate weekly do-not-disturb card is gone.
+- By date: "Your day" card with the picked date's free hours, do-not-disturb and accepted events (`AvailabilityPage.MyDay`). The do-not-disturb dates form hides Repeat through until "Repeat on the following days" is ticked and shows a live summary of every date and time range before saving.
+
 ### v0.0.15 My games fixes
 
 - Steam pictures for games released from about 2025: their header only exists under a hashed path, so a failed fixed address (`header.jpg`) falls back to `/steam-art/{appId}`, which reads `header_image` from the store's `appdetails` once and caches it (`SteamArt`). Also used on Game news; pictures that failed before the script ran are caught too.

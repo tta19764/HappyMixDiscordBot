@@ -33,6 +33,8 @@ public interface IQuietStore
     Task<QuietSchedule> GetAsync(ulong userId);
     Task<IReadOnlyDictionary<ulong, QuietSchedule>> GetManyAsync(IReadOnlyCollection<ulong> userIds);
     Task AddWeeklyAsync(ulong userId, IReadOnlyCollection<QuietWeekly> ranges);
+    /// <summary>Replaces every weekly do-not-disturb range on <paramref name="day"/> with <paramref name="ranges"/>.</summary>
+    Task ReplaceWeeklyDayAsync(ulong userId, DayOfWeek day, IReadOnlyCollection<QuietWeekly> ranges);
     Task AddDatesAsync(ulong userId, IReadOnlyCollection<QuietDates> ranges);
     Task<bool> RemoveAsync(ulong userId, Guid id);
     /// <summary>Removes date ranges that ended before <paramref name="before"/>.</summary>

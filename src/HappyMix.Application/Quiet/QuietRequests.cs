@@ -38,6 +38,12 @@ public sealed record AddQuietDatesCommand(ulong UserId, DateOnly First, DateOnly
 
 public sealed record RemoveQuietCommand(ulong UserId, Guid Id) : ICommand;
 
+/// <summary>
+/// The weekly day editor: replaces the do-not-disturb hours on <paramref name="Day"/> with <paramref name="Ranges"/>
+/// (an empty list clears them). Returns how many ranges the day has now.
+/// </summary>
+public sealed record SetQuietDayCommand(ulong UserId, DayOfWeek Day, IReadOnlyList<WeeklyRangeInput> Ranges, string TimeZone) : ICommand<int>;
+
 /// <summary>When the person's current do-not-disturb ends, or null when they can be messaged now.</summary>
 public sealed record GetQuietUntilQuery(ulong UserId) : IQuery<DateTimeOffset?>;
 
@@ -105,6 +111,7 @@ internal sealed class QuietHandlers(IQuietStore store, IClock clock, IGuildGroup
     IEnumerable<IHeldMessageSender> senders) :
     IQueryHandler<GetQuietOverviewQuery, QuietOverview>, ICommandHandler<AddQuietWeeklyCommand, int>, ICommandHandler<AddQuietDatesCommand, int>,
     ICommandHandler<RemoveQuietCommand>, IQueryHandler<GetQuietUntilQuery, DateTimeOffset?>, ICommandHandler<HoldIfQuietCommand, bool>,
+    ICommandHandler<SetQuietDayCommand, int>,
     ICommandHandler<ReleaseHeldMessagesCommand, int>
 {
     private static readonly ErrorDescriptor TooMany = new("Quiet.TooMany", "You already have the most do-not-disturb times allowed. Remove one first.");
@@ -153,6 +160,26 @@ internal sealed class QuietHandlers(IQuietStore store, IClock clock, IGuildGroup
             return Result.Failure<int>(TooMany);
         await store.AddDatesAsync(command.UserId, ranges);
         return ranges.Length;
+    }
+
+    public async Task<Result<int>> Handle(SetQuietDayCommand command, CancellationToken cancellationToken)
+    {
+        if (!Enum.IsDefined(command.Day))
+            return Result.Failure<int>(Invalid("Choose at least one day."));
+        if (LocalTimes.FindZone(command.TimeZone) is null)
+            return Result.Failure<int>(Invalid("Choose a time zone like Europe/Kyiv or enter a UTC offset like +02:00."));
+        var ranges = new List<QuietWeekly>();
+        foreach (var input in command.Ranges)
+        {
+            if (Times(input.Start, input.End, input.FullDay || input.Start == input.End) is not var (start, end))
+                return Result.Failure<int>(Invalid("Enter 24-hour times like 17 or 00:30."));
+            ranges.Add(new QuietWeekly(Guid.NewGuid(), command.Day, start, end, command.TimeZone));
+        }
+        var saved = await store.GetAsync(command.UserId);
+        if (saved.Weekly.Count(range => range.Day != command.Day) + saved.Dates.Count + ranges.Count > QuietRules.MaxRanges)
+            return Result.Failure<int>(TooMany);
+        await store.ReplaceWeeklyDayAsync(command.UserId, command.Day, ranges);
+        return ranges.Count;
     }
 
     public async Task<Result> Handle(RemoveQuietCommand command, CancellationToken cancellationToken) =>
