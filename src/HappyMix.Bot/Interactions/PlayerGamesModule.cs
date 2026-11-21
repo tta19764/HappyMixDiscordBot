@@ -81,6 +81,71 @@ public sealed class PlayerGamesModule(ISender sender) : InteractionModuleBase<So
         await Reply(result.IsSuccess ? $"Library imported: {result.Value.Added} new, {result.Value.Updated} updated." : result.Error.Description);
     }
 
+    [SlashCommand("stats", "Show Dota 2 and CS2 stats: yours, or a member's who shares them.")]
+    public async Task StatsAsync([Summary(description: "Someone else; their stats show only if they share them.")] IUser? member = null)
+    {
+        await DeferAsync(ephemeral: true);
+        var target = member ?? Context.User;
+        bool self = target.Id == Context.User.Id;
+        var stats = (await sender.Send(new HappyMix.Application.Stats.GetMyStatsQuery(target.Id))).Value;
+        if (!stats.Shares)
+        {
+            await Reply(self ? "Your stats aren't shared. Turn them on with /games share-stats, or on a Dota 2 or CS2 group's Stats tab."
+                : $"{Format.Sanitize(target.GlobalName ?? target.Username)} doesn't share their game stats.");
+            return;
+        }
+        await Reply(StatsText(target.GlobalName ?? target.Username, stats));
+    }
+
+    [SlashCommand("share-stats", "Show or hide your Dota 2 and CS2 stats in your groups.")]
+    public async Task ShareStatsAsync([Summary(description: "On: groups see your stats. Off: hidden, and saved stats are deleted.")] bool share)
+    {
+        await DeferAsync(ephemeral: true);
+        var stats = (await sender.Send(new HappyMix.Application.Stats.SetStatsSharingCommand(Context.User.Id, share))).Value;
+        await Reply(!share ? "Your game stats are hidden and the saved stats are deleted."
+            : stats.SteamId is null ? "Sharing is on. Link your Steam account with /games steam so HappyMix can find your stats."
+            : "Sharing is on.\n" + StatsText(Context.User.GlobalName ?? Context.User.Username, stats));
+    }
+
+    /// <summary>A short card in plain text: Dota 2 medal and record, CS2 FACEIT level, and profile links.</summary>
+    internal static string StatsText(string name, HappyMix.Application.Stats.MyStats stats)
+    {
+        var lines = new List<string> { $"**{Format.Sanitize(name)}**" };
+        long? account = HappyMix.Application.Stats.GameStats.DotaAccountId(stats.SteamId);
+        string dota = stats.Dota switch
+        {
+            null => "getting stats…",
+            { Status: HappyMix.Application.Abstractions.Stats.StatsStatus.NoPublicData } => "no public match data (turn on Expose Public Match Data in Dota 2)",
+            var cached when HappyMix.Application.Stats.GameStats.Read<HappyMix.Application.Abstractions.Stats.DotaProfile>(cached) is { } profile =>
+                $"{Medal(profile.RankTier, profile.LeaderboardRank)} · last 30 days {profile.Wins}W {profile.Losses}L"
+                + (profile.Wins + profile.Losses > 0 ? $" ({profile.Wins * 100 / (profile.Wins + profile.Losses)}%)" : "")
+                + (profile.TopHeroes.Count > 0 ? " · " + string.Join(", ", profile.TopHeroes.Select(hero => $"{Format.Sanitize(hero.Name)} {hero.Games}")) : ""),
+            _ => "OpenDota didn't answer; try again later"
+        };
+        lines.Add($"Dota 2: {dota}" + (account is { } id ? $" · <https://www.opendota.com/players/{id}> · <https://www.dotabuff.com/players/{id}>" : ""));
+        if (stats.Cs2Enabled)
+        {
+            string cs2 = stats.Cs2 switch
+            {
+                null => "getting stats…",
+                { Status: HappyMix.Application.Abstractions.Stats.StatsStatus.NoAccount } => "no FACEIT account",
+                var cached when HappyMix.Application.Stats.GameStats.Read<HappyMix.Application.Abstractions.Stats.Cs2Profile>(cached) is { } profile =>
+                    $"FACEIT level {profile.Level?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "?"}"
+                    + (profile.Elo is { } elo ? $" · {elo} Elo" : "") + $" · {profile.Matches} matches"
+                    + (profile.KillDeath is { } kd ? $" · K/D {kd.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}" : ""),
+                _ => "FACEIT didn't answer; try again later"
+            };
+            lines.Add($"CS2: {cs2}" + (stats.SteamId is { } steamId ? $" · <https://leetify.com/app/profile/{steamId}>" : ""));
+        }
+        return string.Join("\n", lines);
+    }
+
+    private static readonly string[] Medals = ["Herald", "Guardian", "Crusader", "Archon", "Legend", "Ancient", "Divine", "Immortal"];
+
+    private static string Medal(int? rankTier, int? leaderboard) => HappyMix.Application.Stats.GameStats.DotaMedal(rankTier) is var (medal, stars)
+        ? Medals[medal - 1] + (medal < 8 && stars > 0 ? $" {stars}" : "") + (leaderboard is { } place ? $" #{place}" : "")
+        : "Unranked";
+
     private static string Label(GamePreference preference) => preference switch
     {
         GamePreference.Want => "Want to play", GamePreference.Can => "Can play", _ => "Won't play"

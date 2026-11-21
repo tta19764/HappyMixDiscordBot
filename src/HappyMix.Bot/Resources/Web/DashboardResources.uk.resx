@@ -2602,4 +2602,54 @@
 <data name="Dnd_SummaryTitle" xml:space="preserve"><value>Режим «Не турбувати» буде ввімкнено:</value></data>
 <data name="Dnd_SummaryMore" xml:space="preserve"><value>…і ще {0} дн.</value></data>
 <data name="Dnd_SummaryInvalid" xml:space="preserve"><value>Виберіть дату та різний час «З» і «До» (або «Увесь день»).</value></data>
+<data name="Stats_Title" xml:space="preserve"><value>Статистика</value></data>
+<data name="Stats_Lead" xml:space="preserve"><value>Ранги та останні результати учасників, які діляться статистикою Dota 2 і CS2. Її бачать лише учасники групи.</value></data>
+<data name="Stats_Sharing" xml:space="preserve"><value>Діляться: {0} з {1}</value></data>
+<data name="Stats_Share" xml:space="preserve"><value>Показувати мою ігрову статистику моїм групам</value></data>
+<data name="Stats_Share_Help" xml:space="preserve"><value>Використовує відкриті дані OpenDota і FACEIT для акаунта Steam зі сторінки «Мої ігри». Діє для всіх ваших груп; якщо вимкнути, збережену статистику буде видалено.</value></data>
+<data name="Stats_LinkSteam" xml:space="preserve"><value>Спершу під'єднайте акаунт Steam на сторінці</value></data>
+<data name="Stats_MembersOnly" xml:space="preserve"><value>Ділитися статистикою тут можуть лише учасники групи.</value></data>
+<data name="Stats_Dota" xml:space="preserve"><value>Dota 2</value></data>
+<data name="Stats_Cs2" xml:space="preserve"><value>CS2</value></data>
+<data name="Stats_SourceDota" xml:space="preserve"><value>З OpenDota: медаль, останні 30 днів і найчастіші герої за 90 днів.</value></data>
+<data name="Stats_SourceCs2" xml:space="preserve"><value>З FACEIT: рівень, Elo, загальні результати й найчастіші карти.</value></data>
+<data name="Stats_Cs2Off" xml:space="preserve"><value>Статистику CS2 у цього бота ще не налаштовано (потрібен ключ FACEIT). Картки показують лише посилання на профілі.</value></data>
+<data name="Stats_NotShared" xml:space="preserve"><value>Не ділиться</value></data>
+<data name="Stats_NoSteam" xml:space="preserve"><value>Акаунт Steam ще не під'єднано.</value></data>
+<data name="Stats_LinksOnly" xml:space="preserve"><value>Лише посилання на профілі.</value></data>
+<data name="Stats_Updating" xml:space="preserve"><value>Отримуємо статистику…</value></data>
+<data name="Stats_NoPublicData" xml:space="preserve"><value>Немає відкритих даних про матчі.</value></data>
+<data name="Stats_NoPublicDataMine" xml:space="preserve"><value>Немає відкритих даних про матчі. У Dota 2 відкрийте «Налаштування» → «Параметри» → «Соціальне» й увімкніть «Відкривати дані про матчі»; статистика з'явиться після наступного матчу.</value></data>
+<data name="Stats_NoFaceit" xml:space="preserve"><value>Немає акаунта FACEIT.</value></data>
+<data name="Stats_NoFaceitMine" xml:space="preserve"><value>Для цього акаунта Steam немає акаунта FACEIT. Під'єднайте Steam на faceit.com, щоб тут з'явився ваш рівень.</value></data>
+<data name="Stats_ErrorDota" xml:space="preserve"><value>Не вдалося зв'язатися з OpenDota. Спробуємо знову незабаром.</value></data>
+<data name="Stats_ErrorCs2" xml:space="preserve"><value>Не вдалося зв'язатися з FACEIT. Спробуємо знову незабаром.</value></data>
+<data name="Stats_StaleDota" xml:space="preserve"><value>OpenDota не відповів, старіші дані</value></data>
+<data name="Stats_StaleCs2" xml:space="preserve"><value>FACEIT не відповів, старіші дані</value></data>
+<data name="Stats_UpdatedMinutes" xml:space="preserve"><value>оновлено {0} хв тому</value></data>
+<data name="Stats_UpdatedHours" xml:space="preserve"><value>оновлено {0} год тому</value></data>
+<data name="Stats_UpdatedDays" xml:space="preserve"><value>оновлено {0} дн. тому</value></data>
+<data name="Stats_Unranked" xml:space="preserve"><value>Без рангу</value></data>
+<data name="Stats_FaceitLevel" xml:space="preserve"><value>Рівень {0}</value></data>
+<data name="Stats_Last30" xml:space="preserve"><value>30 днів</value></data>
+<data name="Stats_WinsLosses" xml:space="preserve"><value>{0} перемог, {1} поразок</value></data>
+<data name="Stats_WinRate" xml:space="preserve"><value>Відсоток перемог {0}</value></data>
+<data name="Stats_WinRateShort" xml:space="preserve"><value>Перемоги</value></data>
+<data name="Stats_TopHeroes" xml:space="preserve"><value>Найчастіші герої</value></data>
+<data name="Stats_BestMaps" xml:space="preserve"><value>Найчастіші карти</value></data>
+<data name="Stats_GamesRate" xml:space="preserve"><value>{0} ігор · {1}</value></data>
+<data name="Stats_Matches" xml:space="preserve"><value>Матчі</value></data>
+<data name="Stats_Headshots" xml:space="preserve"><value>Хедшоти</value></data>
+<data name="Stats_Shared" xml:space="preserve"><value>Ваша статистика тепер видна вашим групам</value></data>
+<data name="Stats_Unshared" xml:space="preserve"><value>Ваша статистика більше не показується</value></data>
+<data name="Dota_Medal_1" xml:space="preserve"><value>Вісник</value></data>
+<data name="Dota_Medal_2" xml:space="preserve"><value>Вартовий</value></data>
+<data name="Dota_Medal_3" xml:space="preserve"><value>Лицар</value></data>
+<data name="Dota_Medal_4" xml:space="preserve"><value>Герой</value></data>
+<data name="Dota_Medal_5" xml:space="preserve"><value>Легенда</value></data>
+<data name="Dota_Medal_6" xml:space="preserve"><value>Володар</value></data>
+<data name="Dota_Medal_7" xml:space="preserve"><value>Божество</value></data>
+<data name="Dota_Medal_8" xml:space="preserve"><value>Титан</value></data>
+<data name="Guide_stats_Title" xml:space="preserve"><value>Статистика</value></data>
+<data name="Guide_stats_Body" xml:space="preserve"><value>Групи, які грають у Dota 2 або CS2, мають вкладку «Статистика» з карткою кожного учасника. Поки ви не ввімкнете «Показувати мою ігрову статистику моїм групам», нічого не показується; після цього вибір діє для всіх ваших груп, а вимкнення видаляє збережену статистику. Картки Dota 2 беруть дані з OpenDota (медаль, перемоги й поразки за 30 днів, найчастіші герої) і потребують увімкненого «Відкривати дані про матчі» в Dota 2. Картки CS2 беруть дані з FACEIT (рівень, Elo, K/D, хедшоти, карти), якщо в бота є ключ FACEIT. Картки оновлюються кожні кілька годин і мають посилання на OpenDota, Dotabuff, FACEIT, Leetify та Steam.</value></data>
 </root>
