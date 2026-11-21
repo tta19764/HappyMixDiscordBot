@@ -26,6 +26,11 @@ public sealed record GroupStats(IReadOnlyList<StatsGame> Games, IReadOnlyList<Pl
     bool Cs2Enabled, DateTimeOffset Now)
 {
     public int Sharing => Cards.Count(card => card.Shares);
+    /// <summary>Matches two or more sharing members played together in the last two weeks, newest first.</summary>
+    public IReadOnlyList<GroupRecap> Recaps { get; init; } = [];
+    /// <summary>Whether recaps are also posted in the group's notification channel.</summary>
+    public bool PostRecaps { get; init; }
+    public bool CanManage { get; init; }
 }
 
 public sealed record GetGroupStatsQuery(GroupActor Actor, Guid GroupId) : IQuery<GroupStats>;
@@ -121,8 +126,17 @@ internal sealed class GameStatsHandlers(IGameStatsStore store, IGameStatsDirecto
         // Sharing and Steam belong to the Discord account itself, like My games.
         ulong viewer = query.Actor.UserId;
         bool isMember = links.Includes(detail.Members, query.Actor.UserId) || links.Same(detail.Summary.OrganizerId, query.Actor.UserId);
+        var now = clock.UtcNow;
+        var sharers = cards.Where(card => card.Shares).Select(card => card.UserId).ToArray();
+        var recaps = MatchRecaps.Find(query.GroupId, sharers, await store.ListMatchesAsync(sharers, now - MatchRecaps.ShowFor), games)
+            .Take(MatchRecaps.MaxShown).ToArray();
         return new GroupStats(games, cards, (await store.ListSharingAsync([viewer])).Contains(viewer), isMember,
-            await players.GetSteamAsync(viewer) is not null, directory.Cs2Enabled, clock.UtcNow);
+            await players.GetSteamAsync(viewer) is not null, directory.Cs2Enabled, now)
+        {
+            Recaps = recaps,
+            PostRecaps = await store.GetRecapChannelAsync(query.Actor.GuildId, query.GroupId),
+            CanManage = detail.Summary.CanManage
+        };
     }
 
     public async Task<Result<MyStats>> Handle(GetMyStatsQuery query, CancellationToken cancellationToken) => await MineAsync(query.UserId);
@@ -131,7 +145,10 @@ internal sealed class GameStatsHandlers(IGameStatsStore store, IGameStatsDirecto
     {
         await store.SetSharingAsync(command.UserId, command.Share, clock.UtcNow);
         if (!command.Share)
+        {
             await store.RemoveCachedAsync(command.UserId);
+            await store.RemoveMatchesAsync(command.UserId);
+        }
         else if (await players.GetSteamAsync(command.UserId) is { } steam)
             await FetchAsync(command.UserId, steam.SteamId, cancellationToken);
         return await MineAsync(command.UserId);

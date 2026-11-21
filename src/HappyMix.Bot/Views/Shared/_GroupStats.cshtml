@@ -24,6 +24,9 @@
         .ThenBy(card => card.UserId != Model.Viewer.UserId)
         .ThenBy(card => Model.Names.Name(card.UserId, Localize), StringComparer.CurrentCultureIgnoreCase);
     bool several = stats.Games.Count > 1;
+    var zone = Model.Live?.Zone ?? TimeZoneInfo.Utc;
+    string When(DateTimeOffset at) => TimeZoneInfo.ConvertTime(at, zone).ToString("ddd d MMM, HH:mm", culture);
+    BannerModel? statsBanner = Model.ErrorFor("stats") is { } statsError ? new BannerModel("error", T["That_didn_t_work"].Value, statsError) : null;
 }
 <section class="hm-card hm-section hm-stack hm-stats" id="stats" aria-labelledby="stats-title" data-group-panel="stats">
     <div class="hm-card__head" style="margin: 0">
@@ -34,6 +37,10 @@
         <span class="hm-badge">@T["Stats_Sharing", stats.Sharing, stats.Cards.Count]</span>
     </div>
 
+    @if (statsBanner is not null)
+    {
+        <partial name="_Banner" model="statsBanner" />
+    }
     @if (stats.IsMember)
     {
         <form class="hm-stats__share" method="post" action="@Model.Url/stats/share" asp-antiforgery="false">
@@ -222,6 +229,82 @@
                     </li>
                 }
             </ul>
+
+            @* Games together: a match two or more sharing members played, newest first. *@
+            @{ var recaps = stats.Recaps.Where(recap => recap.Game == game).ToArray(); }
+            <div class="hm-recaps">
+                <h3>@T["Recap_Title"] <span class="hm-count">@recaps.Length</span></h3>
+                @if (recaps.Length == 0)
+                {
+                    <p class="hm-help">@T["Recap_None"]</p>
+                }
+                else
+                {
+                    <ul class="hm-recaps__list">
+                        @foreach (var recap in recaps)
+                        {
+                            string result = recap.Won switch { true => "won", false => "lost", null => "split" };
+                            var first = recap.Players[0];
+                            <li class="hm-recap hm-recap--@result">
+                                <div class="hm-recap__head">
+                                    <span class="hm-recap__result">@T[$"Recap_Result_{result}"]</span>
+                                    <span class="hm-recap__when">@When(recap.StartedAt) · @T["Live_Minutes", Math.Max(1, recap.DurationSeconds / 60)]</span>
+                                    @if (!dota && first.Pick is { Length: > 0 } map)
+                                    {
+                                        <span class="hm-recap__map">@map@(first.Score is { Length: > 0 } score ? " · " + score : "")</span>
+                                    }
+                                    <span class="hm-recap__links">
+                                        @if (dota)
+                                        {
+                                            <a href="https://www.opendota.com/matches/@recap.MatchId" target="_blank" rel="noopener noreferrer">OpenDota</a>
+                                            <a href="https://www.dotabuff.com/matches/@recap.MatchId" target="_blank" rel="noopener noreferrer">Dotabuff</a>
+                                        }
+                                        else
+                                        {
+                                            <a href="https://www.faceit.com/en/cs2/room/@Uri.EscapeDataString(recap.MatchId)" target="_blank" rel="noopener noreferrer">FACEIT</a>
+                                        }
+                                    </span>
+                                </div>
+                                <ul class="hm-recap__players">
+                                    @foreach (var player in recap.Players)
+                                    {
+                                        <li class="@(recap.Won is null ? (player.Won ? "is-won" : "is-lost") : "")">
+                                            <partial name="_MemberAvatars" model="MemberStacks.For(Model, player.UserId, Localize, small: true)" />
+                                            <span class="hm-recap__who">@Model.Names.Name(player.UserId, Localize)</span>
+                                            @if (dota && player.Image is { } heroImage)
+                                            {
+                                                <img src="@heroImage" alt="" width="40" height="22" loading="lazy" data-game-art>
+                                            }
+                                            @if (dota && player.Pick is { Length: > 0 } hero)
+                                            {
+                                                <span class="hm-recap__pick">@hero</span>
+                                            }
+                                            <span class="hm-recap__kda" title="@T["Recap_Kda"]">@player.Kills/@player.Deaths/@player.Assists</span>
+                                            @if (player.Headshots is { } headshots)
+                                            {
+                                                <span class="hm-recap__hs">@T["Recap_Headshots", headshots.ToString("0", culture)]</span>
+                                            }
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
         </div>
+    }
+
+    @if (stats.CanManage)
+    {
+        <form class="hm-stack hm-stack--sm hm-stats__channel" method="post" action="@Model.Url/stats/recaps" asp-antiforgery="false">
+            @Html.AntiForgeryToken()
+            <h3>@T["Live_Channel"]</h3>
+            <label class="hm-check">
+                <input type="checkbox" name="post" value="true" checked="@stats.PostRecaps" />
+                <span>@T["Recap_Channel_Post"]<small>@T["Recap_Channel_Help"]</small></span>
+            </label>
+            <div><button class="hm-btn">@T["Save"]</button></div>
+        </form>
     }
 </section>
