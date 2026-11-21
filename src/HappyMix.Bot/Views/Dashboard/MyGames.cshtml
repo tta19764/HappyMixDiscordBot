@@ -197,7 +197,8 @@
                             @DashboardIcons.Render("games")
                             @if (MyGamesPage.Art(game) is { } art)
                             {
-                                <img src="@art" alt="" loading="lazy" decoding="async" width="92" height="43" data-game-art>
+                                <img src="@art" alt="" loading="lazy" decoding="async" width="92" height="43" data-game-art
+                                     data-art-fallback="@HappyMix.Bot.Services.SteamArt.Fallback(MyGamesPage.SteamAppId(game)!)">
                             }
                         </span>
                         <div class="hm-mygames__name">

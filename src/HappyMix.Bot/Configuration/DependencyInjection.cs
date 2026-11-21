@@ -83,6 +83,12 @@ public static class DependencyInjection
         services.AddHttpClient("Twitch", client => client.Timeout = TimeSpan.FromSeconds(5));
         services.AddSingleton<TwitchLiveStreams>();
         services.AddHttpClient("SteamNews", client => client.Timeout = TimeSpan.FromSeconds(10));
+        services.AddHttpClient(SteamArt.HttpClientName, client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(8);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("HappyMixBot/1.0");
+        });
+        services.AddSingleton<SteamArt>();
         services.AddSingleton<GameNewsService>();
         services.AddSingleton<HappyMix.Application.Abstractions.News.IGameNewsGateway, DiscordGameNewsGateway>();
         services.AddSingleton<DiscordLiveNotifier>();

@@ -68,5 +68,13 @@ public sealed class MediaCatalogParsingTests
         var steam = MediaCatalog.Igdb(drg.RootElement)!;
         Assert.Equal(("548430", (double?)null), (steam.SteamAppId, steam.Rating));
         Assert.Equal(["PC (Microsoft Windows)"], steam.Platforms!);
+
+        // IGDB now labels links with "type" instead of "category": the Steam link is still found by its address.
+        using var dota = System.Text.Json.JsonDocument.Parse("""
+            {"id": 2963, "name": "Dota 2", "websites": [{"type": 1, "url": "https://www.dota2.com"},
+             {"type": 13, "url": "https://store.steampowered.com/app/570"}]}
+            """);
+        var current = MediaCatalog.Igdb(dota.RootElement)!;
+        Assert.Equal(("570", "https://www.dota2.com"), (current.SteamAppId, current.Url));
     }
 }

@@ -63,7 +63,27 @@ internal sealed partial class SteamDirectory(IHttpClientFactory clients, IConfig
                 return new SteamLibrary(SteamLibraryStatus.Private, []);
             answer.EnsureSuccessStatusCode();
             using var document = JsonDocument.Parse(await answer.Content.ReadAsStringAsync(cancellationToken));
-            return ParseLibrary(document.RootElement);
+            var library = ParseLibrary(document.RootElement);
+            if (library.Status != SteamLibraryStatus.Ok)
+                return library;
+            // Steam leaves some played free games (Dota 2, for one) out of the owned list, but lists them as recently
+            // played. Best effort: without this answer the owned list is still imported.
+            try
+            {
+                using var recentAnswer = await client.GetAsync(
+                    $"https://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v1/?key={Uri.EscapeDataString(key)}&steamid={steamId}&format=json",
+                    cancellationToken);
+                if (recentAnswer.IsSuccessStatusCode)
+                {
+                    using var recent = JsonDocument.Parse(await recentAnswer.Content.ReadAsStringAsync(cancellationToken));
+                    return WithRecent(library, ParseLibrary(recent.RootElement));
+                }
+            }
+            catch (Exception error) when (error is HttpRequestException or TaskCanceledException or JsonException)
+            {
+                LogLookupFailed(logger, "recently played", error);
+            }
+            return library;
         }
         catch (Exception error) when (error is HttpRequestException or TaskCanceledException or JsonException)
         {
@@ -164,6 +184,16 @@ internal sealed partial class SteamDirectory(IHttpClientFactory clients, IConfig
                 Minutes("playtime_forever"), Minutes("playtime_2weeks")));
         }
         return new SteamLibrary(SteamLibraryStatus.Ok, list);
+    }
+
+    /// <summary>Adds recently played games the owned list left out; games already listed keep their owned-list entry.</summary>
+    internal static SteamLibrary WithRecent(SteamLibrary owned, SteamLibrary recent)
+    {
+        if (recent.Status != SteamLibraryStatus.Ok)
+            return owned;
+        var known = owned.Games.Select(game => game.AppId).ToHashSet(StringComparer.Ordinal);
+        var missing = recent.Games.Where(game => known.Add(game.AppId)).ToArray();
+        return missing.Length == 0 ? owned : owned with { Games = [.. owned.Games, .. missing] };
     }
 
     internal static string? ClaimedId(string claimed) =>

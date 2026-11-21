@@ -59,7 +59,8 @@
                     bool canDelete = Model.IsAdmin || subscription.OwnerId == Model.MemberId;
                     <li class="hm-news-card @(joined ? "is-joined" : "") @(subscription.Deleting ? "is-deleting" : "")" id="news-@subscription.AppId" data-news-name="@subscription.Name.ToLowerInvariant()">
                         <div class="hm-news-card__art">
-                            <img src="https://cdn.akamai.steamstatic.com/steam/apps/@subscription.AppId/header.jpg" alt="" loading="lazy" data-game-art />
+                            <img src="@HappyMix.Bot.Services.SteamArt.Header(subscription.AppId.ToString(System.Globalization.CultureInfo.InvariantCulture))" alt="" loading="lazy" data-game-art
+                                 data-art-fallback="@HappyMix.Bot.Services.SteamArt.Fallback(subscription.AppId.ToString(System.Globalization.CultureInfo.InvariantCulture))" />
                             @if (joined)
                             {
                                 <span class="hm-news-card__flag">@DashboardIcons.Render("check")@T["News_Subscribed"]</span>

@@ -1112,8 +1112,21 @@ for (const form of document.querySelectorAll("[data-event-form]")) {
     update();
 }
 
+// Steam pictures: newer games have no picture at the fixed address, so a failed one asks the dashboard for the
+// address Steam's store lists; when that fails too, the placeholder behind it shows. Pictures that failed before
+// this script ran are caught by the "complete but empty" check.
+const gameArtFailed = image => {
+    const fallback = image.dataset.artFallback;
+    if (fallback && !image.dataset.artTried) {
+        image.dataset.artTried = "1";
+        image.src = fallback;
+    } else {
+        image.hidden = true;
+    }
+};
 for (const image of document.querySelectorAll("[data-game-art]")) {
-    image.addEventListener("error", () => { image.hidden = true; });
+    image.addEventListener("error", () => gameArtFailed(image));
+    if (image.complete && image.naturalWidth === 0 && image.currentSrc) gameArtFailed(image);
 }
 
 // ---------------------------------------------------------------------------------------------------------------
