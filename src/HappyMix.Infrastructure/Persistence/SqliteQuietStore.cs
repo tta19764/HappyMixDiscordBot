@@ -41,6 +41,21 @@ internal sealed class SqliteQuietStore(IDbContextFactory<HappyMixDbContext> fact
                 """);
     }
 
+    public async Task ReplaceWeeklyDayAsync(ulong userId, DayOfWeek day, IReadOnlyCollection<QuietWeekly> ranges)
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        await using var transaction = await db.Database.BeginTransactionAsync();
+        string user = Id(userId);
+        await db.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM QuietWeekly WHERE UserId = {user} AND Day = {(int)day}");
+        foreach (var range in ranges)
+            await db.Database.ExecuteSqlInterpolatedAsync($"""
+                INSERT INTO QuietWeekly (Id, UserId, Day, StartMinute, EndMinute, TimeZone)
+                VALUES ({range.Id.ToString()}, {user}, {(int)range.Day}, {(int)range.Start.ToTimeSpan().TotalMinutes},
+                    {(int)range.End.ToTimeSpan().TotalMinutes}, {range.TimeZone})
+                """);
+        await transaction.CommitAsync();
+    }
+
     public async Task AddDatesAsync(ulong userId, IReadOnlyCollection<QuietDates> ranges)
     {
         await using var db = await factory.CreateDbContextAsync();

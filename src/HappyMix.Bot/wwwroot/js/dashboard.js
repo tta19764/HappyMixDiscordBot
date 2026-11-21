@@ -315,6 +315,7 @@ for (const editor of document.querySelectorAll("[data-week-editor]")) {
         minutes.value = minute;
     };
     const tentative = item => field(item, "kind").value === "tentative";
+    const quiet = item => field(item, "kind").value === "dnd";
 
     const read = item => {
         const start = toHours(getTime(item, "start")), end = toHours(getTime(item, "end"));
@@ -331,7 +332,7 @@ for (const editor of document.querySelectorAll("[data-week-editor]")) {
         return minutes % 60 ? `${Math.floor(minutes / 60)}h ${minutes % 60}m` : `${minutes / 60}h`;
     };
     const describe = (item, range) => {
-        const kind = tentative(item) ? labels.labelTentative : labels.labelDefinite;
+        const kind = quiet(item) ? labels.labelDnd : tentative(item) ? labels.labelTentative : labels.labelDefinite;
         if (range.allDay) return `${labels.labelAllDay} · ${kind}`;
         const next = range.end >= 24 ? `${labels.nextDay} ` : "";
         return `${toTime(range.start)} → ${next}${toTime(range.end)} · ${duration(range)} · ${kind}`;
@@ -356,6 +357,7 @@ for (const editor of document.querySelectorAll("[data-week-editor]")) {
         block.style.left = `${range.start / TRACK * 100}%`;
         block.style.width = `${(range.end - range.start) / TRACK * 100}%`;
         block.classList.toggle("is-tentative", tentative(item));
+        block.classList.toggle("is-dnd", quiet(item));
         block.classList.toggle("is-selected", item === selected);
         block.setAttribute("aria-pressed", String(item === selected));
         const text = describe(item, range);
@@ -1687,11 +1689,57 @@ for (const image of document.querySelectorAll("[data-game-art]")) {
     });
 })();
 
-// Do not disturb: "All day" switches the time fields off.
+// Do not disturb: "All day" switches the time fields off, and the dates form lists what Save will add, one line
+// per date (or one line for a run of whole days), so nothing is saved by surprise.
 for (const form of document.querySelectorAll("[data-dnd-form]")) {
     const allDay = form.querySelector("[data-dnd-allday]");
     const times = form.querySelectorAll("[data-dnd-time]");
-    const sync = () => { for (const input of times) input.disabled = allDay.checked; };
+    const summary = form.querySelector("[data-dnd-summary]");
+    const first = form.querySelector("[data-dnd-first]");
+    const through = form.querySelector("[data-dnd-through]");
+    const repeat = form.querySelector("[data-repeat-toggle]");
+    const locale = document.documentElement.lang || undefined;
+    const dayFormat = new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+    const weekday = new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: "UTC" });
+    const parse = value => /^\d{4}-\d{2}-\d{2}$/.test(value || "") ? new Date(`${value}T00:00:00Z`) : null;
+    const addDays = (date, count) => new Date(date.getTime() + count * 86400000);
+    const describe = () => {
+        if (!summary) return;
+        const from = parse(first?.value);
+        const until = repeat?.checked ? parse(through?.value) ?? from : from;
+        const [start, end] = [...times].map(input => input.value);
+        summary.hidden = !from;
+        if (!from) return;
+        const lines = [];
+        if (!until || until < from || (!allDay.checked && (!start || !end || start === end))) {
+            summary.textContent = summary.dataset.invalid;
+            return;
+        }
+        const count = Math.round((until - from) / 86400000) + 1;
+        if (allDay.checked) {
+            lines.push(count === 1 ? `${dayFormat.format(from)} · ${summary.dataset.allDay}`
+                : `${dayFormat.format(from)} – ${dayFormat.format(until)} · ${summary.dataset.allDay}`);
+        } else {
+            const overnight = end <= start;
+            for (let index = 0; index < Math.min(count, 7); index++) {
+                const date = addDays(from, index);
+                lines.push(`${dayFormat.format(date)} · ${start} → ${overnight ? `${weekday.format(addDays(date, 1))} ` : ""}${end}`);
+            }
+            if (count > 7) lines.push(summary.dataset.more.replace("{0}", String(count - 7)));
+        }
+        const title = document.createElement("b");
+        title.textContent = summary.dataset.title;
+        const list = document.createElement("ul");
+        for (const line of lines) {
+            const item = document.createElement("li");
+            item.textContent = line;
+            list.append(item);
+        }
+        summary.replaceChildren(title, list);
+    };
+    const sync = () => { for (const input of times) input.disabled = allDay.checked; describe(); };
     allDay?.addEventListener("change", sync);
+    form.addEventListener("input", describe);
+    form.addEventListener("change", describe);
     sync();
 }

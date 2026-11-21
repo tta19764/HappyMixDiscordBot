@@ -4,8 +4,11 @@ using HappyMix.Domain.Abstractions;
 
 namespace HappyMix.Application.Guilds;
 
-/// <summary>One range from the weekly day editor. An end at or before the start runs into the next day.</summary>
-public sealed record WeeklyRangeInput(string Start, string End, bool FullDay = false, bool Tentative = false);
+/// <summary>
+/// One range from the weekly day editor. An end at or before the start runs into the next day.
+/// <paramref name="DoNotDisturb"/> marks do-not-disturb hours, which the editor saves separately (<c>SetQuietDayCommand</c>).
+/// </summary>
+public sealed record WeeklyRangeInput(string Start, string End, bool FullDay = false, bool Tentative = false, bool DoNotDisturb = false);
 
 /// <summary>
 /// Replaces every weekly range on one day in one time zone with <paramref name="Ranges"/>, atomically. This is how

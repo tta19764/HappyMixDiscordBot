@@ -128,7 +128,7 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
 
     /// <summary>Adds do-not-disturb: weekly hours on chosen days, or hours (or whole days) on a run of dates.</summary>
     [HttpPost("/availability/{guildId}/dnd")]
-    public async Task<IActionResult> AddDoNotDisturb(ulong guildId, string? view, string? zone, DayOfWeek[]? days, DateOnly? first, DateOnly? last,
+    public async Task<IActionResult> AddDoNotDisturb(ulong guildId, string? view, string? zone, DayOfWeek[]? days, DateOnly? first, DateOnly? through,
         string? start, string? end, bool fullDay = false)
     {
         if (await GetDiscordMemberAsync(guildId) is not { } member)
@@ -139,7 +139,7 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
             ? await sender.Send(new HappyMix.Application.Quiet.AddQuietWeeklyCommand(member.Id, days ?? [], start ?? "", end ?? "", fullDay, timeZone),
                 HttpContext.RequestAborted)
             : first is { } from
-                ? await sender.Send(new HappyMix.Application.Quiet.AddQuietDatesCommand(member.Id, from, last is { } to && to > from ? to : from,
+                ? await sender.Send(new HappyMix.Application.Quiet.AddQuietDatesCommand(member.Id, from, through is { } to && to > from ? to : from,
                     start ?? "", end ?? "", fullDay, timeZone), HttpContext.RequestAborted)
                 : HappyMix.Domain.Abstractions.Result.Failure<int>(new("Quiet.Invalid", "Choose a date."));
         return DoNotDisturbDone(guildId, weekly, result.IsSuccess ? text["Dnd_Saved"].Value : text["That_didn_t_work"].Value,
@@ -243,8 +243,14 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
             }
             case "clear" when day is { } clearDay:
             {
+                // Clearing a day clears its do-not-disturb hours too: the week shows them as one day.
+                bool hadQuiet = (await sender.Send(new HappyMix.Application.Quiet.GetQuietOverviewQuery(userId), cancellationToken)).Value
+                    .Schedule.Weekly.Any(range => range.Day == clearDay);
+                if (hadQuiet)
+                    await sender.Send(new HappyMix.Application.Quiet.SetQuietDayCommand(userId, clearDay, [], await QuietZoneAsync(guildId, null)),
+                        cancellationToken);
                 var result = await sender.Send(new ClearWeeklyAvailabilityCommand(guildId, userId, clearDay), cancellationToken);
-                if (result.IsFailure)
+                if (result.IsFailure && !hadQuiet)
                     return await RenderAvailabilityAsync(guildId, member, "weekly", null, null,
                         Error($"Couldn't clear {clearDay}", result.Error.Description), new AvailabilityForm());
 
@@ -302,12 +308,20 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
             return new UpcomingRow(window.Id, RangeText(start, end, today), meta, window.Tentative);
         }).ToArray();
 
+        var quiet = view == "members" ? null
+            : (await sender.Send(new HappyMix.Application.Quiet.GetQuietOverviewQuery(member.Id), cancellationToken)).Value;
         var week = Enumerable.Range(1, 7).Select(index => (DayOfWeek)(index % 7)).Select(day =>
         {
             var windows = weekly.Where(item => item.Day == day).OrderBy(item => item.Start).ToArray();
+            var quietHours = quiet?.Schedule.Weekly.Where(item => item.Day == day).OrderBy(item => item.Start).ToArray() ?? [];
             return new WeekRow(day, windows, day == now.DayOfWeek, view == "weekly" && edit == day,
-                saved == day && windows.Length > 0);
+                saved == day && (windows.Length > 0 || quietHours.Length > 0)) { Quiet = quietHours };
         }).ToArray();
+        // The By date view shows the picked day: your free hours, do-not-disturb and events, in the server zone.
+        HappyMix.Application.Guilds.BoardRow? myDay = view == "today"
+            ? (await sender.Send(new GetMembersAvailabilityQuery(guildId, [member.Id], selectedDate, options.Value.TimeZoneId), cancellationToken))
+                .Value.Rows.FirstOrDefault()
+            : null;
 
         var guild = discord.GetGuild(guildId);
         var (invitations, accepted, _) = await LoadEventRowsAsync(guildId, member.Id);
@@ -330,8 +344,7 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
             (selectedDate == today ? GetPresets(now, weekly.FirstOrDefault(item => item.Day == now.DayOfWeek)) : []), banner, form)
         {
             MyEvents = accepted.Take(6).ToArray(), EventInvitations = invitations.Count,
-            DoNotDisturb = view == "members" ? null
-                : (await sender.Send(new HappyMix.Application.Quiet.GetQuietOverviewQuery(member.Id), cancellationToken)).Value,
+            DoNotDisturb = quiet, MyDay = myDay,
             EventBlocks = eventBlocks, Members = membersBoard,
             SelectedDate = selectedDate,
             ConfiguredDates = upcoming.SelectMany(window =>
@@ -362,16 +375,24 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
             string end = index < ends.Length ? ends[index]?.Trim() ?? "" : "";
             if (start.Length == 0 && end.Length == 0)
                 continue;
-            bool tentative = index < kinds.Length && kinds[index] == "tentative";
+            string kind = index < kinds.Length ? kinds[index] : "definite";
             bool fullDay = start == "00:00" && end == "00:00";
-            ranges.Add(new WeeklyRangeInput(start, end, fullDay, tentative));
+            ranges.Add(new WeeklyRangeInput(start, end, fullDay, kind == "tentative", kind == "dnd"));
         }
 
-        var result = await sender.Send(new SetWeeklyDayCommand(guildId, member.Id, day, ranges, offset, options.Value.TimeZoneId),
+        // Do-not-disturb ranges belong to the Discord account (every server), free hours to this server.
+        var free = ranges.Where(range => !range.DoNotDisturb).ToArray();
+        var quietRanges = ranges.Where(range => range.DoNotDisturb).ToArray();
+        string dayName = CultureInfo.CurrentUICulture.DateTimeFormat.GetDayName(day);
+        var result = await sender.Send(new SetWeeklyDayCommand(guildId, member.Id, day, free, offset, options.Value.TimeZoneId),
             HttpContext.RequestAborted);
-        if (result.IsFailure)
+        var quietResult = result.IsSuccess
+            ? await sender.Send(new HappyMix.Application.Quiet.SetQuietDayCommand(member.Id, day, quietRanges,
+                await QuietZoneAsync(guildId, offset)), HttpContext.RequestAborted)
+            : null;
+        if (result.IsFailure || quietResult is { IsFailure: true })
             return await RenderAvailabilityAsync(guildId, member, "weekly", day, null,
-                Error(text["Couldn_t_save_Arg0", CultureInfo.CurrentUICulture.DateTimeFormat.GetDayName(day)], text.Message(result.Error.Description)),
+                Error(text["Couldn_t_save_Arg0", dayName], text.Message(result.IsFailure ? result.Error.Description : quietResult!.Error.Description)),
                 new AvailabilityForm(Offset: offset) { Ranges = ranges });
 
         string name = CultureInfo.CurrentUICulture.DateTimeFormat.GetDayName(day);
@@ -380,11 +401,33 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
             : Saved(text["Arg0_saved", name], text["Arg0_ranges", ranges.Count], guildId, "weekly", day);
     }
 
+    /// <summary>The zone the weekly editor used: its own field (a zone name or a UTC offset), else the server's zone.</summary>
+    private async Task<string> QuietZoneAsync(ulong guildId, string? offset)
+    {
+        if (offset?.Trim() is { Length: > 0 } value)
+        {
+            if (HappyMix.Application.Guilds.LocalTimes.FindZone(value) is { } named)
+                return named.Id;
+            if (HappyMix.Application.Guilds.LocalTimes.FindZone("UTC" + (value[0] is '+' or '-' ? value : "+" + value)) is { } fixedZone)
+                return fixedZone.Id;
+        }
+        return (await GetGuildZoneAsync(guildId, HttpContext.RequestAborted)).Id;
+    }
+
     private async Task<IActionResult> CopyWeeklyAsync(ulong guildId, Discord.Rest.RestGuildUser member, DayOfWeek from, DayOfWeek[] to)
     {
         var names = CultureInfo.CurrentUICulture.DateTimeFormat;
+        // Do-not-disturb hours on the day are copied with it, in their own time zone.
+        var quiet = (await sender.Send(new HappyMix.Application.Quiet.GetQuietOverviewQuery(member.Id), HttpContext.RequestAborted)).Value
+            .Schedule.Weekly.Where(range => range.Day == from).ToArray();
         var result = await sender.Send(new CopyWeeklyDayCommand(guildId, member.Id, from, to), HttpContext.RequestAborted);
-        if (result.IsFailure)
+        // Like the free hours, the target days' do-not-disturb is replaced by the copied day's (none clears it).
+        if (result.IsSuccess || quiet.Length > 0)
+            foreach (var target in to.Distinct().Where(day => day != from && Enum.IsDefined(day)))
+                await sender.Send(new HappyMix.Application.Quiet.SetQuietDayCommand(member.Id, target,
+                    quiet.Select(range => new WeeklyRangeInput(AvailabilityFormat.Time(range.Start), AvailabilityFormat.Time(range.End), range.IsFullDay,
+                        DoNotDisturb: true)).ToArray(), quiet.Length > 0 ? quiet[0].TimeZone : await QuietZoneAsync(guildId, null)), HttpContext.RequestAborted);
+        if (result.IsFailure && quiet.Length == 0)
             return await RenderAvailabilityAsync(guildId, member, "weekly", null, null,
                 Error(text["Couldn_t_copy_Arg0", names.GetDayName(from)], text.Message(result.Error.Description)), new AvailabilityForm());
         var targets = to.Distinct().Where(day => day != from).OrderBy(day => ((int)day + 6) % 7).Select(names.GetDayName).ToArray();

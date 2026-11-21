@@ -67,27 +67,63 @@ else if (!Model.IsWeekly)
 {
     <partial name="_AvailabilityCalendar" model="Model" />
     var dayEvents = Model.EventBlocks.Where(block => block.Date == Model.SelectedDate).ToArray();
-    @if (dayEvents.Length > 0)
+    var dayFree = Model.MyDay?.Ranges ?? [];
+    var dayQuiet = Model.MyDay?.QuietRanges ?? [];
+    string DayRange(HappyMix.Application.Guilds.BoardRange range) => range.AllDay ? T["All_day"].Value
+        : (range.FromPreviousDay ? "↤ " : "") + AvailabilityFormat.Time(range.Start) + (range.IntoNextDay ? " ↦" : "–" + AvailabilityFormat.Time(range.End));
+    (double Left, double Width) DayPlace(HappyMix.Application.Guilds.BoardRange range)
     {
-        <section class="hm-card hm-day-events" aria-labelledby="day-events-title">
-            <div class="hm-card__head" style="margin-bottom: var(--hm-space-3)">
-                <h2 id="day-events-title" style="font-size: var(--hm-fs-lg)">@T["Events_on_Arg0", Model.SelectedDate.ToString("dddd d MMMM", System.Globalization.CultureInfo.CurrentCulture)]</h2>
-            </div>
-            <div class="hm-dayline hm-dayline--events" aria-hidden="true">
+        double from = HappyMix.Application.Guilds.GroupAvailabilityBoard.StartHours(range), until = HappyMix.Application.Guilds.GroupAvailabilityBoard.EndHours(range);
+        return (from / 24 * 100, Math.Max(0.5, (until - from) / 24 * 100));
+    }
+    @* The picked day at a glance: free hours, do-not-disturb and accepted events on one line. *@
+    <section class="hm-card hm-day-events" aria-labelledby="day-events-title">
+        <div class="hm-card__head" style="margin-bottom: var(--hm-space-3)">
+            <h2 id="day-events-title" style="font-size: var(--hm-fs-lg)">@T["Your_day_Arg0", Model.SelectedDate.ToString("dddd d MMMM", System.Globalization.CultureInfo.CurrentCulture)]</h2>
+            <span class="hm-help">@T["Times_in_Arg0", Model.TimeZone]</span>
+        </div>
+        @if (dayEvents.Length == 0 && dayFree.Length == 0 && dayQuiet.Length == 0)
+        {
+            <p class="hm-help">@T["Your_day_Empty"]</p>
+        }
+        else
+        {
+            <div class="hm-dayline hm-dayline--events hm-dayline--myday" aria-hidden="true">
+                @foreach (var range in dayFree)
+                {
+                    var (left, width) = DayPlace(range);
+                    <span class="hm-dayline__seg @(range.Tentative ? "hm-dayline__seg--tentative" : "") @(range.Source == HappyMix.Application.Guilds.AvailabilitySource.Weekly ? "hm-dayline__seg--weekly" : "")"
+                          title="@DayRange(range)" style="left: @AvailabilityFormat.Css(left); width: @AvailabilityFormat.Css(width)"></span>
+                }
+                @foreach (var range in dayQuiet)
+                {
+                    var (left, width) = DayPlace(range);
+                    <span class="hm-dayline__seg hm-dayline__seg--dnd" title="@T["Dnd_Title"] · @DayRange(range)"
+                          style="left: @AvailabilityFormat.Css(left); width: @AvailabilityFormat.Css(width)"></span>
+                }
                 @foreach (var block in dayEvents)
                 {
                     <span class="hm-dayline__seg hm-dayline__seg--event @(block.Confirmed ? "" : "hm-dayline__seg--event-pending") @(block.EndHour - block.StartHour < 1.5 ? "hm-dayline__seg--short" : "") @(block.StartHour > 15 ? "hm-dayline__seg--late" : "")"
                           style="left: @AvailabilityFormat.Css(block.StartHour / 24 * 100); width: @AvailabilityFormat.Css((block.EndHour - block.StartHour) / 24 * 100)"><span>@block.Title</span></span>
                 }
             </div>
+            <div class="hm-axis hm-dayline__axis" aria-hidden="true"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
             <ul class="hm-event-chips">
+                @foreach (var range in dayFree)
+                {
+                    <li><span class="hm-event-chip hm-event-chip--free @(range.Tentative ? "hm-event-chip--tentative" : "")">@DashboardIcons.Render("clock")<b>@DayRange(range)</b><span>@T.Message(range.Tentative ? "Tentative" : "Definite") · @T.Message(range.Source == HappyMix.Application.Guilds.AvailabilitySource.Weekly ? "Weekly" : "One-off")</span></span></li>
+                }
+                @foreach (var range in dayQuiet)
+                {
+                    <li><span class="hm-event-chip hm-event-chip--dnd">@DashboardIcons.Render("moon")<b>@DayRange(range)</b><span>@T["Dnd_Title"]</span></span></li>
+                }
                 @foreach (var block in dayEvents)
                 {
                     <li><a class="hm-event-chip @(block.Confirmed ? "" : "hm-event-chip--pending")" href="@block.Url">@DashboardIcons.Render("calendar")<b>@block.Title</b><span>@block.Time · @T[block.Confirmed ? "Confirmed" : "Pending"]</span></a></li>
                 }
             </ul>
-        </section>
-    }
+        }
+    </section>
     <div class="hm-split">
         <form class="hm-card hm-stack" style="gap: var(--hm-space-5)" method="post" action="@baseUrl" asp-antiforgery="false"
               data-range data-day="@T["Today"]" data-next-day="@T["Tomorrow"]" aria-labelledby="today-title">
@@ -197,14 +233,19 @@ else
                 var row = Model.Week[index];
                 var previous = Model.Week[(index + Model.Week.Count - 1) % Model.Week.Count];
                 var carries = previous.Windows.Where(window => !window.IsFullDay && window.End < window.Start).ToArray();
+                var quietCarries = previous.Quiet.Where(quiet => !quiet.IsFullDay && quiet.End < quiet.Start).ToArray();
                 string editUrl = $"{weeklyUrl}&edit={row.Day}#{row.Anchor}";
                 if (row.IsEditing)
                 {
                     string editorZone = Model.Form.Offset ?? (row.Windows.Select(window => window.TimeZone).Distinct().Count() == 1
                         ? row.Windows[0].TimeZone : Model.TimeZone);
+                    // Free hours and do-not-disturb share the day editor; "Do not disturb" is the third kind.
                     var ranges = Model.Form.Ranges ?? row.Windows.Where(window => window.TimeZone == editorZone)
                         .Select(window => new HappyMix.Application.Guilds.WeeklyRangeInput(AvailabilityFormat.Time(window.Start),
-                            AvailabilityFormat.Time(window.End), window.IsFullDay, window.Tentative)).ToArray();
+                            AvailabilityFormat.Time(window.End), window.IsFullDay, window.Tentative))
+                        .Concat(row.Quiet.Select(quiet => new HappyMix.Application.Guilds.WeeklyRangeInput(AvailabilityFormat.Time(quiet.Start),
+                            AvailabilityFormat.Time(quiet.End), quiet.IsFullDay, DoNotDisturb: true)))
+                        .OrderBy(range => range.FullDay ? "" : range.Start, StringComparer.Ordinal).ToArray();
                     var editor = new WeekDayEditorModel(row, ranges, row.Windows.Where(window => window.TimeZone != editorZone).ToArray(),
                         editorZone, Model.TimeZone, Model.TimeZoneOffset, baseUrl, weeklyUrl);
                     <div class="hm-day hm-day--editing" id="@row.Anchor">
@@ -214,7 +255,7 @@ else
                     continue;
                 }
 
-                bool hasHours = row.Windows.Count > 0;
+                bool hasHours = row.Windows.Count > 0 || row.Quiet.Count > 0;
                 var rowDate = Model.SelectedDate.AddDays(((int)row.Day - (int)Model.SelectedDate.DayOfWeek + 7) % 7);
                 var rowEvents = Model.EventBlocks.Where(block => block.Date == rowDate).ToArray();
                 <div class="hm-day @(row.IsToday ? "hm-day--today" : "") @(row.IsSaved ? "hm-day--saved" : "") @(row.Day is DayOfWeek.Saturday or DayOfWeek.Sunday ? "hm-day--weekend" : "")" id="@row.Anchor"
@@ -241,11 +282,11 @@ else
                                 @DashboardIcons.Render("calendar")<b>@block.Title</b><span>@block.Time</span>
                             </a>
                         }
-                        @if (row.Windows.Count == 0)
+                        @if (row.Windows.Count == 0 && row.Quiet.Count == 0)
                         {
                             <span class="hm-day__none">@T["No_hours"]</span>
                         }
-                        else
+                        @if (row.Windows.Count > 0)
                         {
                             <span class="hm-day__ranges">
                                 @foreach (var window in row.Windows)
@@ -265,6 +306,22 @@ else
                                 }
                             </span>
                         }
+                        @if (row.Quiet.Count > 0)
+                        {
+                            <span class="hm-day__ranges">
+                                @foreach (var quiet in row.Quiet)
+                                {
+                                    <span class="hm-day__range hm-day__range--dnd">
+                                        <b>@(quiet.IsFullDay ? T["All_day"].Value : $"{AvailabilityFormat.Time(quiet.Start)}–{AvailabilityFormat.Time(quiet.End)}")</b>
+                                        @if (quiet.End < quiet.Start && !quiet.IsFullDay)
+                                        {
+                                            <small>↦ @row.NextShortName</small>
+                                        }
+                                        <span class="hm-kind hm-kind--dnd">@DashboardIcons.Render("moon")@T["Dnd_Title"]</span>
+                                    </span>
+                                }
+                            </span>
+                        }
                         </span>
                     </div>
                     <a class="hm-dayline hm-dayline--link" href="@editUrl" aria-label="@T["Edit_Arg0", row.Name]">
@@ -277,6 +334,17 @@ else
                             <span class="hm-dayline__seg hm-dayline__seg--event @(block.Confirmed ? "" : "hm-dayline__seg--event-pending") @(block.EndHour - block.StartHour < 1.5 ? "hm-dayline__seg--short" : "") @(block.StartHour > 15 ? "hm-dayline__seg--late" : "")" title="@block.Title · @block.Time"
                                   style="left: @AvailabilityFormat.Css(block.StartHour / 24 * 100); width: @AvailabilityFormat.Css((block.EndHour - block.StartHour) / 24 * 100)"></span>
                         }
+                        @foreach (var carry in quietCarries)
+                        {
+                            <span class="hm-dayline__seg hm-dayline__seg--dnd" title="@T["Dnd_Title"]" style="left: 0; width: @AvailabilityFormat.Css(AvailabilityFormat.Percent(carry.End))"></span>
+                        }
+                        @foreach (var quiet in row.Quiet)
+                        {
+                            double quietLeft = quiet.IsFullDay ? 0 : AvailabilityFormat.Percent(quiet.Start);
+                            double quietWidth = (quiet.IsFullDay || quiet.End < quiet.Start ? 100 : AvailabilityFormat.Percent(quiet.End)) - quietLeft;
+                            <span class="hm-dayline__seg hm-dayline__seg--dnd" title="@T["Dnd_Title"]"
+                                  style="left: @AvailabilityFormat.Css(quietLeft); width: @AvailabilityFormat.Css(quietWidth)"></span>
+                        }
                         @foreach (var window in row.Windows)
                         {
                             double left = window.IsFullDay ? 0 : AvailabilityFormat.Percent(window.Start);
@@ -286,7 +354,7 @@ else
                         }
                     </a>
                     <div class="hm-day__actions">
-                        <a class="hm-btn" href="@editUrl" aria-label="@T["Edit_Arg0", row.Name]"><span class="hm-btn__label">@T.Message(row.Windows.Count == 0 ? "Add hours" : "Edit")</span></a>
+                        <a class="hm-btn" href="@editUrl" aria-label="@T["Edit_Arg0", row.Name]"><span class="hm-btn__label">@T.Message(hasHours ? "Edit" : "Add hours")</span></a>
                         @if (hasHours)
                         {
                             <details class="hm-copyto" data-copy-to>
@@ -333,14 +401,10 @@ else
             <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg hm-dayline__seg--tentative hm-legend-swatch"></span>@T["Tentative"]</span>
             <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg hm-dayline__seg--carry hm-legend-swatch"></span>@T["Carried_over_from_the_night_before"]</span>
             <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg hm-dayline__seg--event hm-legend-swatch"></span>@T["Event_you_accepted_this_week"]</span>
+            <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg hm-dayline__seg--dnd hm-legend-swatch"></span>@T["Dnd_Title"]</span>
         </div>
+        <p class="hm-help hm-week__dnd-help">@DashboardIcons.Render("moon")<span>@T["Dnd_WeekHelp"]</span></p>
     </section>
-    @if (Model.DoNotDisturb is { } quietWeekly)
-    {
-        <div style="margin-top: var(--hm-space-5)">
-            <partial name="_DoNotDisturb" model="new DoNotDisturbModel(quietWeekly, dndUrl, true, Model.TimeZone, Model.SelectedDate)" />
-        </div>
-    }
 }
 
 <dialog class="hm-dialog" data-drop-dialog aria-labelledby="drop-dialog-title"

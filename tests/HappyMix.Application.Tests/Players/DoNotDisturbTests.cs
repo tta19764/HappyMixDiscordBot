@@ -54,6 +54,25 @@ public sealed class DoNotDisturbTests
     }
 
     [Fact]
+    public async Task TheDayEditorReplacesThatDaysHoursOnly()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var sender = fixture.Sender;
+        await sender.Send(new AddQuietWeeklyCommand(Kai, [DayOfWeek.Monday, DayOfWeek.Tuesday], "23:00", "08:00", false, Kyiv));
+
+        Assert.Equal(2, (await sender.Send(new SetQuietDayCommand(Kai, DayOfWeek.Monday,
+            [new WeeklyRangeInput("13:00", "14:00", DoNotDisturb: true), new WeeklyRangeInput("00:00", "00:00", true, DoNotDisturb: true)], Kyiv))).Value);
+        var weekly = (await sender.Send(new GetQuietOverviewQuery(Kai))).Value.Schedule.Weekly;
+        Assert.Equal(3, weekly.Count);
+        Assert.Equal([(new TimeOnly(0, 0), new TimeOnly(0, 0)), (new TimeOnly(13, 0), new TimeOnly(14, 0))],
+            weekly.Where(range => range.Day == DayOfWeek.Monday).Select(range => (range.Start, range.End)));
+
+        Assert.Equal(0, (await sender.Send(new SetQuietDayCommand(Kai, DayOfWeek.Monday, [], Kyiv))).Value);
+        Assert.Equal(DayOfWeek.Tuesday, Assert.Single((await sender.Send(new GetQuietOverviewQuery(Kai))).Value.Schedule.Weekly).Day);
+        Assert.True((await sender.Send(new SetQuietDayCommand(Kai, DayOfWeek.Monday, [new WeeklyRangeInput("25", "26")], Kyiv))).IsFailure);
+    }
+
+    [Fact]
     public async Task HeldGroupNoticesGoOutAfterwardsOnlyIfStillOpen()
     {
         using var fixture = await Fixture.CreateAsync();

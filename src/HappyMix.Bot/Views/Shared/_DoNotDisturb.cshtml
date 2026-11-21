@@ -104,15 +104,17 @@
         }
         else
         {
-            <div class="hm-dnd__row">
-                <div class="hm-field">
-                    <label class="hm-label" for="dnd-first">@T["Calendar_Date"]</label>
-                    <input class="hm-input" id="dnd-first" type="date" name="first" required value="@Model.Date.ToString("yyyy-MM-dd")">
-                </div>
-                <div class="hm-field">
-                    <label class="hm-label" for="dnd-last">@T["Repeat_through"] <span class="hm-label__opt">@T["Optional"]</span></label>
-                    <input class="hm-input" id="dnd-last" type="date" name="last" min="@Model.Date.ToString("yyyy-MM-dd")">
-                </div>
+            <div class="hm-field">
+                <label class="hm-label" for="dnd-first">@T["Calendar_Date"]</label>
+                <input class="hm-input" id="dnd-first" type="date" name="first" required value="@Model.Date.ToString("yyyy-MM-dd")" data-dnd-first>
+            </div>
+            <label class="hm-check hm-repeat-toggle">
+                <input type="checkbox" data-repeat-toggle>
+                <span>@T["Repeat_on_the_following_days"]</span>
+            </label>
+            <div class="hm-field" data-repeat-through>
+                <label class="hm-label" for="dnd-through">@T["Repeat_through"]</label>
+                <input class="hm-input" id="dnd-through" type="date" name="through" min="@Model.Date.ToString("yyyy-MM-dd")" data-dnd-through>
             </div>
         }
         <div class="hm-dnd__row">
@@ -130,6 +132,12 @@
             </label>
         </div>
         <p class="hm-help">@T["Dnd_FormHelp", Model.TimeZone]</p>
+        @if (!Model.Weekly)
+        {
+            @* Filled in by dashboard.js: every date and time range the button will save. *@
+            <div class="hm-dnd__summary" data-dnd-summary hidden aria-live="polite" data-title="@T["Dnd_SummaryTitle"]"
+                 data-all-day="@T["All_day"]" data-more="@T["Dnd_SummaryMore"]" data-invalid="@T["Dnd_SummaryInvalid"]"></div>
+        }
         <div><button class="hm-btn">@DashboardIcons.Render("moon")@T["Dnd_Add"]</button></div>
     </form>
 </section>

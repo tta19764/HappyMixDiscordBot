@@ -9,7 +9,7 @@
 <form class="hm-weditor" method="post" action="@Model.BaseUrl" asp-antiforgery="false" aria-label="@T["Edit_Arg0", row.Name]"
       data-week-editor data-day="@row.ShortName" data-next-day="@row.NextShortName"
       data-label-start="@T["Start"]" data-label-end="@T["End"]" data-label-definite="@T["Definite"]"
-      data-label-tentative="@T["Tentative"]" data-label-all-day="@T["All_day"]">
+      data-label-tentative="@T["Tentative"]" data-label-dnd="@T["Dnd_Title"]" data-label-all-day="@T["All_day"]">
     @Html.AntiForgeryToken()
     <input type="hidden" name="day" value="@row.Day">
 
@@ -32,7 +32,8 @@
         @for (int index = 0; index < ranges.Count; index++)
         {
             var range = ranges[index];
-            var item = new WeekRangeItemModel(row, index, range.FullDay ? "00:00" : range.Start, range.FullDay ? "00:00" : range.End, range.Tentative);
+            var item = new WeekRangeItemModel(row, index, range.FullDay ? "00:00" : range.Start, range.FullDay ? "00:00" : range.End, range.Tentative,
+                DoNotDisturb: range.DoNotDisturb);
             <partial name="_WeekRangeItem" model="item" />
         }
         @* One blank row so the form works without JavaScript; the script removes it while it is empty. *@

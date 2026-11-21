@@ -1953,3 +1953,25 @@ a:hover { color: var(--hm-text); text-decoration-color: var(--hm-text); }
 .hm-dnd__day:has(input:focus-visible) { outline: 2px solid var(--hm-focus); outline-offset: 2px; }
 .hm-dnd__row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); gap: var(--hm-space-3); align-items: end; }
 .hm-dnd__allday { min-height: 2.75rem; }
+
+/* Do not disturb on your own schedule: the week table, the day editor and the By date day card ------------- */
+.hm-dayline__seg--dnd { top: auto; bottom: 1px; height: 45%; z-index: 1; border-radius: 3px;
+    background: repeating-linear-gradient(135deg, var(--hm-dnd) 0 4px, var(--hm-dnd-stripe) 4px 8px); }
+.hm-legend-swatch.hm-dayline__seg--dnd { height: .875rem; }
+.hm-dayline--myday .hm-dayline__seg--dnd { height: 9px; bottom: 2px; padding: 0; }
+.hm-dayline--myday .hm-dayline__seg:not(.hm-dayline__seg--event):not(.hm-dayline__seg--dnd) { top: 4px; bottom: 4px; }
+.hm-dayline__seg--weekly { background: repeating-linear-gradient(135deg, var(--hm-mint-fill) 0 6px, var(--hm-mint-tint) 6px 12px); }
+.hm-dayline__axis { display: flex; justify-content: space-between; margin: calc(-1 * var(--hm-space-2)) 0 var(--hm-space-3); color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); font-variant-numeric: tabular-nums; }
+.hm-event-chip--free { background: var(--hm-mint-tint); color: var(--hm-text); box-shadow: inset 0 0 0 1px var(--hm-mint-fill); }
+.hm-event-chip--free.hm-event-chip--tentative { background: var(--hm-warn-fill); box-shadow: inset 0 0 0 1px var(--hm-warn); }
+.hm-event-chip--dnd { background: color-mix(in srgb, var(--hm-dnd) 18%, transparent); color: var(--hm-text); box-shadow: inset 0 0 0 1px var(--hm-dnd); }
+.hm-event-chip--dnd .hm-icon { color: var(--hm-dnd); }
+.hm-kind--dnd { display: inline-flex; align-items: center; gap: 3px; color: var(--hm-dnd); }
+.hm-kind--dnd .hm-icon { width: .8rem; height: .8rem; }
+.hm-weditor__block.is-dnd { background: repeating-linear-gradient(135deg, var(--hm-dnd) 0 6px, var(--hm-dnd-stripe) 6px 12px); color: #fff; }
+.hm-week__dnd-help { display: flex; align-items: center; gap: var(--hm-space-2); padding: 0 var(--hm-space-5) var(--hm-space-5); }
+.hm-week__dnd-help .hm-icon { color: var(--hm-dnd); flex: none; }
+.hm-dnd__summary { margin: 0; padding: var(--hm-space-3); border-radius: var(--hm-radius-md); border: 1px dashed var(--hm-dnd);
+    background: color-mix(in srgb, var(--hm-dnd) 10%, transparent); font-size: var(--hm-fs-sm); }
+.hm-dnd__summary b { display: block; margin-bottom: 2px; }
+.hm-dnd__summary ul { margin: 0; padding-left: 1.1rem; }

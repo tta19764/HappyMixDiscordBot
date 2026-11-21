@@ -47,6 +47,8 @@ public sealed record UpcomingRow(Guid Id, string Title, string Meta, bool Tentat
 
 public sealed record WeekRow(DayOfWeek Day, IReadOnlyList<WeeklyAvailability> Windows, bool IsToday, bool IsEditing, bool IsSaved)
 {
+    /// <summary>The viewer's weekly do-not-disturb hours that start on this day.</summary>
+    public IReadOnlyList<HappyMix.Application.Abstractions.Quiet.QuietWeekly> Quiet { get; init; } = [];
     public string Name => CultureInfo.CurrentUICulture.DateTimeFormat.GetDayName(Day);
     public string Anchor => Day.ToString().ToLowerInvariant();
     public string ShortName => AvailabilityFormat.ShortDay(Day);
@@ -87,6 +89,8 @@ public sealed record AvailabilityPage(
     public int WeeklyCount => Week.Count(row => row.Windows.Count > 0);
     /// <summary>The viewer's do-not-disturb, for the Dates and Weekly views.</summary>
     public HappyMix.Application.Quiet.QuietOverview? DoNotDisturb { get; init; }
+    /// <summary>The viewer's free hours and do-not-disturb on the picked date (By date view), in the server zone.</summary>
+    public HappyMix.Application.Guilds.BoardRow? MyDay { get; init; }
     public bool IsEditing => Week.Any(row => row.IsEditing);
 }
 
@@ -320,7 +324,7 @@ public sealed record WeekDayEditorModel(WeekRow Row, IReadOnlyList<HappyMix.Appl
     public bool CustomZone => Zone != ServerZone;
 }
 
-public sealed record WeekRangeItemModel(WeekRow Row, int Index, string? Start, string? End, bool Tentative, bool Blank = false)
+public sealed record WeekRangeItemModel(WeekRow Row, int Index, string? Start, string? End, bool Tentative, bool Blank = false, bool DoNotDisturb = false)
 {
     public string Id => $"{Row.Anchor}-range-{(Index < 0 ? "new" : Index.ToString(CultureInfo.InvariantCulture))}";
 }
