@@ -45,6 +45,14 @@ public static class DependencyInjection
         services.AddSingleton<HappyMix.Application.Abstractions.Live.ILiveStore, SqliteLiveStore>();
         services.AddSingleton<HappyMix.Application.Abstractions.Profiles.IUserProfileStore, SqliteUserProfileStore>();
         services.AddSingleton<HappyMix.Application.Abstractions.Quiet.IQuietStore, SqliteQuietStore>();
+        services.AddSingleton<HappyMix.Application.Abstractions.Stats.IGameStatsStore, SqliteGameStatsStore>();
+        services.AddHttpClient(HappyMix.Infrastructure.Stats.GameStatsDirectory.OpenDotaClient, client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(10);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("HappyMixBot/1.0");
+        });
+        services.AddHttpClient(HappyMix.Infrastructure.Stats.GameStatsDirectory.FaceitClient, client => client.Timeout = TimeSpan.FromSeconds(10));
+        services.AddSingleton<HappyMix.Application.Abstractions.Stats.IGameStatsDirectory, HappyMix.Infrastructure.Stats.GameStatsDirectory>();
         services.AddHttpClient(HappyMix.Infrastructure.Steam.SteamDirectory.HttpClientName, client =>
         {
             client.Timeout = TimeSpan.FromSeconds(10);

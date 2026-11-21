@@ -131,6 +131,11 @@ public static class DependencyInjection
 
             JobKey newsKey = new("publish-game-news");
             scheduler.AddJob<PublishGameNewsJob>(job => job.WithIdentity(newsKey));
+            JobKey statsKey = new("refresh-game-stats");
+            scheduler.AddJob<RefreshGameStatsJob>(job => job.WithIdentity(statsKey));
+            scheduler.AddTrigger(trigger => trigger.ForJob(statsKey).StartAt(DateBuilder.FutureDate(2, IntervalUnit.Minute))
+                .WithSimpleSchedule(schedule => schedule.WithIntervalInMinutes(10).RepeatForever()));
+
             JobKey heldKey = new("release-held-messages");
             scheduler.AddJob<ReleaseHeldMessagesJob>(job => job.WithIdentity(heldKey));
             scheduler.AddTrigger(trigger => trigger.ForJob(heldKey).StartNow()

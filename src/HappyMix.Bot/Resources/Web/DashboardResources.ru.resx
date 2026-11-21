@@ -2602,4 +2602,54 @@
 <data name="Dnd_SummaryTitle" xml:space="preserve"><value>Режим «Не беспокоить» будет включён:</value></data>
 <data name="Dnd_SummaryMore" xml:space="preserve"><value>…и ещё {0} дн.</value></data>
 <data name="Dnd_SummaryInvalid" xml:space="preserve"><value>Выберите дату и разное время «С» и «До» (или «Весь день»).</value></data>
+<data name="Stats_Title" xml:space="preserve"><value>Статистика</value></data>
+<data name="Stats_Lead" xml:space="preserve"><value>Ранги и последние результаты участников, которые делятся статистикой Dota 2 и CS2. Её видят только участники группы.</value></data>
+<data name="Stats_Sharing" xml:space="preserve"><value>Делятся: {0} из {1}</value></data>
+<data name="Stats_Share" xml:space="preserve"><value>Показывать мою игровую статистику моим группам</value></data>
+<data name="Stats_Share_Help" xml:space="preserve"><value>Использует открытые данные OpenDota и FACEIT для аккаунта Steam со страницы «Мои игры». Действует для всех ваших групп; если выключить, сохранённая статистика удалится.</value></data>
+<data name="Stats_LinkSteam" xml:space="preserve"><value>Сначала подключите аккаунт Steam на странице</value></data>
+<data name="Stats_MembersOnly" xml:space="preserve"><value>Делиться статистикой здесь могут только участники группы.</value></data>
+<data name="Stats_Dota" xml:space="preserve"><value>Dota 2</value></data>
+<data name="Stats_Cs2" xml:space="preserve"><value>CS2</value></data>
+<data name="Stats_SourceDota" xml:space="preserve"><value>Из OpenDota: медаль, последние 30 дней и самые частые герои за 90 дней.</value></data>
+<data name="Stats_SourceCs2" xml:space="preserve"><value>Из FACEIT: уровень, Elo, общие результаты и самые частые карты.</value></data>
+<data name="Stats_Cs2Off" xml:space="preserve"><value>Статистика CS2 у этого бота ещё не настроена (нужен ключ FACEIT). Карточки показывают только ссылки на профили.</value></data>
+<data name="Stats_NotShared" xml:space="preserve"><value>Не делится</value></data>
+<data name="Stats_NoSteam" xml:space="preserve"><value>Аккаунт Steam ещё не подключён.</value></data>
+<data name="Stats_LinksOnly" xml:space="preserve"><value>Только ссылки на профили.</value></data>
+<data name="Stats_Updating" xml:space="preserve"><value>Получаем статистику…</value></data>
+<data name="Stats_NoPublicData" xml:space="preserve"><value>Нет открытых данных о матчах.</value></data>
+<data name="Stats_NoPublicDataMine" xml:space="preserve"><value>Нет открытых данных о матчах. В Dota 2 откройте «Настройки» → «Параметры» → «Социальное» и включите «Открывать данные о матчах»; статистика появится после следующего матча.</value></data>
+<data name="Stats_NoFaceit" xml:space="preserve"><value>Нет аккаунта FACEIT.</value></data>
+<data name="Stats_NoFaceitMine" xml:space="preserve"><value>Для этого аккаунта Steam нет аккаунта FACEIT. Подключите Steam на faceit.com, чтобы здесь появился ваш уровень.</value></data>
+<data name="Stats_ErrorDota" xml:space="preserve"><value>Не удалось связаться с OpenDota. Попробуем снова в ближайшее время.</value></data>
+<data name="Stats_ErrorCs2" xml:space="preserve"><value>Не удалось связаться с FACEIT. Попробуем снова в ближайшее время.</value></data>
+<data name="Stats_StaleDota" xml:space="preserve"><value>OpenDota не ответил, более старые данные</value></data>
+<data name="Stats_StaleCs2" xml:space="preserve"><value>FACEIT не ответил, более старые данные</value></data>
+<data name="Stats_UpdatedMinutes" xml:space="preserve"><value>обновлено {0} мин назад</value></data>
+<data name="Stats_UpdatedHours" xml:space="preserve"><value>обновлено {0} ч назад</value></data>
+<data name="Stats_UpdatedDays" xml:space="preserve"><value>обновлено {0} дн. назад</value></data>
+<data name="Stats_Unranked" xml:space="preserve"><value>Без ранга</value></data>
+<data name="Stats_FaceitLevel" xml:space="preserve"><value>Уровень {0}</value></data>
+<data name="Stats_Last30" xml:space="preserve"><value>30 дней</value></data>
+<data name="Stats_WinsLosses" xml:space="preserve"><value>{0} побед, {1} поражений</value></data>
+<data name="Stats_WinRate" xml:space="preserve"><value>Процент побед {0}</value></data>
+<data name="Stats_WinRateShort" xml:space="preserve"><value>Победы</value></data>
+<data name="Stats_TopHeroes" xml:space="preserve"><value>Самые частые герои</value></data>
+<data name="Stats_BestMaps" xml:space="preserve"><value>Самые частые карты</value></data>
+<data name="Stats_GamesRate" xml:space="preserve"><value>{0} игр · {1}</value></data>
+<data name="Stats_Matches" xml:space="preserve"><value>Матчи</value></data>
+<data name="Stats_Headshots" xml:space="preserve"><value>Хедшоты</value></data>
+<data name="Stats_Shared" xml:space="preserve"><value>Ваша статистика теперь видна вашим группам</value></data>
+<data name="Stats_Unshared" xml:space="preserve"><value>Ваша статистика больше не показывается</value></data>
+<data name="Dota_Medal_1" xml:space="preserve"><value>Рекрут</value></data>
+<data name="Dota_Medal_2" xml:space="preserve"><value>Страж</value></data>
+<data name="Dota_Medal_3" xml:space="preserve"><value>Рыцарь</value></data>
+<data name="Dota_Medal_4" xml:space="preserve"><value>Герой</value></data>
+<data name="Dota_Medal_5" xml:space="preserve"><value>Легенда</value></data>
+<data name="Dota_Medal_6" xml:space="preserve"><value>Властелин</value></data>
+<data name="Dota_Medal_7" xml:space="preserve"><value>Божество</value></data>
+<data name="Dota_Medal_8" xml:space="preserve"><value>Титан</value></data>
+<data name="Guide_stats_Title" xml:space="preserve"><value>Статистика</value></data>
+<data name="Guide_stats_Body" xml:space="preserve"><value>Группы, которые играют в Dota 2 или CS2, имеют вкладку «Статистика» с карточкой каждого участника. Пока вы не включите «Показывать мою игровую статистику моим группам», ничего не показывается; после этого выбор действует для всех ваших групп, а выключение удаляет сохранённую статистику. Карточки Dota 2 берут данные из OpenDota (медаль, победы и поражения за 30 дней, самые частые герои) и требуют включённого «Открывать данные о матчах» в Dota 2. Карточки CS2 берут данные из FACEIT (уровень, Elo, K/D, хедшоты, карты), если у бота есть ключ FACEIT. Карточки обновляются каждые несколько часов и ссылаются на OpenDota, Dotabuff, FACEIT, Leetify и Steam.</value></data>
 </root>

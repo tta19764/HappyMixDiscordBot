@@ -95,6 +95,15 @@
             <span class="hm-count">@detail.Games.Length</span>
         }
     </a>
+    @if (Model.Stats is { } statsTab)
+    {
+        <a class="hm-tab-c-stats" href="#stats" data-tab="stats">@DashboardIcons.Render("stats")@T["Stats_Title"]
+            @if (statsTab.Sharing > 0)
+            {
+                <span class="hm-count">@statsTab.Sharing</span>
+            }
+        </a>
+    }
     @if (Model.Live is { } liveTab)
     {
         <a class="hm-tab-c-live" href="#live" data-tab="live">@DashboardIcons.Render("live")@T["Live_Title"]
@@ -642,6 +651,11 @@
                 </form>
             }
         </section>
+    }
+
+    @if (Model.Stats is not null)
+    {
+        <partial name="_GroupStats" model="Model" />
     }
 
     @* ---------- Settings (organizer, moderators, administrators) ---------- *@

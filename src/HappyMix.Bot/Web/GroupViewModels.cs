@@ -72,6 +72,8 @@ public sealed record GroupPage(
 
     /// <summary>Who is playing now and the viewer's Live choices. Members only.</summary>
     public LiveModel? Live { get; init; }
+    /// <summary>Dota 2 and CS2 player cards, for groups that play either game.</summary>
+    public HappyMix.Application.Stats.GroupStats? Stats { get; init; }
 
     /// <summary>The group's tags, shown under its name.</summary>
     public IReadOnlyList<string> Tags { get; init; } = [];

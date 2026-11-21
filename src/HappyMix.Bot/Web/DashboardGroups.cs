@@ -182,6 +182,22 @@ public sealed partial class DashboardController
         return Redirect($"/groups/{guildId}/{groupId}#live");
     }
 
+    /// <summary>Shares (or stops sharing) the viewer's Dota 2 and CS2 stats with all their groups.</summary>
+    [HttpPost("/groups/{guildId}/{groupId:guid}/stats/share")]
+    public async Task<IActionResult> SetStatsSharing(ulong guildId, Guid groupId, bool share)
+    {
+        if (await GetGroupActorAsync(guildId) is not ({ } actor, _, _))
+            return NotMember();
+        await sender.Send(new HappyMix.Application.Stats.SetStatsSharingCommand(actor.UserId, share), HttpContext.RequestAborted);
+        TempData["GroupBannerTitle"] = text[share ? "Stats_Shared" : "Stats_Unshared"].Value;
+        return Redirect($"/groups/{guildId}/{groupId}#stats");
+    }
+
+    private async Task<HappyMix.Application.Stats.GroupStats?> LoadStatsAsync(GroupActor actor, GroupDetail group, CancellationToken cancellationToken) =>
+        group.CanViewRoster && HappyMix.Application.Stats.GameStats.GamesOf(group.Games).Count > 0
+        && await sender.Send(new HappyMix.Application.Stats.GetGroupStatsQuery(actor, group.Summary.Id), cancellationToken) is { IsSuccess: true } stats
+            ? stats.Value : null;
+
     private async Task<LiveModel?> LoadLiveAsync(ulong guildId, GroupActor actor, GroupDetail group, CancellationToken cancellationToken)
     {
         if (!group.CanViewRoster
@@ -328,6 +344,7 @@ public sealed partial class DashboardController
             Interest = group.CanViewRoster && await sender.Send(new HappyMix.Application.Players.GetGroupGameInterestQuery(actor, groupId), cancellationToken)
                 is { IsSuccess: true } interest ? interest.Value : null,
             Live = await LoadLiveAsync(guildId, actor, group, cancellationToken),
+            Stats = await LoadStatsAsync(actor, group, cancellationToken),
             Tags = (await sender.Send(new HappyMix.Application.Polls.GetGroupTagsQuery(guildId), cancellationToken)).Value.GetValueOrDefault(groupId) ?? [],
             Watch = watch,
             Events = events,

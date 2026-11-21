@@ -2602,4 +2602,54 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Dnd_SummaryTitle" xml:space="preserve"><value>Do not disturb will be on:</value></data>
 <data name="Dnd_SummaryMore" xml:space="preserve"><value>…and {0} more days</value></data>
 <data name="Dnd_SummaryInvalid" xml:space="preserve"><value>Pick a date, and a From and Until time that differ (or All day).</value></data>
+<data name="Stats_Title" xml:space="preserve"><value>Stats</value></data>
+<data name="Stats_Lead" xml:space="preserve"><value>Ranks and recent results of members who share their Dota 2 and CS2 stats. Only members of the group see them.</value></data>
+<data name="Stats_Sharing" xml:space="preserve"><value>{0} of {1} share</value></data>
+<data name="Stats_Share" xml:space="preserve"><value>Show my game stats to my groups</value></data>
+<data name="Stats_Share_Help" xml:space="preserve"><value>Uses public data from OpenDota and FACEIT for the Steam account on My games. Applies to all your groups; turning it off deletes the saved stats.</value></data>
+<data name="Stats_LinkSteam" xml:space="preserve"><value>Link your Steam account first, on</value></data>
+<data name="Stats_MembersOnly" xml:space="preserve"><value>Only members of the group can share their stats here.</value></data>
+<data name="Stats_Dota" xml:space="preserve"><value>Dota 2</value></data>
+<data name="Stats_Cs2" xml:space="preserve"><value>CS2</value></data>
+<data name="Stats_SourceDota" xml:space="preserve"><value>From OpenDota: medal, the last 30 days and the most played heroes of the last 90 days.</value></data>
+<data name="Stats_SourceCs2" xml:space="preserve"><value>From FACEIT: level, Elo, lifetime results and the most played maps.</value></data>
+<data name="Stats_Cs2Off" xml:space="preserve"><value>CS2 stats aren't set up on this bot yet (it needs a FACEIT key). Cards show profile links only.</value></data>
+<data name="Stats_NotShared" xml:space="preserve"><value>Not shared</value></data>
+<data name="Stats_NoSteam" xml:space="preserve"><value>No Steam account linked yet.</value></data>
+<data name="Stats_LinksOnly" xml:space="preserve"><value>Profile links only.</value></data>
+<data name="Stats_Updating" xml:space="preserve"><value>Getting stats…</value></data>
+<data name="Stats_NoPublicData" xml:space="preserve"><value>No public match data.</value></data>
+<data name="Stats_NoPublicDataMine" xml:space="preserve"><value>No public match data. In Dota 2, open Settings → Options → Social and turn on “Expose Public Match Data”; stats appear after your next match.</value></data>
+<data name="Stats_NoFaceit" xml:space="preserve"><value>No FACEIT account.</value></data>
+<data name="Stats_NoFaceitMine" xml:space="preserve"><value>No FACEIT account for this Steam account. Connect Steam on faceit.com to show your level here.</value></data>
+<data name="Stats_ErrorDota" xml:space="preserve"><value>Couldn't reach OpenDota. Trying again soon.</value></data>
+<data name="Stats_ErrorCs2" xml:space="preserve"><value>Couldn't reach FACEIT. Trying again soon.</value></data>
+<data name="Stats_StaleDota" xml:space="preserve"><value>OpenDota didn't answer, older data</value></data>
+<data name="Stats_StaleCs2" xml:space="preserve"><value>FACEIT didn't answer, older data</value></data>
+<data name="Stats_UpdatedMinutes" xml:space="preserve"><value>updated {0} min ago</value></data>
+<data name="Stats_UpdatedHours" xml:space="preserve"><value>updated {0} h ago</value></data>
+<data name="Stats_UpdatedDays" xml:space="preserve"><value>updated {0} d ago</value></data>
+<data name="Stats_Unranked" xml:space="preserve"><value>Unranked</value></data>
+<data name="Stats_FaceitLevel" xml:space="preserve"><value>Level {0}</value></data>
+<data name="Stats_Last30" xml:space="preserve"><value>30 days</value></data>
+<data name="Stats_WinsLosses" xml:space="preserve"><value>{0}W {1}L</value></data>
+<data name="Stats_WinRate" xml:space="preserve"><value>Win rate {0}</value></data>
+<data name="Stats_WinRateShort" xml:space="preserve"><value>Wins</value></data>
+<data name="Stats_TopHeroes" xml:space="preserve"><value>Most played heroes</value></data>
+<data name="Stats_BestMaps" xml:space="preserve"><value>Most played maps</value></data>
+<data name="Stats_GamesRate" xml:space="preserve"><value>{0} games · {1}</value></data>
+<data name="Stats_Matches" xml:space="preserve"><value>Matches</value></data>
+<data name="Stats_Headshots" xml:space="preserve"><value>Headshots</value></data>
+<data name="Stats_Shared" xml:space="preserve"><value>Your stats are shared with your groups</value></data>
+<data name="Stats_Unshared" xml:space="preserve"><value>Your stats are no longer shared</value></data>
+<data name="Dota_Medal_1" xml:space="preserve"><value>Herald</value></data>
+<data name="Dota_Medal_2" xml:space="preserve"><value>Guardian</value></data>
+<data name="Dota_Medal_3" xml:space="preserve"><value>Crusader</value></data>
+<data name="Dota_Medal_4" xml:space="preserve"><value>Archon</value></data>
+<data name="Dota_Medal_5" xml:space="preserve"><value>Legend</value></data>
+<data name="Dota_Medal_6" xml:space="preserve"><value>Ancient</value></data>
+<data name="Dota_Medal_7" xml:space="preserve"><value>Divine</value></data>
+<data name="Dota_Medal_8" xml:space="preserve"><value>Immortal</value></data>
+<data name="Guide_stats_Title" xml:space="preserve"><value>Stats</value></data>
+<data name="Guide_stats_Body" xml:space="preserve"><value>Groups that play Dota 2 or CS2 have a Stats tab with a card for each member. Sharing is off until you turn on “Show my game stats to my groups”; it then applies to all your groups, and turning it off deletes the saved stats. Dota 2 cards come from OpenDota (medal, wins and losses in the last 30 days, most played heroes) and need “Expose Public Match Data” on in Dota 2. CS2 cards come from FACEIT (level, Elo, K/D, headshots, maps) when the bot has a FACEIT key. Cards refresh every few hours and link to OpenDota, Dotabuff, FACEIT, Leetify and Steam.</value></data>
 </root>

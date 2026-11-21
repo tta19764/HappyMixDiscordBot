@@ -115,6 +115,21 @@
         }
     </section>
 
+    <section class="hm-card hm-stack" id="stats" aria-labelledby="stats-title">
+        <div>
+            <h2 id="stats-title">@DashboardIcons.Render("stats", cssClass: "hm-heading-icon")@T["Stats_Title"]</h2>
+            <p class="hm-help">@T["Guide_stats_Body"]</p>
+        </div>
+        <form class="hm-stats__share" method="post" action="@Model.Url/stats" asp-antiforgery="false">
+            @Html.AntiForgeryToken()
+            <label class="hm-check">
+                <input type="checkbox" name="share" value="true" checked="@Model.SharesStats" />
+                <span>@T["Stats_Share"]<small>@T["Stats_Share_Help"]</small></span>
+            </label>
+            <button class="hm-btn hm-btn--primary">@T["Save"]</button>
+        </form>
+    </section>
+
     <section class="hm-card hm-stack" id="add" aria-labelledby="add-title">
         <form class="hm-stack hm-stack--sm" method="post" action="@Model.Url/add" asp-antiforgery="false" data-game-form>
             @Html.AntiForgeryToken()

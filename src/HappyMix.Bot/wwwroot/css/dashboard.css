@@ -1975,3 +1975,66 @@ a:hover { color: var(--hm-text); text-decoration-color: var(--hm-text); }
     background: color-mix(in srgb, var(--hm-dnd) 10%, transparent); font-size: var(--hm-fs-sm); }
 .hm-dnd__summary b { display: block; margin-bottom: 2px; }
 .hm-dnd__summary ul { margin: 0; padding-left: 1.1rem; }
+
+/* Group Stats: Dota 2 and CS2 player cards ------------------------------------------------------------------ */
+.hm-tab-c-stats { --hm-tab-c: var(--hm-c-sky); }
+.hm-stats__share { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--hm-space-3);
+    padding: var(--hm-space-3); border: 1px solid var(--hm-border); border-radius: var(--hm-radius-md); background: var(--hm-surface-2); }
+.hm-stats__share .hm-check { flex: 1; min-width: min(100%, 16rem); padding: 0; }
+.hm-stats__share .hm-check span { display: grid; gap: 2px; }
+.hm-stats__share small { color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); font-weight: 400; }
+.hm-stats__hint { display: flex; align-items: flex-start; gap: var(--hm-space-2); margin: 0; }
+.hm-stats__hint .hm-icon { flex: none; margin-top: 2px; color: var(--hm-c-sky); }
+.hm-stats__switch { align-self: flex-start; }
+.hm-stats__switch label { display: inline-flex; align-items: center; justify-content: center; min-height: 2.25rem; min-width: 7rem; padding: 0 var(--hm-space-4);
+    border-right: 1px solid var(--hm-border-strong); color: var(--hm-text-muted); font-weight: 500; cursor: pointer; white-space: nowrap; }
+.hm-stats__switch label:last-of-type { border-right: 0; }
+.hm-stats__switch label:hover { color: var(--hm-text); background: var(--hm-surface); }
+.hm-stats__switch input:checked + label { background: var(--hm-segment-on); color: var(--hm-segment-on-ink); box-shadow: var(--hm-segment-on-shadow); font-weight: 600; }
+.hm-stats__switch input:focus-visible + label { outline: 2px solid var(--hm-focus); outline-offset: 2px; }
+.hm-stats:has(#stats-game-dota2:checked) .hm-stats__game--cs2,
+.hm-stats:has(#stats-game-cs2:checked) .hm-stats__game--dota2 { display: none; }
+.hm-stats__source { margin: 0 0 var(--hm-space-2); }
+.hm-stats__cards { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--hm-space-3);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); }
+.hm-statcard { display: flex; flex-direction: column; gap: var(--hm-space-2); height: 100%; padding: var(--hm-space-3);
+    border: 1px solid var(--hm-border); border-radius: var(--hm-radius-md); background: var(--hm-surface); }
+.hm-statcard--mine { border-color: var(--hm-c-sky); box-shadow: inset 0 0 0 1px var(--hm-c-sky); }
+.hm-statcard--off { background: transparent; border-style: dashed; color: var(--hm-text-subtle); }
+.hm-statcard__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--hm-space-2); }
+.hm-statcard__name { flex: 1; min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm-statcard__state { margin: 0; color: var(--hm-text-subtle); font-size: var(--hm-fs-sm); }
+.hm-statcard__state--wait::before { content: ""; display: inline-block; width: .7rem; height: .7rem; margin-right: 6px; vertical-align: -1px;
+    border: 2px solid var(--hm-border-strong); border-top-color: var(--hm-c-sky); border-radius: 50%; animation: hm-spin 1s linear infinite; }
+@keyframes hm-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .hm-statcard__state--wait::before { animation: none; } }
+.hm-statcard__record { display: flex; align-items: baseline; gap: var(--hm-space-2); font-size: var(--hm-fs-sm); }
+.hm-statcard__record > span:first-child { color: var(--hm-text-subtle); }
+.hm-statcard__rate { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; }
+.hm-winbar { height: 6px; border-radius: 999px; background: color-mix(in srgb, var(--hm-c-coral) 45%, transparent); overflow: hidden; }
+.hm-winbar span { display: block; height: 100%; background: var(--hm-c-mint); }
+.hm-statcard__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.hm-statcard__list li { display: flex; align-items: center; gap: var(--hm-space-2); font-size: var(--hm-fs-sm); }
+.hm-statcard__list img { width: 48px; height: 27px; flex: none; border-radius: 4px; object-fit: cover; background: var(--hm-surface-2); }
+.hm-statcard__what { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm-statcard__num { color: var(--hm-text-subtle); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hm-statcard__facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--hm-space-2); margin: 0; }
+.hm-statcard__facts div { display: grid; gap: 2px; }
+.hm-statcard__facts dt { color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); }
+.hm-statcard__facts dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.hm-statcard__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--hm-space-2);
+    margin-top: auto; padding-top: var(--hm-space-2); border-top: 1px solid var(--hm-border); font-size: var(--hm-fs-xs); }
+.hm-statcard__links { display: flex; flex-wrap: wrap; gap: var(--hm-space-3); }
+.hm-statcard__when { color: var(--hm-text-subtle); }
+.hm-statcard__when--error { color: var(--hm-warn); }
+/* Medal and level badges: the text names the rank, colour only supports it. */
+.hm-medal, .hm-faceit { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: var(--hm-fs-xs); font-weight: 700;
+    border: 1px solid currentColor; white-space: nowrap; }
+.hm-medal--0 { color: var(--hm-text-subtle); }
+.hm-medal--1 { color: #9aa3ad; } .hm-medal--2 { color: #7fb08a; } .hm-medal--3 { color: #6aa9c9; } .hm-medal--4 { color: #5ec2b0; }
+.hm-medal--5 { color: #e0b04a; } .hm-medal--6 { color: #6fb6e8; } .hm-medal--7 { color: #c99cf0; } .hm-medal--8 { color: #f0796a; }
+.hm-faceit--1, .hm-faceit--2, .hm-faceit--3 { color: #8fd18f; }
+.hm-faceit--4, .hm-faceit--5, .hm-faceit--6, .hm-faceit--7 { color: #f2c94c; }
+.hm-faceit--8, .hm-faceit--9 { color: #f2994a; }
+.hm-faceit--10 { color: #ff5a3c; }
+@media (max-width: 30rem) { .hm-statcard__facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

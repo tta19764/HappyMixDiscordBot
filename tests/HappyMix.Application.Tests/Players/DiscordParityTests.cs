@@ -100,7 +100,7 @@ public sealed class DiscordParityTests
         using var interactions = new InteractionService(client.Rest);
         using var fixture = await Fixture.CreateAsync();
         var games = await interactions.AddModuleAsync<PlayerGamesModule>(fixture.Application);
-        Assert.Equal(["import", "list", "mark", "remove", "steam"], games.SlashCommands.Select(command => command.Name).Order());
+        Assert.Equal(["import", "list", "mark", "remove", "share-stats", "stats", "steam"], games.SlashCommands.Select(command => command.Name).Order());
         var watch = await interactions.AddModuleAsync<WatchModule>(fixture.Application);
         Assert.Equal(["finish", "next", "show"], watch.SlashCommands.Select(command => command.Name).Order());
         var news = await interactions.AddModuleAsync<GameNewsModule>(fixture.Application);

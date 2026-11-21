@@ -400,6 +400,12 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 - `ConfirmEventSeriesCommand` (POST `/events/{guild}/{event}/confirm-all`) confirms every pending upcoming date; each person who accepted one gets a single Confirmed message for their first newly confirmed date.
 - Event date boxes show weekday, day and month; compact series rows show only the times, with status and count underneath. Side panel menus open beside the panel (`position: fixed`) so its scroll area no longer clips them.
 
+### v0.1.2 Dota 2 and CS2 stats
+
+- Group **Stats** tab for groups whose games include Dota 2 (Steam 570) or CS2 (730): a card per member from OpenDota (medal, 30-day wins/losses, top heroes of 90 days) and FACEIT (level, Elo, matches, win rate, K/D, headshots, top maps), with OpenDota/Dotabuff/FACEIT/Leetify/Steam links. Plan and later phases: `docs/design/GAME_STATS_PLAN.md`.
+- Opt-in per Discord account (`GameStatsSharing`, migration `20261203000100_AddGameStats`), off by default; turning it off deletes the cache (`GameStatsCache`). Sharing fetches at once; `refresh-game-stats` (every 10 minutes) refreshes cards older than 6 hours, 20 people per run. A failed lookup keeps the last good data.
+- CS2 needs `Faceit__ApiKey`; `OpenDota__ApiKey` is optional. Discord: `/games stats [member]` and `/games share-stats`.
+
 ### v0.1.1 do not disturb in the schedule
 
 - Weekly do-not-disturb is edited in the day editor: each range's kind is Definite, Tentative or Do not disturb (`rangeKind=dnd`). Saving splits the day into free hours (`SetWeeklyDayCommand`, this server) and do-not-disturb (`SetQuietDayCommand`, the Discord account, all servers). The week table draws do-not-disturb as a purple band with overnight carry-over; Clear and Copy to… include it. The separate weekly do-not-disturb card is gone.

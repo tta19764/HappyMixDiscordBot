@@ -11,6 +11,9 @@ namespace HappyMix.Bot.Web;
 public sealed record MyGamesPage(ulong GuildId, string GuildName, bool CanConfigure, MyGames Data, (string Id, string Name, bool Verified)? DiscordSteam,
     bool ConnectionsChecked, string Mark, string? Search, int Page, BannerModel? Banner, string Sort = "mark", DateTimeOffset? SyncedAt = null)
 {
+    /// <summary>Whether the viewer shares Dota 2 / CS2 stats with their groups.</summary>
+    public bool SharesStats { get; init; }
+
     /// <summary>List orders: by mark (the default), hours played, A–Z or recently played.</summary>
     public static readonly string[] Sorts = ["mark", "hours", "name", "recent"];
 
@@ -90,7 +93,10 @@ public sealed partial class DashboardController
         string? search = string.IsNullOrWhiteSpace(q) ? null : q.Trim()[..Math.Min(60, q.Trim().Length)];
         return View("MyGames", new MyGamesPage(guildId, GuildName(guildId), viewer.CanConfigure, data, DiscordConnections.FromUser(User),
             DiscordConnections.Checked(User), filter, search, Math.Max(1, page), TakeGamesBanner(),
-            MyGamesPage.Sorts.Contains(sort) ? sort! : "mark", DiscordProfileClaims.SyncedAt(User)));
+            MyGamesPage.Sorts.Contains(sort) ? sort! : "mark", DiscordProfileClaims.SyncedAt(User))
+        {
+            SharesStats = (await sender.Send(new HappyMix.Application.Stats.GetMyStatsQuery(actor.UserId), HttpContext.RequestAborted)).Value.Shares
+        });
     }
 
     [HttpPost("/games/{guildId}/steam")]
@@ -180,6 +186,12 @@ public sealed partial class DashboardController
         return GamesActionAsync(guildId, userId => sender.Send(new SetGamePreferencesCommand(userId, marks), HttpContext.RequestAborted),
             changed => changed == 0 ? text["Games_NothingChanged"].Value : text["Games_MarksSaved", changed].Value, returnUrl);
     }
+
+    [HttpPost("/games/{guildId}/stats")]
+    public Task<IActionResult> ShareGameStats(ulong guildId, bool share) =>
+        GamesActionAsync(guildId, async userId => HappyMix.Domain.Abstractions.Result.Success(
+                (await sender.Send(new HappyMix.Application.Stats.SetStatsSharingCommand(userId, share), HttpContext.RequestAborted)).Value),
+            _ => text[share ? "Stats_Shared" : "Stats_Unshared"].Value, $"/games/{guildId}#stats");
 
     [HttpPost("/games/{guildId}/remove")]
     public Task<IActionResult> RemovePlayerGame(ulong guildId, string? key, string? returnUrl) =>

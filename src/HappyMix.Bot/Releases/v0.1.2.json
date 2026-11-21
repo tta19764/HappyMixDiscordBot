@@ -1,0 +1,14 @@
+{
+  "en": [
+    "**v0.1.2 · Dota 2 and CS2 stats**\nGroups that play Dota 2 or CS2 have a new **Stats** tab with a card for each member. Dota 2 cards show your medal, wins and losses over the last 30 days and your most played heroes (from OpenDota). CS2 cards show your FACEIT level, Elo, K/D, headshots and favourite maps. Every card links to OpenDota, Dotabuff, FACEIT, Leetify and Steam.",
+    "**Your choice**\nNothing is shown until you tick **Show my game stats to my groups**, on a group's Stats tab or on My games; it then applies to all your groups, and turning it off deletes the saved stats. Dota 2 needs **Expose Public Match Data** turned on in the game's settings. In Discord, `/games stats` shows a card and `/games share-stats` turns sharing on or off."
+  ],
+  "uk": [
+    "**v0.1.2 · Статистика Dota 2 і CS2**\nГрупи, які грають у Dota 2 або CS2, мають нову вкладку **Статистика** з карткою кожного учасника. Картка Dota 2 показує вашу медаль, перемоги й поразки за останні 30 днів і найчастіших героїв (з OpenDota). Картка CS2 показує рівень FACEIT, Elo, K/D, хедшоти й улюблені карти. Кожна картка має посилання на OpenDota, Dotabuff, FACEIT, Leetify та Steam.",
+    "**Ваш вибір**\nНічого не показується, доки ви не позначите **Показувати мою ігрову статистику моїм групам** на вкладці «Статистика» групи або на сторінці «Мої ігри»; після цього вибір діє для всіх ваших груп, а вимкнення видаляє збережену статистику. Для Dota 2 потрібно ввімкнути **Відкривати дані про матчі** в налаштуваннях гри. У Discord `/games stats` показує картку, а `/games share-stats` вмикає чи вимикає показ."
+  ],
+  "ru": [
+    "**v0.1.2 · Статистика Dota 2 и CS2**\nГруппы, которые играют в Dota 2 или CS2, получили новую вкладку **Статистика** с карточкой каждого участника. Карточка Dota 2 показывает вашу медаль, победы и поражения за последние 30 дней и самых частых героев (из OpenDota). Карточка CS2 показывает уровень FACEIT, Elo, K/D, хедшоты и любимые карты. Каждая карточка ссылается на OpenDota, Dotabuff, FACEIT, Leetify и Steam.",
+    "**Ваш выбор**\nНичего не показывается, пока вы не отметите **Показывать мою игровую статистику моим группам** на вкладке «Статистика» группы или на странице «Мои игры»; после этого выбор действует для всех ваших групп, а выключение удаляет сохранённую статистику. Для Dota 2 нужно включить **Открывать данные о матчах** в настройках игры. В Discord `/games stats` показывает карточку, а `/games share-stats` включает или выключает показ."
+  ]
+}
