@@ -400,6 +400,12 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 - `ConfirmEventSeriesCommand` (POST `/events/{guild}/{event}/confirm-all`) confirms every pending upcoming date; each person who accepted one gets a single Confirmed message for their first newly confirmed date.
 - Event date boxes show weekday, day and month; compact series rows show only the times, with status and count underneath. Side panel menus open beside the panel (`position: fixed`) so its scroll area no longer clips them.
 
+### v0.0.14 sign-in, My games and do not disturb
+
+- **Sign-in** (`/login`, `DiscordProfileClaims`, migration `20261202000100_AddUserProfiles`): a sign-in page with "Keep me signed in" (persistent cookie, 30-day sliding expiry; unticked it ends with the browser). Discord OAuth uses `prompt=none`, so people who already allowed HappyMix skip the Authorize screen. Name, display name, avatar and the Discord-connected Steam account are saved in `UserProfiles`; the cookie copy is refreshed on each request when the saved profile is newer. `POST /account/sync` ("Sync with Discord") re-reads them without signing out.
+- **My games**: Steam pictures (`cdn.akamai.steamstatic.com/.../header.jpg`, placeholder on error), sorting by mark / hours played / A–Z / recently played (`?sort=`), and one **Save changes** button (`POST /games/{guild}/marks`, `SetGamePreferencesCommand`) with Undo and an unsaved-changes warning.
+- **Do not disturb** (`QuietRequests`, migration `20261202000200_AddDoNotDisturb`): weekly hours and dated ranges per Discord account (all servers), edited on the Availability page (`/availability/{guild}/dnd`). Personal messages wait in `HeldMessages` (event DMs in their own outbox via `DeferAsync`) and the `release-held-messages` job sends them each minute once do-not-disturb ends, after a relevance check: open request/suggestion/invitation, still a member, player still in the game, date not canceled or past. Repeats collapse by key; messages older than 7 days are dropped. Boards show a striped purple band; `/availability who` lists the hours with 🌙.
+
 ### v0.0.13 my games, Steam and Live
 
 - **My games** (`/games/{guild}`, `PlayerGameRequests`, migration `20261130000100_AddPlayerGames`): a per-person list with Want / Can / Won't marks. Steam links by Steam OpenID sign-in (verified), the Discord `connections` scope (verified when Discord says so) or a pasted profile (unverified). Library import needs `Steam__ApiKey` and public Game details; re-importing keeps marks, unlinking removes only imported games.

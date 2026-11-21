@@ -2462,7 +2462,7 @@
 <data name="Games_NotVerified" xml:space="preserve"><value>Не підтверджено</value></data>
 <data name="Games_DiscordSteam" xml:space="preserve"><value>До вашого профілю Discord підключено Steam: {0}.</value></data>
 <data name="Games_UseDiscordSteam" xml:space="preserve"><value>Використати цей акаунт Steam</value></data>
-<data name="Games_SignInAgain" xml:space="preserve"><value>Підключили Steam у Discord? Вийдіть і увійдіть знову, щоб HappyMix його побачив, або прив’яжіть нижче.</value></data>
+<data name="Games_SignInAgain" xml:space="preserve"><value>Під'єднали Steam у Discord? Синхронізуйте з Discord, щоб HappyMix його побачив, або під'єднайте нижче.</value></data>
 <data name="Games_SteamInput" xml:space="preserve"><value>Посилання на профіль Steam або SteamID64</value></data>
 <data name="Games_SteamInputHelp" xml:space="preserve"><value>Вставленого профілю достатньо для імпорту публічного списку ігор. Він позначений як не підтверджений, доки ви не увійдете через Steam.</value></data>
 <data name="Games_LinkSteam" xml:space="preserve"><value>Прив’язати</value></data>
@@ -2548,4 +2548,52 @@
 <data name="Live_Err_Forbidden" xml:space="preserve"><value>Змінити це може лише організатор або модератор.</value></data>
 <data name="Guide_live_Title" xml:space="preserve"><value>Наживо</value></data>
 <data name="Guide_live_Body" xml:space="preserve"><value>Вкладка «Наживо» в групі показує, хто зараз грає. Це працює лише за згодою з обох боків: ви самі вирішуєте, чи показувати групі, у що граєте, і окремо — чи отримувати повідомлення в Discord, коли учасники запускають гру. Повідомлення надходять лише про ігри групи або ігри, які інший учасник позначив «Хочу» чи «Можу», не частіше ніж раз на дві години для гравця й гри. HappyMix бере ваш статус у Discord (якщо власник сервера ввімкнув присутність) і, якщо ви ввійшли через Steam, статус у Steam. Організатор також може публікувати ці повідомлення в каналі сповіщень групи.</value></data>
+<data name="Login_Title" xml:space="preserve"><value>Вхід до HappyMix</value></data>
+<data name="Login_Lead" xml:space="preserve"><value>HappyMix використовує ваш акаунт Discord, тож окремий пароль не потрібен. Після того як ви дозволите доступ HappyMix, Discord одразу поверне вас сюди.</value></data>
+<data name="Login_Remember" xml:space="preserve"><value>Не виходити з акаунта</value></data>
+<data name="Login_Remember_Help" xml:space="preserve"><value>Залишатися в акаунті на цьому пристрої 30 днів після останнього візиту. Зніміть позначку на спільному комп'ютері.</value></data>
+<data name="Login_Discord" xml:space="preserve"><value>Увійти через Discord</value></data>
+<data name="Login_Privacy" xml:space="preserve"><value>HappyMix бачить ваше ім'я в Discord, аватар і під'єднані акаунти (щоб знайти ваш Steam). Він ніколи не пише від вашого імені.</value></data>
+<data name="Login_SignedOut" xml:space="preserve"><value>Ви вийшли з акаунта.</value></data>
+<data name="Sync_Discord" xml:space="preserve"><value>Синхронізувати з Discord</value></data>
+<data name="Sync_Last" xml:space="preserve"><value>Остання синхронізація: {0}.</value></data>
+<data name="Games_SyncHint" xml:space="preserve"><value>Нещодавно під'єднали Steam у Discord? Синхронізуйте, щоб HappyMix його побачив, без виходу з акаунта.</value></data>
+<data name="Games_SortBy" xml:space="preserve"><value>Сортувати</value></data>
+<data name="Games_SortMark" xml:space="preserve"><value>За позначкою</value></data>
+<data name="Games_SortHours" xml:space="preserve"><value>Зіграні години</value></data>
+<data name="Games_SortName" xml:space="preserve"><value>А–Я</value></data>
+<data name="Games_SortRecent" xml:space="preserve"><value>Нещодавно грали</value></data>
+<data name="Games_SaveMarks" xml:space="preserve"><value>Зберегти зміни</value></data>
+<data name="Games_SaveHelp" xml:space="preserve"><value>Позначте ігри як «Хочу грати», «Можу грати» чи «Не гратиму», а потім збережіть.</value></data>
+<data name="Games_Unsaved" xml:space="preserve"><value>Незбережені зміни: {0}</value></data>
+<data name="Games_LeaveUnsaved" xml:space="preserve"><value>Позначки ще не збережено. Все одно піти?</value></data>
+<data name="Games_Undo" xml:space="preserve"><value>Скасувати</value></data>
+<data name="Games_MarksSaved" xml:space="preserve"><value>Позначки збережено ({0})</value></data>
+<data name="Games_NothingChanged" xml:space="preserve"><value>Немає змін</value></data>
+<data name="Dnd_Title" xml:space="preserve"><value>Не турбувати</value></data>
+<data name="Dnd_Lead" xml:space="preserve"><value>У цей час HappyMix не надсилає вам особистих повідомлень. Вони надійдуть після його завершення, якщо ще будуть актуальні. Ваші групи й сервер бачать цей час на дошках доступності.</value></data>
+<data name="Dnd_OnUntil" xml:space="preserve"><value>Увімкнено до {0}</value></data>
+<data name="Dnd_Waiting" xml:space="preserve"><value>Повідомлень в очікуванні: {0}. Вони надійдуть, коли режим «Не турбувати» закінчиться.</value></data>
+<data name="Dnd_NoneWeekly" xml:space="preserve"><value>Щотижневих годин «Не турбувати» ще немає. Наприклад, додайте будні з 23:00 до 08:00.</value></data>
+<data name="Dnd_NoneDates" xml:space="preserve"><value>Найближчим часом дат «Не турбувати» немає. Додайте дату, кілька днів поспіль або відпустку.</value></data>
+<data name="Dnd_Days" xml:space="preserve"><value>Дні</value></data>
+<data name="Dnd_From" xml:space="preserve"><value>З</value></data>
+<data name="Dnd_Until" xml:space="preserve"><value>До</value></data>
+<data name="Dnd_FormHelp" xml:space="preserve"><value>Час за {0}. Якщо кінець раніше за початок, проміжок триває після опівночі.</value></data>
+<data name="Dnd_Add" xml:space="preserve"><value>Додати «Не турбувати»</value></data>
+<data name="Dnd_Remove" xml:space="preserve"><value>Видалити «Не турбувати» {0}</value></data>
+<data name="Dnd_Overnight" xml:space="preserve"><value>Після опівночі</value></data>
+<data name="Dnd_Saved" xml:space="preserve"><value>Режим «Не турбувати» збережено</value></data>
+<data name="Dnd_Removed" xml:space="preserve"><value>Режим «Не турбувати» видалено</value></data>
+<data name="Dnd_Arg0" xml:space="preserve"><value>Не турбувати: {0}</value></data>
+<data name="Quiet_Err_Day" xml:space="preserve"><value>Виберіть хоча б один день.</value></data>
+<data name="Quiet_Err_Date" xml:space="preserve"><value>Виберіть дату.</value></data>
+<data name="Quiet_Err_Range" xml:space="preserve"><value>Виберіть дату завершення не раніше за дату початку й не пізніше ніж через 62 дні.</value></data>
+<data name="Quiet_Err_Passed" xml:space="preserve"><value>Цей час уже минув.</value></data>
+<data name="Quiet_Err_TooMany" xml:space="preserve"><value>У вас уже максимальна кількість проміжків «Не турбувати». Спершу видаліть один.</value></data>
+<data name="Quiet_Err_Missing" xml:space="preserve"><value>Цього проміжку «Не турбувати» вже немає.</value></data>
+<data name="Guide_dnd_Title" xml:space="preserve"><value>Не турбувати</value></data>
+<data name="Guide_dnd_Body" xml:space="preserve"><value>На сторінці доступності додайте години «Не турбувати» до звичайного тижня (наприклад, будні з 23:00 до 08:00) або до окремих дат. Поки цей режим увімкнено, HappyMix притримує ваші особисті повідомлення: запрошення й оновлення подій, запити й запрошення груп і повідомлення «Наживо». Коли режим закінчується, кожне повідомлення перевіряється ще раз і надсилається, лише якщо воно ще актуальне: скасована дата, розглянутий запит чи завершена гра відкидаються. Режим «Не турбувати» прив'язаний до вашого акаунта Discord, тож діє на всіх серверах і показується на дошках доступності сервера й груп смугастою фіолетовою смугою.</value></data>
+<data name="Quiet_Err_Zone" xml:space="preserve"><value>Виберіть часовий пояс, наприклад Europe/Kyiv, або введіть зсув UTC, наприклад +02:00.</value></data>
+<data name="Quiet_Err_Times" xml:space="preserve"><value>Введіть час у 24-годинному форматі, наприклад 17 або 00:30.</value></data>
 </root>

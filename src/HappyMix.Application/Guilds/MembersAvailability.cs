@@ -1,6 +1,7 @@
 using HappyMix.Application.Abstractions;
 using HappyMix.Application.Abstractions.Guilds;
 using HappyMix.Application.Abstractions.Messaging;
+using HappyMix.Application.Abstractions.Quiet;
 using HappyMix.Domain.Abstractions;
 
 namespace HappyMix.Application.Guilds;
@@ -20,7 +21,8 @@ public sealed record GetMembersAvailabilityQuery(ulong GuildId, IReadOnlyCollect
     string DefaultTimeZone, bool IncludeMonth = false) : IQuery<MembersAvailability>;
 
 internal sealed class MembersAvailabilityQueries(IAvailabilityStore availability, IGuildSettingsStore settings, IClock clock,
-    IAccountLinkStore accountLinks) : IQueryHandler<GetMembersAvailabilityQuery, MembersAvailability>
+    IAccountLinkStore accountLinks, IEnumerable<HappyMix.Application.Abstractions.Quiet.IQuietStore> quiet)
+    : IQueryHandler<GetMembersAvailabilityQuery, MembersAvailability>
 {
     internal const int MaxMembers = 200;
 
@@ -38,7 +40,7 @@ internal sealed class MembersAvailabilityQueries(IAvailabilityStore availability
         var snapshot = await availability.ListForMembersAsync(query.GuildId, links.Members(members),
             LocalTimes.StartOfDay(first, zone), LocalTimes.StartOfDay(last.AddDays(1), zone));
 
-        var rows = BoardRows.Build(links, members, snapshot, date, zone);
+        var rows = BoardRows.Build(links, members, snapshot, date, zone, await BoardRows.QuietAsync(quiet, links, members));
         var freeByHour = Enumerable.Range(0, 24).Select(hour => rows.Count(row => row.Ranges.Any(range =>
             !range.Tentative && GroupAvailabilityBoard.StartHours(range) < hour + 1 && GroupAvailabilityBoard.EndHours(range) > hour))).ToArray();
         var month = new Dictionary<DateOnly, int>();
@@ -54,7 +56,25 @@ internal sealed class MembersAvailabilityQueries(IAvailabilityStore availability
 /// <summary>Turns stored windows and weekly hours into one board row per member for a local date.</summary>
 public static class BoardRows
 {
-    public static BoardRow[] Build(MemberLinks links, IReadOnlyList<ulong> members, MemberAvailabilitySnapshot snapshot, DateOnly date, TimeZoneInfo zone)
+    /// <summary>
+    /// Do-not-disturb per board member. It belongs to Discord accounts, so a linked family shows every one of its
+    /// accounts' ranges. Empty when no store is available.
+    /// </summary>
+    public static async Task<IReadOnlyDictionary<ulong, QuietSchedule>> QuietAsync(IEnumerable<IQuietStore> stores, MemberLinks links,
+        IReadOnlyList<ulong> members)
+    {
+        if (stores.FirstOrDefault() is not { } store || members.Count == 0)
+            return new Dictionary<ulong, QuietSchedule>();
+        var saved = await store.GetManyAsync(members.SelectMany(links.Accounts).Distinct().ToArray());
+        return members.ToDictionary(member => member, member =>
+        {
+            var parts = links.Accounts(member).Select(account => saved.GetValueOrDefault(account)).OfType<QuietSchedule>().ToArray();
+            return parts.Length == 1 ? parts[0] : new QuietSchedule(parts.SelectMany(part => part.Weekly).ToArray(), parts.SelectMany(part => part.Dates).ToArray());
+        });
+    }
+
+    public static BoardRow[] Build(MemberLinks links, IReadOnlyList<ulong> members, MemberAvailabilitySnapshot snapshot, DateOnly date, TimeZoneInfo zone,
+        IReadOnlyDictionary<ulong, QuietSchedule>? quiet = null)
     {
         var dayStart = LocalTimes.StartOfDay(date, zone);
         var dayEnd = LocalTimes.StartOfDay(date.AddDays(1), zone);
@@ -67,7 +87,11 @@ public static class BoardRows
                     .Where(item => item.Item2 < dayEnd && dayStart < item.Item3)
                     .OrderBy(item => item.Item2).ThenBy(item => item.Item1)
                     .Select(item => Clip(item.Item1, item.Item2, item.Item3, dayStart, dayEnd, zone, item.Item4))
-                    .ToArray()))
+                    .ToArray(),
+                quiet?.GetValueOrDefault(userId) is { IsEmpty: false } schedule
+                    ? HappyMix.Application.Quiet.QuietHours.Intervals(schedule, dayStart, dayEnd)
+                        .Select(item => Clip(AvailabilitySource.OneOff, item.Start, item.End, dayStart, dayEnd, zone, false)).ToArray()
+                    : null))
             .OrderByDescending(row => row.HasData)
             .ToArray();
     }

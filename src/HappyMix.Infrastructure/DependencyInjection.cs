@@ -43,6 +43,8 @@ public static class DependencyInjection
         services.AddSingleton<HappyMix.Application.Abstractions.Logs.ILogStore, SqliteLogStore>();
         services.AddSingleton<HappyMix.Application.Abstractions.Players.IPlayerGameStore, SqlitePlayerGameStore>();
         services.AddSingleton<HappyMix.Application.Abstractions.Live.ILiveStore, SqliteLiveStore>();
+        services.AddSingleton<HappyMix.Application.Abstractions.Profiles.IUserProfileStore, SqliteUserProfileStore>();
+        services.AddSingleton<HappyMix.Application.Abstractions.Quiet.IQuietStore, SqliteQuietStore>();
         services.AddHttpClient(HappyMix.Infrastructure.Steam.SteamDirectory.HttpClientName, client =>
         {
             client.Timeout = TimeSpan.FromSeconds(10);

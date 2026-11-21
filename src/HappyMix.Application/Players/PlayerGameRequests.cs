@@ -48,6 +48,12 @@ public sealed record SetGamePreferenceCommand(ulong UserId, string Key, GamePref
 
 public sealed record RemovePlayerGameCommand(ulong UserId, string Key) : ICommand;
 
+/// <summary>
+/// Saves several marks at once (the My games Save button). Games no longer on the list and unchanged marks are skipped;
+/// the result is how many marks changed.
+/// </summary>
+public sealed record SetGamePreferencesCommand(ulong UserId, IReadOnlyDictionary<string, GamePreference> Marks) : ICommand<int>;
+
 /// <summary>How the members of a group feel about a game: who wants it, who can play it and who won't.</summary>
 public sealed record GameInterest(string Name, string? Provider, string? ExternalId, IReadOnlyList<ulong> Want,
     IReadOnlyList<ulong> Can, IReadOnlyList<ulong> Wont)
@@ -78,7 +84,7 @@ public static class GameKeys
 internal sealed class PlayerGameHandlers(IPlayerGameStore store, ISteamDirectory steam, IClock clock, ISender sender, IAccountLinkStore accountLinks)
     : IQueryHandler<GetMyGamesQuery, MyGames>, ICommandHandler<LinkSteamCommand, SteamAccount>, ICommandHandler<VerifySteamCommand, SteamAccount>,
       ICommandHandler<LinkDiscordSteamCommand, SteamAccount>, ICommandHandler<UnlinkSteamCommand>, ICommandHandler<ImportSteamGamesCommand, SteamImport>, ICommandHandler<AddPlayerGameCommand, PlayerGame>,
-      ICommandHandler<SetGamePreferenceCommand, PlayerGame>, ICommandHandler<RemovePlayerGameCommand>,
+      ICommandHandler<SetGamePreferenceCommand, PlayerGame>, ICommandHandler<SetGamePreferencesCommand, int>, ICommandHandler<RemovePlayerGameCommand>,
       IQueryHandler<GetGroupGameInterestQuery, GroupGameInterest>
 {
     private const int MaxGames = 2000;
@@ -234,6 +240,20 @@ internal sealed class PlayerGameHandlers(IPlayerGameStore store, ISteamDirectory
         var marked = game with { Preference = command.Preference, UpdatedAt = clock.UtcNow };
         await store.SaveAsync(marked);
         return marked;
+    }
+
+    public async Task<Result<int>> Handle(SetGamePreferencesCommand command, CancellationToken cancellationToken)
+    {
+        if (command.Marks.Values.Any(preference => !Enum.IsDefined(preference)))
+            return Result.Failure<int>(Error("Preference", "Choose Want to play, Can play or Won’t play."));
+        var now = clock.UtcNow;
+        var changed = (await store.ListAsync(command.UserId))
+            .Where(game => command.Marks.TryGetValue(game.Key, out var preference) && preference != game.Preference)
+            .Select(game => game with { Preference = command.Marks[game.Key], UpdatedAt = now })
+            .ToArray();
+        if (changed.Length > 0)
+            await store.SaveManyAsync(changed);
+        return changed.Length;
     }
 
     public async Task<Result> Handle(RemovePlayerGameCommand command, CancellationToken cancellationToken) =>

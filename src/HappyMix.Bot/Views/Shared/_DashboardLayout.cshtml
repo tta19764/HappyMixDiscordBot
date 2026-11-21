@@ -1,7 +1,8 @@
 @using System.Security.Claims
 @{
     bool signedIn = User.Identity?.IsAuthenticated == true;
-    string userName = User.FindFirstValue(ClaimTypes.Name) ?? T["Signed_in"].Value;
+    string userName = DiscordProfileClaims.Name(User) ?? T["Signed_in"].Value;
+    string? avatarUrl = DiscordProfileClaims.AvatarUrl(User);
     var side = SideNav.Get(ViewData, Context);
     string? guildName = side?.GuildName ?? ViewData["NavGuildName"] as string;
     string? theme = DashboardTheme.Read(Context.Request);
@@ -144,8 +145,22 @@
                     </details>
                 </div>
                 <div class="hm-side__user">
-                    <span class="hm-side__avatar" aria-hidden="true">@DashboardIcons.Initials(userName)[..1]</span>
+                    <span class="hm-side__avatar" aria-hidden="true">
+                        @if (avatarUrl is not null)
+                        {
+                            <img src="@avatarUrl" alt="" width="28" height="28" loading="lazy" referrerpolicy="no-referrer">
+                        }
+                        else
+                        {
+                            @DashboardIcons.Initials(userName)[..1]
+                        }
+                    </span>
                     <span class="hm-side__name">@userName</span>
+                    <form action="/account/sync" method="post" asp-antiforgery="false">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="returnUrl" value="@returnUrl">
+                        <button class="hm-side__btn" title="@T["Sync_Discord"]" aria-label="@T["Sync_Discord"]">@DashboardIcons.Render("refresh")</button>
+                    </form>
                     <form action="/logout" method="post" asp-antiforgery="false">
                         @Html.AntiForgeryToken()
                         <button class="hm-side__btn" title="@T["Sign_out"]" aria-label="@T["Sign_out"]">@DashboardIcons.Render("logout")</button>

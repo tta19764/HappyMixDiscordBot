@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using Discord;
 using Discord.Net;
 using Discord.WebSocket;
+using MediatR;
 
 namespace HappyMix.Bot.Services;
 
@@ -65,10 +66,22 @@ internal sealed class DiscordMemberDirectory(DiscordSocketClient client) : IMemb
     }
 }
 
-/// <summary>Sends the Accept/Decline direct message used by both the slash command and the dashboard.</summary>
+/// <summary>
+/// Sends the Accept/Decline direct message used by both the slash command and the dashboard. During the member's
+/// do-not-disturb it waits (and counts as delivered); it goes out afterwards only if the invitation is still open.
+/// </summary>
 internal static class GroupInviteMessages
 {
-    public static async Task<bool> SendAsync(IUser member, ulong guildId, string guildName, string groupName, Guid token)
+    public static async Task<bool> SendAsync(ISender sender, IUser member, ulong guildId, string guildName, string groupName, Guid token)
+    {
+        var payload = new HappyMix.Application.Quiet.HeldGroupInvite(guildId, guildName, groupName, member.Id, token);
+        if ((await sender.Send(new HappyMix.Application.Quiet.HoldIfQuietCommand(member.Id, HappyMix.Application.Quiet.HeldKinds.GroupInvite,
+                token.ToString("N"), System.Text.Json.JsonSerializer.Serialize(payload, HappyMix.Application.Quiet.HeldKinds.Json)))).Value)
+            return true;
+        return await SendNowAsync(member, guildId, guildName, groupName, token);
+    }
+
+    public static async Task<bool> SendNowAsync(IUser member, ulong guildId, string guildName, string groupName, Guid token)
     {
         var buttons = new ComponentBuilder()
             .WithButton("Accept", $"group-invite:accept:{guildId}:{token:N}", ButtonStyle.Success)
@@ -89,5 +102,23 @@ internal static class GroupInviteMessages
         {
             return false;
         }
+    }
+}
+
+/// <summary>Sends group invitations that waited for the member's do-not-disturb to end.</summary>
+internal sealed class HeldGroupInviteSender(DiscordSocketClient discord) : HappyMix.Application.Abstractions.Quiet.IHeldMessageSender
+{
+    public string Kind => HappyMix.Application.Quiet.HeldKinds.GroupInvite;
+
+    public async Task<HappyMix.Application.Abstractions.Quiet.HeldDelivery> SendAsync(HappyMix.Application.Abstractions.Quiet.HeldMessage message,
+        CancellationToken cancellationToken)
+    {
+        if (discord.ConnectionState != ConnectionState.Connected)
+            return HappyMix.Application.Abstractions.Quiet.HeldDelivery.RetryLater;
+        if (System.Text.Json.JsonSerializer.Deserialize<HappyMix.Application.Quiet.HeldGroupInvite>(message.Payload, HappyMix.Application.Quiet.HeldKinds.Json) is not { } invite
+            || await discord.Rest.GetUserAsync(invite.UserId, new RequestOptions { CancelToken = cancellationToken }) is not { } user)
+            return HappyMix.Application.Abstractions.Quiet.HeldDelivery.Dropped;
+        return await GroupInviteMessages.SendNowAsync(user, invite.GuildId, invite.GuildName, invite.GroupName, invite.Token)
+            ? HappyMix.Application.Abstractions.Quiet.HeldDelivery.Sent : HappyMix.Application.Abstractions.Quiet.HeldDelivery.Dropped;
     }
 }

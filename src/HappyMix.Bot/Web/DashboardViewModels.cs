@@ -85,6 +85,8 @@ public sealed record AvailabilityPage(
     public IReadOnlyList<EventRow> MyEvents { get; init; } = [];
     public int EventInvitations { get; init; }
     public int WeeklyCount => Week.Count(row => row.Windows.Count > 0);
+    /// <summary>The viewer's do-not-disturb, for the Dates and Weekly views.</summary>
+    public HappyMix.Application.Quiet.QuietOverview? DoNotDisturb { get; init; }
     public bool IsEditing => Week.Any(row => row.IsEditing);
 }
 
@@ -338,3 +340,13 @@ public sealed record InfoPage(HappyMix.Bot.Interactions.CommandGuide[] Commands,
 public sealed record ListEditorModel(string Kind, string Id, string Name, string? Value, int Max, int MaxLength,
     string Label, string EmptyText, string AddPlaceholder, string TextPlaceholder, string Help, string[] DefaultLines,
     string? Invalid, string? DescribedBy, string? SearchUrl = null, string? KnownJson = null);
+
+/// <param name="ReturnUrl">A local page to go back to after signing in.</param>
+/// <param name="SignedOut">Show the "You're signed out" note.</param>
+public sealed record LoginPage(string ReturnUrl, bool SignedOut);
+
+/// <summary>The do-not-disturb card: weekly hours on the Weekly view, dates on the Dates view.</summary>
+/// <param name="Url">The form address, <c>/availability/{guild}/dnd</c>.</param>
+/// <param name="TimeZone">The zone new ranges are entered in (the page's zone).</param>
+/// <param name="Date">The date the Dates form starts on.</param>
+public sealed record DoNotDisturbModel(HappyMix.Application.Quiet.QuietOverview Overview, string Url, bool Weekly, string TimeZone, DateOnly Date);

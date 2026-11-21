@@ -2462,7 +2462,7 @@
 <data name="Games_NotVerified" xml:space="preserve"><value>Не подтверждён</value></data>
 <data name="Games_DiscordSteam" xml:space="preserve"><value>К вашему профилю Discord подключён Steam: {0}.</value></data>
 <data name="Games_UseDiscordSteam" xml:space="preserve"><value>Использовать этот аккаунт Steam</value></data>
-<data name="Games_SignInAgain" xml:space="preserve"><value>Подключили Steam в Discord? Выйдите и войдите снова, чтобы HappyMix его увидел, или привяжите ниже.</value></data>
+<data name="Games_SignInAgain" xml:space="preserve"><value>Подключили Steam в Discord? Синхронизируйте с Discord, чтобы HappyMix его увидел, или подключите ниже.</value></data>
 <data name="Games_SteamInput" xml:space="preserve"><value>Ссылка на профиль Steam или SteamID64</value></data>
 <data name="Games_SteamInputHelp" xml:space="preserve"><value>Вставленного профиля достаточно для импорта публичного списка игр. Он помечен как неподтверждённый, пока вы не войдёте через Steam.</value></data>
 <data name="Games_LinkSteam" xml:space="preserve"><value>Привязать</value></data>
@@ -2548,4 +2548,52 @@
 <data name="Live_Err_Forbidden" xml:space="preserve"><value>Изменить это может только организатор или модератор.</value></data>
 <data name="Guide_live_Title" xml:space="preserve"><value>Сейчас</value></data>
 <data name="Guide_live_Body" xml:space="preserve"><value>Вкладка «Сейчас» в группе показывает, кто сейчас играет. Это работает только по согласию с обеих сторон: вы сами решаете, показывать ли группе, во что играете, и отдельно — получать ли сообщения в Discord, когда участники запускают игру. Сообщения приходят только об играх группы или играх, которые другой участник отметил «Хочу» или «Могу», не чаще раза в два часа для игрока и игры. HappyMix берёт ваш статус в Discord (если владелец сервера включил присутствие) и, если вы вошли через Steam, статус в Steam. Организатор также может публиковать эти сообщения в канале уведомлений группы.</value></data>
+<data name="Login_Title" xml:space="preserve"><value>Вход в HappyMix</value></data>
+<data name="Login_Lead" xml:space="preserve"><value>HappyMix использует ваш аккаунт Discord, поэтому отдельный пароль не нужен. После того как вы разрешите доступ HappyMix, Discord сразу вернёт вас сюда.</value></data>
+<data name="Login_Remember" xml:space="preserve"><value>Не выходить из аккаунта</value></data>
+<data name="Login_Remember_Help" xml:space="preserve"><value>Оставаться в аккаунте на этом устройстве 30 дней после последнего визита. Снимите отметку на общем компьютере.</value></data>
+<data name="Login_Discord" xml:space="preserve"><value>Войти через Discord</value></data>
+<data name="Login_Privacy" xml:space="preserve"><value>HappyMix видит ваше имя в Discord, аватар и подключённые аккаунты (чтобы найти ваш Steam). Он никогда не пишет от вашего имени.</value></data>
+<data name="Login_SignedOut" xml:space="preserve"><value>Вы вышли из аккаунта.</value></data>
+<data name="Sync_Discord" xml:space="preserve"><value>Синхронизировать с Discord</value></data>
+<data name="Sync_Last" xml:space="preserve"><value>Последняя синхронизация: {0}.</value></data>
+<data name="Games_SyncHint" xml:space="preserve"><value>Недавно подключили Steam в Discord? Синхронизируйте, чтобы HappyMix его увидел, без выхода из аккаунта.</value></data>
+<data name="Games_SortBy" xml:space="preserve"><value>Сортировать</value></data>
+<data name="Games_SortMark" xml:space="preserve"><value>По отметке</value></data>
+<data name="Games_SortHours" xml:space="preserve"><value>Сыгранные часы</value></data>
+<data name="Games_SortName" xml:space="preserve"><value>А–Я</value></data>
+<data name="Games_SortRecent" xml:space="preserve"><value>Недавно играли</value></data>
+<data name="Games_SaveMarks" xml:space="preserve"><value>Сохранить изменения</value></data>
+<data name="Games_SaveHelp" xml:space="preserve"><value>Отметьте игры как «Хочу играть», «Могу играть» или «Не буду играть», а затем сохраните.</value></data>
+<data name="Games_Unsaved" xml:space="preserve"><value>Несохранённые изменения: {0}</value></data>
+<data name="Games_LeaveUnsaved" xml:space="preserve"><value>Отметки ещё не сохранены. Всё равно уйти?</value></data>
+<data name="Games_Undo" xml:space="preserve"><value>Отменить</value></data>
+<data name="Games_MarksSaved" xml:space="preserve"><value>Отметки сохранены ({0})</value></data>
+<data name="Games_NothingChanged" xml:space="preserve"><value>Нет изменений</value></data>
+<data name="Dnd_Title" xml:space="preserve"><value>Не беспокоить</value></data>
+<data name="Dnd_Lead" xml:space="preserve"><value>В это время HappyMix не присылает вам личных сообщений. Они придут после его окончания, если ещё будут актуальны. Ваши группы и сервер видят это время на досках доступности.</value></data>
+<data name="Dnd_OnUntil" xml:space="preserve"><value>Включено до {0}</value></data>
+<data name="Dnd_Waiting" xml:space="preserve"><value>Сообщений в ожидании: {0}. Они придут, когда режим «Не беспокоить» закончится.</value></data>
+<data name="Dnd_NoneWeekly" xml:space="preserve"><value>Еженедельных часов «Не беспокоить» пока нет. Например, добавьте будни с 23:00 до 08:00.</value></data>
+<data name="Dnd_NoneDates" xml:space="preserve"><value>Ближайших дат «Не беспокоить» нет. Добавьте дату, несколько дней подряд или отпуск.</value></data>
+<data name="Dnd_Days" xml:space="preserve"><value>Дни</value></data>
+<data name="Dnd_From" xml:space="preserve"><value>С</value></data>
+<data name="Dnd_Until" xml:space="preserve"><value>До</value></data>
+<data name="Dnd_FormHelp" xml:space="preserve"><value>Время по {0}. Если конец раньше начала, промежуток продолжается после полуночи.</value></data>
+<data name="Dnd_Add" xml:space="preserve"><value>Добавить «Не беспокоить»</value></data>
+<data name="Dnd_Remove" xml:space="preserve"><value>Удалить «Не беспокоить» {0}</value></data>
+<data name="Dnd_Overnight" xml:space="preserve"><value>После полуночи</value></data>
+<data name="Dnd_Saved" xml:space="preserve"><value>Режим «Не беспокоить» сохранён</value></data>
+<data name="Dnd_Removed" xml:space="preserve"><value>Режим «Не беспокоить» удалён</value></data>
+<data name="Dnd_Arg0" xml:space="preserve"><value>Не беспокоить: {0}</value></data>
+<data name="Quiet_Err_Day" xml:space="preserve"><value>Выберите хотя бы один день.</value></data>
+<data name="Quiet_Err_Date" xml:space="preserve"><value>Выберите дату.</value></data>
+<data name="Quiet_Err_Range" xml:space="preserve"><value>Выберите дату окончания не раньше даты начала и не позже чем через 62 дня.</value></data>
+<data name="Quiet_Err_Passed" xml:space="preserve"><value>Это время уже прошло.</value></data>
+<data name="Quiet_Err_TooMany" xml:space="preserve"><value>У вас уже максимальное количество промежутков «Не беспокоить». Сначала удалите один.</value></data>
+<data name="Quiet_Err_Missing" xml:space="preserve"><value>Этого промежутка «Не беспокоить» уже нет.</value></data>
+<data name="Guide_dnd_Title" xml:space="preserve"><value>Не беспокоить</value></data>
+<data name="Guide_dnd_Body" xml:space="preserve"><value>На странице доступности добавьте часы «Не беспокоить» к обычной неделе (например, будни с 23:00 до 08:00) или к отдельным датам. Пока этот режим включён, HappyMix придерживает ваши личные сообщения: приглашения и обновления событий, запросы и приглашения групп и уведомления «Сейчас». Когда режим заканчивается, каждое сообщение проверяется ещё раз и отправляется, только если оно ещё актуально: отменённая дата, рассмотренный запрос или законченная игра отбрасываются. Режим «Не беспокоить» привязан к вашему аккаунту Discord, поэтому действует на всех серверах и отображается на досках доступности сервера и групп полосатой фиолетовой полосой.</value></data>
+<data name="Quiet_Err_Zone" xml:space="preserve"><value>Выберите часовой пояс, например Europe/Kyiv, или введите смещение UTC, например +02:00.</value></data>
+<data name="Quiet_Err_Times" xml:space="preserve"><value>Введите время в 24-часовом формате, например 17 или 00:30.</value></data>
 </root>

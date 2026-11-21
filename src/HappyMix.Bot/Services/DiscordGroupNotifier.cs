@@ -1,6 +1,9 @@
 using Discord;
 using Discord.WebSocket;
 using HappyMix.Application.Abstractions.Guilds;
+using HappyMix.Application.Abstractions.Quiet;
+using HappyMix.Application.Quiet;
+using MediatR;
 using Microsoft.Extensions.Options;
 
 namespace HappyMix.Bot.Services;
@@ -8,14 +11,36 @@ namespace HappyMix.Bot.Services;
 /// <summary>
 /// Group notices by direct message, in the server's community language, with a link to the group page when the
 /// dashboard has a public address. People with closed DMs simply don't get them; the action itself already happened.
+/// During the recipient's do-not-disturb the notice waits, and goes out afterwards only if it still applies (the
+/// request is still open, the suggestion still waiting, and so on).
 /// </summary>
 internal sealed partial class DiscordGroupNotifier(DiscordSocketClient discord, IConfiguration configuration, IOptions<CommunityDefaults> community,
-    ILogger<DiscordGroupNotifier> logger) : IGroupNotifier
+    ISender sender, ILogger<DiscordGroupNotifier> logger) : IGroupNotifier, IHeldMessageSender
 {
+    public string Kind => HeldKinds.Group;
+
     public async Task NotifyAsync(GroupNotice notice, CancellationToken cancellationToken)
     {
-        if (discord.ConnectionState != ConnectionState.Connected)
+        string key = $"{notice.GroupId:N}:{notice.Kind}:{notice.ActorId}:{notice.SuggestionId:N}";
+        if ((await sender.Send(new HoldIfQuietCommand(notice.RecipientId, Kind, key,
+                System.Text.Json.JsonSerializer.Serialize(notice, HeldKinds.Json)), cancellationToken)).Value)
             return;
+        await DeliverAsync(notice, cancellationToken);
+    }
+
+    public async Task<HeldDelivery> SendAsync(HeldMessage message, CancellationToken cancellationToken)
+    {
+        if (discord.ConnectionState != ConnectionState.Connected)
+            return HeldDelivery.RetryLater;
+        if (System.Text.Json.JsonSerializer.Deserialize<GroupNotice>(message.Payload, HeldKinds.Json) is not { } notice)
+            return HeldDelivery.Dropped;
+        return await DeliverAsync(notice, cancellationToken) ? HeldDelivery.Sent : HeldDelivery.Dropped;
+    }
+
+    private async Task<bool> DeliverAsync(GroupNotice notice, CancellationToken cancellationToken)
+    {
+        if (discord.ConnectionState != ConnectionState.Connected)
+            return false;
         string language = community.Value.LanguageCode;
         string server = Format.Sanitize(discord.GetGuild(notice.GuildId)?.Name ?? "");
         string group = Format.Sanitize(notice.GroupName);
@@ -34,15 +59,17 @@ internal sealed partial class DiscordGroupNotifier(DiscordSocketClient discord, 
         {
             var user = await discord.Rest.GetUserAsync(notice.RecipientId, new RequestOptions { CancelToken = cancellationToken });
             if (user is null)
-                return;
+                return false;
             var channel = await user.CreateDMChannelAsync(new RequestOptions { CancelToken = cancellationToken });
             await channel.SendMessageAsync(text, allowedMentions: AllowedMentions.None, components: Buttons(notice, language),
                 options: new RequestOptions { CancelToken = cancellationToken });
             LogSent(logger, notice.Kind, notice.GuildId, notice.RecipientId);
+            return true;
         }
         catch (Discord.Net.HttpException error)
         {
             LogNotSent(logger, notice.Kind, notice.GuildId, notice.RecipientId, error.DiscordCode?.ToString() ?? error.HttpCode.ToString());
+            return false;
         }
     }
 

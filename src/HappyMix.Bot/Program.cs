@@ -1,6 +1,4 @@
-using System.Net.Http.Headers;
 using System.Security.Claims;
-using System.Text.Json;
 using HappyMix.Application;
 using HappyMix.Bot.Configuration;
 using HappyMix.Infrastructure;
@@ -26,7 +24,13 @@ if (enabled)
         .AddCookie(options =>
         {
             options.LoginPath = "/login";
-            options.ExpireTimeSpan = TimeSpan.FromHours(8);
+            // "Keep me signed in" makes the cookie persistent; either way the sign-in renews while it is used and
+            // ends after 30 days without a visit. Without it, the browser drops the cookie when it closes.
+            options.ExpireTimeSpan = TimeSpan.FromDays(30);
+            options.SlidingExpiration = true;
+            options.Cookie.HttpOnly = true;
+            options.Cookie.SameSite = SameSiteMode.Lax;
+            options.Events.OnValidatePrincipal = HappyMix.Bot.Web.DiscordProfileClaims.ValidateAsync;
             options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
                 ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
         })
@@ -44,15 +48,13 @@ if (enabled)
             options.UsePkce = true;
             options.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
             options.ClaimActions.MapJsonKey(ClaimTypes.Name, "username");
-            options.Events.OnCreatingTicket = async context =>
+            options.Events.OnCreatingTicket = HappyMix.Bot.Web.DiscordProfileClaims.OnCreatingTicketAsync;
+            // Someone who already allowed HappyMix goes straight back without Discord's "Authorize" screen; Discord
+            // still asks when the app needs scopes the person hasn't granted yet.
+            options.Events.OnRedirectToAuthorizationEndpoint = context =>
             {
-                using var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
-                using var response = await context.Backchannel.SendAsync(request, context.HttpContext.RequestAborted);
-                response.EnsureSuccessStatusCode();
-                using var profile = JsonDocument.Parse(await response.Content.ReadAsStringAsync(context.HttpContext.RequestAborted));
-                context.RunClaimActions(profile.RootElement);
-                await HappyMix.Bot.Web.DiscordConnections.AddSteamClaimsAsync(context);
+                context.Response.Redirect(Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(context.RedirectUri, "prompt", "none"));
+                return Task.CompletedTask;
             };
         });
     if (string.IsNullOrWhiteSpace(web["ClientId"]) || string.IsNullOrWhiteSpace(web["ClientSecret"]))

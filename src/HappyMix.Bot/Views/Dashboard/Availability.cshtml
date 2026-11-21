@@ -5,6 +5,7 @@
     ViewData["NavGuildName"] = Model.GuildName;
     string baseUrl = $"/availability/{Model.GuildId}";
     string weeklyUrl = baseUrl + "?view=weekly";
+    string dndUrl = baseUrl + "/dnd";
     var nav = new ServerNavModel(Model.GuildId, Model.GuildName, "availability", Model.CanConfigure, "Availability",
         T["Availability_Lead"]);
     var todayRange = new TimeRangeModel("today", T["Today"], Model.Form.Start, Model.Form.End, Model.Form.Offset,
@@ -171,6 +172,10 @@ else if (!Model.IsWeekly)
                 <p class="hm-help">@Model.WeeklyCount of 7 days set. Weekly hours repeat every week.</p>
                 <a class="hm-link-btn" href="@weeklyUrl">Open weekly timetable </a>
             </section>
+            @if (Model.DoNotDisturb is { } quietDates)
+            {
+                <partial name="_DoNotDisturb" model="new DoNotDisturbModel(quietDates, dndUrl, false, Model.TimeZone, Model.SelectedDate)" />
+            }
         </aside>
     </div>
 }
@@ -330,6 +335,12 @@ else
             <span class="hm-row" style="gap: var(--hm-space-2)"><span class="hm-dayline__seg hm-dayline__seg--event hm-legend-swatch"></span>@T["Event_you_accepted_this_week"]</span>
         </div>
     </section>
+    @if (Model.DoNotDisturb is { } quietWeekly)
+    {
+        <div style="margin-top: var(--hm-space-5)">
+            <partial name="_DoNotDisturb" model="new DoNotDisturbModel(quietWeekly, dndUrl, true, Model.TimeZone, Model.SelectedDate)" />
+        </div>
+    }
 }
 
 <dialog class="hm-dialog" data-drop-dialog aria-labelledby="drop-dialog-title"
