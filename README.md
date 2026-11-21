@@ -400,6 +400,12 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 - `ConfirmEventSeriesCommand` (POST `/events/{guild}/{event}/confirm-all`) confirms every pending upcoming date; each person who accepted one gets a single Confirmed message for their first newly confirmed date.
 - Event date boxes show weekday, day and month; compact series rows show only the times, with status and count underneath. Side panel menus open beside the panel (`position: fixed`) so its scroll area no longer clips them.
 
+### v0.1.3 games together
+
+- Match recaps (`MatchRecapRequests`, migration `20261204000100_AddMatchRecaps`): `refresh-matches` (every 10 minutes) reads each sharing member's history at most every 30 minutes (OpenDota `recentMatches`; FACEIT `history` plus `matches/{id}/stats` for new matches), keeping matches 30 days in `PlayerMatches`.
+- A match saved for two or more sharing members of a group is a recap: listed under "Recent games together" on the Stats tab (14 days) and, when the organizer turns it on (`RecapChannels`), posted once in the group's notification route (`DiscordRecapPublisher`), only for matches from the last day. Handled recaps are recorded in `GroupRecaps` even while posting is off.
+- Turning stats sharing off also deletes the person's saved matches.
+
 ### v0.1.2 Dota 2 and CS2 stats
 
 - Group **Stats** tab for groups whose games include Dota 2 (Steam 570) or CS2 (730): a card per member from OpenDota (medal, 30-day wins/losses, top heroes of 90 days) and FACEIT (level, Elo, matches, win rate, K/D, headshots, top maps), with OpenDota/Dotabuff/FACEIT/Leetify/Steam links. Plan and later phases: `docs/design/GAME_STATS_PLAN.md`.

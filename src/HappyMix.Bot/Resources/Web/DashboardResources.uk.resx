@@ -2651,5 +2651,17 @@
 <data name="Dota_Medal_7" xml:space="preserve"><value>Божество</value></data>
 <data name="Dota_Medal_8" xml:space="preserve"><value>Титан</value></data>
 <data name="Guide_stats_Title" xml:space="preserve"><value>Статистика</value></data>
-<data name="Guide_stats_Body" xml:space="preserve"><value>Групи, які грають у Dota 2 або CS2, мають вкладку «Статистика» з карткою кожного учасника. Поки ви не ввімкнете «Показувати мою ігрову статистику моїм групам», нічого не показується; після цього вибір діє для всіх ваших груп, а вимкнення видаляє збережену статистику. Картки Dota 2 беруть дані з OpenDota (медаль, перемоги й поразки за 30 днів, найчастіші герої) і потребують увімкненого «Відкривати дані про матчі» в Dota 2. Картки CS2 беруть дані з FACEIT (рівень, Elo, K/D, хедшоти, карти), якщо в бота є ключ FACEIT. Картки оновлюються кожні кілька годин і мають посилання на OpenDota, Dotabuff, FACEIT, Leetify та Steam.</value></data>
+<data name="Guide_stats_Body" xml:space="preserve"><value>Групи, які грають у Dota 2 або CS2, мають вкладку «Статистика» з карткою кожного учасника. Поки ви не ввімкнете «Показувати мою ігрову статистику моїм групам», нічого не показується; після цього вибір діє для всіх ваших груп, а вимкнення видаляє збережену статистику й матчі. Картки Dota 2 беруть дані з OpenDota (медаль, перемоги й поразки за 30 днів, найчастіші герої) і потребують увімкненого «Відкривати дані про матчі» в Dota 2. Картки CS2 беруть дані з FACEIT (рівень, Elo, K/D, хедшоти, карти), якщо в бота є ключ FACEIT. Коли двоє чи більше учасників, що діляться статистикою, грають в одному матчі, він з'являється в розділі «Нещодавні спільні ігри», а організатор може ввімкнути публікацію цих підсумків у каналі групи. Картки й матчі оновлюються регулярно й мають посилання на OpenDota, Dotabuff, FACEIT, Leetify та Steam.</value></data>
+<data name="Recap_Title" xml:space="preserve"><value>Нещодавні спільні ігри</value></data>
+<data name="Recap_None" xml:space="preserve"><value>За останні два тижні спільних ігор немає. Коли двоє чи більше учасників, які діляться статистикою, грають в одному матчі, він з'явиться тут.</value></data>
+<data name="Recap_Result_won" xml:space="preserve"><value>Перемога</value></data>
+<data name="Recap_Result_lost" xml:space="preserve"><value>Поразка</value></data>
+<data name="Recap_Result_split" xml:space="preserve"><value>По різні боки</value></data>
+<data name="Recap_Kda" xml:space="preserve"><value>Вбивства / смерті / допомоги</value></data>
+<data name="Recap_Headshots" xml:space="preserve"><value>{0}% HS</value></data>
+<data name="Recap_Channel_Post" xml:space="preserve"><value>Також публікувати спільні ігри в каналі сповіщень групи</value></data>
+<data name="Recap_Channel_Help" xml:space="preserve"><value>Короткий підсумок після кожного матчу, у якому грали двоє чи більше учасників, що діляться статистикою: результат, герой чи рахунок кожного й посилання на матч. Публікуються лише нові матчі.</value></data>
+<data name="Recap_Won" xml:space="preserve"><value>🏆 **{0}** разом виграли матч у {1}</value></data>
+<data name="Recap_Lost" xml:space="preserve"><value>💀 **{0}** разом програли матч у {1}</value></data>
+<data name="Recap_Split" xml:space="preserve"><value>⚔️ **{0}** зіграли матч у {1} по різні боки</value></data>
 </root>

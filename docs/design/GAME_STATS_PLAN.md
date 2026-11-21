@@ -1,6 +1,6 @@
 # Dota 2 and CS2 group stats: implementation plan
 
-Status: Phase 1 implemented on `feature/game-stats` (not yet released). Custom-game ("in-house") features, such as a team
+Status: Phase 1 released in v0.1.2. Phase 2 (match recaps) implemented on `feature/match-recaps`. Custom-game ("in-house") features, such as a team
 balancer, hero bans and CS2 map votes, are out of scope for now.
 
 ## Goals
@@ -137,7 +137,23 @@ FACEIT pages.
 - Phase 2: recaps in the group channel, as an embed with the result, each member's hero/KDA or K/D, the
   duration and a match link.
 
-### Phase 2: match recaps
+### Phase 2: match recaps (implemented)
+
+As built:
+
+- **Reading history:** `refresh-matches` runs every 10 minutes. It reads each sharing person's history at
+  most every 30 minutes, at most 20 histories per run, oldest first:
+  - Dota 2: OpenDota `recentMatches`, one call that already includes the hero, K/D/A and the result.
+  - CS2: FACEIT `history` (last 10 matches) plus one `matches/{id}/stats` call per new match.
+  - Matches are kept 30 days in `PlayerMatches`.
+- **Finding recaps:** a match id saved for two or more sharing members of a group becomes a recap. Members on
+  opposite sides show as "Opposite sides", with each member's own result.
+- **Posting:** a recap is posted at most once (`GroupRecaps`), only if the match started in the last day, and
+  only when the organizer turned the channel on (`RecapChannels`). Recaps are recorded even while posting is
+  off, so turning it on later doesn't flood the channel with old games.
+- **Privacy:** turning sharing off deletes that person's saved matches too.
+
+The original design:
 
 - **Detection:** the job reads each sharing member's recent matches (OpenDota `recentMatches`, FACEIT
   `history`). A match id shared by two or more members of the same group becomes a recap. Recaps are

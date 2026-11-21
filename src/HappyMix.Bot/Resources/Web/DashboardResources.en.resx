@@ -2651,5 +2651,17 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Dota_Medal_7" xml:space="preserve"><value>Divine</value></data>
 <data name="Dota_Medal_8" xml:space="preserve"><value>Immortal</value></data>
 <data name="Guide_stats_Title" xml:space="preserve"><value>Stats</value></data>
-<data name="Guide_stats_Body" xml:space="preserve"><value>Groups that play Dota 2 or CS2 have a Stats tab with a card for each member. Sharing is off until you turn on “Show my game stats to my groups”; it then applies to all your groups, and turning it off deletes the saved stats. Dota 2 cards come from OpenDota (medal, wins and losses in the last 30 days, most played heroes) and need “Expose Public Match Data” on in Dota 2. CS2 cards come from FACEIT (level, Elo, K/D, headshots, maps) when the bot has a FACEIT key. Cards refresh every few hours and link to OpenDota, Dotabuff, FACEIT, Leetify and Steam.</value></data>
+<data name="Guide_stats_Body" xml:space="preserve"><value>Groups that play Dota 2 or CS2 have a Stats tab with a card for each member. Sharing is off until you turn on “Show my game stats to my groups”; it then applies to all your groups, and turning it off deletes the saved stats and matches. Dota 2 cards come from OpenDota (medal, wins and losses in the last 30 days, most played heroes) and need “Expose Public Match Data” on in Dota 2. CS2 cards come from FACEIT (level, Elo, K/D, headshots, maps) when the bot has a FACEIT key. When two or more sharing members play the same match, it appears under Recent games together, and the organizer can also have these recaps posted in the group's channel. Cards refresh every few hours and matches about every half hour, with links to OpenDota, Dotabuff, FACEIT, Leetify and Steam.</value></data>
+<data name="Recap_Title" xml:space="preserve"><value>Recent games together</value></data>
+<data name="Recap_None" xml:space="preserve"><value>No games together in the last two weeks. When two or more members who share their stats play the same match, it shows up here.</value></data>
+<data name="Recap_Result_won" xml:space="preserve"><value>Won</value></data>
+<data name="Recap_Result_lost" xml:space="preserve"><value>Lost</value></data>
+<data name="Recap_Result_split" xml:space="preserve"><value>Opposite sides</value></data>
+<data name="Recap_Kda" xml:space="preserve"><value>Kills / deaths / assists</value></data>
+<data name="Recap_Headshots" xml:space="preserve"><value>{0}% HS</value></data>
+<data name="Recap_Channel_Post" xml:space="preserve"><value>Also post games together in the group's notification channel</value></data>
+<data name="Recap_Channel_Help" xml:space="preserve"><value>A short recap after each match two or more sharing members play together: the result, each member's hero or score, and match links. Only new matches are posted.</value></data>
+<data name="Recap_Won" xml:space="preserve"><value>🏆 **{0}** won a {1} match together</value></data>
+<data name="Recap_Lost" xml:space="preserve"><value>💀 **{0}** lost a {1} match together</value></data>
+<data name="Recap_Split" xml:space="preserve"><value>⚔️ **{0}** played a {1} match on opposite sides</value></data>
 </root>

@@ -1,0 +1,11 @@
+{
+  "en": [
+    "**v0.1.3 · Games together**\nWhen two or more members who share their stats play the same Dota 2 or CS2 match, it now appears under **Recent games together** on the group's Stats tab: the result (or \"Opposite sides\"), when and how long, each member's hero or map and kills/deaths/assists, and links to OpenDota, Dotabuff or FACEIT. Organizers can also have a short recap posted in the group's notification channel after each new game together. Turning off stats sharing also deletes your saved matches."
+  ],
+  "uk": [
+    "**v0.1.3 · Спільні ігри**\nКоли двоє чи більше учасників, які діляться статистикою, грають в одному матчі Dota 2 або CS2, він тепер з'являється в розділі **Нещодавні спільні ігри** на вкладці «Статистика» групи: результат (або «По різні боки»), коли й скільки тривав, герой чи карта кожного учасника, вбивства/смерті/допомоги та посилання на OpenDota, Dotabuff чи FACEIT. Організатори також можуть увімкнути короткий підсумок у каналі сповіщень групи після кожної нової спільної гри. Якщо вимкнути показ статистики, ваші збережені матчі теж буде видалено."
+  ],
+  "ru": [
+    "**v0.1.3 · Совместные игры**\nКогда двое или больше участников, которые делятся статистикой, играют в одном матче Dota 2 или CS2, он теперь появляется в разделе **Недавние совместные игры** на вкладке «Статистика» группы: результат (или «По разные стороны»), когда и сколько длился, герой или карта каждого участника, убийства/смерти/помощь и ссылки на OpenDota, Dotabuff или FACEIT. Организаторы также могут включить короткий итог в канале уведомлений группы после каждой новой совместной игры. Если выключить показ статистики, ваши сохранённые матчи тоже удалятся."
+  ]
+}

@@ -2038,3 +2038,31 @@ a:hover { color: var(--hm-text); text-decoration-color: var(--hm-text); }
 .hm-faceit--8, .hm-faceit--9 { color: #f2994a; }
 .hm-faceit--10 { color: #ff5a3c; }
 @media (max-width: 30rem) { .hm-statcard__facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Match recaps: games two or more members played together ---------------------------------------------------- */
+.hm-recaps { display: grid; gap: var(--hm-space-2); margin-top: var(--hm-space-4); }
+.hm-recaps h3 { display: flex; align-items: center; gap: var(--hm-space-2); margin: 0; font-size: var(--hm-fs-md, 1rem); }
+.hm-recaps__list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--hm-space-2); }
+.hm-recap { display: grid; gap: var(--hm-space-2); padding: var(--hm-space-3); border: 1px solid var(--hm-border); border-left-width: 4px;
+    border-radius: var(--hm-radius-md); background: var(--hm-surface); }
+.hm-recap--won { border-left-color: var(--hm-c-mint); }
+.hm-recap--lost { border-left-color: var(--hm-c-coral); }
+.hm-recap--split { border-left-color: var(--hm-c-violet); }
+.hm-recap__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--hm-space-2) var(--hm-space-3); font-size: var(--hm-fs-sm); }
+.hm-recap__result { font-weight: 800; }
+.hm-recap--won .hm-recap__result { color: var(--hm-c-mint); }
+.hm-recap--lost .hm-recap__result { color: var(--hm-c-coral); }
+.hm-recap--split .hm-recap__result { color: var(--hm-c-violet); }
+.hm-recap__when, .hm-recap__map { color: var(--hm-text-subtle); }
+.hm-recap__links { display: flex; gap: var(--hm-space-3); margin-left: auto; font-size: var(--hm-fs-xs); }
+.hm-recap__players { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.hm-recap__players li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--hm-space-2); font-size: var(--hm-fs-sm); }
+.hm-recap__players li.is-won .hm-recap__who { color: var(--hm-c-mint); }
+.hm-recap__players li.is-lost .hm-recap__who { color: var(--hm-c-coral); }
+.hm-recap__who { font-weight: 600; min-width: 6rem; }
+.hm-recap__players img { width: 40px; height: 22px; border-radius: 3px; object-fit: cover; }
+.hm-recap__pick { min-width: 6rem; }
+.hm-recap__kda { font-weight: 700; font-variant-numeric: tabular-nums; }
+.hm-recap__hs { color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); }
+.hm-stats__channel { padding-top: var(--hm-space-3); border-top: 1px solid var(--hm-border); }
+.hm-stats__channel h3 { margin: 0; }

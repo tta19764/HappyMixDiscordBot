@@ -193,6 +193,19 @@ public sealed partial class DashboardController
         return Redirect($"/groups/{guildId}/{groupId}#stats");
     }
 
+    /// <summary>The organizer's switch: also post match recaps in the group's notification channel.</summary>
+    [HttpPost("/groups/{guildId}/{groupId:guid}/stats/recaps")]
+    public async Task<IActionResult> SetRecapChannel(ulong guildId, Guid groupId, bool post)
+    {
+        if (await GetGroupActorAsync(guildId) is not ({ } actor, { } viewer, _))
+            return NotMember();
+        var result = await sender.Send(new HappyMix.Application.Stats.SetRecapChannelCommand(actor, groupId, post), HttpContext.RequestAborted);
+        if (result.IsFailure)
+            return await RenderGroupAsync(guildId, actor, viewer, groupId, null, null, new GroupFormState("stats", text.Message(result.Error.Description)));
+        TempData["GroupBannerTitle"] = text["Live_Saved"].Value;
+        return Redirect($"/groups/{guildId}/{groupId}#stats");
+    }
+
     private async Task<HappyMix.Application.Stats.GroupStats?> LoadStatsAsync(GroupActor actor, GroupDetail group, CancellationToken cancellationToken) =>
         group.CanViewRoster && HappyMix.Application.Stats.GameStats.GamesOf(group.Games).Count > 0
         && await sender.Send(new HappyMix.Application.Stats.GetGroupStatsQuery(actor, group.Summary.Id), cancellationToken) is { IsSuccess: true } stats

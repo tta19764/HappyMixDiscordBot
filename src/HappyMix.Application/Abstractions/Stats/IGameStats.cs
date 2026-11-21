@@ -34,6 +34,24 @@ public sealed record CachedStats(ulong UserId, StatsGame Game, StatsStatus Statu
 
 public sealed record StatsFetch<T>(StatsStatus Status, T? Profile) where T : class;
 
+/// <summary>
+/// One person's line in a match: the result from their side, their hero (Dota 2) or the map (CS2) and their numbers.
+/// <see cref="MatchId"/> is the service's id (OpenDota match id, FACEIT match id), the same for everyone in the match.
+/// </summary>
+/// <param name="Pick">Dota 2: the hero's name. CS2: the map, like de_mirage.</param>
+/// <param name="Image">Dota 2: the hero picture.</param>
+/// <param name="Score">CS2: the final score from this player's side, like "13 / 9".</param>
+public sealed record PlayerMatch(ulong UserId, StatsGame Game, string MatchId, DateTimeOffset StartedAt, int DurationSeconds, bool Won,
+    string? Pick, string? Image, int Kills, int Deaths, int Assists, double? Headshots = null, string? Score = null);
+
+/// <summary>A match two or more members of a group played together.</summary>
+public sealed record GroupRecap(Guid GroupId, StatsGame Game, string MatchId, DateTimeOffset StartedAt, int DurationSeconds,
+    IReadOnlyList<PlayerMatch> Players)
+{
+    /// <summary>Won, lost, or null when the members played on opposite sides.</summary>
+    public bool? Won => Players.All(player => player.Won) ? true : Players.All(player => !player.Won) ? false : null;
+}
+
 /// <summary>Stats sharing choices and the card cache.</summary>
 public interface IGameStatsStore
 {
@@ -43,6 +61,25 @@ public interface IGameStatsStore
     Task<IReadOnlyList<CachedStats>> ListCachedAsync(IReadOnlyCollection<ulong> userIds);
     Task SaveCachedAsync(CachedStats stats);
     Task RemoveCachedAsync(ulong userId);
+
+    /// <summary>Adds matches; a match already saved for that person and game is left as it is.</summary>
+    Task SaveMatchesAsync(IReadOnlyCollection<PlayerMatch> matches);
+    Task<IReadOnlyList<PlayerMatch>> ListMatchesAsync(IReadOnlyCollection<ulong> userIds, DateTimeOffset since);
+    Task<DateTimeOffset?> MatchesFetchedAtAsync(ulong userId, StatsGame game);
+    Task SetMatchesFetchedAtAsync(ulong userId, StatsGame game, DateTimeOffset at);
+    Task RemoveMatchesAsync(ulong userId);
+    Task PruneMatchesAsync(DateTimeOffset before);
+
+    /// <summary>Records that a group's recap of a match was handled; false when it already was.</summary>
+    Task<bool> MarkRecapAsync(ulong guildId, Guid groupId, StatsGame game, string matchId, DateTimeOffset at);
+    Task<bool> GetRecapChannelAsync(ulong guildId, Guid groupId);
+    Task SetRecapChannelAsync(ulong guildId, Guid groupId, bool post);
+}
+
+/// <summary>Posts a group's match recap in its notification channel. Best effort.</summary>
+public interface IRecapPublisher
+{
+    Task PublishAsync(ulong guildId, string groupName, GroupRecap recap, CancellationToken cancellationToken);
 }
 
 /// <summary>Public stats services: OpenDota for Dota 2 and FACEIT for CS2.</summary>
@@ -52,4 +89,9 @@ public interface IGameStatsDirectory
     bool Cs2Enabled { get; }
     Task<StatsFetch<DotaProfile>> GetDotaAsync(string steamId64, CancellationToken cancellationToken);
     Task<StatsFetch<Cs2Profile>> GetCs2Async(string steamId64, CancellationToken cancellationToken);
+
+    /// <summary>The person's last matches (OpenDota: up to 20; FACEIT: up to 10, with their stats per match).</summary>
+    /// <param name="known">Match ids already saved, so the service isn't asked for their details again.</param>
+    Task<StatsFetch<IReadOnlyList<PlayerMatch>>> GetMatchesAsync(ulong userId, StatsGame game, string steamId64,
+        IReadOnlySet<string> known, CancellationToken cancellationToken);
 }

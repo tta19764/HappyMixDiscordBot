@@ -91,6 +91,127 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
         }
     }
 
+    public async Task<StatsFetch<IReadOnlyList<PlayerMatch>>> GetMatchesAsync(ulong userId, StatsGame game, string steamId64,
+        IReadOnlySet<string> known, CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (game == StatsGame.Dota2)
+            {
+                if (GameStats.DotaAccountId(steamId64) is not { } accountId)
+                    return new(StatsStatus.NoAccount, null);
+                using var client = clients.CreateClient(OpenDotaClient);
+                using var recent = await GetJsonAsync(client,
+                    OpenDotaUrl($"players/{accountId.ToString(CultureInfo.InvariantCulture)}/recentMatches"), cancellationToken);
+                return recent is null ? new(StatsStatus.Error, null)
+                    : new(StatsStatus.Ok, ParseDotaMatches(userId, recent.RootElement, await HeroesAsync(client, cancellationToken)));
+            }
+
+            if (FaceitKey is not { } key)
+                return new(StatsStatus.NoAccount, null);
+            using var faceit = clients.CreateClient(FaceitClient);
+            using var player = await FaceitAsync(faceit, key, $"players?game=cs2&game_player_id={Uri.EscapeDataString(steamId64)}", cancellationToken);
+            if (player is null || Text(player.RootElement, "player_id") is not { } faceitId)
+                return new(StatsStatus.NoAccount, null);
+            using var history = await FaceitAsync(faceit, key, $"players/{Uri.EscapeDataString(faceitId)}/history?game=cs2&limit=10", cancellationToken);
+            if (history is null)
+                return new(StatsStatus.Error, null);
+            var matches = new List<PlayerMatch>();
+            foreach (var item in FaceitHistory(history.RootElement).Where(item => !known.Contains(item.MatchId)))
+            {
+                // Each new match costs one call for the per-player numbers; matches already saved are skipped above.
+                using var stats = await FaceitAsync(faceit, key, $"matches/{Uri.EscapeDataString(item.MatchId)}/stats", cancellationToken);
+                if (stats is not null && ParseFaceitMatch(userId, faceitId, item, stats.RootElement) is { } match)
+                    matches.Add(match);
+            }
+            return new(StatsStatus.Ok, matches);
+        }
+        catch (Exception error) when (error is HttpRequestException or TaskCanceledException or JsonException)
+        {
+            LogLookupFailed(logger, game == StatsGame.Dota2 ? "OpenDota matches" : "FACEIT matches", error);
+            return new(StatsStatus.Error, null);
+        }
+    }
+
+    /// <summary>OpenDota's recentMatches: the side is Radiant when player_slot is below 128.</summary>
+    internal static IReadOnlyList<PlayerMatch> ParseDotaMatches(ulong userId, JsonElement recent, IReadOnlyDictionary<int, (string Name, string? Image)> heroes) =>
+        recent.ValueKind != JsonValueKind.Array ? [] : recent.EnumerateArray()
+            .Where(match => Number(match, "match_id") is not null && Number(match, "start_time") is not null)
+            .Select(match =>
+            {
+                int hero = Int(match, "hero_id") ?? 0;
+                bool radiant = (Int(match, "player_slot") ?? 0) < 128;
+                bool radiantWon = match.TryGetProperty("radiant_win", out var won) && won.ValueKind == JsonValueKind.True;
+                var known = heroes.TryGetValue(hero, out var found) ? found : ((string Name, string? Image)?)null;
+                return new PlayerMatch(userId, StatsGame.Dota2, ((long)Number(match, "match_id")!.Value).ToString(CultureInfo.InvariantCulture),
+                    DateTimeOffset.FromUnixTimeSeconds((long)Number(match, "start_time")!.Value), Int(match, "duration") ?? 0, radiant == radiantWon,
+                    known?.Name ?? (hero > 0 ? "#" + hero.ToString(CultureInfo.InvariantCulture) : null), known?.Image,
+                    Int(match, "kills") ?? 0, Int(match, "deaths") ?? 0, Int(match, "assists") ?? 0);
+            })
+            .ToArray();
+
+    internal sealed record FaceitItem(string MatchId, DateTimeOffset StartedAt, int DurationSeconds, string? Winner, IReadOnlyDictionary<string, string> TeamOf);
+
+    /// <summary>FACEIT's match history: ids, times, the winning faction and which faction each player was on.</summary>
+    internal static IReadOnlyList<FaceitItem> FaceitHistory(JsonElement history)
+    {
+        if (!history.TryGetProperty("items", out var items) || items.ValueKind != JsonValueKind.Array)
+            return [];
+        var result = new List<FaceitItem>();
+        foreach (var item in items.EnumerateArray())
+        {
+            if (Text(item, "match_id") is not { } id || Number(item, "started_at") is not { } started)
+                continue;
+            var teamOf = new Dictionary<string, string>(StringComparer.Ordinal);
+            if (item.TryGetProperty("teams", out var teams) && teams.ValueKind == JsonValueKind.Object)
+                foreach (var team in teams.EnumerateObject())
+                    if (team.Value.TryGetProperty("players", out var members) && members.ValueKind == JsonValueKind.Array)
+                        foreach (var member in members.EnumerateArray())
+                            if (Text(member, "player_id") is { } playerId)
+                                teamOf[playerId] = team.Name;
+            string? winner = item.TryGetProperty("results", out var results) ? Text(results, "winner") : null;
+            int duration = Number(item, "finished_at") is { } finished ? (int)Math.Max(0, finished - started) : 0;
+            result.Add(new FaceitItem(id, DateTimeOffset.FromUnixTimeSeconds((long)started), duration, winner, teamOf));
+        }
+        return result;
+    }
+
+    /// <summary>One player's line from FACEIT's match stats: map, score from their side, kills, deaths, assists, headshots.</summary>
+    internal static PlayerMatch? ParseFaceitMatch(ulong userId, string faceitId, FaceitItem item, JsonElement stats)
+    {
+        if (!stats.TryGetProperty("rounds", out var rounds) || rounds.ValueKind != JsonValueKind.Array || rounds.GetArrayLength() == 0)
+            return null;
+        var round = rounds[0];
+        var roundStats = round.TryGetProperty("round_stats", out var values) ? values : default;
+        if (!round.TryGetProperty("teams", out var teams) || teams.ValueKind != JsonValueKind.Array)
+            return null;
+        foreach (var team in teams.EnumerateArray())
+        {
+            if (!team.TryGetProperty("players", out var members) || members.ValueKind != JsonValueKind.Array)
+                continue;
+            foreach (var member in members.EnumerateArray())
+            {
+                if (Text(member, "player_id") != faceitId || !member.TryGetProperty("player_stats", out var numbers))
+                    continue;
+                bool won = team.TryGetProperty("team_stats", out var teamStats) && Text(teamStats, "Team Win") is { } win ? win == "1"
+                    : item.Winner is { } winner && item.TeamOf.TryGetValue(faceitId, out var side) && side == winner;
+                string? score = roundStats.ValueKind == JsonValueKind.Object ? Text(roundStats, "Score") : null;
+                return new PlayerMatch(userId, StatsGame.Cs2, item.MatchId, item.StartedAt, item.DurationSeconds, won,
+                    roundStats.ValueKind == JsonValueKind.Object ? Text(roundStats, "Map") : null, null,
+                    Int(numbers, "Kills") ?? 0, Int(numbers, "Deaths") ?? 0, Int(numbers, "Assists") ?? 0, Number(numbers, "Headshots %"), score);
+            }
+        }
+        return null;
+    }
+
+    private static async Task<JsonDocument?> FaceitAsync(HttpClient client, string key, string path, CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, Faceit + path);
+        request.Headers.Authorization = new("Bearer", key);
+        using var answer = await client.SendAsync(request, cancellationToken);
+        return answer.IsSuccessStatusCode ? JsonDocument.Parse(await answer.Content.ReadAsStringAsync(cancellationToken)) : null;
+    }
+
     /// <summary>
     /// A Dota card from OpenDota's player, win/loss and heroes answers. Null when the account has no public data:
     /// OpenDota then knows no rank and no matches.

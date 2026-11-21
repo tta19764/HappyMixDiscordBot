@@ -101,6 +101,7 @@ public static class DependencyInjection
         services.AddSingleton<PollMessages>();
         services.AddSingleton<DiscordGroupNotifier>();
         services.AddSingleton<IGroupNotifier>(provider => provider.GetRequiredService<DiscordGroupNotifier>());
+        services.AddSingleton<HappyMix.Application.Abstractions.Stats.IRecapPublisher, DiscordRecapPublisher>();
         services.AddSingleton<HappyMix.Application.Abstractions.Quiet.IHeldMessageSender>(provider => provider.GetRequiredService<DiscordGroupNotifier>());
         services.AddSingleton<DiscordMatchAnnouncementPublisher>();
         services.AddSingleton<IGuildAnnouncementPublisher>(provider =>
@@ -134,6 +135,11 @@ public static class DependencyInjection
             JobKey statsKey = new("refresh-game-stats");
             scheduler.AddJob<RefreshGameStatsJob>(job => job.WithIdentity(statsKey));
             scheduler.AddTrigger(trigger => trigger.ForJob(statsKey).StartAt(DateBuilder.FutureDate(2, IntervalUnit.Minute))
+                .WithSimpleSchedule(schedule => schedule.WithIntervalInMinutes(10).RepeatForever()));
+
+            JobKey matchesKey = new("refresh-matches");
+            scheduler.AddJob<RefreshMatchesJob>(job => job.WithIdentity(matchesKey));
+            scheduler.AddTrigger(trigger => trigger.ForJob(matchesKey).StartAt(DateBuilder.FutureDate(4, IntervalUnit.Minute))
                 .WithSimpleSchedule(schedule => schedule.WithIntervalInMinutes(10).RepeatForever()));
 
             JobKey heldKey = new("release-held-messages");
