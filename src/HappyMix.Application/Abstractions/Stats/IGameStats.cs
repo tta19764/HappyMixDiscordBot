@@ -127,6 +127,13 @@ public interface IGameStatsDirectory
 {
     /// <summary>Whether CS2 cards can be fetched (a FACEIT key is configured).</summary>
     bool Cs2Enabled { get; }
+
+    /// <summary>
+    /// Whether the bot's own scheduled refreshes may still call the services today. Without an OpenDota key its free
+    /// daily limit is shared with Refresh clicks, so scheduled refreshes stop at a budget and leave the rest for people.
+    /// </summary>
+    bool BackgroundBudgetLeft => true;
+
     Task<StatsFetch<DotaProfile>> GetDotaAsync(string steamId64, CancellationToken cancellationToken);
     Task<StatsFetch<Cs2Profile>> GetCs2Async(string steamId64, CancellationToken cancellationToken);
 

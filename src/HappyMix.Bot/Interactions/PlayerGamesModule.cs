@@ -112,12 +112,12 @@ public sealed class PlayerGamesModule(ISender sender) : InteractionModuleBase<So
     {
         var parts = new List<string>();
         if (profile.Recent is { } recent)
-            parts.Add($"last {recent.Matches} {recent.Wins}W {recent.Matches - recent.Wins}L"
+            parts.Add($"last {recent.Matches} ranked {recent.Wins}W {recent.Matches - recent.Wins}L"
                 + (Math.Abs(recent.Streak) >= 2 ? $", {Math.Abs(recent.Streak)} {(recent.Streak > 0 ? "wins" : "losses")} in a row" : ""));
         if (profile.Roles is [var top, ..] && profile.Roles.Sum(role => role.Games) is > 0 and var games)
             parts.Add($"mostly {Role(top.Key)} ({top.Games * 100 / games}%)");
         if (HappyMix.Application.Stats.GameStats.MmrEstimate(profile.Recent) is { } mmr)
-            parts.Add($"≈ {(mmr >= 0 ? "+" : "−")}{Math.Abs(mmr)} MMR over {profile.Recent!.RankedGames} ranked");
+            parts.Add($"≈ {(mmr >= 0 ? "+" : "−")}{Math.Abs(mmr)} MMR");
         return string.Join(" · ", parts);
 
         static string Role(string key) => key switch

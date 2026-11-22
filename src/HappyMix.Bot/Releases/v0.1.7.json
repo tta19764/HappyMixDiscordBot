@@ -1,0 +1,14 @@
+{
+  "en": [
+    "**v0.1.7 · Game stats stay fresh**\nGame-stat cards for members who share them now refresh automatically about once an hour. **Refresh me** reloads only your own card and recent matches, so one person cannot use the whole group’s OpenDota allowance. Without an OpenDota key, the bot preserves part of the daily free allowance for people who refresh their own cards.",
+    "**Dota 2 cards now mean ranked matchmaking**\nDota 2 medal, recent form, MMR estimate, roles and duos now use ranked matchmaking games only. Turbo and other unranked modes no longer distort these figures. **Recent games together** still includes every mode, because it records games the group played together."
+  ],
+  "uk": [
+    "**v0.1.7 · Статистика ігор залишається свіжою**\nКартки ігрової статистики учасників, які нею діляться, тепер автоматично оновлюються приблизно щогодини. **Оновити мою** перезавантажує лише вашу картку й останні матчі, тож одна людина не витратить ліміт OpenDota усієї групи. Без ключа OpenDota бот залишає частину денного безплатного ліміту для тих, хто оновлює власні картки.",
+    "**Картки Dota 2 тепер означають рейтингові матчі**\nМедаль, остання форма, оцінка MMR, ролі та дуети Dota 2 тепер використовують лише рейтингові матчі. Turbo та інші нерейтингові режими більше не спотворюють ці показники. **Нещодавні спільні ігри** як і раніше містять усі режими, бо вони показують ігри, які група грала разом."
+  ],
+  "ru": [
+    "**v0.1.7 · Игровая статистика остаётся свежей**\nКарточки игровой статистики участников, которые ею делятся, теперь обновляются автоматически примерно раз в час. **Обновить мою** перезагружает только вашу карточку и последние матчи, поэтому один человек не сможет потратить лимит OpenDota всей группы. Без ключа OpenDota бот сохраняет часть дневного бесплатного лимита для тех, кто обновляет свои карточки.",
+    "**Карточки Dota 2 теперь означают рейтинговые матчи**\nМедаль, последняя форма, оценка MMR, роли и дуэты Dota 2 теперь используют только рейтинговые матчи. Turbo и другие нерейтинговые режимы больше не искажают эти показатели. **Недавние совместные игры** по-прежнему включают все режимы, потому что показывают игры, в которые группа играла вместе."
+  ]
+}

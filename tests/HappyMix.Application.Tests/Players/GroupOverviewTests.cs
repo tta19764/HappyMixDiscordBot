@@ -38,7 +38,7 @@ public sealed class GroupOverviewTests
             Recent = new DotaRecent(20, 13, "WWWLWLLWWLWWLWLWWLWW", 3, 7, 5, 11, 500, 600, 8, 5, 12, 8, 10, 7),
             Roles = [new DotaRole("2", 21, 13), new DotaRole("3", 9, 4)]
         };
-        Assert.Equal("last 20 13W 7L, 3 wins in a row · mostly pos 2 mid (70%) · ≈ +100 MMR over 10 ranked", PlayerGamesModule.DotaMore(profile));
+        Assert.Equal("last 20 ranked 13W 7L, 3 wins in a row · mostly pos 2 mid (70%) · ≈ +100 MMR", PlayerGamesModule.DotaMore(profile));
         Assert.Equal("", PlayerGamesModule.DotaMore(new DotaProfile(1, null, null, null, 0, 0, [])));
     }
 }
