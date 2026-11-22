@@ -14,8 +14,13 @@ namespace HappyMix.Infrastructure.Stats;
 /// <see cref="StatsStatus.Error"/> and are logged, never thrown.
 /// </summary>
 internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, IConfiguration configuration, ILogger<GameStatsDirectory> logger)
-    : IGameStatsDirectory, IDisposable
+    : IGameStatsDirectory, IDotaMetaSource, IHeroMetaSource, IDisposable
 {
+    public const string StratzClient = "Stratz";
+    private const string Stratz = "https://api.stratz.com/graphql";
+    private static readonly TimeSpan PatchFor = TimeSpan.FromHours(6);
+    private (string Name, DateTimeOffset Date)? patch;
+    private DateTimeOffset patchAt;
     public const string OpenDotaClient = "OpenDota";
     public const string FaceitClient = "Faceit";
     private const string OpenDota = "https://api.opendota.com/api/";
@@ -29,6 +34,9 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
 
     private string? FaceitKey => configuration["Faceit:ApiKey"] is { Length: > 0 } key ? key : null;
     private string? OpenDotaKey => configuration["OpenDota:ApiKey"] is { Length: > 0 } key ? key : null;
+    private string? StratzKey => configuration["Stratz:ApiKey"] is { Length: > 0 } key ? key : null;
+
+    public bool Enabled => StratzKey is not null;
 
     public bool Cs2Enabled => FaceitKey is not null;
 
@@ -37,100 +45,296 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
     public async Task<StatsFetch<DotaProfile>> GetDotaAsync(string steamId64, CancellationToken cancellationToken)
     {
         if (GameStats.DotaAccountId(steamId64) is not { } accountId)
-            return new(StatsStatus.NoAccount, null);
+            return new(StatsStatus.NoAccount, null, "The Steam ID isn't a valid SteamID64.");
         try
         {
             using var client = clients.CreateClient(OpenDotaClient);
             string id = accountId.ToString(CultureInfo.InvariantCulture);
-            using var player = await GetJsonAsync(client, OpenDotaUrl($"players/{id}"), cancellationToken);
-            if (player is null)
-                return new(StatsStatus.Error, null);
-            using var record = await GetJsonAsync(client, OpenDotaUrl($"players/{id}/wl", "date=30"), cancellationToken);
-            using var played = await GetJsonAsync(client, OpenDotaUrl($"players/{id}/heroes", "date=90"), cancellationToken);
-            if (record is null || played is null)
-                return new(StatsStatus.Error, null);
+            using var player = await OpenDotaAsync(client, $"players/{id}", null, cancellationToken);
+            using var record = await OpenDotaAsync(client, $"players/{id}/wl", "date=30", cancellationToken);
+            using var played = await OpenDotaAsync(client, $"players/{id}/heroes", "date=90", cancellationToken);
             var profile = ParseDota(accountId, player.RootElement, record.RootElement, played.RootElement, await HeroesAsync(client, cancellationToken));
-            return profile is null ? new(StatsStatus.NoPublicData, null) : new(StatsStatus.Ok, profile);
+            return profile is null
+                ? new(StatsStatus.NoPublicData, null, $"OpenDota has no rank and no matches for account {id}: \"Expose Public Match Data\" is probably off in Dota 2.")
+                : new(StatsStatus.Ok, profile);
         }
-        catch (Exception error) when (error is HttpRequestException or TaskCanceledException or JsonException)
+        catch (Exception error) when (Reason("OpenDota", error) is { } reason)
         {
-            LogLookupFailed(logger, "OpenDota", error);
-            return new(StatsStatus.Error, null);
+            LogLookupFailed(logger, "OpenDota", reason);
+            return new(StatsStatus.Error, null, reason);
         }
     }
 
     public async Task<StatsFetch<Cs2Profile>> GetCs2Async(string steamId64, CancellationToken cancellationToken)
     {
         if (FaceitKey is not { } key)
-            return new(StatsStatus.NoAccount, null);
+            return new(StatsStatus.NoAccount, null, "Faceit__ApiKey isn't set on the server, so CS2 stats are off.");
         try
         {
             using var client = clients.CreateClient(FaceitClient);
-            using var lookup = new HttpRequestMessage(HttpMethod.Get, $"{Faceit}players?game=cs2&game_player_id={Uri.EscapeDataString(steamId64)}");
-            lookup.Headers.Authorization = new("Bearer", key);
-            using var found = await client.SendAsync(lookup, cancellationToken);
-            if (found.StatusCode == HttpStatusCode.NotFound)
-                return new(StatsStatus.NoAccount, null);
-            if (!found.IsSuccessStatusCode)
-                return new(StatsStatus.Error, null);
-            using var player = JsonDocument.Parse(await found.Content.ReadAsStringAsync(cancellationToken));
-            if (Text(player.RootElement, "player_id") is not { } faceitId)
-                return new(StatsStatus.NoAccount, null);
-
-            using var request = new HttpRequestMessage(HttpMethod.Get, $"{Faceit}players/{Uri.EscapeDataString(faceitId)}/stats/cs2");
-            request.Headers.Authorization = new("Bearer", key);
-            using var answer = await client.SendAsync(request, cancellationToken);
+            using var player = await FaceitAsync(client, key, $"players?game=cs2&game_player_id={Uri.EscapeDataString(steamId64)}", true, cancellationToken);
+            if (player is null || Text(player.RootElement, "player_id") is not { } faceitId)
+                return new(StatsStatus.NoAccount, null, $"FACEIT has no CS2 account connected to Steam account {steamId64}.");
             // A FACEIT account that never played CS2 has no stats; its card still shows level and links.
-            using var stats = answer.IsSuccessStatusCode ? JsonDocument.Parse(await answer.Content.ReadAsStringAsync(cancellationToken)) : null;
+            using var stats = await FaceitAsync(client, key, $"players/{Uri.EscapeDataString(faceitId)}/stats/cs2", true, cancellationToken);
             return new(StatsStatus.Ok, ParseCs2(player.RootElement, stats?.RootElement));
         }
-        catch (Exception error) when (error is HttpRequestException or TaskCanceledException or JsonException)
+        catch (Exception error) when (Reason("FACEIT", error) is { } reason)
         {
-            LogLookupFailed(logger, "FACEIT", error);
-            return new(StatsStatus.Error, null);
+            LogLookupFailed(logger, "FACEIT", reason);
+            return new(StatsStatus.Error, null, reason);
         }
     }
 
     public async Task<StatsFetch<IReadOnlyList<PlayerMatch>>> GetMatchesAsync(ulong userId, StatsGame game, string steamId64,
         IReadOnlySet<string> known, CancellationToken cancellationToken)
     {
+        string service = game == StatsGame.Dota2 ? "OpenDota" : "FACEIT";
         try
         {
             if (game == StatsGame.Dota2)
             {
                 if (GameStats.DotaAccountId(steamId64) is not { } accountId)
-                    return new(StatsStatus.NoAccount, null);
+                    return new(StatsStatus.NoAccount, null, "The Steam ID isn't a valid SteamID64.");
                 using var client = clients.CreateClient(OpenDotaClient);
-                using var recent = await GetJsonAsync(client,
-                    OpenDotaUrl($"players/{accountId.ToString(CultureInfo.InvariantCulture)}/recentMatches"), cancellationToken);
-                return recent is null ? new(StatsStatus.Error, null)
-                    : new(StatsStatus.Ok, ParseDotaMatches(userId, recent.RootElement, await HeroesAsync(client, cancellationToken)));
+                using var recent = await OpenDotaAsync(client, $"players/{accountId.ToString(CultureInfo.InvariantCulture)}/recentMatches", null, cancellationToken);
+                return new(StatsStatus.Ok, ParseDotaMatches(userId, recent.RootElement, await HeroesAsync(client, cancellationToken)));
             }
 
             if (FaceitKey is not { } key)
-                return new(StatsStatus.NoAccount, null);
+                return new(StatsStatus.NoAccount, null, "Faceit__ApiKey isn't set on the server, so CS2 stats are off.");
             using var faceit = clients.CreateClient(FaceitClient);
-            using var player = await FaceitAsync(faceit, key, $"players?game=cs2&game_player_id={Uri.EscapeDataString(steamId64)}", cancellationToken);
+            using var player = await FaceitAsync(faceit, key, $"players?game=cs2&game_player_id={Uri.EscapeDataString(steamId64)}", true, cancellationToken);
             if (player is null || Text(player.RootElement, "player_id") is not { } faceitId)
-                return new(StatsStatus.NoAccount, null);
-            using var history = await FaceitAsync(faceit, key, $"players/{Uri.EscapeDataString(faceitId)}/history?game=cs2&limit=10", cancellationToken);
-            if (history is null)
-                return new(StatsStatus.Error, null);
+                return new(StatsStatus.NoAccount, null, $"FACEIT has no CS2 account connected to Steam account {steamId64}.");
+            using var history = await FaceitAsync(faceit, key, $"players/{Uri.EscapeDataString(faceitId)}/history?game=cs2&limit=10", false, cancellationToken);
             var matches = new List<PlayerMatch>();
-            foreach (var item in FaceitHistory(history.RootElement).Where(item => !known.Contains(item.MatchId)))
+            foreach (var item in FaceitHistory(history!.RootElement).Where(item => !known.Contains(item.MatchId)))
             {
                 // Each new match costs one call for the per-player numbers; matches already saved are skipped above.
-                using var stats = await FaceitAsync(faceit, key, $"matches/{Uri.EscapeDataString(item.MatchId)}/stats", cancellationToken);
+                using var stats = await FaceitAsync(faceit, key, $"matches/{Uri.EscapeDataString(item.MatchId)}/stats", true, cancellationToken);
                 if (stats is not null && ParseFaceitMatch(userId, faceitId, item, stats.RootElement) is { } match)
                     matches.Add(match);
             }
             return new(StatsStatus.Ok, matches);
         }
-        catch (Exception error) when (error is HttpRequestException or TaskCanceledException or JsonException)
+        catch (Exception error) when (Reason(service, error) is { } reason)
         {
-            LogLookupFailed(logger, game == StatsGame.Dota2 ? "OpenDota matches" : "FACEIT matches", error);
-            return new(StatsStatus.Error, null);
+            LogLookupFailed(logger, service + " matches", reason);
+            return new(StatsStatus.Error, null, reason);
         }
+    }
+
+    public async Task<StatsFetch<DotaMeta>> GetMetaAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var client = clients.CreateClient(OpenDotaClient);
+            var names = await HeroesAsync(client, cancellationToken);
+            var lanes = new Dictionary<DotaLane, IReadOnlyList<MetaHero>>();
+            foreach (var lane in Enum.GetValues<DotaLane>())
+            {
+                using var answer = await OpenDotaAsync(client, "scenarios/laneRoles", $"lane_role={(int)lane}", cancellationToken);
+                lanes[lane] = ParseLaneRoles(answer.RootElement, names);
+            }
+            return new(StatsStatus.Ok, new DotaMeta(DateTimeOffset.UtcNow, lanes));
+        }
+        catch (Exception error) when (Reason("OpenDota", error) is { } reason)
+        {
+            LogLookupFailed(logger, "OpenDota meta", reason);
+            return new(StatsStatus.Error, null, reason);
+        }
+    }
+
+    /// <summary>
+    /// OpenDota's lane-role scenarios come in game-length buckets; they are summed per hero. Heroes with at least
+    /// 0.5% of the lane's games (and 100 games) are ranked by win rate, so rare picks with lucky numbers stay out.
+    /// </summary>
+    internal static IReadOnlyList<MetaHero> ParseLaneRoles(JsonElement answer, IReadOnlyDictionary<int, (string Name, string? Image)> names)
+    {
+        if (answer.ValueKind != JsonValueKind.Array)
+            return [];
+        var totals = answer.EnumerateArray()
+            .Select(row => (Hero: Int(row, "hero_id") ?? 0, Games: Int(row, "games") ?? 0, Wins: Int(row, "wins") ?? 0))
+            .Where(row => row.Hero > 0)
+            .GroupBy(row => row.Hero)
+            .Select(hero => (Hero: hero.Key, Games: hero.Sum(row => row.Games), Wins: hero.Sum(row => row.Wins)))
+            .ToArray();
+        int all = totals.Sum(hero => hero.Games);
+        int minimum = Math.Max(100, all / 200);
+        return totals.Where(hero => hero.Games >= minimum)
+            .OrderByDescending(hero => (double)hero.Wins / hero.Games).ThenByDescending(hero => hero.Games)
+            .Take(HappyMix.Application.Stats.DotaMetas.MaxPerLane)
+            .Select(hero => names.TryGetValue(hero.Hero, out var known)
+                ? new MetaHero(hero.Hero, known.Name, known.Image, hero.Games, hero.Wins)
+                : new MetaHero(hero.Hero, "#" + hero.Hero.ToString(CultureInfo.InvariantCulture), null, hero.Games, hero.Wins))
+            .ToArray();
+    }
+
+    public async Task<StatsFetch<HeroMeta>> GetHeroMetaAsync(MetaFilter filter, CancellationToken cancellationToken)
+    {
+        if (StratzKey is not { } key)
+            return new(StatsStatus.NoAccount, null, "Stratz__ApiKey isn't set on the server.");
+        try
+        {
+            using var openDota = clients.CreateClient(OpenDotaClient);
+            var names = await HeroesAsync(openDota, cancellationToken);
+            var now = DateTimeOffset.UtcNow;
+            var current = filter.Patch == MetaPatch.Current ? await CurrentPatchAsync(openDota, cancellationToken) : null;
+            // Days are exact for a week; an older patch is counted in STRATZ's weeks.
+            bool daily = current is not { } released || now - released.Date <= TimeSpan.FromDays(7);
+            DateTimeOffset from = current is { } since ? StartOf(since.Date, daily) : now.AddDays(-7);
+
+            using var client = clients.CreateClient(StratzClient);
+            using var request = new HttpRequestMessage(HttpMethod.Post, Stratz)
+            {
+                Content = new StringContent(JsonSerializer.Serialize(new { query = StratzQuery(filter, daily) }), System.Text.Encoding.UTF8, "application/json")
+            };
+            request.Headers.Authorization = new("Bearer", key);
+            using var answer = await client.SendAsync(request, cancellationToken);
+            string body = await answer.Content.ReadAsStringAsync(cancellationToken);
+            if (!answer.IsSuccessStatusCode)
+                throw new LookupFailedException($"STRATZ answered {(int)answer.StatusCode} {answer.ReasonPhrase}: {Snippet(body)}"
+                    + (answer.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden ? " Check Stratz__ApiKey." : ""));
+            using var document = JsonDocument.Parse(body);
+            if (document.RootElement.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Array && errors.GetArrayLength() > 0)
+                throw new LookupFailedException("STRATZ refused the query: " + (Text(errors[0], "message") ?? Snippet(errors.ToString())));
+            var rows = document.RootElement.GetProperty("data").GetProperty("heroStats").GetProperty(daily ? "winDay" : "winWeek");
+            return new(StatsStatus.Ok, ParseStratz(filter, rows, daily ? "day" : "week", from, names, current?.Name, current?.Date, now));
+        }
+        catch (Exception error) when (Reason("STRATZ", error) is { } reason)
+        {
+            LogLookupFailed(logger, "STRATZ meta", reason);
+            return new(StatsStatus.Error, null, reason);
+        }
+    }
+
+    /// <summary>
+    /// The GraphQL query for one filter: ranked All Pick only, per hero, by day (or week), for the role and ranks.
+    /// </summary>
+    internal static string StratzQuery(MetaFilter filter, bool daily)
+    {
+        var arguments = new List<string> { "gameModeIds: [ALL_PICK_RANKED]", "groupBy: HERO_ID" };
+        if (filter.Position is >= 1 and <= 5)
+            arguments.Add($"positionIds: [POSITION_{filter.Position.ToString(CultureInfo.InvariantCulture)}]");
+        if (Brackets(filter.Rank) is { Length: > 0 } brackets)
+            arguments.Add($"bracketIds: [{string.Join(", ", brackets)}]");
+        string field = daily ? "winDay" : "winWeek", stamp = daily ? "day" : "week";
+        return $"{{ heroStats {{ {field}({string.Join(", ", arguments)}) {{ {stamp} heroId winCount matchCount }} }} }}";
+    }
+
+    internal static string[] Brackets(MetaRank rank) => rank switch
+    {
+        MetaRank.HeraldGuardian => ["HERALD", "GUARDIAN"],
+        MetaRank.CrusaderArchon => ["CRUSADER", "ARCHON"],
+        MetaRank.LegendAncient => ["LEGEND", "ANCIENT"],
+        MetaRank.DivineImmortal => ["DIVINE", "IMMORTAL"],
+        _ => []
+    };
+
+    /// <summary>
+    /// The first day (or week) to count after a patch released at <paramref name="released"/>: a patch out after midday
+    /// UTC starts with the next day, so a day mostly played on the old patch isn't mixed in.
+    /// </summary>
+    internal static DateTimeOffset StartOf(DateTimeOffset released, bool daily)
+    {
+        var day = new DateTimeOffset(released.UtcDateTime.Date, TimeSpan.Zero);
+        return daily ? (released.UtcDateTime.Hour >= 12 ? day.AddDays(1) : day) : released;
+    }
+
+    /// <summary>
+    /// Sums STRATZ day (or week) rows from <paramref name="from"/> per hero. Heroes with at least 0.25% of the role's
+    /// games (and 50 games) count. Pick rate is per match: a role has 2 heroes a match, any role 10.
+    /// </summary>
+    internal static HeroMeta ParseStratz(MetaFilter filter, JsonElement rows, string stamp, DateTimeOffset from,
+        IReadOnlyDictionary<int, (string Name, string? Image)> names, string? patchName, DateTimeOffset? released, DateTimeOffset now)
+    {
+        long fromSeconds = from.ToUnixTimeSeconds();
+        var totals = rows.ValueKind != JsonValueKind.Array ? [] : rows.EnumerateArray()
+            .Where(row => Number(row, stamp) is { } at && (long)at >= fromSeconds - (stamp == "week" ? 7 * 86400 - 1 : 0))
+            .Select(row => (Hero: Int(row, "heroId") ?? 0, Games: (long)(Number(row, "matchCount") ?? 0), Wins: (long)(Number(row, "winCount") ?? 0)))
+            .Where(row => row.Hero > 0)
+            .GroupBy(row => row.Hero)
+            .Select(hero => (Hero: hero.Key, Games: hero.Sum(row => row.Games), Wins: hero.Sum(row => row.Wins)))
+            .ToArray();
+        long all = totals.Sum(hero => hero.Games);
+        int perMatch = filter.Position is >= 1 and <= 5 ? 2 : 10;
+        long minimum = Math.Max(50, all / 400);
+        var heroes = totals.Where(hero => hero.Games >= minimum)
+            .Select(hero => names.TryGetValue(hero.Hero, out var known)
+                ? new RankedHero(hero.Hero, known.Name, known.Image, (int)Math.Min(int.MaxValue, hero.Games), (int)Math.Min(int.MaxValue, hero.Wins),
+                    all == 0 ? 0 : hero.Games * 100.0 * perMatch / all)
+                : new RankedHero(hero.Hero, "#" + hero.Hero.ToString(CultureInfo.InvariantCulture), null, (int)Math.Min(int.MaxValue, hero.Games),
+                    (int)Math.Min(int.MaxValue, hero.Wins), all == 0 ? 0 : hero.Games * 100.0 * perMatch / all))
+            .OrderByDescending(hero => hero.Score)
+            .ToArray();
+        return new HeroMeta(filter, patchName, filter.Patch == MetaPatch.Current ? released : from, now, all / perMatch, heroes);
+    }
+
+    /// <summary>The newest Dota 2 patch and when it came out, from OpenDota's patch list (STRATZ's list lags behind).</summary>
+    private async Task<(string Name, DateTimeOffset Date)?> CurrentPatchAsync(HttpClient client, CancellationToken cancellationToken)
+    {
+        if (patch is { } known && DateTimeOffset.UtcNow - patchAt < PatchFor)
+            return known;
+        using var document = await OpenDotaAsync(client, "constants/patch", null, cancellationToken);
+        patch = LatestPatch(document.RootElement) ?? patch;
+        patchAt = DateTimeOffset.UtcNow;
+        return patch;
+    }
+
+    internal static (string Name, DateTimeOffset Date)? LatestPatch(JsonElement patches) =>
+        patches.ValueKind != JsonValueKind.Array ? null : patches.EnumerateArray()
+            .Select(item => (Name: Text(item, "name"), Date: Text(item, "date")))
+            .Where(item => item.Name is not null && DateTimeOffset.TryParse(item.Date, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out _))
+            .Select(item => (item.Name!, DateTimeOffset.Parse(item.Date!, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal)))
+            .OrderBy(item => item.Item2)
+            .Select(item => ((string Name, DateTimeOffset Date)?)item)
+            .LastOrDefault();
+
+    private static string Snippet(string body) => (body.Length > 160 ? body[..160] + "…" : body).ReplaceLineEndings(" ");
+
+    /// <summary>Why a lookup failed, in one line for the logs and the card; null for exceptions that aren't lookup problems.</summary>
+    internal static string? Reason(string service, Exception error) => error switch
+    {
+        LookupFailedException failed => failed.Message,
+        TaskCanceledException => $"{service} didn't answer within 10 seconds.",
+        HttpRequestException http => $"{service} couldn't be reached: {http.Message}",
+        JsonException => $"{service} sent an answer that isn't valid JSON.",
+        _ => null
+    };
+
+    /// <summary>A failed answer: the service, the endpoint (never the key), the HTTP status and the start of the body.</summary>
+    internal sealed class LookupFailedException(string message) : Exception(message);
+
+    private Task<JsonDocument> OpenDotaAsync(HttpClient client, string path, string? query, CancellationToken cancellationToken) =>
+        RequestAsync(client, "OpenDota", path, OpenDotaUrl(path, query), null, false, cancellationToken)!;
+
+    private static Task<JsonDocument?> FaceitAsync(HttpClient client, string key, string path, bool allowNotFound, CancellationToken cancellationToken) =>
+        RequestAsync(client, "FACEIT", path.Split('?')[0], Faceit + path, key, allowNotFound, cancellationToken);
+
+    private static async Task<JsonDocument?> RequestAsync(HttpClient client, string service, string path, string url, string? bearer, bool allowNotFound,
+        CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        if (bearer is not null)
+            request.Headers.Authorization = new("Bearer", bearer);
+        using var answer = await client.SendAsync(request, cancellationToken);
+        if (allowNotFound && answer.StatusCode == HttpStatusCode.NotFound)
+            return null;
+        string body = await answer.Content.ReadAsStringAsync(cancellationToken);
+        if (!answer.IsSuccessStatusCode)
+        {
+            string hint = answer.StatusCode switch
+            {
+                HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden when service == "FACEIT" => " Check Faceit__ApiKey: it must be a server-side key.",
+                HttpStatusCode.TooManyRequests => " The service's rate limit was hit; the next refresh tries again.",
+                _ => ""
+            };
+            string snippet = body.Length > 160 ? body[..160] + "…" : body;
+            throw new LookupFailedException(
+                $"{service} answered {(int)answer.StatusCode} {answer.ReasonPhrase} for {path}: {snippet.ReplaceLineEndings(" ")}{hint}");
+        }
+        return JsonDocument.Parse(body);
     }
 
     /// <summary>OpenDota's recentMatches: the side is Radiant when player_slot is below 128.</summary>
@@ -204,14 +408,6 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
         return null;
     }
 
-    private static async Task<JsonDocument?> FaceitAsync(HttpClient client, string key, string path, CancellationToken cancellationToken)
-    {
-        using var request = new HttpRequestMessage(HttpMethod.Get, Faceit + path);
-        request.Headers.Authorization = new("Bearer", key);
-        using var answer = await client.SendAsync(request, cancellationToken);
-        return answer.IsSuccessStatusCode ? JsonDocument.Parse(await answer.Content.ReadAsStringAsync(cancellationToken)) : null;
-    }
-
     /// <summary>
     /// A Dota card from OpenDota's player, win/loss and heroes answers. Null when the account has no public data:
     /// OpenDota then knows no rank and no matches.
@@ -279,9 +475,7 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
         {
             if (heroes is { } again && DateTimeOffset.UtcNow - heroesAt < HeroesFor)
                 return again;
-            using var document = await GetJsonAsync(client, OpenDotaUrl("constants/heroes"), cancellationToken);
-            if (document is null)
-                return heroes ?? new Dictionary<int, (string Name, string? Image)>();
+            using var document = await OpenDotaAsync(client, "constants/heroes", null, cancellationToken);
             heroes = ParseHeroes(document.RootElement);
             heroesAt = DateTimeOffset.UtcNow;
             return heroes;
@@ -300,12 +494,6 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
         return OpenDota + path + (parts.Count > 0 ? "?" + string.Join('&', parts) : "");
     }
 
-    private static async Task<JsonDocument?> GetJsonAsync(HttpClient client, string url, CancellationToken cancellationToken)
-    {
-        using var answer = await client.GetAsync(url, cancellationToken);
-        return answer.IsSuccessStatusCode ? JsonDocument.Parse(await answer.Content.ReadAsStringAsync(cancellationToken)) : null;
-    }
-
     private static string? Text(JsonElement element, string name) =>
         element.ValueKind == JsonValueKind.Object && element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
             ? value.GetString() : null;
@@ -319,6 +507,6 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
 
     private static int? Int(JsonElement element, string name) => Number(element, name) is { } value ? (int)Math.Round(value) : null;
 
-    [LoggerMessage(Level = LogLevel.Warning, Message = "{Service} stats lookup failed")]
-    private static partial void LogLookupFailed(ILogger logger, string service, Exception error);
+    [LoggerMessage(Level = LogLevel.Warning, Message = "{Service} stats lookup failed: {Reason}")]
+    private static partial void LogLookupFailed(ILogger logger, string service, string reason);
 }

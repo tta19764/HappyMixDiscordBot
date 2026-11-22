@@ -1,0 +1,297 @@
+using System.Text.Json;
+using HappyMix.Application.Abstractions;
+using HappyMix.Application.Abstractions.Guilds;
+using HappyMix.Application.Abstractions.Players;
+using HappyMix.Application.Abstractions.Stats;
+using HappyMix.Application.Players;
+using HappyMix.Application.Stats;
+using HappyMix.Application.Tests.Persistence;
+using HappyMix.Infrastructure.Stats;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace HappyMix.Application.Tests.Players;
+
+/// <summary>Game features: the Dota 2 lane meta, its schedule and posting, and why stats lookups failed.</summary>
+public sealed class GameFeatureTests
+{
+    private const ulong Guild = 1, Kai = 10;
+    private const string KaiSteam = "76561198000000001";
+
+    [Fact]
+    public void LaneRolesAreSummedAndRankedByWinRateAmongCommonPicks()
+    {
+        // Pudge: 300 games over two buckets at 60%; Lina 400 games at 55%; Techies 20 games at 90% (too rare to rank).
+        using var answer = JsonDocument.Parse("""
+            [{"hero_id":14,"lane_role":2,"time":900,"games":"100","wins":"60"},{"hero_id":14,"lane_role":2,"time":1800,"games":"200","wins":"120"},
+             {"hero_id":25,"lane_role":2,"time":1800,"games":"400","wins":"220"},
+             {"hero_id":105,"lane_role":2,"time":1800,"games":"20","wins":"18"}]
+            """);
+        var names = new Dictionary<int, (string Name, string? Image)> { [14] = ("Pudge", "p.png"), [25] = ("Lina", null) };
+        var heroes = GameStatsDirectory.ParseLaneRoles(answer.RootElement, names);
+        Assert.Equal([("Pudge", 300, 60.0), ("Lina", 400, 55.0)], heroes.Select(hero => (hero.Name, hero.Games, hero.WinRate)));
+    }
+
+    [Fact]
+    public void TwentyHeroesPerLaneFitInTheDiscordPost()
+    {
+        var heroes = Enumerable.Range(1, 25).Select(id => new MetaHero(id, "Keeper of the Light " + id, null, 123456, 70000)).ToArray();
+        var meta = new DotaMeta(DateTimeOffset.UnixEpoch, new Dictionary<DotaLane, IReadOnlyList<MetaHero>>
+            { [DotaLane.Safe] = heroes, [DotaLane.Mid] = heroes, [DotaLane.Off] = [] });
+        var embed = HappyMix.Bot.Services.DiscordDotaMetaPublisher.Embed(meta, 20, "en");
+        var safe = embed.Fields[0].Value.Split('\n');
+        Assert.Equal(20, safe.Length);
+        Assert.StartsWith("1. **Keeper of the Light 1** 56.7% · 123,456", safe[0], StringComparison.Ordinal);
+        Assert.All(embed.Fields, field => Assert.True(field.Value.Length <= 1024));
+        Assert.Equal(5, HappyMix.Bot.Services.DiscordDotaMetaPublisher.Embed(meta, 5, "en").Fields[1].Value.Split('\n').Length);
+    }
+
+    [Fact]
+    public void StratzQueriesDaysSinceThePatchForTheRoleAndRanks()
+    {
+        Assert.Equal("{ heroStats { winDay(gameModeIds: [ALL_PICK_RANKED], groupBy: HERO_ID, positionIds: [POSITION_1], bracketIds: [LEGEND, ANCIENT]) "
+            + "{ day heroId winCount matchCount } } }",
+            GameStatsDirectory.StratzQuery(new MetaFilter(MetaPatch.Current, 1, MetaRank.LegendAncient), daily: true));
+        Assert.DoesNotContain("positionIds", GameStatsDirectory.StratzQuery(new MetaFilter(), daily: false), StringComparison.Ordinal);
+        Assert.Contains("winWeek", GameStatsDirectory.StratzQuery(new MetaFilter(), daily: false), StringComparison.Ordinal);
+
+        // 7.42 came out at 21:28 UTC on 18 November: counting starts with the 19th.
+        var released = new DateTimeOffset(2026, 11, 18, 21, 28, 7, TimeSpan.Zero);
+        Assert.Equal(new DateTimeOffset(2026, 11, 19, 0, 0, 0, TimeSpan.Zero), GameStatsDirectory.StartOf(released, daily: true));
+        Assert.Equal(new DateTimeOffset(2026, 11, 18, 0, 0, 0, TimeSpan.Zero), GameStatsDirectory.StartOf(released.AddHours(-12), daily: true));
+        using var patches = JsonDocument.Parse("""[{"name":"7.41","date":"2026-03-24T00:50:59.580Z","id":60},{"name":"7.42","date":"2026-11-18T21:28:07.019Z","id":61}]""");
+        Assert.Equal(("7.42", released.AddMilliseconds(19)), GameStatsDirectory.LatestPatch(patches.RootElement));
+
+        // Day rows: the 18th is before the patch day and left out; rows are summed per hero.
+        long Day(int day) => new DateTimeOffset(2026, 11, day, 0, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds();
+        using var rows = JsonDocument.Parse($$"""
+            [{"day":{{Day(18)}},"heroId":14,"winCount":900,"matchCount":1000},
+             {"day":{{Day(19)}},"heroId":14,"winCount":330,"matchCount":600},{"day":{{Day(20)}},"heroId":14,"winCount":270,"matchCount":400},
+             {"day":{{Day(19)}},"heroId":25,"winCount":5100,"matchCount":10000},{"day":{{Day(19)}},"heroId":105,"winCount":9,"matchCount":10}]
+            """);
+        var names = new Dictionary<int, (string Name, string? Image)> { [14] = ("Pudge", null), [25] = ("Lina", null) };
+        var meta = GameStatsDirectory.ParseStratz(new MetaFilter(MetaPatch.Current, 2), rows.RootElement, "day",
+            new DateTimeOffset(2026, 11, 19, 0, 0, 0, TimeSpan.Zero), names, "7.42", released, released.AddDays(2));
+        Assert.Equal(["Pudge", "Lina"], meta.Heroes.Select(hero => hero.Name));
+        Assert.Equal((1000, 600), (meta.Heroes[0].Games, meta.Heroes[0].Wins));
+        Assert.Equal(5505, meta.Matches); // 11010 role picks, 2 per match
+        Assert.Equal(1000 * 100.0 * 2 / 11010, meta.Heroes[0].PickRate, 3);
+    }
+
+    [Fact]
+    public async Task TheSearchSortsCachesAndThePostGoesByRole()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var sender = fixture.Sender;
+        fixture.Heroes.Enabled = true;
+
+        var page = (await sender.Send(new GetGameFeaturesQuery(Guild, Kai, new MetaFilter(MetaPatch.Current, 1, MetaRank.LegendAncient, MetaSort.PickRate)))).Value;
+        Assert.True(page.SearchEnabled);
+        Assert.Equal(["Axe", "Lina", "Pudge"], page.Search!.Heroes.Select(hero => hero.Name));
+        Assert.Null(page.Heroes);
+        // Another order of the same filter comes from the cache.
+        var byScore = (await sender.Send(new GetGameFeaturesQuery(Guild, Kai, new MetaFilter(MetaPatch.Current, 1, MetaRank.LegendAncient)))).Value;
+        Assert.Equal("Lina", byScore.Search!.Heroes[0].Name);
+        Assert.Single(fixture.Heroes.Asked);
+
+        await sender.Send(new SaveDotaMetaCommand(Guild, MetaSchedule.Off, 99, DayOfWeek.Monday, 12, 10, MetaRank.DivineImmortal, MetaPatch.LastWeek, MetaSort.WinRate));
+        Assert.True((await sender.Send(new PostDotaMetaCommand(Guild))).IsSuccess);
+        var roles = Assert.Single(fixture.RolePosts);
+        Assert.Equal([1, 2, 3, 4, 5], roles.Select(role => role.Filter.Position));
+        Assert.All(roles, role => Assert.Equal((MetaRank.DivineImmortal, MetaPatch.LastWeek), (role.Filter.Rank, role.Filter.Patch)));
+        Assert.Equal("Pudge", roles[0].Heroes[0].Name); // by win rate
+        Assert.Empty(fixture.Posted);
+
+        // STRATZ down and nothing cached for these filters: the post falls back to the lanes from OpenDota.
+        fixture.Heroes.Fail = true;
+        await sender.Send(new SaveDotaMetaCommand(Guild, MetaSchedule.Off, 99, DayOfWeek.Monday, 12, 10, MetaRank.HeraldGuardian));
+        Assert.True((await sender.Send(new PostDotaMetaCommand(Guild))).IsSuccess);
+        Assert.Single(fixture.Posted);
+        var failed = (await sender.Send(new GetGameFeaturesQuery(Guild, Kai, new MetaFilter(MetaPatch.Current, 3)))).Value;
+        Assert.Equal(("STRATZ answered 503 Service Unavailable: busy", true), (failed.SearchError, failed.Heroes is not null));
+    }
+
+    [Fact]
+    public void FiveRolesOfTwentyHeroesFitOneDiscordPost()
+    {
+        var heroes = Enumerable.Range(1, 20).Select(id => new RankedHero(id, "Keeper of the Light " + id, null, 123456, 70000, 12.5)).ToArray();
+        var roles = Enumerable.Range(1, 5).Select(position => new HeroMeta(new MetaFilter(MetaPatch.Current, position), "7.42", null,
+            DateTimeOffset.UnixEpoch, 100000, heroes)).ToArray();
+        var embed = HappyMix.Bot.Services.DiscordDotaMetaPublisher.RolesEmbed(roles, 20, "en");
+        Assert.Equal(5, embed.Fields.Length);
+        Assert.True(embed.Length <= 6000, $"embed length {embed.Length}");
+        Assert.StartsWith("Patch 7.42 · All ranks · Meta score", embed.Description, StringComparison.Ordinal);
+        Assert.Equal("Pos 1 · Carry", embed.Fields[0].Name);
+    }
+
+    [Theory]
+    [InlineData(MetaSchedule.Daily, "2026-11-23", 12, null, true)]
+    [InlineData(MetaSchedule.Daily, "2026-11-23", 11, null, false)]
+    [InlineData(MetaSchedule.Daily, "2026-11-23", 15, "2026-11-23", false)]
+    [InlineData(MetaSchedule.EveryTwoDays, "2026-11-23", 12, "2026-11-22", false)]
+    [InlineData(MetaSchedule.EveryTwoDays, "2026-11-23", 12, "2026-11-21", true)]
+    [InlineData(MetaSchedule.Weekly, "2026-11-23", 12, "2026-11-16", true)]
+    [InlineData(MetaSchedule.Weekly, "2026-11-24", 12, "2026-11-16", false)]
+    [InlineData(MetaSchedule.Off, "2026-11-23", 12, null, false)]
+    public void TheMetaIsDueByItsSchedule(MetaSchedule schedule, string today, int hour, string? last, bool due)
+    {
+        var settings = new DotaMetaSettings(Guild, schedule, 99, DayOfWeek.Monday, 12, null);
+        Assert.Equal(due, DotaMetas.IsDue(settings, DateOnly.Parse(today, System.Globalization.CultureInfo.InvariantCulture), hour,
+            last is null ? null : DateOnly.Parse(last, System.Globalization.CultureInfo.InvariantCulture)));
+        Assert.False(DotaMetas.IsDue(settings with { ChannelId = null }, DateOnly.Parse(today, System.Globalization.CultureInfo.InvariantCulture), hour, null));
+    }
+
+    [Fact]
+    public async Task TheMetaIsPostedNowAndOnScheduleOnceADay()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var sender = fixture.Sender;
+        Assert.Equal("Features.NoChannel", (await sender.Send(new SaveDotaMetaCommand(Guild, MetaSchedule.Daily, null, DayOfWeek.Monday, 12))).Error.Code);
+        Assert.True((await sender.Send(new PostDotaMetaCommand(Guild))).IsFailure);
+
+        await sender.Send(new SaveDotaMetaCommand(Guild, MetaSchedule.Daily, 99, DayOfWeek.Monday, 12));
+        Assert.True((await sender.Send(new PostDotaMetaCommand(Guild))).IsSuccess);
+        Assert.Equal((99UL, DotaMetas.DefaultCount), Assert.Single(fixture.Posted) is var post ? (post.Channel, post.Count) : default);
+
+        // Sunday 22 November, 12:00 UTC = 14:00 in Kyiv: today's post already went out with Post now.
+        Assert.Equal(0, (await sender.Send(new RunDotaMetaScheduleCommand([Guild], "Europe/Kyiv"))).Value);
+        fixture.Clock.Advance(TimeSpan.FromDays(1));
+        Assert.Equal(1, (await sender.Send(new RunDotaMetaScheduleCommand([Guild], "Europe/Kyiv"))).Value);
+        Assert.Equal(0, (await sender.Send(new RunDotaMetaScheduleCommand([Guild], "Europe/Kyiv"))).Value);
+        Assert.Equal(2, fixture.Source.Calls); // posts use data at most an hour old: once for Post now, once a day later
+
+        var page = (await sender.Send(new GetGameFeaturesQuery(Guild, Kai))).Value;
+        Assert.Equal(("Pudge", MetaSchedule.Daily, 10), (page.Heroes!.Lanes[DotaLane.Mid][0].Name, page.Meta.Schedule, page.Meta.Count));
+
+        // Heroes per lane is the server's choice from 5, 10, 15 and 20.
+        Assert.Equal(20, (await sender.Send(new SaveDotaMetaCommand(Guild, MetaSchedule.Daily, 99, DayOfWeek.Monday, 12, 20))).Value.Count);
+        Assert.True((await sender.Send(new SaveDotaMetaCommand(Guild, MetaSchedule.Daily, 99, DayOfWeek.Monday, 12, 7))).IsFailure);
+        await sender.Send(new PostDotaMetaCommand(Guild));
+        Assert.Equal(20, fixture.Posted[^1].Count);
+    }
+
+    [Fact]
+    public async Task AFailedLookupKeepsItsReasonForTheCard()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var sender = fixture.Sender;
+        await sender.Send(new LinkSteamCommand(Kai, KaiSteam));
+        fixture.Stats.Reason = "OpenDota answered 500 Internal Server Error for players/39734273/wl: {\"error\":\"Internal Server Error\"}";
+        var mine = (await sender.Send(new SetStatsSharingCommand(Kai, true, Guild))).Value;
+        Assert.Equal((StatsStatus.Error, fixture.Stats.Reason), (mine.Dota!.Status, mine.Dota.Reason));
+
+        fixture.Stats.Reason = null;
+        fixture.Clock.Advance(GameStats.RefreshAfter);
+        mine = (await sender.Send(new RefreshMyStatsCommand(Kai, Guild))).Value;
+        Assert.Equal((StatsStatus.Ok, (string?)null), (mine.Dota!.Status, mine.Dota.Reason));
+
+        Assert.Equal("FACEIT didn't answer within 10 seconds.", GameStatsDirectory.Reason("FACEIT", new TaskCanceledException()));
+        Assert.Null(GameStatsDirectory.Reason("FACEIT", new InvalidOperationException()));
+    }
+
+    internal sealed class FakeHeroSource : IHeroMetaSource
+    {
+        public bool Enabled { get; set; }
+        public bool Fail { get; set; }
+        public List<MetaFilter> Asked { get; } = [];
+
+        public Task<StatsFetch<HeroMeta>> GetHeroMetaAsync(MetaFilter filter, CancellationToken cancellationToken)
+        {
+            Asked.Add(filter);
+            if (Fail)
+                return Task.FromResult(new StatsFetch<HeroMeta>(StatsStatus.Error, null, "STRATZ answered 503 Service Unavailable: busy"));
+            // Pudge: high win rate over few games; Lina: a little lower over many; Axe: popular and weak.
+            RankedHero[] heroes = [new(14, "Pudge", null, 120, 72, 1), new(25, "Lina", null, 20000, 11000, 12), new(2, "Axe", null, 40000, 18000, 25)];
+            return Task.FromResult(new StatsFetch<HeroMeta>(StatsStatus.Ok,
+                new HeroMeta(filter, "7.42", DateTimeOffset.UnixEpoch, DateTimeOffset.UnixEpoch, 80000, heroes.OrderByDescending(hero => hero.Score).ToArray())));
+        }
+    }
+
+    private sealed class FakeSource : IDotaMetaSource
+    {
+        public int Calls { get; private set; }
+
+        public Task<StatsFetch<DotaMeta>> GetMetaAsync(CancellationToken cancellationToken)
+        {
+            Calls++;
+            var lanes = new Dictionary<DotaLane, IReadOnlyList<MetaHero>>
+            {
+                [DotaLane.Safe] = [new MetaHero(1, "Anti-Mage", null, 500, 280)],
+                [DotaLane.Mid] = [new MetaHero(14, "Pudge", null, 300, 180)],
+                [DotaLane.Off] = []
+            };
+            return Task.FromResult(new StatsFetch<DotaMeta>(StatsStatus.Ok, new DotaMeta(DateTimeOffset.UtcNow, lanes)));
+        }
+    }
+
+    private sealed class FakePublisher(List<(ulong Guild, ulong Channel, int Count)> posted, List<IReadOnlyList<HeroMeta>> roles) : IDotaMetaPublisher
+    {
+        public Task<string?> PublishRolesAsync(ulong guildId, ulong channelId, IReadOnlyList<HeroMeta> metas, int count, CancellationToken cancellationToken)
+        {
+            roles.Add(metas);
+            return Task.FromResult<string?>(null);
+        }
+
+        public Task<string?> PublishAsync(ulong guildId, ulong channelId, DotaMeta meta, int count, CancellationToken cancellationToken)
+        {
+            posted.Add((guildId, channelId, count));
+            return Task.FromResult<string?>(null);
+        }
+    }
+
+    private sealed class FakeStats : IGameStatsDirectory
+    {
+        public string? Reason { get; set; }
+        public bool Cs2Enabled => false;
+
+        public Task<StatsFetch<DotaProfile>> GetDotaAsync(string steamId64, CancellationToken cancellationToken) =>
+            Task.FromResult(Reason is { } reason ? new StatsFetch<DotaProfile>(StatsStatus.Error, null, reason)
+                : new StatsFetch<DotaProfile>(StatsStatus.Ok, new DotaProfile(1, "kai", 45, null, 1, 1, [])));
+
+        public Task<StatsFetch<Cs2Profile>> GetCs2Async(string steamId64, CancellationToken cancellationToken) =>
+            Task.FromResult(new StatsFetch<Cs2Profile>(StatsStatus.NoAccount, null));
+
+        public Task<StatsFetch<IReadOnlyList<PlayerMatch>>> GetMatchesAsync(ulong userId, StatsGame game, string steamId64, IReadOnlySet<string> known,
+            CancellationToken cancellationToken) => Task.FromResult(new StatsFetch<IReadOnlyList<PlayerMatch>>(StatsStatus.Ok, []));
+    }
+
+    private sealed class Fixture : IDisposable
+    {
+        private SqliteTestDatabase database = null!;
+        private ServiceProvider application = null!;
+        public LiveTests.MutableClock Clock { get; } = new(new DateTimeOffset(2026, 11, 22, 12, 0, 0, TimeSpan.Zero));
+        public FakeSource Source { get; } = new();
+        public FakeStats Stats { get; } = new();
+        public List<(ulong Guild, ulong Channel, int Count)> Posted { get; } = [];
+        public List<IReadOnlyList<HeroMeta>> RolePosts { get; } = [];
+        public FakeHeroSource Heroes { get; } = new();
+        public ISender Sender => application.GetRequiredService<ISender>();
+
+        public static async Task<Fixture> CreateAsync()
+        {
+            var fixture = new Fixture { database = await SqliteTestDatabase.CreateAsync() };
+            var storage = fixture.database.Services;
+            fixture.application = new ServiceCollection().AddLogging()
+                .AddSingleton(storage.GetRequiredService<IGuildGroupStore>())
+                .AddSingleton(storage.GetRequiredService<IGuildSettingsStore>())
+                .AddSingleton(storage.GetRequiredService<IAccountLinkStore>())
+                .AddSingleton(storage.GetRequiredService<IPlayerGameStore>())
+                .AddSingleton(storage.GetRequiredService<IGameStatsStore>())
+                .AddSingleton(storage.GetRequiredService<IGameFeatureStore>())
+                .AddSingleton<IClock>(fixture.Clock)
+                .AddSingleton<ISteamDirectory>(new PlayerGameTests.FakeSteam())
+                .AddSingleton<IGameStatsDirectory>(fixture.Stats)
+                .AddSingleton<IDotaMetaSource>(fixture.Source)
+                .AddSingleton<IDotaMetaPublisher>(new FakePublisher(fixture.Posted, fixture.RolePosts))
+                .AddSingleton<IHeroMetaSource>(fixture.Heroes)
+                .AddApplication().BuildServiceProvider();
+            return fixture;
+        }
+
+        public void Dispose()
+        {
+            application?.Dispose();
+            database?.Dispose();
+        }
+    }
+}

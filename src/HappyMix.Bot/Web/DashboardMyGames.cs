@@ -190,7 +190,7 @@ public sealed partial class DashboardController
     [HttpPost("/games/{guildId}/stats")]
     public Task<IActionResult> ShareGameStats(ulong guildId, bool share) =>
         GamesActionAsync(guildId, async userId => HappyMix.Domain.Abstractions.Result.Success(
-                (await sender.Send(new HappyMix.Application.Stats.SetStatsSharingCommand(userId, share), HttpContext.RequestAborted)).Value),
+                (await sender.Send(new HappyMix.Application.Stats.SetStatsSharingCommand(userId, share, guildId), HttpContext.RequestAborted)).Value),
             _ => text[share ? "Stats_Shared" : "Stats_Unshared"].Value, $"/games/{guildId}#stats");
 
     [HttpPost("/games/{guildId}/remove")]

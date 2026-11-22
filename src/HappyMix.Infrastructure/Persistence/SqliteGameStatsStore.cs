@@ -43,7 +43,7 @@ internal sealed class SqliteGameStatsStore(IDbContextFactory<HappyMixDbContext> 
         return (await db.Database.SqlQuery<CacheRow>($"SELECT * FROM GameStatsCache WHERE UserId IN (SELECT value FROM json_each({ids}))").ToListAsync())
             .Where(row => Enum.TryParse<StatsGame>(row.Game, out _) && Enum.TryParse<StatsStatus>(row.Status, out _))
             .Select(row => new CachedStats(Parse(row.UserId), Enum.Parse<StatsGame>(row.Game), Enum.Parse<StatsStatus>(row.Status), row.Payload,
-                DateTimeOffset.FromUnixTimeSeconds(row.FetchedUtc)))
+                DateTimeOffset.FromUnixTimeSeconds(row.FetchedUtc), row.Reason))
             .ToArray();
     }
 
@@ -51,9 +51,10 @@ internal sealed class SqliteGameStatsStore(IDbContextFactory<HappyMixDbContext> 
     {
         await using var db = await factory.CreateDbContextAsync();
         await db.Database.ExecuteSqlInterpolatedAsync($"""
-            INSERT INTO GameStatsCache (UserId, Game, Status, Payload, FetchedUtc)
-            VALUES ({Id(stats.UserId)}, {stats.Game.ToString()}, {stats.Status.ToString()}, {stats.Payload}, {stats.FetchedAt.ToUnixTimeSeconds()})
-            ON CONFLICT (UserId, Game) DO UPDATE SET Status = excluded.Status, Payload = excluded.Payload, FetchedUtc = excluded.FetchedUtc
+            INSERT INTO GameStatsCache (UserId, Game, Status, Payload, FetchedUtc, Reason)
+            VALUES ({Id(stats.UserId)}, {stats.Game.ToString()}, {stats.Status.ToString()}, {stats.Payload}, {stats.FetchedAt.ToUnixTimeSeconds()}, {stats.Reason})
+            ON CONFLICT (UserId, Game) DO UPDATE SET Status = excluded.Status, Payload = excluded.Payload, FetchedUtc = excluded.FetchedUtc,
+                Reason = excluded.Reason
             """);
     }
 
@@ -153,11 +154,37 @@ internal sealed class SqliteGameStatsStore(IDbContextFactory<HappyMixDbContext> 
             """);
     }
 
+    public async Task<bool> GetDigestChannelAsync(ulong guildId, Guid groupId)
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        string guild = Id(guildId), group = groupId.ToString();
+        return await db.Database.SqlQuery<long>($"SELECT PostDigest AS Value FROM DigestChannels WHERE GuildId = {guild} AND GroupId = {group}")
+            .SingleOrDefaultAsync() == 1;
+    }
+
+    public async Task SetDigestChannelAsync(ulong guildId, Guid groupId, bool post)
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        await db.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO DigestChannels (GuildId, GroupId, PostDigest) VALUES ({Id(guildId)}, {groupId.ToString()}, {(post ? 1 : 0)})
+            ON CONFLICT (GuildId, GroupId) DO UPDATE SET PostDigest = excluded.PostDigest
+            """);
+    }
+
+    public async Task<bool> MarkDigestAsync(ulong guildId, Guid groupId, DateOnly weekStart)
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        return await db.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT OR IGNORE INTO GroupDigests (GuildId, GroupId, WeekStart)
+            VALUES ({Id(guildId)}, {groupId.ToString()}, {weekStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)})
+            """) > 0;
+    }
+
     private static string Ids(IEnumerable<ulong> userIds) => JsonSerializer.Serialize(userIds.Select(Id).Distinct());
     private static string Id(ulong value) => value.ToString(CultureInfo.InvariantCulture);
     private static ulong Parse(string value) => ulong.Parse(value, CultureInfo.InvariantCulture);
 
     private sealed record MatchRow(string UserId, string Game, string MatchId, long StartedUtc, long Duration, long Won, string? Pick, string? Image,
         long Kills, long Deaths, long Assists, double? Headshots, string? Score);
-    private sealed record CacheRow(string UserId, string Game, string Status, string? Payload, long FetchedUtc);
+    private sealed record CacheRow(string UserId, string Game, string Status, string? Payload, long FetchedUtc, string? Reason);
 }

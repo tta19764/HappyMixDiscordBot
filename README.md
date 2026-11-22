@@ -400,6 +400,12 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 - `ConfirmEventSeriesCommand` (POST `/events/{guild}/{event}/confirm-all`) confirms every pending upcoming date; each person who accepted one gets a single Confirmed message for their first newly confirmed date.
 - Event date boxes show weekday, day and month; compact series rows show only the times, with status and count underneath. Side panel menus open beside the panel (`position: fixed`) so its scroll area no longer clips them.
 
+### v0.1.4 weekly summary and Game features
+
+- Weekly summary (`WeeklyDigestRequests`, migration `20261205000100_AddWeeklyDigest`): "Last 7 days" on the Stats tab (games together, record, most played hero/map, best performer with 3+ games) and an organizer switch for a Monday 10:00 post of last week (`post-weekly-digests`, hourly, once per group and week).
+- Game features page (`/game-features/{guild}`, migration `20261205000200_AddGameFeatures`): your stats with the same switch as Stats tabs, Refresh buttons (`RefreshMyStatsCommand`, `RefreshGroupStatsCommand`), and failure reasons stored with the card (`GameStatsCache.Reason`) and logged with UserId (and GuildId when started from a server page).
+- Dota 2 meta: STRATZ search (`Stratz__ApiKey`; `heroStats.winDay`/`winWeek`, ranked All Pick, positions, rank brackets; current patch dated from OpenDota `constants/patch`; Wilson-score order; one cached request per filter for an hour). Without STRATZ: OpenDota `scenarios/laneRoles` by lane. Admins choose or create `#dota-meta`, Post now, and a daily / every-two-days / weekly schedule (`post-dota-meta`, hourly) with saved filters and 5–20 heroes per role.
+
 ### v0.1.3 games together
 
 - Match recaps (`MatchRecapRequests`, migration `20261204000100_AddMatchRecaps`): `refresh-matches` (every 10 minutes) reads each sharing member's history at most every 30 minutes (OpenDota `recentMatches`; FACEIT `history` plus `matches/{id}/stats` for new matches), keeping matches 30 days in `PlayerMatches`.

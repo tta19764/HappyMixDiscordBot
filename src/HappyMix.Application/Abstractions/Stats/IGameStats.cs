@@ -29,10 +29,14 @@ public sealed record Cs2Map(string Name, int Matches, double? WinRate);
 public sealed record Cs2Profile(string FaceitId, string Nickname, int? Level, int? Elo, int Matches, double? WinRate, double? KillDeath,
     double? Headshots, IReadOnlyList<Cs2Map> Maps);
 
-/// <summary>A fetched card for one person and game. <see cref="Payload"/> is the profile as JSON when there is one.</summary>
-public sealed record CachedStats(ulong UserId, StatsGame Game, StatsStatus Status, string? Payload, DateTimeOffset FetchedAt);
+/// <summary>
+/// A fetched card for one person and game. <see cref="Payload"/> is the profile as JSON when there is one;
+/// <see cref="Reason"/> says why the last lookup didn't give a card (also written to the logs).
+/// </summary>
+public sealed record CachedStats(ulong UserId, StatsGame Game, StatsStatus Status, string? Payload, DateTimeOffset FetchedAt, string? Reason = null);
 
-public sealed record StatsFetch<T>(StatsStatus Status, T? Profile) where T : class;
+/// <param name="Reason">Why there's no profile: the service's answer, a missing setting, or what the player can fix.</param>
+public sealed record StatsFetch<T>(StatsStatus Status, T? Profile, string? Reason = null) where T : class;
 
 /// <summary>
 /// One person's line in a match: the result from their side, their hero (Dota 2) or the map (CS2) and their numbers.
@@ -74,12 +78,21 @@ public interface IGameStatsStore
     Task<bool> MarkRecapAsync(ulong guildId, Guid groupId, StatsGame game, string matchId, DateTimeOffset at);
     Task<bool> GetRecapChannelAsync(ulong guildId, Guid groupId);
     Task SetRecapChannelAsync(ulong guildId, Guid groupId, bool post);
+
+    Task<bool> GetDigestChannelAsync(ulong guildId, Guid groupId);
+    Task SetDigestChannelAsync(ulong guildId, Guid groupId, bool post);
+    /// <summary>Claims a group's digest for the week starting <paramref name="weekStart"/>; false when already claimed.</summary>
+    Task<bool> MarkDigestAsync(ulong guildId, Guid groupId, DateOnly weekStart);
 }
 
 /// <summary>Posts a group's match recap in its notification channel. Best effort.</summary>
 public interface IRecapPublisher
 {
     Task PublishAsync(ulong guildId, string groupName, GroupRecap recap, CancellationToken cancellationToken);
+
+    /// <summary>Posts last week's summary (<paramref name="weekStart"/> is that week's Monday) in the group's channel.</summary>
+    Task PublishDigestAsync(ulong guildId, Guid groupId, string groupName, DateOnly weekStart,
+        IReadOnlyList<HappyMix.Application.Stats.GroupDigest> digests, CancellationToken cancellationToken);
 }
 
 /// <summary>Public stats services: OpenDota for Dota 2 and FACEIT for CS2.</summary>

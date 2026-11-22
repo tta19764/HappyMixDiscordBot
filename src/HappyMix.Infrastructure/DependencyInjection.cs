@@ -52,7 +52,20 @@ public static class DependencyInjection
             client.DefaultRequestHeaders.UserAgent.ParseAdd("HappyMixBot/1.0");
         });
         services.AddHttpClient(HappyMix.Infrastructure.Stats.GameStatsDirectory.FaceitClient, client => client.Timeout = TimeSpan.FromSeconds(10));
-        services.AddSingleton<HappyMix.Application.Abstractions.Stats.IGameStatsDirectory, HappyMix.Infrastructure.Stats.GameStatsDirectory>();
+        services.AddSingleton<HappyMix.Infrastructure.Stats.GameStatsDirectory>();
+        services.AddSingleton<HappyMix.Application.Abstractions.Stats.IGameStatsDirectory>(provider =>
+            provider.GetRequiredService<HappyMix.Infrastructure.Stats.GameStatsDirectory>());
+        services.AddSingleton<HappyMix.Application.Abstractions.Stats.IDotaMetaSource>(provider =>
+            provider.GetRequiredService<HappyMix.Infrastructure.Stats.GameStatsDirectory>());
+        services.AddSingleton<HappyMix.Application.Abstractions.Stats.IHeroMetaSource>(provider =>
+            provider.GetRequiredService<HappyMix.Infrastructure.Stats.GameStatsDirectory>());
+        // STRATZ asks API clients to identify as STRATZ_API.
+        services.AddHttpClient(HappyMix.Infrastructure.Stats.GameStatsDirectory.StratzClient, client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(15);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("STRATZ_API");
+        });
+        services.AddSingleton<HappyMix.Application.Abstractions.Stats.IGameFeatureStore, SqliteGameFeatureStore>();
         services.AddHttpClient(HappyMix.Infrastructure.Steam.SteamDirectory.HttpClientName, client =>
         {
             client.Timeout = TimeSpan.FromSeconds(10);

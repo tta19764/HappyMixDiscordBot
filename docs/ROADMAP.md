@@ -4,7 +4,7 @@ Reviewed: 2026-11-20.
 
 Development started: 2026-11-09 (Day 1). Counting calendar days inclusively, November 20 is Day 12 and November 21 is Day 13. Dates use Europe/Kiev.
 
-Reviewed repository tags and the English, Ukrainian and Russian release manifests through `v0.1.3`. GitHub has no separate Release entries; tags and `src/HappyMix.Bot/Releases/v*.json` provide the release history. Basic voting has already been presented; watchlists, series progress, logs and the dashboard redesign have not. v0.0.13 adds My games, Steam linking/import, the group Live tab and Discord command parity; v0.0.14 adds remembered sign-in with Discord sync, My games pictures/sorting/Save and do-not-disturb; v0.0.15 fixes newer Steam pictures, played free games missing from imports and IGDB Steam links; v0.1.1 moves weekly do-not-disturb into the day editor and adds a By date day overview; v0.1.2 adds opt-in Dota 2 and CS2 stats cards on group pages; v0.1.3 adds recaps of games members played together. They are not yet scheduled for a presentation. The two-day catch-up below covers implemented features without scheduling them for development again. Tagged source does not establish the currently deployed version or completion of a live walkthrough.
+Reviewed repository tags and the English, Ukrainian and Russian release manifests through `v0.1.4`. GitHub has no separate Release entries; tags and `src/HappyMix.Bot/Releases/v*.json` provide the release history. Basic voting has already been presented; watchlists, series progress, logs and the dashboard redesign have not. v0.0.13 adds My games, Steam linking/import, the group Live tab and Discord command parity; v0.0.14 adds remembered sign-in with Discord sync, My games pictures/sorting/Save and do-not-disturb; v0.0.15 fixes newer Steam pictures, played free games missing from imports and IGDB Steam links; v0.1.1 moves weekly do-not-disturb into the day editor and adds a By date day overview; v0.1.2 adds opt-in Dota 2 and CS2 stats cards on group pages; v0.1.3 adds recaps of games members played together; v0.1.4 adds the weekly summary and the Game features page with the Dota 2 meta search. They are not yet scheduled for a presentation. The two-day catch-up below covers implemented features without scheduling them for development again. Tagged source does not establish the currently deployed version or completion of a live walkthrough.
 
 ## Presentation catch-up
 
@@ -51,6 +51,7 @@ Progress is counted by completed items, not estimated hours. Baseline capabiliti
 | B16 | Players | done | Sign-in, My games polish and do not disturb | v0.0.14: sign-in page with Keep me signed in (30 days), saved Discord profile and Sync with Discord; Steam pictures, sorting and a Save button on My games; weekly/dated do-not-disturb holding personal messages with a relevance check on release, shown on boards and `/availability who`. Real Discord sign-in and held delivery not yet verified live |
 | B17 | Players | done | Dota 2 and CS2 stats cards | v0.1.2: opt-in sharing per Discord account; group Stats tab with OpenDota medal, 30-day record and top heroes, FACEIT level/Elo/K/D/maps (needs `Faceit__ApiKey`), profile links; refresh job and `/games stats`. Real OpenDota/FACEIT answers not yet verified live (OpenDota match endpoints were erroring during development). See docs/design/GAME_STATS_PLAN.md |
 | B18 | Players | done | Games together (match recaps) | v0.1.3: recent matches of sharing members (OpenDota recentMatches, FACEIT history + match stats, kept 30 days); Stats tab lists matches two or more members played together; optional organizer channel posts, each match once and only within a day. Not yet verified against live OpenDota/FACEIT |
+| B19 | Players | done | Weekly summary and Game features | v0.1.4: Stats tab last-7-days summary and optional Monday post; Game features page with own stats (synced with Stats tabs), refresh buttons and logged failure reasons; Dota 2 meta search by patch/role/rank/order from STRATZ (current patch dated from OpenDota) with OpenDota lane fallback, admin channel, Post now and daily/two-day/weekly schedule, 5–20 heroes. Discord posting not yet verified live |
 
 ## Development checklist
 
@@ -108,7 +109,7 @@ Days 1–12 summarize the scope implemented by November 20, regrouped from the r
 - Match prediction leaderboard without money or betting.
 - Regional price alerts from a verified permitted data source.
 - Calendar export and optional external calendar synchronization.
-- Game stats Phase 3–4 (docs/design/GAME_STATS_PLAN.md): a weekly group digest and ranks on the Live tab.
+- Game stats Phase 4 (docs/design/GAME_STATS_PLAN.md): ranks on the Live tab; more CS2 features (Premier).
 
 ## SQLite implementation decision
 

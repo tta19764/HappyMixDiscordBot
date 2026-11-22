@@ -210,6 +210,67 @@ public sealed class GameStatsTests
         Assert.Empty((await sender.Send(new GetGroupStatsQuery(Actor(Kai), groupId))).Value.Recaps);
     }
 
+    [Fact]
+    public void AWeekOfGamesTogetherIsSummed()
+    {
+        var at = new DateTimeOffset(2026, 11, 18, 18, 0, 0, TimeSpan.Zero);
+        PlayerMatch Line(ulong user, string id, bool won, string hero, int kills = 5) => new(user, StatsGame.Dota2, id, at, 1800, won, hero, null, kills, 3, 6);
+        var recaps = MatchRecaps.Find(Guid.Empty, [Kai, Mira],
+            [Line(Kai, "1", true, "Pudge"), Line(Mira, "1", true, "Lion"),
+             Line(Kai, "2", true, "Pudge"), Line(Mira, "2", true, "Lina"),
+             Line(Kai, "3", false, "Pudge"), Line(Mira, "3", false, "Lion"),
+             Line(Kai, "4", true, "Axe"), Line(Mira, "4", false, "Lion")],
+            [StatsGame.Dota2]);
+        var week = Assert.Single(WeeklyDigests.Build(recaps));
+        Assert.Equal((4, 2, 1), (week.Games, week.Wins, week.Losses));
+        Assert.Equal(("Lion", 3), (week.MostPlayed, week.MostPlayedCount));
+        Assert.Equal((Kai, 3, 4), (week.Best!.UserId, week.Best.Wins, week.Best.Games));
+        Assert.Equal(new DateOnly(2026, 11, 16), WeeklyDigests.WeekStart(new DateTime(2026, 11, 22, 23, 0, 0)));
+        Assert.Equal(new DateOnly(2026, 11, 23), WeeklyDigests.WeekStart(new DateTime(2026, 11, 23, 0, 0, 0)));
+
+        var text = HappyMix.Bot.Services.DiscordRecapPublisher.DigestText("Squad", new DateOnly(2026, 11, 16), [week], "en");
+        Assert.Contains("**Squad** · week of 16 November", text, StringComparison.Ordinal);
+        Assert.Contains("4 games together · 2W 1L", text, StringComparison.Ordinal);
+        Assert.Contains("best: <@10> won 3 of 4", text, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheWeeklySummaryIsPostedOnMondayOncePerWeekWhenTurnedOn()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var sender = fixture.Sender;
+        Guid groupId = await fixture.CreateGroupAsync();
+        await sender.Send(new LinkSteamCommand(Kai, KaiSteam));
+        await sender.Send(new LinkSteamCommand(Mira, MiraSteam));
+        await sender.Send(new SetStatsSharingCommand(Kai, true));
+        await sender.Send(new SetStatsSharingCommand(Mira, true));
+        // Sunday 22 November: two games together this week (Monday 16 – Sunday 22), one of them won.
+        var now = fixture.Clock.UtcNow;
+        PlayerMatch Line(ulong user, string id, bool won) => new(user, StatsGame.Dota2, id, now.AddDays(-2), 2000, won, "Pudge", null, 5, 2, 7);
+        fixture.Stats.Matches[Kai] = [Line(Kai, "w", true), Line(Kai, "l", false)];
+        fixture.Stats.Matches[Mira] = [Line(Mira, "w", true), Line(Mira, "l", false)];
+        await sender.Send(new RefreshMatchesCommand([Guild]));
+        Assert.Equal((2, 1, 1), (await sender.Send(new GetGroupStatsQuery(Actor(Kai), groupId))).Value.Week.Single() is var week
+            ? (week.Games, week.Wins, week.Losses) : default);
+
+        // Not Monday yet, and off: nothing.
+        Assert.Equal(0, (await sender.Send(new PostWeeklyDigestsCommand([Guild], "Europe/Kyiv"))).Value);
+        await sender.Send(new SetRecapChannelCommand(Actor(Kai), groupId, false, Digest: true));
+        Assert.True((await sender.Send(new GetGroupStatsQuery(Actor(Kai), groupId))).Value.PostDigest);
+
+        // Monday 23 November, 09:00 UTC = 11:00 in Kyiv: last week's summary, once.
+        fixture.Clock.Advance(TimeSpan.FromHours(21));
+        Assert.Equal(1, (await sender.Send(new PostWeeklyDigestsCommand([Guild], "Europe/Kyiv"))).Value);
+        var (weekStart, digests) = Assert.Single(fixture.Posted.Digests);
+        Assert.Equal((new DateOnly(2026, 11, 16), 2), (weekStart, digests.Single().Games));
+        fixture.Clock.Advance(TimeSpan.FromHours(1));
+        Assert.Equal(0, (await sender.Send(new PostWeeklyDigestsCommand([Guild], "Europe/Kyiv"))).Value);
+
+        // A week with no games together isn't posted.
+        fixture.Clock.Advance(TimeSpan.FromDays(7));
+        Assert.Equal(0, (await sender.Send(new PostWeeklyDigestsCommand([Guild], "Europe/Kyiv"))).Value);
+    }
+
     private static GroupActor Actor(ulong user) => new(Guild, user, false);
 
     private sealed class FakeStats : IGameStatsDirectory
@@ -245,6 +306,15 @@ public sealed class GameStatsTests
         public Task PublishAsync(ulong guildId, string groupName, GroupRecap recap, CancellationToken cancellationToken)
         {
             Recaps.Add(recap);
+            return Task.CompletedTask;
+        }
+
+        public List<(DateOnly Week, IReadOnlyList<GroupDigest> Digests)> Digests { get; } = [];
+
+        public Task PublishDigestAsync(ulong guildId, Guid groupId, string groupName, DateOnly weekStart, IReadOnlyList<GroupDigest> digests,
+            CancellationToken cancellationToken)
+        {
+            Digests.Add((weekStart, digests));
             return Task.CompletedTask;
         }
     }

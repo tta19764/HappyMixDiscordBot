@@ -1,0 +1,140 @@
+@using System.Globalization
+@using HappyMix.Application.Abstractions.Stats
+@using HappyMix.Application.Stats
+@model OwnStatsModel
+@{
+    var culture = CultureInfo.CurrentCulture;
+    var mine = Model.Mine;
+    string Percent(double value) => value.ToString("0", culture) + "%";
+    string Ago(DateTimeOffset at)
+    {
+        var age = Model.Now - at;
+        return age.TotalMinutes < 60 ? T["Stats_UpdatedMinutes", Math.Max(1, (int)age.TotalMinutes)].Value
+            : age.TotalHours < 48 ? T["Stats_UpdatedHours", (int)age.TotalHours].Value
+            : T["Stats_UpdatedDays", (int)age.TotalDays].Value;
+    }
+    string Medal(int? rankTier, int? leaderboard) => GameStats.DotaMedal(rankTier) is var (medal, stars)
+        ? T[$"Dota_Medal_{medal}"].Value + (medal < 8 && stars > 0 ? " " + stars.ToString(culture) : "") + (leaderboard is { } place ? " #" + place.ToString(culture) : "")
+        : T["Stats_Unranked"].Value;
+    var dota = GameStats.Read<DotaProfile>(mine.Dota);
+    var cs2 = GameStats.Read<Cs2Profile>(mine.Cs2);
+    long? account = GameStats.DotaAccountId(mine.SteamId);
+}
+@* The viewer's own Dota 2 and CS2 cards and the sharing switch: the same data and switch as every group's Stats tab. *@
+<form class="hm-stats__share" method="post" action="@Model.ShareUrl" asp-antiforgery="false">
+    @Html.AntiForgeryToken()
+    <label class="hm-check">
+        <input type="checkbox" name="share" value="true" checked="@mine.Shares" />
+        <span>@T["Stats_Share"]<small>@T["Stats_Share_Help"]</small></span>
+    </label>
+    <button class="hm-btn hm-btn--primary">@T["Save"]</button>
+</form>
+@if (mine.SteamId is null)
+{
+    <p class="hm-help hm-stats__hint">@DashboardIcons.Render("info")<span>@T["Stats_LinkSteam"] <a href="/games/@Model.GuildId#steam">@T["Games_Title"]</a></span></p>
+}
+@if (mine.Shares && mine.SteamId is not null)
+{
+    <ul class="hm-stats__cards">
+        <li>
+            <article class="hm-statcard hm-statcard--mine" aria-label="Dota 2">
+                <header class="hm-statcard__head">
+                    <span class="hm-statcard__name">Dota 2</span>
+                    @if (dota is not null)
+                    {
+                        <span class="hm-medal hm-medal--@(GameStats.DotaMedal(dota.RankTier)?.Medal ?? 0)">@Medal(dota.RankTier, dota.LeaderboardRank)</span>
+                    }
+                </header>
+                @if (dota is { } profile)
+                {
+                    int total = profile.Wins + profile.Losses;
+                    <div class="hm-statcard__record">
+                        <span>@T["Stats_Last30"]</span><b>@T["Stats_WinsLosses", profile.Wins, profile.Losses]</b>
+                        @if (total > 0)
+                        {
+                            <span class="hm-statcard__rate">@Percent(profile.Wins * 100.0 / total)</span>
+                        }
+                    </div>
+                    <ul class="hm-statcard__list" aria-label="@T["Stats_TopHeroes"]">
+                        @foreach (var hero in profile.TopHeroes)
+                        {
+                            <li>
+                                @if (hero.Image is { } image)
+                                {
+                                    <img src="@image" alt="" width="48" height="27" loading="lazy" data-game-art>
+                                }
+                                <span class="hm-statcard__what">@hero.Name</span>
+                                <span class="hm-statcard__num">@T["Stats_GamesRate", hero.Games, Percent(hero.Wins * 100.0 / hero.Games)]</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                <partial name="_StatsReason" model="(mine.Dota, true)" />
+                <footer class="hm-statcard__foot">
+                    <span class="hm-statcard__links">
+                        @if (account is { } id)
+                        {
+                            <a href="https://www.opendota.com/players/@id" target="_blank" rel="noopener noreferrer">OpenDota</a>
+                            <a href="https://www.dotabuff.com/players/@id" target="_blank" rel="noopener noreferrer">Dotabuff</a>
+                        }
+                    </span>
+                    @if (mine.Dota is { } fetched)
+                    {
+                        <span class="hm-statcard__when">@Ago(fetched.FetchedAt)</span>
+                    }
+                </footer>
+            </article>
+        </li>
+        <li>
+            <article class="hm-statcard hm-statcard--mine" aria-label="CS2">
+                <header class="hm-statcard__head">
+                    <span class="hm-statcard__name">CS2</span>
+                    @if (cs2 is { Level: { } level })
+                    {
+                        <span class="hm-faceit hm-faceit--@level">@T["Stats_FaceitLevel", level]@(cs2.Elo is { } elo ? " · " + elo.ToString(culture) + " Elo" : "")</span>
+                    }
+                </header>
+                @if (!mine.Cs2Enabled)
+                {
+                    <p class="hm-statcard__state">@T["Stats_Cs2Off"]</p>
+                }
+                else if (cs2 is { } csProfile)
+                {
+                    <dl class="hm-statcard__facts">
+                        <div><dt>@T["Stats_Matches"]</dt><dd>@csProfile.Matches.ToString(culture)</dd></div>
+                        @if (csProfile.WinRate is { } winRate)
+                        {
+                            <div><dt>@T["Stats_WinRateShort"]</dt><dd>@Percent(winRate)</dd></div>
+                        }
+                        @if (csProfile.KillDeath is { } kd)
+                        {
+                            <div><dt>K/D</dt><dd>@kd.ToString("0.00", culture)</dd></div>
+                        }
+                        @if (csProfile.Headshots is { } headshots)
+                        {
+                            <div><dt>@T["Stats_Headshots"]</dt><dd>@Percent(headshots)</dd></div>
+                        }
+                    </dl>
+                }
+                <partial name="_StatsReason" model="(mine.Cs2, true)" />
+                <footer class="hm-statcard__foot">
+                    <span class="hm-statcard__links">
+                        @if (cs2 is { Nickname.Length: > 0 } faceit)
+                        {
+                            <a href="https://www.faceit.com/en/players/@Uri.EscapeDataString(faceit.Nickname)" target="_blank" rel="noopener noreferrer">FACEIT</a>
+                        }
+                        <a href="https://leetify.com/app/profile/@mine.SteamId" target="_blank" rel="noopener noreferrer">Leetify</a>
+                    </span>
+                    @if (mine.Cs2 is { } csFetched)
+                    {
+                        <span class="hm-statcard__when">@Ago(csFetched.FetchedAt)</span>
+                    }
+                </footer>
+            </article>
+        </li>
+    </ul>
+    <form method="post" action="@Model.RefreshUrl" asp-antiforgery="false">
+        @Html.AntiForgeryToken()
+        <button class="hm-btn">@DashboardIcons.Render("refresh")@T["Stats_RefreshMine"]</button>
+    </form>
+}

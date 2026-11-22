@@ -1,0 +1,22 @@
+@using HappyMix.Application.Abstractions.Stats
+@model (CachedStats? Stats, bool Mine)
+@* Why the last lookup gave no card: the exact reason on your own card (also in the Logs), a plain state on others'. *@
+@if (Model.Stats is { Status: not StatsStatus.Ok } stats)
+{
+    string state = stats.Status switch
+    {
+        StatsStatus.NoPublicData => Model.Mine ? T["Stats_NoPublicDataMine"].Value : T["Stats_NoPublicData"].Value,
+        StatsStatus.NoAccount => stats.Game == StatsGame.Cs2 ? T[Model.Mine ? "Stats_NoFaceitMine" : "Stats_NoFaceit"].Value : T["Stats_NoSteam"].Value,
+        _ => T[stats.Game == StatsGame.Dota2 ? "Stats_ErrorDota" : "Stats_ErrorCs2"].Value
+    };
+    <div class="hm-statcard__problem @(stats.Status == StatsStatus.Error ? "hm-statcard__problem--error" : "")">
+        <p class="hm-statcard__state">@state</p>
+        @if (Model.Mine && stats.Reason is { Length: > 0 } reason)
+        {
+            <details class="hm-statcard__why">
+                <summary>@T["Stats_Why"]</summary>
+                <code>@reason</code>
+            </details>
+        }
+    </div>
+}
