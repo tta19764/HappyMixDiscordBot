@@ -338,6 +338,83 @@ public static class DashboardTheme
     public static string? Read(HttpRequest request) => request.Cookies[Cookie] is "light" or "dark" ? request.Cookies[Cookie] : null;
 }
 
+/// <summary>A side panel link: key, URL segment, resource key of the label, icon.</summary>
+public sealed record SideNavLink(string Key, string Path, string Label, string Icon);
+
+/// <summary>
+/// The side panel's links and the order each person put them in. The order is kept per browser in a cookie, like the
+/// theme: keys joined by dots (a comma would split the cookie). Links missing from it (new ones, or never moved) keep their default place.
+/// </summary>
+public static class SideNavOrder
+{
+    public const string Cookie = "hm_nav";
+
+    public static readonly SideNavLink[] Server =
+    [
+        new("availability", "availability", "Availability", "availability"),
+        new("events", "events", "Events", "events"),
+        new("game-news", "game-news", "GameNews_Title", "news"),
+        new("game-features", "game-features", "Features_Title", "trophy"),
+        new("groups", "groups", "Groups", "groups"),
+        new("my-games", "games", "Games_Title", "games"),
+        new("votes", "votes", "Polls_Title", "votes"),
+        new("links", "links", "Linked_accounts", "links")
+    ];
+
+    public static readonly SideNavLink[] Admin =
+    [
+        new("settings", "settings", "Settings", "settings"),
+        new("logs", "logs", "Logs_Title", "logs")
+    ];
+
+    /// <summary>The saved keys; unknown and repeated keys are dropped.</summary>
+    public static IReadOnlyList<string> Read(HttpRequest request) => Parse(request.Cookies[Cookie]);
+
+    public const char Separator = '.';
+
+    public static IReadOnlyList<string> Parse(string? value)
+    {
+        if (value is not { Length: > 0 and <= 400 })
+            return [];
+        var known = Server.Concat(Admin).Select(link => link.Key).ToHashSet(StringComparer.Ordinal);
+        return value.Split(Separator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Where(known.Contains).Distinct().ToArray();
+    }
+
+    /// <summary>The links in the saved order; a link not in it is put back at its default position.</summary>
+    public static SideNavLink[] Apply(IReadOnlyList<SideNavLink> links, IReadOnlyList<string> order)
+    {
+        var result = links.Where(link => order.Contains(link.Key)).OrderBy(link => order.IndexOf(link.Key)).ToList();
+        for (int index = 0; index < links.Count; index++)
+            if (!order.Contains(links[index].Key))
+                result.Insert(Math.Min(index, result.Count), links[index]);
+        return [.. result];
+    }
+
+    /// <summary>
+    /// Moves a link one place up (<paramref name="delta"/> −1) or down (+1) within its own part of the panel and returns
+    /// the whole new order to save. A move past either end changes nothing.
+    /// </summary>
+    public static string[] Move(IReadOnlyList<string> order, string key, int delta)
+    {
+        var server = Apply(Server, order).Select(link => link.Key).ToList();
+        var admin = Apply(Admin, order).Select(link => link.Key).ToList();
+        var list = server.Contains(key) ? server : admin.Contains(key) ? admin : null;
+        if (list is not null && list.IndexOf(key) is var from && from + delta >= 0 && from + delta < list.Count)
+            (list[from], list[from + delta]) = (list[from + delta], list[from]);
+        return [.. server, .. admin];
+    }
+
+    private static int IndexOf(this IReadOnlyList<string> list, string key)
+    {
+        for (int index = 0; index < list.Count; index++)
+            if (list[index] == key)
+                return index;
+        return -1;
+    }
+
+    private static bool Contains(this IReadOnlyList<string> list, string key) => list.IndexOf(key) >= 0;
+}
+
 /// <summary>The command guide, plus the last server the member opened so the page can lead back to it.</summary>
 public sealed record InfoPage(HappyMix.Bot.Interactions.CommandGuide[] Commands, ulong? GuildId, string? GuildName);
 

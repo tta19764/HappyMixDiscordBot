@@ -64,6 +64,14 @@ public sealed class GameStatsTests
         Assert.Equal(75, GameStats.MmrEstimate(last)); // 3 ranked games, all won: (3 - 0) × 25
         using var empty = JsonDocument.Parse("[]");
         Assert.Null(GameStatsDirectory.ParseRecent(empty.RootElement).Recent);
+        // Turbo games count for form and record but not for the averages, unless all games are Turbo.
+        using var mixed = JsonDocument.Parse("""
+            [{"match_id":2,"player_slot":1,"radiant_win":true,"kills":20,"deaths":2,"assists":30,"gold_per_min":1500,"xp_per_min":2000,"game_mode":23},
+             {"match_id":1,"player_slot":1,"radiant_win":false,"kills":4,"deaths":6,"assists":8,"gold_per_min":400,"xp_per_min":500,"game_mode":22}]
+            """);
+        Assert.Equal((2, 1, 4.0, 400), GameStatsDirectory.ParseRecent(mixed.RootElement).Recent is { } both ? (both.Matches, both.Wins, both.Kills, both.Gpm) : default);
+        using var turbo = JsonDocument.Parse("""[{"match_id":2,"player_slot":1,"radiant_win":true,"kills":20,"deaths":2,"assists":30,"gold_per_min":1500,"xp_per_min":2000,"game_mode":23}]""");
+        Assert.Equal(1500, GameStatsDirectory.ParseRecent(turbo.RootElement).Recent!.Gpm);
 
         using var peers = JsonDocument.Parse("""
             [{"account_id":7,"with_games":3,"with_win":2,"games":9},{"account_id":8,"with_games":0,"with_win":0},{"account_id":9,"with_games":12,"with_win":5}]

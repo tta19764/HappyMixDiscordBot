@@ -7,9 +7,11 @@
     var nav = new ServerNavModel(Model.GuildId, Model.GuildName, "my-games", Model.CanConfigure, "Games_Title", T["Games_Lead"]);
     var steam = Model.Data.Steam;
     var matching = Model.Matching;
+    // "Load more": page N shows the first N × PageSize games (up to MaxListed), so the link works without scripts and a
+    // reload keeps what was loaded; dashboard.js fetches the next batch in place.
     int pages = Math.Max(1, (int)Math.Ceiling(matching.Count / (double)MyGamesPage.PageSize));
-    int page = Math.Min(Model.Page, pages);
-    var shown = matching.Skip((page - 1) * MyGamesPage.PageSize).Take(MyGamesPage.PageSize).ToArray();
+    int page = Math.Min(Math.Min(Model.Page, pages), MyGamesPage.MaxListed / MyGamesPage.PageSize);
+    var shown = matching.Take(page * MyGamesPage.PageSize).ToArray();
     string returnUrl = Model.Link(page: page);
     string MarkLabel(GamePreference preference) => preference switch
     {
@@ -202,12 +204,12 @@
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="returnUrl" value="@returnUrl">
             </form>
-            <ul class="hm-mygames">
+            <ul class="hm-mygames" data-load-list>
                 @for (int i = 0; i < shown.Length; i++)
                 {
                     var game = shown[i];
                     string index = i.ToString(CultureInfo.InvariantCulture);
-                    <li class="hm-mygames__item hm-mygames__item--@game.Preference.ToString().ToLowerInvariant()">
+                    <li class="hm-mygames__item hm-mygames__item--@game.Preference.ToString().ToLowerInvariant()" id="game-@index">
                         <span class="hm-mygames__art" aria-hidden="true">
                             @DashboardIcons.Render("games")
                             @if (MyGamesPage.Art(game) is { } art)
@@ -254,19 +256,19 @@
                 <button class="hm-btn" type="reset" form="marks-form" data-marks-reset hidden>@T["Games_Undo"]</button>
                 <button class="hm-btn hm-btn--primary" form="marks-form">@T["Games_SaveMarks"]</button>
             </div>
-            @if (pages > 1)
+            @if (matching.Count > MyGamesPage.PageSize)
             {
-                <nav class="hm-pager" aria-label="@T["Pages"]">
-                    @if (page > 1)
+                <div class="hm-loadmore" data-load-more>
+                    <span class="hm-loadmore__status" aria-live="polite">@T["Games_Showing", shown.Length, matching.Count]</span>
+                    @if (shown.Length < matching.Count && page * MyGamesPage.PageSize < MyGamesPage.MaxListed)
                     {
-                        <a class="hm-btn" href="@Model.Link(page: page - 1)" rel="prev">@T["Previous"]</a>
+                        <a class="hm-btn" href="@Model.Link(page: page + 1)#game-@shown.Length" data-load-more-link>@T["Games_LoadMore", Math.Min(MyGamesPage.PageSize, matching.Count - shown.Length)]</a>
                     }
-                    <span class="hm-pager__status">@T["Page_Arg0_of_Arg1", page, pages]</span>
-                    @if (page < pages)
+                    else if (shown.Length < matching.Count)
                     {
-                        <a class="hm-btn" href="@Model.Link(page: page + 1)" rel="next">@T["Next"]</a>
+                        <span class="hm-help">@T["Games_UseSearch"]</span>
                     }
-                </nav>
+                </div>
             }
         }
     </section>

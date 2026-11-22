@@ -22,6 +22,8 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
     private (string Name, DateTimeOffset Date)? patch;
     private DateTimeOffset patchAt;
     public const string OpenDotaClient = "OpenDota";
+    /// <summary>How long one OpenDota call may take: its match endpoints often need more than 10 seconds.</summary>
+    public const int OpenDotaSeconds = 45;
     public const string FaceitClient = "Faceit";
     private const string OpenDota = "https://api.opendota.com/api/";
     private const string Faceit = "https://open.faceit.com/data/v4/";
@@ -50,28 +52,71 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
         {
             using var client = clients.CreateClient(OpenDotaClient);
             string id = accountId.ToString(CultureInfo.InvariantCulture);
-            using var player = await OpenDotaAsync(client, $"players/{id}", null, cancellationToken);
-            using var record = await OpenDotaAsync(client, $"players/{id}/wl", "date=30", cancellationToken);
-            using var played = await OpenDotaAsync(client, $"players/{id}/heroes", "date=90", cancellationToken);
-            var profile = ParseDota(accountId, player.RootElement, record.RootElement, played.RootElement, await HeroesAsync(client, cancellationToken));
+            // OpenDota's match endpoints can each take 10+ seconds, so every call starts at once. The card needs the
+            // first three; the last matches, teammates and positions are extras that may fail without losing it.
+            var playerTask = OpenDotaAsync(client, $"players/{id}", null, cancellationToken);
+            var recordTask = OpenDotaAsync(client, $"players/{id}/wl", "date=30", cancellationToken);
+            var playedTask = OpenDotaAsync(client, $"players/{id}/heroes", "date=90", cancellationToken);
+            var recentTask = ExtraAsync(client, $"players/{id}/recentMatches", cancellationToken);
+            var peersTask = ExtraAsync(client, $"players/{id}/peers", cancellationToken);
+            var positionsTask = PositionsAsync(accountId, cancellationToken);
+            var heroesTask = HeroesAsync(client, cancellationToken);
+            using var recent = await recentTask;
+            using var peers = await peersTask;
+            var positions = await positionsTask;
+            using var player = await Disposing(playerTask, recordTask, playedTask);
+            using var record = await recordTask;
+            using var played = await playedTask;
+            var profile = ParseDota(accountId, player.RootElement, record.RootElement, played.RootElement, await heroesTask);
             if (profile is null)
                 return new(StatsStatus.NoPublicData, null, $"OpenDota has no rank and no matches for account {id}: \"Expose Public Match Data\" is probably off in Dota 2.");
-            using var recent = await OpenDotaAsync(client, $"players/{id}/recentMatches", null, cancellationToken);
-            using var peers = await OpenDotaAsync(client, $"players/{id}/peers", null, cancellationToken);
-            var (last, lanes) = ParseRecent(recent.RootElement);
-            var positions = await PositionsAsync(accountId, cancellationToken);
+            var (last, lanes) = recent is null ? (null, []) : ParseRecent(recent.RootElement);
             return new(StatsStatus.Ok, profile with
             {
                 Recent = last,
                 Roles = positions is { Count: > 0 } ? positions : lanes,
                 RolesFrom = positions is { Count: > 0 } ? "STRATZ" : lanes.Count > 0 ? "OpenDota" : null,
-                Peers = ParsePeers(peers.RootElement)
+                Peers = peers is null ? [] : ParsePeers(peers.RootElement)
             });
         }
         catch (Exception error) when (Reason("OpenDota", error) is { } reason)
         {
             LogLookupFailed(logger, "OpenDota", reason);
             return new(StatsStatus.Error, null, reason);
+        }
+    }
+
+    /// <summary>
+    /// Waits for all the needed answers and returns the first. When one fails, the others that did answer are disposed
+    /// and the failure is thrown, so no document is left behind.
+    /// </summary>
+    private static async Task<JsonDocument> Disposing(Task<JsonDocument> first, params Task<JsonDocument>[] others)
+    {
+        Task<JsonDocument>[] all = [first, .. others];
+        try
+        {
+            await Task.WhenAll(all);
+        }
+        catch
+        {
+            foreach (var task in all.Where(task => task.IsCompletedSuccessfully))
+                task.Result.Dispose();
+            throw;
+        }
+        return first.Result;
+    }
+
+    /// <summary>An OpenDota answer the card can do without: a failure is logged and gives null.</summary>
+    private async Task<JsonDocument?> ExtraAsync(HttpClient client, string path, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await OpenDotaAsync(client, path, null, cancellationToken);
+        }
+        catch (Exception error) when (!cancellationToken.IsCancellationRequested && Reason("OpenDota", error) is { } reason)
+        {
+            LogLookupFailed(logger, "OpenDota extras", reason);
+            return null;
         }
     }
 
@@ -291,7 +336,10 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
         if (recent.ValueKind != JsonValueKind.Array)
             return (null, []);
         var form = new System.Text.StringBuilder();
-        int wins = 0, kills = 0, deaths = 0, assists = 0, gpm = 0, xpm = 0, solo = 0, soloWins = 0, party = 0, partyWins = 0, ranked = 0, rankedWins = 0;
+        // Averages leave out Turbo (game mode 23), where gold and experience run far higher, unless every match is Turbo.
+        int normal = 0, kills = 0, deaths = 0, assists = 0, gpm = 0, xpm = 0;
+        int turbo = 0, turboKills = 0, turboDeaths = 0, turboAssists = 0, turboGpm = 0, turboXpm = 0;
+        int wins = 0, solo = 0, soloWins = 0, party = 0, partyWins = 0, ranked = 0, rankedWins = 0;
         var lanes = new Dictionary<string, (int Games, int Wins)>(StringComparer.Ordinal);
         // OpenDota lists the newest match first.
         foreach (var match in recent.EnumerateArray().Where(match => Number(match, "match_id") is not null))
@@ -300,11 +348,24 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
             bool won = radiant == (match.TryGetProperty("radiant_win", out var radiantWin) && radiantWin.ValueKind == JsonValueKind.True);
             form.Append(won ? 'W' : 'L');
             wins += won ? 1 : 0;
-            kills += Int(match, "kills") ?? 0;
-            deaths += Int(match, "deaths") ?? 0;
-            assists += Int(match, "assists") ?? 0;
-            gpm += Int(match, "gold_per_min") ?? 0;
-            xpm += Int(match, "xp_per_min") ?? 0;
+            if (Int(match, "game_mode") == 23)
+            {
+                turbo++;
+                turboKills += Int(match, "kills") ?? 0;
+                turboDeaths += Int(match, "deaths") ?? 0;
+                turboAssists += Int(match, "assists") ?? 0;
+                turboGpm += Int(match, "gold_per_min") ?? 0;
+                turboXpm += Int(match, "xp_per_min") ?? 0;
+            }
+            else
+            {
+                normal++;
+                kills += Int(match, "kills") ?? 0;
+                deaths += Int(match, "deaths") ?? 0;
+                assists += Int(match, "assists") ?? 0;
+                gpm += Int(match, "gold_per_min") ?? 0;
+                xpm += Int(match, "xp_per_min") ?? 0;
+            }
             if ((Int(match, "party_size") ?? 1) <= 1) { solo++; soloWins += won ? 1 : 0; }
             else { party++; partyWins += won ? 1 : 0; }
             // Ranked matchmaking is lobby type 7; those are the games that move MMR.
@@ -320,10 +381,12 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
         int games = form.Length;
         if (games == 0)
             return (null, []);
+        if (normal == 0)
+            (normal, kills, deaths, assists, gpm, xpm) = (turbo, turboKills, turboDeaths, turboAssists, turboGpm, turboXpm);
         string text = form.ToString();
         int streak = text.TakeWhile(result => result == text[0]).Count() * (text[0] == 'W' ? 1 : -1);
-        return (new DotaRecent(games, wins, text, streak, Math.Round(kills / (double)games, 1), Math.Round(deaths / (double)games, 1),
-            Math.Round(assists / (double)games, 1), gpm / games, xpm / games, solo, soloWins, party, partyWins, ranked, rankedWins), Roles(lanes));
+        return (new DotaRecent(games, wins, text, streak, Math.Round(kills / (double)normal, 1), Math.Round(deaths / (double)normal, 1),
+            Math.Round(assists / (double)normal, 1), gpm / normal, xpm / normal, solo, soloWins, party, partyWins, ranked, rankedWins), Roles(lanes));
     }
 
     /// <summary>How many teammates from OpenDota's peers are kept on the card (enough to find the group's members among them).</summary>
@@ -425,7 +488,7 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
     internal static string? Reason(string service, Exception error) => error switch
     {
         LookupFailedException failed => failed.Message,
-        TaskCanceledException => $"{service} didn't answer within 10 seconds.",
+        TaskCanceledException => $"{service} didn't answer within {(service == "OpenDota" ? OpenDotaSeconds : 10).ToString(CultureInfo.InvariantCulture)} seconds.",
         HttpRequestException http => $"{service} couldn't be reached: {http.Message}",
         JsonException => $"{service} sent an answer that isn't valid JSON.",
         _ => null

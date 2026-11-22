@@ -2241,3 +2241,37 @@ a:hover { color: var(--hm-text); text-decoration-color: var(--hm-text); }
 @keyframes hm-ov-pulse { 50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--hm-c-coral) 10%, transparent); } }
 .hm-ov .hm-statcard__record { flex-wrap: wrap; column-gap: var(--hm-space-2); row-gap: 0; }
 .hm-ov .hm-statcard__record > span:first-child { white-space: nowrap; }
+
+/* Side panel reorder: a switch next to "Server" shows move buttons; with scripts, items can also be dragged. */
+.hm-side__labelrow { display: flex; align-items: center; justify-content: space-between; gap: var(--hm-space-2); padding-right: var(--hm-space-2); }
+.hm-side__edit { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: var(--hm-radius-sm, 6px); cursor: pointer;
+    color: var(--hm-side-muted); font-family: var(--hm-font-mono); font-size: .6875rem; letter-spacing: .04em; text-transform: uppercase; }
+.hm-side__edit:hover { background: var(--hm-side-hover); color: var(--hm-side-ink); }
+.hm-side__edit .hm-icon { width: .9rem; height: .9rem; }
+.hm-side__edit input { position: absolute; opacity: 0; pointer-events: none; }
+.hm-side__edit:has(input:focus-visible) { outline: 2px solid var(--hm-side-ink); outline-offset: 1px; }
+.hm-side__edit-off { display: none; }
+.hm-side__edit:has(input:checked) { background: var(--hm-side-active); color: var(--hm-side-ink); }
+.hm-side__edit:has(input:checked) .hm-side__edit-on { display: none; }
+.hm-side__edit:has(input:checked) .hm-side__edit-off { display: inline; }
+.hm-side__item { display: flex; align-items: center; gap: 2px; min-width: 0; border-radius: var(--hm-radius-sm, 6px); }
+.hm-side__item > .hm-side__link { flex: 1; min-width: 0; }
+.hm-side__move { display: none; flex: none; gap: 2px; }
+.hm-side__step { display: inline-grid; place-items: center; width: 1.75rem; height: 1.75rem; padding: 0; border: 0; border-radius: var(--hm-radius-sm, 6px);
+    background: transparent; color: var(--hm-side-muted); cursor: pointer; }
+.hm-side__step:hover { background: var(--hm-side-hover); color: var(--hm-side-ink); }
+.hm-side__step:focus-visible { outline: 2px solid var(--hm-side-ink); outline-offset: -2px; }
+.hm-side__step .hm-icon { width: 1rem; height: 1rem; }
+.hm-side__up { transform: rotate(180deg); }
+.hm-side__reorder { display: none; gap: var(--hm-space-2); margin-top: var(--hm-space-3); }
+.hm-side__reorder-help { margin: 0; padding: 0 var(--hm-space-3); color: var(--hm-side-muted); font-size: var(--hm-fs-xs); }
+.hm-side:has(#hm-nav-edit:checked) .hm-side__move { display: inline-flex; }
+.hm-side:has(#hm-nav-edit:checked) .hm-side__reorder { display: grid; }
+.hm-side:has(#hm-nav-edit:checked) .hm-side__item { outline: 1px dashed var(--hm-side-hover); }
+.hm-side:has(#hm-nav-edit:checked) .hm-side__item[draggable="true"] { cursor: grab; }
+.hm-side__item.is-dragging { opacity: .45; }
+.hm-collapsed .hm-side__edit, .hm-collapsed .hm-side__move, .hm-collapsed .hm-side__reorder { display: none !important; }
+@media (max-width: 47.99rem) { .hm-collapsed .hm-side__edit { display: inline-flex !important; } }
+
+/* Weekly day editor: Certainty only applies to free time, so do-not-disturb rows hide it (it is still posted). */
+.hm-wrange:has([data-range-type] option[value="dnd"]:checked) .hm-wrange__certainty { display: none; }

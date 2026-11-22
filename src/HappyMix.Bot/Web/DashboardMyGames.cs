@@ -25,6 +25,8 @@ public sealed record MyGamesPage(ulong GuildId, string GuildName, bool CanConfig
     public static string? Art(PlayerGame game) => SteamAppId(game) is { } appId ? HappyMix.Bot.Services.SteamArt.Header(appId) : null;
 
     public const int PageSize = 50;
+    /// <summary>The most games "Load more" shows (and one Save accepts); past it, search or filter.</summary>
+    public const int MaxListed = 500;
     public string Url => $"/games/{GuildId}";
 
     public IReadOnlyList<PlayerGame> Matching => Data.Games
@@ -180,7 +182,7 @@ public sealed partial class DashboardController
         var marks = new Dictionary<string, GamePreference>(StringComparer.Ordinal);
         foreach (var (name, value) in Request.Form)
             if (name.Length > 1 && name[0] == 'k' && int.TryParse(name.AsSpan(1), NumberStyles.None, CultureInfo.InvariantCulture, out int index)
-                && value.ToString() is { Length: > 0 } key && marks.Count < MyGamesPage.PageSize
+                && value.ToString() is { Length: > 0 } key && marks.Count < MyGamesPage.MaxListed
                 && int.TryParse(Request.Form["m" + index.ToString(CultureInfo.InvariantCulture)], NumberStyles.None, CultureInfo.InvariantCulture, out int mark))
                 marks[key] = (GamePreference)mark;
         return GamesActionAsync(guildId, userId => sender.Send(new SetGamePreferencesCommand(userId, marks), HttpContext.RequestAborted),

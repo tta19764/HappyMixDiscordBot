@@ -196,6 +196,7 @@ public sealed class GameFeatureTests
         Assert.Equal((StatsStatus.Ok, (string?)null), (mine.Dota!.Status, mine.Dota.Reason));
 
         Assert.Equal("FACEIT didn't answer within 10 seconds.", GameStatsDirectory.Reason("FACEIT", new TaskCanceledException()));
+        Assert.Equal("OpenDota didn't answer within 45 seconds.", GameStatsDirectory.Reason("OpenDota", new TaskCanceledException()));
         Assert.Null(GameStatsDirectory.Reason("FACEIT", new InvalidOperationException()));
     }
 

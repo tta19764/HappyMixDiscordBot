@@ -1976,7 +1976,7 @@
 <data name="Guide_vacation_Title" xml:space="preserve"><value>Holidays and date ranges</value></data>
 <data name="Guide_vacation_Body" xml:space="preserve"><value>Set a first date and optional last date to apply the same hours every day, including weekends. This adds dated availability alongside your weekly timetable. Overlaps prevent the whole save. Use the calendar to inspect dates and remove individual ranges.</value></data>
 <data name="Guide_weekly_Title" xml:space="preserve"><value>Weekly timetable and copying</value></data>
-<data name="Guide_weekly_Body" xml:space="preserve"><value>Open Weekly timetable and edit a weekday. Add one or more time ranges, set certainty for each, then save the day. The schedule repeats weekly. Copy day includes hours, certainty and time zone. Paste the copied text into another day’s editor, apply it, then save that day. Ctrl+C and Ctrl+V work in the copy field.</value></data>
+<data name="Guide_weekly_Body" xml:space="preserve"><value>Open Weekly timetable and edit a weekday. Add free time or do-not-disturb ranges: each range has a type, and free time also has a certainty (Definite or Tentative). Save the day; the schedule repeats weekly. Copy day includes hours, certainty, do not disturb and time zone. Paste the copied text into another day’s editor, apply it, then save that day. Ctrl+C and Ctrl+V work in the copy field.</value></data>
 <data name="Guide_groups_Title" xml:space="preserve"><value>Groups and shared availability</value></data>
 <data name="Guide_groups_Body" xml:space="preserve"><value>Create a group, add its description and games, and invite server members. Inside a group, the tab row at the top switches between Overview, Availability, Members, Events, Votes, Watchlist, Games and Settings. Invitees accept in Discord or the dashboard to join and receive the group role. The group board shows members’ availability. An open group is listed for everyone under “Open to join”: people ask to join and the organizer lets them in. Members can suggest games, found on any platform, for the organizer to add. Organizers and moderators manage the group. Role repair restores roles from saved membership. Leaving removes your group role. Closing a group deletes its membership records and role. Overview shows the group at a glance: the next event with who's going and buttons to answer, who's free today and playing now, the latest game together and the week's record, the top games and open votes.</value></data>
 <data name="Guide_events_Title" xml:space="preserve"><value>Events and invitations</value></data>
@@ -2593,7 +2593,7 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Quiet_Err_TooMany" xml:space="preserve"><value>You already have the most do-not-disturb times allowed. Remove one first.</value></data>
 <data name="Quiet_Err_Missing" xml:space="preserve"><value>That do-not-disturb time no longer exists.</value></data>
 <data name="Guide_dnd_Title" xml:space="preserve"><value>Do not disturb</value></data>
-<data name="Guide_dnd_Body" xml:space="preserve"><value>Add do-not-disturb hours on the Availability page: in the Weekly timetable, edit a day and choose “Do not disturb” as the kind of a range (for example weeknights 23:00–08:00); on the By date tab, add dates with a summary of what will be saved. While do-not-disturb is on, HappyMix holds your personal messages: event invitations and updates, group requests and invitations, and Live notices. When it ends, each message is checked again and only sent if it still matters, so a canceled date, an answered request or a finished game is dropped. Do-not-disturb belongs to your Discord account, so it covers every server, and it shows as a striped purple band on your week, on your day and on the server and group availability boards.</value></data>
+<data name="Guide_dnd_Body" xml:space="preserve"><value>Add do-not-disturb hours on the Availability page: in the Weekly timetable, edit a day and press “Add do not disturb” or set a range’s type to “Do not disturb” (for example weeknights 23:00–08:00); on the By date tab, add dates with a summary of what will be saved. While do-not-disturb is on, HappyMix holds your personal messages: event invitations and updates, group requests and invitations, and Live notices. When it ends, each message is checked again and only sent if it still matters, so a canceled date, an answered request or a finished game is dropped. Do-not-disturb belongs to your Discord account, so it covers every server, and it shows as a striped purple band on your week, on your day and on the server and group availability boards.</value></data>
 <data name="Quiet_Err_Zone" xml:space="preserve"><value>Choose a time zone like Europe/Kyiv or enter a UTC offset like +02:00.</value></data>
 <data name="Quiet_Err_Times" xml:space="preserve"><value>Enter 24-hour times like 17 or 00:30.</value></data>
 <data name="Dnd_WeekHelp" xml:space="preserve"><value>For do-not-disturb hours, edit a day and choose “Do not disturb” as the kind of a range. They cover every server: HappyMix holds your personal messages until they end.</value></data>
@@ -2836,4 +2836,17 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Ov_Voters" xml:space="preserve"><value>{0} voted</value></data>
 <data name="Ov_Closes" xml:space="preserve"><value>closes {0}</value></data>
 <data name="Ov_YouVoted" xml:space="preserve"><value>you voted</value></data>
+<data name="Nav_Reorder" xml:space="preserve"><value>Reorder</value></data>
+<data name="Nav_Done" xml:space="preserve"><value>Done</value></data>
+<data name="Nav_Reorder_Help" xml:space="preserve"><value>Drag items or use the arrows to change the menu order. It is saved in this browser.</value></data>
+<data name="Nav_MoveUp" xml:space="preserve"><value>Move {0} up</value></data>
+<data name="Nav_MoveDown" xml:space="preserve"><value>Move {0} down</value></data>
+<data name="Nav_Reset" xml:space="preserve"><value>Default order</value></data>
+<data name="Games_Showing" xml:space="preserve"><value>Showing {0} of {1}</value></data>
+<data name="Games_LoadMore" xml:space="preserve"><value>Load {0} more</value></data>
+<data name="Games_UseSearch" xml:space="preserve"><value>Use search or the filters to find the rest.</value></data>
+<data name="Range_Type" xml:space="preserve"><value>Type</value></data>
+<data name="Range_Free" xml:space="preserve"><value>Free time</value></data>
+<data name="Range_AddFree" xml:space="preserve"><value>Add free time</value></data>
+<data name="Range_AddDnd" xml:space="preserve"><value>Add do not disturb</value></data>
 </root>

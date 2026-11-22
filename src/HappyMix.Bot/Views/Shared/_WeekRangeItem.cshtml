@@ -40,12 +40,20 @@
                 </div>
             </div>
         }
+        @* What the range is (free time or do not disturb), and, for free time only, how sure it is. Both selects are
+           always posted so the lists line up; Certainty is hidden for do-not-disturb rows. *@
         <div class="hm-field">
+            <label class="hm-label" for="@id-type">@T["Range_Type"]</label>
+            <select class="hm-select" id="@id-type" name="rangeType" data-range-type>
+                <option value="free" selected="@(!Model.DoNotDisturb)">@T["Range_Free"]</option>
+                <option value="dnd" selected="@Model.DoNotDisturb">@T["Dnd_Title"]</option>
+            </select>
+        </div>
+        <div class="hm-field hm-wrange__certainty">
             <label class="hm-label" for="@id-kind">@T["Certainty"]</label>
             <select class="hm-select" id="@id-kind" name="rangeKind" data-range-kind>
-                <option value="definite" selected="@(!Model.Tentative && !Model.DoNotDisturb)">@T["Definite"]</option>
-                <option value="tentative" selected="@(Model.Tentative && !Model.DoNotDisturb)">@T["Tentative"]</option>
-                <option value="dnd" selected="@Model.DoNotDisturb">@T["Dnd_Title"]</option>
+                <option value="definite" selected="@(!Model.Tentative)">@T["Definite"]</option>
+                <option value="tentative" selected="@Model.Tentative">@T["Tentative"]</option>
             </select>
         </div>
         <div class="hm-wrange__actions">
