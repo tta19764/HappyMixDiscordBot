@@ -2124,3 +2124,120 @@ a:hover { color: var(--hm-text); text-decoration-color: var(--hm-text); }
     .hm-meta__nums { grid-column: 3; justify-content: flex-start; }
     .hm-meta__bar { grid-column: 3; }
 }
+
+/* Game features: the game list (cards, table, list) and a game's page header ------------------------------------ */
+.hm-games-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--hm-space-3); }
+.hm-games-toolbar h2 { margin: 0 auto 0 0; }
+.hm-games-toolbar__search { flex-wrap: nowrap; gap: var(--hm-space-2); }
+.hm-games-toolbar__search .hm-input { width: auto; min-width: 0; flex: 1 1 14rem; }
+.hm-games-toolbar .hm-segment a span { display: inline; }
+@media (max-width: 40rem) { .hm-games-toolbar .hm-segment a span { display: none; } }
+.hm-games-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--hm-space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); }
+.hm-games-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--hm-space-2); }
+.hm-gamecard { display: flex; flex-direction: column; height: 100%; overflow: hidden; border: 1px solid var(--hm-border); border-radius: var(--hm-radius-md);
+    background: var(--hm-surface); color: var(--hm-text); text-decoration: none; transition: border-color .15s, transform .15s; }
+.hm-gamecard:hover { border-color: var(--hm-border-strong); transform: translateY(-2px); color: var(--hm-text); }
+@media (prefers-reduced-motion: reduce) { .hm-gamecard, .hm-gamecard:hover { transition: none; transform: none; } }
+.hm-gamecard__art { position: relative; display: block; aspect-ratio: 460 / 215; background: var(--hm-surface-2); }
+.hm-gamecard__art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hm-gamecard__body { display: grid; gap: var(--hm-space-2); padding: var(--hm-space-3); }
+.hm-gamecard__name { font-size: var(--hm-fs-md, 1rem); }
+.hm-gamecard__status { color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); }
+.hm-gamecard__features { display: flex; flex-wrap: wrap; gap: 4px; }
+.hm-ftag { display: inline-flex; align-items: center; padding: 1px 8px; border: 1px solid var(--hm-border-strong); border-radius: 999px; font-size: var(--hm-fs-xs);
+    color: var(--hm-text-muted); white-space: nowrap; }
+.hm-games-list .hm-gamecard { flex-direction: row; align-items: center; }
+.hm-games-list .hm-gamecard__art { flex: none; width: 120px; }
+.hm-games-list .hm-gamecard__body { flex: 1; grid-template-columns: minmax(8rem, 12rem) 1fr; align-items: center; }
+.hm-games-list .hm-gamecard__status { grid-column: 1 / -1; }
+@media (max-width: 40rem) { .hm-games-list .hm-gamecard__art { width: 80px; } .hm-games-list .hm-gamecard__body { grid-template-columns: 1fr; } }
+.hm-games-tablewrap { overflow-x: auto; }
+.hm-games-table { width: 100%; border-collapse: collapse; font-size: var(--hm-fs-sm); }
+.hm-games-table th { text-align: left; padding: var(--hm-space-2); color: var(--hm-text-subtle); font-weight: 600; border-bottom: 1px solid var(--hm-border-strong); }
+.hm-games-table td { padding: var(--hm-space-2); border-bottom: 1px solid var(--hm-border); vertical-align: middle; }
+.hm-games-table__game { display: inline-flex; align-items: center; gap: var(--hm-space-3); color: var(--hm-text); text-decoration: none; }
+.hm-games-table__game img { width: 92px; height: 43px; border-radius: 4px; object-fit: cover; background: var(--hm-surface-2); }
+.hm-gamehead { display: flex; align-items: center; gap: var(--hm-space-4); margin-bottom: var(--hm-space-4); }
+.hm-gamehead img { width: 184px; aspect-ratio: 460 / 215; height: auto; border-radius: var(--hm-radius-md); object-fit: cover; background: var(--hm-surface-2); }
+.hm-gamehead__back { display: inline-flex; align-items: center; gap: 4px; font-size: var(--hm-fs-sm); }
+.hm-gamehead__name { margin: 4px 0 0; }
+@media (max-width: 40rem) { .hm-gamehead img { width: 120px; } }
+.hm-tab-c-meta { --hm-tab-c: var(--hm-c-coral); } .hm-tab-c-posting { --hm-tab-c: var(--hm-c-amber); }
+.hm-meta__go { display: flex; align-items: end; }
+.hm-meta__go .hm-btn { width: 100%; justify-content: center; }
+.hm-meta__explain { padding: var(--hm-space-3); border: 1px solid var(--hm-border); border-radius: var(--hm-radius-md); font-size: var(--hm-fs-sm); }
+.hm-meta__explain summary { display: flex; align-items: center; gap: var(--hm-space-2); cursor: pointer; font-weight: 600; }
+.hm-meta__explain p { margin: 0; color: var(--hm-text-muted); }
+.hm-meta__explain[open] summary { margin-bottom: var(--hm-space-2); }
+
+/* Dota 2 extras on a stats card: role, medal change, form, averages, teammates. */
+.hm-dotamore { display: grid; gap: var(--hm-space-2); padding-top: var(--hm-space-2); border-top: 1px dashed var(--hm-border); }
+.hm-dotamore__note { margin: 0; color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); }
+.hm-rolebar { display: flex; gap: 2px; height: 6px; border-radius: 999px; overflow: hidden; }
+.hm-rolebar__part { min-width: 4px; background: var(--hm-c-sky); }
+.hm-rolebar__part--1, .hm-rolebar__part--safe { background: var(--hm-c-coral); }
+.hm-rolebar__part--2, .hm-rolebar__part--mid { background: var(--hm-c-amber); }
+.hm-rolebar__part--3, .hm-rolebar__part--off { background: var(--hm-c-mint); }
+.hm-rolebar__part--4, .hm-rolebar__part--roam { background: var(--hm-c-sky); }
+.hm-rolebar__part--5, .hm-rolebar__part--jungle { background: var(--hm-c-violet); }
+.hm-dotamore__chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+.hm-trend { display: inline-flex; align-items: center; padding: 1px 8px; border: 1px solid var(--hm-border-strong); border-radius: 999px;
+    font-size: var(--hm-fs-xs); color: var(--hm-text-muted); white-space: nowrap; cursor: help; }
+.hm-trend--up { border-color: color-mix(in srgb, var(--hm-c-mint) 60%, transparent); color: var(--hm-c-mint); }
+.hm-trend--down { border-color: color-mix(in srgb, var(--hm-c-coral) 60%, transparent); color: var(--hm-c-coral); }
+.hm-form { display: flex; gap: 2px; }
+.hm-form span { flex: 1; height: 10px; border-radius: 2px; }
+.hm-form__w { background: var(--hm-c-mint); }
+.hm-form__l { background: color-mix(in srgb, var(--hm-c-coral) 70%, transparent); }
+.hm-dotamore__more summary { cursor: pointer; color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); }
+.hm-dotamore__more[open] summary { margin-bottom: var(--hm-space-2); }
+.hm-dotamore__more .hm-statcard__list { margin-top: var(--hm-space-2); }
+.hm-dotamore__subhead { color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); }
+.hm-statcard__record--group { padding-top: var(--hm-space-2); border-top: 1px dashed var(--hm-border); }
+.hm-duos { display: grid; gap: var(--hm-space-2); }
+.hm-duos h3 { margin: 0; }
+.hm-duos .hm-help { margin: 0; }
+.hm-duos__list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--hm-space-2); }
+.hm-duos__list li { display: grid; grid-template-columns: 1fr auto; gap: 4px var(--hm-space-3); align-items: baseline; font-size: var(--hm-fs-sm); }
+.hm-duos__list .hm-winbar { grid-column: 1 / -1; }
+.hm-duos__names span { color: var(--hm-text-subtle); }
+.hm-dotamore .hm-statcard__facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.hm-dotamore .hm-statcard__facts dd { font-size: var(--hm-fs-sm); }
+.hm-dotamore .hm-statcard__record { flex-wrap: wrap; column-gap: var(--hm-space-2); row-gap: 0; }
+.hm-dotamore .hm-statcard__record > * { white-space: nowrap; }
+
+/* Group Overview: the group at a glance. */
+.hm-ov { display: grid; gap: var(--hm-space-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); }
+.hm-ov__tile { display: grid; align-content: start; gap: var(--hm-space-3); min-width: 0; padding: var(--hm-space-4); border: 1px solid var(--hm-border);
+    border-radius: var(--hm-radius-md); background: var(--hm-surface-2); }
+.hm-ov__tile--event { grid-column: 1 / -1; }
+.hm-ov__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--hm-space-3); }
+.hm-ov__head h3 { display: inline-flex; align-items: center; gap: var(--hm-space-2); margin: 0; font-size: var(--hm-fs-md, 1rem); }
+.hm-ov__head h3 svg { width: 18px; height: 18px; color: var(--hm-text-subtle); }
+.hm-ov__head a { font-size: var(--hm-fs-sm); white-space: nowrap; }
+.hm-ov .hm-events { margin: 0; }
+.hm-ov .hm-empty-note { margin: 0; }
+.hm-ov__label { display: inline-flex; align-items: center; gap: 6px; color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); text-transform: uppercase; letter-spacing: .04em; }
+.hm-ov__people { display: grid; gap: var(--hm-space-2); }
+.hm-ov__people ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.hm-ov__people li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px var(--hm-space-2); font-size: var(--hm-fs-sm); }
+.hm-ov__people li small { color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); }
+.hm-ov__tile--event .hm-ov__people ul { display: flex; flex-wrap: wrap; gap: 6px var(--hm-space-4); }
+.hm-ov__maybe { opacity: .75; }
+.hm-ov__more { color: var(--hm-text-subtle); }
+.hm-live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--hm-c-coral); box-shadow: 0 0 0 3px color-mix(in srgb, var(--hm-c-coral) 25%, transparent); }
+.hm-ov__recap { display: grid; gap: 2px; padding-left: var(--hm-space-3); border-left: 3px solid var(--hm-border-strong); font-size: var(--hm-fs-sm); }
+.hm-ov__recap--won { border-left-color: var(--hm-c-mint); }
+.hm-ov__recap--lost { border-left-color: var(--hm-c-coral); }
+.hm-ov__recap--split { border-left-color: var(--hm-c-amber); }
+.hm-ov__games { margin: 0; padding-left: 1.25rem; display: grid; gap: 6px; font-size: var(--hm-fs-sm); }
+.hm-ov__games li::marker { color: var(--hm-text-subtle); }
+.hm-ov__game { font-weight: 600; margin-right: var(--hm-space-2); }
+.hm-ov__votes { display: grid; gap: var(--hm-space-2); padding-top: var(--hm-space-3); border-top: 1px dashed var(--hm-border); justify-items: start; }
+.hm-ov__votes ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--hm-space-2); }
+.hm-ov__votes li { display: grid; gap: 2px; font-size: var(--hm-fs-sm); }
+.hm-ov__votes small { color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); }
+@media (prefers-reduced-motion: no-preference) { .hm-live-dot { animation: hm-ov-pulse 2s ease-in-out infinite; } }
+@keyframes hm-ov-pulse { 50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--hm-c-coral) 10%, transparent); } }
+.hm-ov .hm-statcard__record { flex-wrap: wrap; column-gap: var(--hm-space-2); row-gap: 0; }
+.hm-ov .hm-statcard__record > span:first-child { white-space: nowrap; }

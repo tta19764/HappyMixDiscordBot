@@ -1,0 +1,17 @@
+{
+  "en": [
+    "**v0.1.5 · Group overview and Dota 2 stats**\nA group's **Overview** now shows the group at a glance: the next event with who's going and buttons to answer, who's free today and who's playing now, the latest game together and the week's record, the top games and the open votes.",
+    "**More Dota 2 stats**\nDota 2 cards add the most played role (positions 1–5 from STRATZ, or lanes from OpenDota), the medal change since the bot started saving it daily, an MMR estimate from ranked wins and losses, the last 20 matches with a streak, average K/D/A, GPM/XPM and solo vs party win rate. On a group's Stats tab each card shows the games with the group in the last 14 days and the members you play with most, and **Duos** lists the pairs with the most games on the same team.",
+    "**Game features by game**\n**Game features** now lists games as cards, a table or a list, with a search; each game has its own page with tabs. The Dota 2 meta search runs only when you press **Search**, explains how the meta score works, and hides heroes picked in under 1% of matches by default (adjustable, also for scheduled posts)."
+  ],
+  "uk": [
+    "**v0.1.5 · Огляд групи та статистика Dota 2**\n**Огляд** групи тепер показує все головне: найближчу подію з тими, хто йде, і кнопками відповіді, хто вільний сьогодні й хто грає зараз, останню спільну гру й результати тижня, топ ігор і відкриті голосування.",
+    "**Більше статистики Dota 2**\nКартки Dota 2 тепер показують найчастішу роль (позиції 1–5 з STRATZ або лінії з OpenDota), зміну медалі відтоді, як бот почав зберігати її щодня, оцінку MMR за рейтинговими перемогами й поразками, останні 20 матчів із серією, середні K/D/A, GPM/XPM і відсоток перемог соло та в паті. На вкладці «Статистика» групи кожна картка показує ігри з групою за останні 14 днів і з ким ви граєте найчастіше, а **Дуети** — пари з найбільшою кількістю ігор в одній команді.",
+    "**Ігрові функції за іграми**\n**Ігрові функції** тепер показують ігри картками, таблицею або списком, з пошуком; кожна гра має власну сторінку з вкладками. Пошук мети Dota 2 запускається лише після натискання **Шукати**, пояснює, як працює мета-оцінка, і за замовчуванням приховує героїв, яких беруть менше ніж в 1% матчів (це можна змінити, зокрема для запланованих публікацій)."
+  ],
+  "ru": [
+    "**v0.1.5 · Обзор группы и статистика Dota 2**\n**Обзор** группы теперь показывает всё главное: ближайшее событие с теми, кто идёт, и кнопками ответа, кто свободен сегодня и кто играет сейчас, последнюю совместную игру и результаты недели, топ игр и открытые голосования.",
+    "**Больше статистики Dota 2**\nКарточки Dota 2 теперь показывают самую частую роль (позиции 1–5 из STRATZ или линии из OpenDota), изменение медали с тех пор, как бот начал сохранять её ежедневно, оценку MMR по рейтинговым победам и поражениям, последние 20 матчей с серией, средние K/D/A, GPM/XPM и процент побед соло и в пати. На вкладке «Статистика» группы каждая карточка показывает игры с группой за последние 14 дней и с кем вы играете чаще всего, а **Дуэты** — пары с наибольшим числом игр в одной команде.",
+    "**Игровые функции по играм**\n**Игровые функции** теперь показывают игры карточками, таблицей или списком, с поиском; у каждой игры своя страница с вкладками. Поиск меты Dota 2 запускается только по кнопке **Искать**, объясняет, как работает мета-оценка, и по умолчанию скрывает героев, которых берут меньше чем в 1% матчей (это можно изменить, в том числе для запланированных публикаций)."
+  ]
+}

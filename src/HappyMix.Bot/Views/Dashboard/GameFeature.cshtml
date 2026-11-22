@@ -1,0 +1,323 @@
+@using System.Globalization
+@using HappyMix.Application.Abstractions.Stats
+@model GameFeaturesPage
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = Model.Game.Name + " · " + T["Features_Title"].Value;
+    bool dota = Model.Game == GameFeatureCatalog.Dota2;
+    var nav = new ServerNavModel(Model.GuildId, Model.GuildName, "game-features", Model.IsAdmin, "Features_Title", T["Features_Lead"]);
+    var culture = CultureInfo.CurrentCulture;
+    var data = Model.Data;
+    var meta = data.Meta;
+    string url = $"/game-features/{Model.GuildId}";
+    var own = new OwnStatsModel(Model.GuildId, data.Mine, Model.Url + "/stats/share", Model.Url + "/stats/refresh", data.Now,
+        dota ? StatsGame.Dota2 : StatsGame.Cs2);
+    var lanes = new[] { DotaLane.Safe, DotaLane.Mid, DotaLane.Off };
+    var days = new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday };
+    string When(DateTimeOffset at) => TimeZoneInfo.ConvertTime(at, HappyMix.Application.Guilds.LocalTimes.FindZone(Model.TimeZone) ?? TimeZoneInfo.Utc)
+        .ToString("ddd d MMM, HH:mm", culture);
+    string? channelName = meta.ChannelId is { } chosen ? Model.Channels.FirstOrDefault(channel => channel.Id == chosen).Name : null;
+    var filter = data.Filter;
+    var ranks = Enum.GetValues<MetaRank>();
+    var sorts = Enum.GetValues<MetaSort>();
+    var patches = Enum.GetValues<MetaPatch>();
+    string PatchLabel(MetaPatch patch, HeroMeta? found) => patch == MetaPatch.Current
+        ? (found?.PatchName is { } name ? T["Meta_Patch", name].Value : T["Meta_Patch_Current"].Value) : T["Meta_Patch_LastWeek"].Value;
+}
+<partial name="_ServerNav" model="nav" />
+@if (Model.Banner is { } banner)
+{
+    <div style="margin-bottom: var(--hm-space-4)"><partial name="_Banner" model="banner" /></div>
+}
+
+<header class="hm-gamehead">
+    <img src="@Model.Game.Art" alt="" width="230" height="107" data-game-art data-art-fallback="@HappyMix.Bot.Services.SteamArt.Fallback(Model.Game.AppId)">
+    <div>
+        <a class="hm-gamehead__back" href="@url">@DashboardIcons.Render("back")@T["Features_AllGames"]</a>
+        <h2 class="hm-gamehead__name">@Model.Game.Name</h2>
+    </div>
+</header>
+
+<nav class="hm-gtabs" aria-label="@Model.Game.Name" data-group-tabs data-default-tab="@Model.DefaultTab">
+    <a class="hm-tab-c-stats" href="#stats" data-tab="stats">@DashboardIcons.Render("stats")@T["Features_MyStats"]</a>
+    @if (dota)
+    {
+        <a class="hm-tab-c-meta" href="#meta" data-tab="meta">@DashboardIcons.Render("trophy")@T["Meta_Tab"]</a>
+        @if (Model.IsAdmin)
+        {
+            <a class="hm-tab-c-posting" href="#posting" data-tab="posting">@DashboardIcons.Render("bell")@T["Meta_Posting"]</a>
+        }
+    }
+</nav>
+
+<div class="hm-stack hm-stack--lg">
+    <section class="hm-card hm-stack hm-stats" id="stats" aria-labelledby="stats-title" data-group-panel="stats">
+        <div>
+            <h2 id="stats-title">@DashboardIcons.Render("stats", cssClass: "hm-heading-icon")@T["Features_MyStats"]</h2>
+            <p class="hm-help">@T["Features_MyStatsLead"]</p>
+        </div>
+        <partial name="_OwnStats" model="own" />
+    </section>
+
+    @if (dota)
+    {
+    <section class="hm-card hm-stack hm-dmeta" id="meta" aria-labelledby="meta-title" data-group-panel="meta">
+        <div class="hm-card__head" style="margin: 0">
+            <div>
+                <h2 id="meta-title">@DashboardIcons.Render("trophy", cssClass: "hm-heading-icon")@T[data.SearchEnabled ? "Meta_SearchTitle" : "Meta_Title"] <span class="hm-count">@T["Meta_TopN", meta.Count]</span></h2>
+                <p class="hm-help">@T[data.SearchEnabled ? "Meta_SearchLead" : "Meta_Lead"]</p>
+            </div>
+            @if (data.Heroes is { } fresh)
+            {
+                <span class="hm-badge">@T["Meta_Updated", When(fresh.FetchedAt)]</span>
+            }
+        </div>
+        @if (data.SearchEnabled)
+        {
+            @* The search: patch, role, rank and order, as a GET form so a result can be bookmarked or shared. *@
+            <form class="hm-meta__search" method="get" action="@Model.Url#meta" role="search" aria-label="@T["Meta_Search"]">
+                <div class="hm-field">
+                    <label class="hm-label" for="meta-patch">@T["Meta_PatchLabel"]</label>
+                    <select class="hm-select" id="meta-patch" name="patch">
+                        @foreach (var patch in patches)
+                        {
+                            <option value="@patch" selected="@(filter.Patch == patch)">@PatchLabel(patch, data.Search)</option>
+                        }
+                    </select>
+                </div>
+                <div class="hm-field">
+                    <label class="hm-label" for="meta-role">@T["Meta_Role"]</label>
+                    <select class="hm-select" id="meta-role" name="role">
+                        @for (int position = 0; position <= 5; position++)
+                        {
+                            <option value="@position" selected="@(filter.Position == position)">@T[$"Meta_Position_{position}"]</option>
+                        }
+                    </select>
+                </div>
+                <div class="hm-field">
+                    <label class="hm-label" for="meta-rank">@T["Meta_RankLabel"]</label>
+                    <select class="hm-select" id="meta-rank" name="rank">
+                        @foreach (var rank in ranks)
+                        {
+                            <option value="@rank" selected="@(filter.Rank == rank)">@T[$"Meta_Rank_{rank}"]</option>
+                        }
+                    </select>
+                </div>
+                <div class="hm-field">
+                    <label class="hm-label" for="meta-sort">@T["Meta_SortLabel"]</label>
+                    <select class="hm-select" id="meta-sort" name="sort">
+                        @foreach (var sort in sorts)
+                        {
+                            <option value="@sort" selected="@(filter.Sort == sort)">@T[$"Meta_Sort_{sort}"]</option>
+                        }
+                    </select>
+                </div>
+                <div class="hm-field">
+                    <label class="hm-label" for="meta-minpick">@T["Meta_MinPick"]</label>
+                    <select class="hm-select" id="meta-minpick" name="minPick">
+                        @foreach (double pick in HappyMix.Application.Stats.DotaMetas.MinPickRates)
+                        {
+                            <option value="@pick.ToString(CultureInfo.InvariantCulture)" selected="@(filter.MinPickRate == pick)">@(pick == 0 ? T["Meta_MinPick_Any"].Value : T["Meta_MinPick_N", pick.ToString("0.#", culture)].Value)</option>
+                        }
+                    </select>
+                </div>
+                <div class="hm-meta__go"><button class="hm-btn hm-btn--primary">@DashboardIcons.Render("search")@T["Search"]</button></div>
+            </form>
+            <details class="hm-meta__explain">
+                <summary>@DashboardIcons.Render("info")@T["Meta_ExplainTitle"]</summary>
+                <div class="hm-stack hm-stack--sm">
+                    <p>@T["Meta_Explain1"]</p>
+                    <p>@T["Meta_Explain2"]</p>
+                    <p>@T["Meta_Explain3"]</p>
+                    <p>@T["Meta_Explain4"]</p>
+                </div>
+            </details>
+            @if (data.SearchError is { } searchError)
+            {
+                <div class="hm-statcard__problem hm-statcard__problem--error">
+                    <p class="hm-statcard__state">@T[data.Search is null ? "Meta_SearchFailed" : "Meta_Stale"]</p>
+                    <details class="hm-statcard__why"><summary>@T["Stats_Why"]</summary><code>@searchError</code></details>
+                </div>
+            }
+            @if (data.Search is { } found)
+            {
+                <p class="hm-help hm-meta__scope">
+                    @T["Meta_Scope", found.Matches.ToString("N0", culture), found.Since is { } since ? When(since) : "—", When(found.FetchedAt)]
+                </p>
+                <ol class="hm-meta__results">
+                    @foreach (var hero in found.Heroes.Take(meta.Count))
+                    {
+                        <li>
+                            @if (hero.Image is { } image)
+                            {
+                                <img src="@image" alt="" width="64" height="36" loading="lazy" data-game-art>
+                            }
+                            <span class="hm-meta__hero">@hero.Name</span>
+                            <span class="hm-meta__nums">
+                                <span title="@T["Meta_SortWinRateHelp"]"><b>@hero.WinRate.ToString("0.0", culture)%</b> @T["Meta_Wins"]</span>
+                                <span title="@T["Meta_SortPickRateHelp"]">@hero.PickRate.ToString("0.0", culture)% @T["Meta_Picks"]</span>
+                                <span class="hm-statcard__num">@T["Meta_Games", hero.Games.ToString("N0", culture)]</span>
+                            </span>
+                            <span class="hm-meta__bar" aria-hidden="true"><span style="width: @Math.Clamp((hero.WinRate - 40) * 5, 2, 100).ToString("0.#", CultureInfo.InvariantCulture)%"></span></span>
+                        </li>
+                    }
+                </ol>
+            }
+        }
+        @if (data.MetaError is { } metaError)
+        {
+            <div class="hm-statcard__problem hm-statcard__problem--error">
+                <p class="hm-statcard__state">@T[data.Heroes is null ? "Meta_Failed" : "Meta_Stale"]</p>
+                <details class="hm-statcard__why"><summary>@T["Stats_Why"]</summary><code>@metaError</code></details>
+            </div>
+        }
+        @if (data.Heroes is { } heroes)
+        {
+            <div class="hm-meta__lanes">
+                @foreach (var lane in lanes)
+                {
+                    <div class="hm-meta__lane">
+                        <h3>@T[$"Meta_Lane_{lane}"]</h3>
+                        <ol class="hm-statcard__list">
+                            @foreach (var hero in (heroes.Lanes.GetValueOrDefault(lane) ?? []).Take(meta.Count))
+                            {
+                                <li>
+                                    @if (hero.Image is { } image)
+                                    {
+                                        <img src="@image" alt="" width="48" height="27" loading="lazy" data-game-art>
+                                    }
+                                    <span class="hm-statcard__what">@hero.Name</span>
+                                    <span class="hm-statcard__num"><b>@hero.WinRate.ToString("0.0", culture)%</b> · @T["Meta_Games", hero.Games.ToString("N0", culture)]</span>
+                                </li>
+                            }
+                        </ol>
+                    </div>
+                }
+            </div>
+            <p class="hm-help">@T["Meta_Source"]</p>
+        }
+
+    </section>
+        @if (Model.IsAdmin)
+        {
+            <section class="hm-card hm-stack hm-dmeta hm-meta__admin" id="posting" aria-labelledby="posting-title" data-group-panel="posting">
+                <h2 id="posting-title">@DashboardIcons.Render("bell", cssClass: "hm-heading-icon")@T["Meta_Posting"]</h2>
+                <p class="hm-help">
+                    @(channelName is { } named ? T["Meta_ChannelIs", "#" + named].Value : T["Meta_NoChannel"].Value)
+                    @if (meta.LastPostedAt is { } last)
+                    {
+                        <span> · @T["Meta_LastPosted", When(last)]</span>
+                    }
+                </p>
+                <form class="hm-meta__form" method="post" action="@url/dota-meta" asp-antiforgery="false">
+                    @Html.AntiForgeryToken()
+                    <div class="hm-field">
+                        <label class="hm-label" for="meta-channel">@T["Meta_Channel"]</label>
+                        <select class="hm-select" id="meta-channel" name="channel">
+                            <option value="">@T["Meta_ChooseChannel"]</option>
+                            @foreach (var (id, name) in Model.Channels)
+                            {
+                                <option value="@id" selected="@(meta.ChannelId == id)">#@name</option>
+                            }
+                        </select>
+                    </div>
+                    @if (data.SearchEnabled)
+                    {
+                        <div class="hm-field">
+                            <label class="hm-label" for="post-patch">@T["Meta_PatchLabel"]</label>
+                            <select class="hm-select" id="post-patch" name="postPatch">
+                                @foreach (var patch in patches)
+                                {
+                                    <option value="@patch" selected="@(meta.Patch == patch)">@PatchLabel(patch, data.Search)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="hm-field">
+                            <label class="hm-label" for="post-rank">@T["Meta_RankLabel"]</label>
+                            <select class="hm-select" id="post-rank" name="postRank">
+                                @foreach (var rank in ranks)
+                                {
+                                    <option value="@rank" selected="@(meta.Rank == rank)">@T[$"Meta_Rank_{rank}"]</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="hm-field">
+                            <label class="hm-label" for="post-minpick">@T["Meta_MinPick"]</label>
+                            <select class="hm-select" id="post-minpick" name="postMinPick">
+                                @foreach (double pick in HappyMix.Application.Stats.DotaMetas.MinPickRates)
+                                {
+                                    <option value="@pick.ToString(CultureInfo.InvariantCulture)" selected="@(meta.MinPickRate == pick)">@(pick == 0 ? T["Meta_MinPick_Any"].Value : T["Meta_MinPick_N", pick.ToString("0.#", culture)].Value)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="hm-field">
+                            <label class="hm-label" for="post-sort">@T["Meta_SortLabel"]</label>
+                            <select class="hm-select" id="post-sort" name="postSort">
+                                @foreach (var sort in sorts)
+                                {
+                                    <option value="@sort" selected="@(meta.Sort == sort)">@T[$"Meta_Sort_{sort}"]</option>
+                                }
+                            </select>
+                        </div>
+                    }
+                    <div class="hm-field">
+                        <label class="hm-label" for="meta-count">@T["Meta_Count"]</label>
+                        <select class="hm-select" id="meta-count" name="count">
+                            @foreach (int count in HappyMix.Application.Stats.DotaMetas.Counts)
+                            {
+                                <option value="@count" selected="@(meta.Count == count)">@T["Meta_TopN", count]</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="hm-field">
+                        <label class="hm-label" for="meta-schedule">@T["Meta_Schedule"]</label>
+                        <select class="hm-select" id="meta-schedule" name="schedule" data-meta-schedule>
+                            @foreach (var schedule in Enum.GetValues<MetaSchedule>())
+                            {
+                                <option value="@schedule" selected="@(meta.Schedule == schedule)">@T[$"Meta_Schedule_{schedule}"]</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="hm-field" data-meta-day>
+                        <label class="hm-label" for="meta-day">@T["Meta_Day"]</label>
+                        <select class="hm-select" id="meta-day" name="day">
+                            @foreach (var day in days)
+                            {
+                                <option value="@day" selected="@(meta.Day == day)">@culture.DateTimeFormat.GetDayName(day)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="hm-field">
+                        <label class="hm-label" for="meta-hour">@T["Meta_Hour"]</label>
+                        <select class="hm-select" id="meta-hour" name="hour">
+                            @for (int hour = 0; hour < 24; hour++)
+                            {
+                                <option value="@hour" selected="@(meta.Hour == hour)">@hour.ToString("00", CultureInfo.InvariantCulture):00</option>
+                            }
+                        </select>
+                    </div>
+                    <p class="hm-help hm-meta__note">@T["Meta_ScheduleHelp", Model.TimeZone] @T[data.SearchEnabled ? "Meta_PostByRole" : "Meta_PostByLane"]</p>
+                    <div class="hm-row"><button class="hm-btn hm-btn--primary">@T["Save"]</button></div>
+                </form>
+                <div class="hm-row">
+                    <form method="post" action="@url/dota-meta/channel" asp-antiforgery="false">
+                        @Html.AntiForgeryToken()
+                        <button class="hm-btn">@DashboardIcons.Render("plus")@T["Meta_CreateChannel"]</button>
+                    </form>
+                    <form method="post" action="@url/dota-meta/post" asp-antiforgery="false">
+                        @Html.AntiForgeryToken()
+                        <button class="hm-btn" disabled="@(meta.ChannelId is null)">@DashboardIcons.Render("refresh")@T["Meta_PostNow"]</button>
+                    </form>
+                </div>
+            </section>
+        }
+    }
+
+    @if (!dota)
+    {
+        <section class="hm-card hm-stack" id="more" aria-labelledby="more-title" data-group-panel="stats">
+            <h2 id="more-title">@DashboardIcons.Render("games", cssClass: "hm-heading-icon")@T["Features_MoreSoon"]</h2>
+            <p class="hm-help">@T["Features_Cs2Soon"]</p>
+        </section>
+    }
+</div>

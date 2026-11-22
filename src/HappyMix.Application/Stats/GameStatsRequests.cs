@@ -35,7 +35,15 @@ public sealed record GroupStats(IReadOnlyList<StatsGame> Games, IReadOnlyList<Pl
     /// <summary>Whether the Monday summary is posted in the group's notification channel.</summary>
     public bool PostDigest { get; init; }
     public bool CanManage { get; init; }
+    /// <summary>Pairs of sharing members and their Dota 2 games on the same team (OpenDota peers, all time), most games first.</summary>
+    public IReadOnlyList<DotaDuo> Duos { get; init; } = [];
+    /// <summary>Per sharing member: matches with at least one other member over <see cref="MatchRecaps.ShowFor"/>, per game.</summary>
+    public IReadOnlyDictionary<(ulong UserId, StatsGame Game), WinRecord> WithGroup { get; init; } = new Dictionary<(ulong, StatsGame), WinRecord>();
 }
+
+public sealed record DotaDuo(ulong First, ulong Second, int Games, int Wins);
+
+public sealed record WinRecord(int Games, int Wins);
 
 public sealed record GetGroupStatsQuery(GroupActor Actor, Guid GroupId) : IQuery<GroupStats>;
 
@@ -94,6 +102,75 @@ public static class GameStats
     /// <summary>Medal index 1 (Herald) … 8 (Immortal) and stars 0–5, or null when unranked.</summary>
     public static (int Medal, int Stars)? DotaMedal(int? rankTier) =>
         rankTier is >= 10 and <= 85 and var tier && tier / 10 is >= 1 and <= 8 ? (tier / 10, tier % 10) : null;
+
+    /// <summary>Roughly how much MMR one ranked game moves (Dota 2 doesn't make the real number public).</summary>
+    public const int MmrPerGame = 25;
+    /// <summary>How long the bot keeps a member's daily medal.</summary>
+    public const int RankHistoryDays = 90;
+
+    /// <summary>The medal as a count of stars from Herald 0: each medal is 5 stars, so a change reads as "+2 stars".</summary>
+    public static int? StarsOf(int? rankTier) => DotaMedal(rankTier) is var (medal, stars) ? (medal - 1) * 5 + Math.Min(stars, 5) : null;
+
+    /// <summary>
+    /// The fresh card with the medal history carried over from the previous card: one point per day, the latest of the
+    /// day wins, kept for <see cref="RankHistoryDays"/>.
+    /// </summary>
+    public static DotaProfile WithRankHistory(DotaProfile fresh, DotaProfile? previous, DateOnly today)
+    {
+        var points = (previous?.RankHistory ?? []).Where(point => point.Day > today.AddDays(-RankHistoryDays) && point.Day < today).ToList();
+        if (fresh.RankTier is { } tier)
+            points.Add(new DotaRankPoint(today, tier));
+        return fresh with { RankHistory = points.OrderBy(point => point.Day).ToArray() };
+    }
+
+    /// <summary>
+    /// Stars gained (or lost) since the oldest saved medal within <paramref name="days"/> days, and that day. Null when
+    /// unranked or there's no earlier day to compare with yet.
+    /// </summary>
+    public static (int Stars, DateOnly Since)? RankChange(DotaProfile profile, DateOnly today, int days = 30)
+    {
+        if (StarsOf(profile.RankTier) is not { } now)
+            return null;
+        var first = profile.RankHistory.FirstOrDefault(point => point.Day >= today.AddDays(-days) && point.Day < today && StarsOf(point.RankTier) is not null);
+        return first is null ? null : (now - StarsOf(first.RankTier)!.Value, first.Day);
+    }
+
+    /// <summary>An estimate from ranked wins minus losses in the last matches; null without ranked games.</summary>
+    public static int? MmrEstimate(DotaRecent? recent) => recent is { RankedGames: > 0 } ranked ? (2 * ranked.RankedWins - ranked.RankedGames) * MmrPerGame : null;
+
+    /// <summary>Pairs of sharing members found in each other's OpenDota peers. Both sides list the same games; the larger count wins.</summary>
+    public static IReadOnlyList<DotaDuo> Duos(IEnumerable<PlayerStatsCard> cards)
+    {
+        var sharing = cards.Where(card => card.Shares && card.DotaProfile is not null).ToArray();
+        var userOf = new Dictionary<long, ulong>();
+        foreach (var card in sharing)
+            if (DotaAccountId(card.SteamId) is { } account)
+                userOf.TryAdd(account, card.UserId);
+        var pairs = new Dictionary<(ulong, ulong), DotaDuo>();
+        foreach (var card in sharing)
+            foreach (var peer in card.DotaProfile!.Peers)
+            {
+                if (!userOf.TryGetValue(peer.AccountId, out ulong other) || other == card.UserId)
+                    continue;
+                var key = card.UserId < other ? (card.UserId, other) : (other, card.UserId);
+                if (!pairs.TryGetValue(key, out var known) || known.Games < peer.Games)
+                    pairs[key] = new DotaDuo(key.Item1, key.Item2, peer.Games, peer.Wins);
+            }
+        return pairs.Values.OrderByDescending(duo => duo.Games).ThenByDescending(duo => duo.Wins).ToArray();
+    }
+
+    /// <summary>Per member and game: recaps they were in, and how many their side won.</summary>
+    public static Dictionary<(ulong UserId, StatsGame Game), WinRecord> WithGroup(IEnumerable<GroupRecap> recaps)
+    {
+        var result = new Dictionary<(ulong, StatsGame), WinRecord>();
+        foreach (var recap in recaps)
+            foreach (var player in recap.Players.DistinctBy(player => player.UserId))
+            {
+                var known = result.GetValueOrDefault((player.UserId, recap.Game)) ?? new WinRecord(0, 0);
+                result[(player.UserId, recap.Game)] = new WinRecord(known.Games + 1, known.Wins + (player.Won ? 1 : 0));
+            }
+        return result;
+    }
 
     public static T? Read<T>(CachedStats? stats) where T : class
     {
@@ -155,7 +232,9 @@ internal sealed partial class GameStatsHandlers(IGameStatsStore store, IGameStat
             PostRecaps = await store.GetRecapChannelAsync(query.Actor.GuildId, query.GroupId),
             Week = WeeklyDigests.Build(together.Where(recap => now - recap.StartedAt < TimeSpan.FromDays(7))),
             PostDigest = await store.GetDigestChannelAsync(query.Actor.GuildId, query.GroupId),
-            CanManage = detail.Summary.CanManage
+            CanManage = detail.Summary.CanManage,
+            Duos = GameStats.Duos(cards),
+            WithGroup = GameStats.WithGroup(together)
         };
     }
 
@@ -239,6 +318,13 @@ internal sealed partial class GameStatsHandlers(IGameStatsStore store, IGameStat
         var previous = (await store.ListCachedAsync([userId])).ToArray();
         int fetched = 0;
         var dota = await directory.GetDotaAsync(steamId, cancellationToken);
+        // OpenDota only knows today's medal: the history of earlier days is carried over from the previous card.
+        if (dota.Profile is { } fresh)
+            dota = dota with
+            {
+                Profile = GameStats.WithRankHistory(fresh, GameStats.Read<DotaProfile>(previous.FirstOrDefault(item => item.Game == StatsGame.Dota2)),
+                    DateOnly.FromDateTime(now.UtcDateTime))
+            };
         await SaveAsync(userId, guildId, StatsGame.Dota2, dota, previous, now);
         fetched++;
         if (directory.Cs2Enabled)

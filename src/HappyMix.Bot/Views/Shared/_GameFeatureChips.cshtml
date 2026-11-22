@@ -1,0 +1,8 @@
+@model GameFeatureInfo
+@* The features a game has, as small labels. *@
+<span class="hm-gamecard__features">
+    @foreach (string feature in Model.Features)
+    {
+        <span class="hm-ftag">@T[$"Feature_{feature}"]</span>
+    }
+</span>

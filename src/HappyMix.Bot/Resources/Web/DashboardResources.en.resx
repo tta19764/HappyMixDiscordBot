@@ -1978,7 +1978,7 @@
 <data name="Guide_weekly_Title" xml:space="preserve"><value>Weekly timetable and copying</value></data>
 <data name="Guide_weekly_Body" xml:space="preserve"><value>Open Weekly timetable and edit a weekday. Add one or more time ranges, set certainty for each, then save the day. The schedule repeats weekly. Copy day includes hours, certainty and time zone. Paste the copied text into another day’s editor, apply it, then save that day. Ctrl+C and Ctrl+V work in the copy field.</value></data>
 <data name="Guide_groups_Title" xml:space="preserve"><value>Groups and shared availability</value></data>
-<data name="Guide_groups_Body" xml:space="preserve"><value>Create a group, add its description and games, and invite server members. Inside a group, the tab row at the top switches between Overview, Availability, Members, Events, Votes, Watchlist, Games and Settings. Invitees accept in Discord or the dashboard to join and receive the group role. The group board shows members’ availability. An open group is listed for everyone under “Open to join”: people ask to join and the organizer lets them in. Members can suggest games, found on any platform, for the organizer to add. Organizers and moderators manage the group. Role repair restores roles from saved membership. Leaving removes your group role. Closing a group deletes its membership records and role.</value></data>
+<data name="Guide_groups_Body" xml:space="preserve"><value>Create a group, add its description and games, and invite server members. Inside a group, the tab row at the top switches between Overview, Availability, Members, Events, Votes, Watchlist, Games and Settings. Invitees accept in Discord or the dashboard to join and receive the group role. The group board shows members’ availability. An open group is listed for everyone under “Open to join”: people ask to join and the organizer lets them in. Members can suggest games, found on any platform, for the organizer to add. Organizers and moderators manage the group. Role repair restores roles from saved membership. Leaving removes your group role. Closing a group deletes its membership records and role. Overview shows the group at a glance: the next event with who's going and buttons to answer, who's free today and playing now, the latest game together and the week's record, the top games and open votes.</value></data>
 <data name="Guide_events_Title" xml:space="preserve"><value>Events and invitations</value></data>
 <data name="Guide_events_Body" xml:space="preserve"><value>Create an event for a group or choose individual members. Set its dates, hours and time zone. For a recurring event, accept once to join the series; decline or withdraw from individual dates without changing the others. The organizer confirms each date when enough people can attend, and can cancel one date or the remaining series. Confirmed events appear in availability. Open Channel notifications on a group or event to choose or create a channel named after it, set the language and reminder lead time, and optionally post updates when events are scheduled, confirmed or canceled. Events use their group’s settings until they get their own. Reminders mention accepted participants and the organizer only when they are absent from every server voice channel, including linked accounts. A repeating event sends each person one invitation: Accept all dates or Decline all dates answers the whole series. Canceled events and dates are erased a few minutes after cancellation.</value></data>
 <data name="Guide_game-news_Title" xml:space="preserve"><value>Game news subscriptions</value></data>
@@ -2651,7 +2651,7 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Dota_Medal_7" xml:space="preserve"><value>Divine</value></data>
 <data name="Dota_Medal_8" xml:space="preserve"><value>Immortal</value></data>
 <data name="Guide_stats_Title" xml:space="preserve"><value>Stats</value></data>
-<data name="Guide_stats_Body" xml:space="preserve"><value>Groups that play Dota 2 or CS2 have a Stats tab with a card for each member. Sharing is off until you turn on “Show my game stats to my groups”; it then applies to all your groups, and turning it off deletes the saved stats and matches. Dota 2 cards come from OpenDota (medal, wins and losses in the last 30 days, most played heroes) and need “Expose Public Match Data” on in Dota 2. CS2 cards come from FACEIT (level, Elo, K/D, headshots, maps) when the bot has a FACEIT key. When two or more sharing members play the same match, it appears under Recent games together, and the organizer can also have these recaps posted in the group's channel. Cards refresh every few hours and matches about every half hour, with links to OpenDota, Dotabuff, FACEIT, Leetify and Steam.</value></data>
+<data name="Guide_stats_Body" xml:space="preserve"><value>Groups that play Dota 2 or CS2 have a Stats tab with a card for each member. Sharing is off until you turn on “Show my game stats to my groups”; it then applies to all your groups, and turning it off deletes the saved stats and matches. Dota 2 cards come from OpenDota and need “Expose Public Match Data” on in Dota 2: medal, the last 30 days, most played heroes, most played role (positions from STRATZ when the bot has a key, otherwise lanes), medal change since the bot started saving it daily, an MMR estimate from ranked wins and losses (the real MMR isn't public), the last 20 matches with averages, and who you play with most. CS2 cards come from FACEIT (level, Elo, K/D, headshots, maps) when the bot has a FACEIT key. Duos lists the members who played on the same team the most. When two or more sharing members play the same match, it appears under Recent games together, and the organizer can also have these recaps posted in the group's channel. Cards refresh every few hours and matches about every half hour.</value></data>
 <data name="Recap_Title" xml:space="preserve"><value>Recent games together</value></data>
 <data name="Recap_None" xml:space="preserve"><value>No games together in the last two weeks. When two or more members who share their stats play the same match, it shows up here.</value></data>
 <data name="Recap_Result_won" xml:space="preserve"><value>Won</value></data>
@@ -2678,7 +2678,7 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Digest_MostPlayed" xml:space="preserve"><value>most played {0} ×{1}</value></data>
 <data name="Digest_Best" xml:space="preserve"><value>best: {0} won {1} of {2}</value></data>
 <data name="Features_Title" xml:space="preserve"><value>Game features</value></data>
-<data name="Features_Lead" xml:space="preserve"><value>Extras for specific games: your Dota 2 and CS2 stats, and the Dota 2 meta for this server.</value></data>
+<data name="Features_Lead" xml:space="preserve"><value>Features for specific games on this server. Pick a game to see your stats and its tools.</value></data>
 <data name="Features_MyStats" xml:space="preserve"><value>Your game stats</value></data>
 <data name="Features_MyStatsLead" xml:space="preserve"><value>The same cards your groups see on their Stats tab. Changing the switch here changes it everywhere.</value></data>
 <data name="Features_Cs2Soon" xml:space="preserve"><value>More CS2 features are coming. Your CS2 stats are above and on the Stats tab of groups that play CS2.</value></data>
@@ -2724,7 +2724,7 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Meta_Err_Schedule" xml:space="preserve"><value>Choose a valid schedule, day and hour.</value></data>
 <data name="Meta_Err_Channel" xml:space="preserve"><value>Choose or create a channel first.</value></data>
 <data name="Guide_features_Title" xml:space="preserve"><value>Game features</value></data>
-<data name="Guide_features_Body" xml:space="preserve"><value>The Game features page collects extras for specific games. Your Dota 2 and CS2 stats are there with the same switch as on group Stats tabs, plus a Refresh button and, when a lookup fails, the exact reason under “Why?”. Dota 2 has the meta heroes by lane from OpenDota; server admins choose a channel (or create #dota-meta), post it right away or set it to post every day, every two days or once a week at a chosen time.</value></data>
+<data name="Guide_features_Body" xml:space="preserve"><value>The Game features page lists the games that have extras on this server, as cards, a table or a list, with a search. Each game has its own page with tabs. Your stats tab shows your cards with the same switch as on group Stats tabs, a Refresh button and, when a lookup fails, the exact reason under “Why?”. Dota 2 also has Meta heroes: pick the patch, role, rank, order and minimum pick rate, then press Search. The meta score is the lowest win rate a hero is likely to have given its number of games, so a few lucky games don't top the list; heroes picked in under 1% of matches are hidden by default. On Posting in Discord, server admins choose a channel (or create #dota-meta), post right away or set it to post every day, every two days or once a week.</value></data>
 <data name="Meta_Count" xml:space="preserve"><value>Heroes per lane</value></data>
 <data name="Meta_TopN" xml:space="preserve"><value>Top {0}</value></data>
 <data name="Meta_SearchTitle" xml:space="preserve"><value>Dota 2 · Meta heroes</value></data>
@@ -2762,4 +2762,78 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Meta_PostByLane" xml:space="preserve"><value>Posts list the safe, mid and off lanes from OpenDota.</value></data>
 <data name="Meta_RolesTitle" xml:space="preserve"><value>Dota 2 meta by role</value></data>
 <data name="Meta_RolesLegend" xml:space="preserve"><value>Win rate · pick rate, ranked All Pick</value></data>
+<data name="Features_Games" xml:space="preserve"><value>Games</value></data>
+<data name="Features_SearchGames" xml:space="preserve"><value>Find a game</value></data>
+<data name="Features_View" xml:space="preserve"><value>Show as</value></data>
+<data name="Features_ViewCards" xml:space="preserve"><value>Cards</value></data>
+<data name="Features_ViewTable" xml:space="preserve"><value>Table</value></data>
+<data name="Features_ViewList" xml:space="preserve"><value>List</value></data>
+<data name="Features_NoGames" xml:space="preserve"><value>No games match your search.</value></data>
+<data name="Features_Game" xml:space="preserve"><value>Game</value></data>
+<data name="Features_Available" xml:space="preserve"><value>Features</value></data>
+<data name="Features_Status" xml:space="preserve"><value>Status</value></data>
+<data name="Features_ListHelp" xml:space="preserve"><value>More games will appear here as they get features.</value></data>
+<data name="Features_AllGames" xml:space="preserve"><value>All games</value></data>
+<data name="Features_MoreSoon" xml:space="preserve"><value>More features coming</value></data>
+<data name="Features_StatusSharing" xml:space="preserve"><value>You share your stats</value></data>
+<data name="Features_StatusNotSharing" xml:space="preserve"><value>Your stats are hidden</value></data>
+<data name="Features_StatusMeta" xml:space="preserve"><value>Meta posts: {0}</value></data>
+<data name="Features_StatusMetaOff" xml:space="preserve"><value>Meta posts are off</value></data>
+<data name="Features_StatusCs2Off" xml:space="preserve"><value>CS2 stats need a FACEIT key</value></data>
+<data name="Feature_stats" xml:space="preserve"><value>Your stats</value></data>
+<data name="Feature_meta" xml:space="preserve"><value>Meta heroes</value></data>
+<data name="Feature_recaps" xml:space="preserve"><value>Games together</value></data>
+<data name="Feature_digest" xml:space="preserve"><value>Weekly summary</value></data>
+<data name="Meta_Tab" xml:space="preserve"><value>Meta heroes</value></data>
+<data name="Meta_MinPick" xml:space="preserve"><value>Picked in at least</value></data>
+<data name="Meta_MinPick_Any" xml:space="preserve"><value>Any pick rate</value></data>
+<data name="Meta_MinPick_N" xml:space="preserve"><value>{0}% of matches</value></data>
+<data name="Meta_ExplainTitle" xml:space="preserve"><value>How the meta score works</value></data>
+<data name="Meta_Explain1" xml:space="preserve"><value>Win rate alone misleads: a hero that won 60 of 100 games looks better than one that won 5,400 of 10,000 (54%), but 100 games can be luck. The meta score asks how high the win rate is at least, given the number of games.</value></data>
+<data name="Meta_Explain2" xml:space="preserve"><value>Technically it is the lower bound of the 95% Wilson interval: 60 of 100 scores about 50.2, while 5,400 of 10,000 scores about 53.0, so the proven hero ranks higher. The more games, the closer the score gets to the real win rate.</value></data>
+<data name="Meta_Explain3" xml:space="preserve"><value>Pick rate is the share of matches where the hero was played in the chosen role. “Picked in at least” hides situational heroes, for example offlaners picked in under 1% of games, even when their numbers look good. The default is 1%.</value></data>
+<data name="Meta_Explain4" xml:space="preserve"><value>Data: STRATZ, ranked All Pick games only. “Current patch” counts from the first full day after the patch came out. Results are kept for an hour, so changing the order or the pick rate doesn't ask STRATZ again.</value></data>
+<data name="Dota_Lane_Jungle" xml:space="preserve"><value>Jungle</value></data>
+<data name="Dota_Lane_Roam" xml:space="preserve"><value>Roaming</value></data>
+<data name="Dota_MostPlayed" xml:space="preserve"><value>Mostly plays</value></data>
+<data name="Dota_RoleTitle" xml:space="preserve"><value>{0}: {1} games · {2} won</value></data>
+<data name="Dota_RolesStratz" xml:space="preserve"><value>Positions over the last {0} matches, from STRATZ.</value></data>
+<data name="Dota_RolesOpenDota" xml:space="preserve"><value>Lanes over the last {0} matches, from OpenDota (it can't tell position 4 from 5).</value></data>
+<data name="Dota_RankChange" xml:space="preserve"><value>{0} ★ since {1}</value></data>
+<data name="Dota_RankChangeHelp" xml:space="preserve"><value>Medal change: the bot saves the medal once a day, because OpenDota only shows the current one. Each medal has 5 stars.</value></data>
+<data name="Dota_Mmr" xml:space="preserve"><value>≈ {0} MMR · {1} ranked</value></data>
+<data name="Dota_MmrHelp" xml:space="preserve"><value>An estimate: about {0} MMR per ranked win or loss in the last matches. Dota 2 doesn't make the real MMR public.</value></data>
+<data name="Dota_LastN" xml:space="preserve"><value>Last {0}</value></data>
+<data name="Dota_WinStreak" xml:space="preserve"><value>{0} wins in a row</value></data>
+<data name="Dota_LossStreak" xml:space="preserve"><value>{0} losses in a row</value></data>
+<data name="Dota_FormLabel" xml:space="preserve"><value>Last {0} matches, oldest first: {1} won, {2} lost</value></data>
+<data name="Dota_MoreStats" xml:space="preserve"><value>More stats</value></data>
+<data name="Dota_Kda" xml:space="preserve"><value>Avg. K / D / A</value></data>
+<data name="Dota_GpmXpm" xml:space="preserve"><value>GPM / XPM</value></data>
+<data name="Dota_Solo" xml:space="preserve"><value>Solo</value></data>
+<data name="Dota_Party" xml:space="preserve"><value>In a party</value></data>
+<data name="Dota_BestWith" xml:space="preserve"><value>Most games with</value></data>
+<data name="Stats_WithGroup" xml:space="preserve"><value>With the group, 14 days</value></data>
+<data name="Stats_Duos" xml:space="preserve"><value>Duos</value></data>
+<data name="Stats_DuosHelp" xml:space="preserve"><value>Members who played on the same team the most, all time, from OpenDota.</value></data>
+<data name="Ov_NextEvent" xml:space="preserve"><value>Next event</value></data>
+<data name="Ov_AllEvents" xml:space="preserve"><value>All events</value></data>
+<data name="Ov_Going" xml:space="preserve"><value>Going</value></data>
+<data name="Ov_Today" xml:space="preserve"><value>Today</value></data>
+<data name="Ov_TodayOther" xml:space="preserve"><value>Open the availability for today to see who is free.</value></data>
+<data name="Ov_NobodyFree" xml:space="preserve"><value>Nobody has marked free time for today yet.</value></data>
+<data name="Ov_FreeToday" xml:space="preserve"><value>Free today: {0}</value></data>
+<data name="Ov_FreeNow" xml:space="preserve"><value>Free now</value></data>
+<data name="Ov_Maybe" xml:space="preserve"><value>maybe</value></data>
+<data name="Ov_AndMore" xml:space="preserve"><value>and {0} more</value></data>
+<data name="Ov_Latest" xml:space="preserve"><value>Latest</value></data>
+<data name="Ov_Week" xml:space="preserve"><value>{0}, 7 days</value></data>
+<data name="Ov_TogetherShare" xml:space="preserve"><value>Games together show up once at least two members share their stats.</value></data>
+<data name="Ov_TogetherNone" xml:space="preserve"><value>No games together in the last two weeks.</value></data>
+<data name="Ov_TopGames" xml:space="preserve"><value>Top games</value></data>
+<data name="Ov_NoGames" xml:space="preserve"><value>No games added yet.</value></data>
+<data name="Ov_OpenVotes" xml:space="preserve"><value>Open votes: {0}</value></data>
+<data name="Ov_Voters" xml:space="preserve"><value>{0} voted</value></data>
+<data name="Ov_Closes" xml:space="preserve"><value>closes {0}</value></data>
+<data name="Ov_YouVoted" xml:space="preserve"><value>you voted</value></data>
 </root>

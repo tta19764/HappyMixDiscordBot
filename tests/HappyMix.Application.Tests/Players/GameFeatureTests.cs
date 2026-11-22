@@ -93,14 +93,24 @@ public sealed class GameFeatureTests
         var byScore = (await sender.Send(new GetGameFeaturesQuery(Guild, Kai, new MetaFilter(MetaPatch.Current, 1, MetaRank.LegendAncient)))).Value;
         Assert.Equal("Lina", byScore.Search!.Heroes[0].Name);
         Assert.Single(fixture.Heroes.Asked);
+        // Any pick rate shows the rare hero too, still from the cache.
+        var any = (await sender.Send(new GetGameFeaturesQuery(Guild, Kai, new MetaFilter(MetaPatch.Current, 1, MetaRank.LegendAncient, MinPickRate: 0)))).Value;
+        Assert.Equal("Techies", any.Search!.Heroes[0].Name);
+        Assert.Single(fixture.Heroes.Asked);
 
         await sender.Send(new SaveDotaMetaCommand(Guild, MetaSchedule.Off, 99, DayOfWeek.Monday, 12, 10, MetaRank.DivineImmortal, MetaPatch.LastWeek, MetaSort.WinRate));
         Assert.True((await sender.Send(new PostDotaMetaCommand(Guild))).IsSuccess);
         var roles = Assert.Single(fixture.RolePosts);
         Assert.Equal([1, 2, 3, 4, 5], roles.Select(role => role.Filter.Position));
         Assert.All(roles, role => Assert.Equal((MetaRank.DivineImmortal, MetaPatch.LastWeek), (role.Filter.Rank, role.Filter.Patch)));
-        Assert.Equal("Pudge", roles[0].Heroes[0].Name); // by win rate
+        Assert.Equal("Pudge", roles[0].Heroes[0].Name); // by win rate, Techies is under 1%
         Assert.Empty(fixture.Posted);
+        // Posts can be set to any pick rate as well.
+        await sender.Send(new SaveDotaMetaCommand(Guild, MetaSchedule.Off, 99, DayOfWeek.Monday, 12, 10, MetaRank.DivineImmortal, MetaPatch.LastWeek, MetaSort.WinRate, 0));
+        Assert.Equal(0, (await sender.Send(new GetDotaMetaSettingsQuery(Guild))).Value.MinPickRate);
+        Assert.True((await sender.Send(new PostDotaMetaCommand(Guild))).IsSuccess);
+        Assert.Equal("Techies", fixture.RolePosts[^1][0].Heroes[0].Name);
+        Assert.True((await sender.Send(new SaveDotaMetaCommand(Guild, MetaSchedule.Off, 99, DayOfWeek.Monday, 12, 10, MinPickRate: 7))).IsFailure);
 
         // STRATZ down and nothing cached for these filters: the post falls back to the lanes from OpenDota.
         fixture.Heroes.Fail = true;
@@ -200,8 +210,9 @@ public sealed class GameFeatureTests
             Asked.Add(filter);
             if (Fail)
                 return Task.FromResult(new StatsFetch<HeroMeta>(StatsStatus.Error, null, "STRATZ answered 503 Service Unavailable: busy"));
-            // Pudge: high win rate over few games; Lina: a little lower over many; Axe: popular and weak.
-            RankedHero[] heroes = [new(14, "Pudge", null, 120, 72, 1), new(25, "Lina", null, 20000, 11000, 12), new(2, "Axe", null, 40000, 18000, 25)];
+            // Pudge: high win rate over few games; Lina: a little lower over many; Axe: popular and weak;
+            // Techies: wins a lot but is rarely picked, so the default 1% minimum hides him.
+            RankedHero[] heroes = [new(105, "Techies", null, 300, 240, 0.4), new(14, "Pudge", null, 120, 72, 1), new(25, "Lina", null, 20000, 11000, 12), new(2, "Axe", null, 40000, 18000, 25)];
             return Task.FromResult(new StatsFetch<HeroMeta>(StatsStatus.Ok,
                 new HeroMeta(filter, "7.42", DateTimeOffset.UnixEpoch, DateTimeOffset.UnixEpoch, 80000, heroes.OrderByDescending(hero => hero.Score).ToArray())));
         }

@@ -1,0 +1,217 @@
+@using System.Globalization
+@using HappyMix.Application.Abstractions.Stats
+@using HappyMix.Application.Guilds
+@model GroupPage
+@* The group at a glance on the Overview tab: next event, who's free today and playing now, games together, top games and open votes. *@
+@{
+    var culture = CultureInfo.CurrentCulture;
+    string Localize(string key) => T.Message(key);
+    string Name(ulong id) => Model.Names.Name(id, Localize);
+    var zone = TimeZoneInfo.TryFindSystemTimeZoneById(Model.Board?.TimeZone ?? "UTC", out var found) ? found : TimeZoneInfo.Utc;
+    string When(DateTimeOffset at)
+    {
+        var local = TimeZoneInfo.ConvertTime(at, zone);
+        var today = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, zone).Date;
+        return local.Date == today ? local.ToString("HH:mm", culture) : local.ToString("d MMM, HH:mm", culture);
+    }
+    string Hours(BoardRange range) => range.AllDay ? T["All_day"].Value
+        : range.Start.ToString("HH:mm", culture) + "–" + (GroupAvailabilityBoard.EndHours(range) >= 24 ? "24:00" : range.End.ToString("HH:mm", culture));
+
+    var next = Model.Events.FirstOrDefault(row => row.StatusKey != "canceled");
+    var board = Model.Board is { } loaded && loaded.Date == loaded.Today ? loaded : null;
+    var free = board?.Rows.Select(row => (row.UserId, Sure: row.Ranges.Where(range => !range.Tentative).ToArray(), Maybe: row.Ranges.Where(range => range.Tentative).ToArray()))
+        .Where(row => row.Sure.Length + row.Maybe.Length > 0)
+        .OrderBy(row => row.Sure.Length == 0 ? 1 : 0).ThenBy(row => Name(row.UserId), StringComparer.CurrentCultureIgnoreCase).ToArray() ?? [];
+    var playing = Model.Live?.State.Playing ?? [];
+    var stats = Model.Stats;
+    var latest = stats?.Recaps.FirstOrDefault();
+    var topGames = Model.Detail.Games
+        .Select(game => (Game: game, Interest: Model.Interest?.Games.GetValueOrDefault(game.Id)))
+        .OrderByDescending(item => item.Interest?.Want.Count ?? 0).ThenByDescending(item => item.Interest?.Can.Count ?? 0)
+        .ThenBy(item => item.Game.Name, StringComparer.CurrentCultureIgnoreCase)
+        .Take(3).ToArray();
+    var votes = Model.Polls?.Board.Open.OrderBy(poll => poll.ClosesAt).Take(3).ToArray() ?? [];
+}
+<div class="hm-ov">
+    @* Next event, with who's going and the RSVP buttons of the Events tab. *@
+    <section class="hm-ov__tile hm-ov__tile--event" aria-labelledby="ov-event">
+        <header class="hm-ov__head">
+            <h3 id="ov-event">@DashboardIcons.Render("events")@T["Ov_NextEvent"]</h3>
+            <a href="#events">@T["Ov_AllEvents"]</a>
+        </header>
+        @if (next is null)
+        {
+            <p class="hm-empty-note">@T["No_events_planned_for_this_group_yet"]</p>
+            <a class="hm-btn hm-btn--sm" href="/events/@Model.GuildId/new?group=@Model.Group.Id">@T["Plan_an_event"]</a>
+        }
+        else
+        {
+            <ul class="hm-events">
+                <partial name="_EventRow" model="next" view-data='new ViewDataDictionary(ViewData) { ["GuildId"] = Model.GuildId, ["Actions"] = next.MyAnswer == true ? "withdraw" : "answer", ["ReturnUrl"] = Context.Request.Path + Context.Request.QueryString + "#overview" }' />
+            </ul>
+            @if (next.Going.Count > 0)
+            {
+                <div class="hm-ov__people" aria-label="@T["Ov_Going"]">
+                    <span class="hm-ov__label">@T["Ov_Going"]</span>
+                    <ul>
+                        @foreach (ulong id in next.Going.Take(8))
+                        {
+                            <li><partial name="_MemberAvatars" model="MemberStacks.For(Model, id, Localize, small: true)" /><span>@Name(id)</span></li>
+                        }
+                        @if (next.Going.Count > 8)
+                        {
+                            <li class="hm-ov__more">+@((next.Going.Count - 8).ToString(culture))</li>
+                        }
+                    </ul>
+                </div>
+            }
+        }
+    </section>
+
+    @* Today: free time from the availability board and who's in a game right now. *@
+    <section class="hm-ov__tile" aria-labelledby="ov-today">
+        <header class="hm-ov__head">
+            <h3 id="ov-today">@DashboardIcons.Render("availability")@T["Ov_Today"]</h3>
+            @if (Model.Board is { } any)
+            {
+                <a href="@Model.DayUrl(any.Today)">@T["Availability"]</a>
+            }
+        </header>
+        @if (playing.Count > 0)
+        {
+            <div class="hm-ov__people hm-ov__people--live">
+                <span class="hm-ov__label"><span class="hm-live-dot" aria-hidden="true"></span>@T["Live_PlayingNow"]</span>
+                <ul>
+                    @foreach (var player in playing)
+                    {
+                        <li>
+                            <partial name="_MemberAvatars" model="MemberStacks.For(Model, player.UserId, Localize, small: true)" />
+                            <span>@Name(player.UserId)</span>
+                            <small>@player.Game · @T["Live_Since", When(player.Since)]</small>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+        @if (board is null)
+        {
+            <p class="hm-help">@T["Ov_TodayOther"]</p>
+        }
+        else if (free.Length == 0)
+        {
+            <p class="hm-empty-note">@T["Ov_NobodyFree"]</p>
+        }
+        else
+        {
+            <div class="hm-ov__people">
+                <span class="hm-ov__label">@T["Ov_FreeToday", free.Count(row => row.Sure.Length > 0)]</span>
+                <ul>
+                    @foreach (var (id, sure, maybe) in free.Take(10))
+                    {
+                        bool now = board.Now is { } time && sure.Any(range => GroupAvailabilityBoard.StartHours(range) <= time.ToTimeSpan().TotalHours
+                            && GroupAvailabilityBoard.EndHours(range) > time.ToTimeSpan().TotalHours);
+                        <li class="@(sure.Length == 0 ? "hm-ov__maybe" : "")">
+                            <partial name="_MemberAvatars" model="MemberStacks.For(Model, id, Localize, small: true)" />
+                            <span>@Name(id)</span>
+                            <small>@string.Join(", ", (sure.Length > 0 ? sure : maybe).Select(Hours))@(sure.Length == 0 ? " · " + T["Ov_Maybe"].Value : "")</small>
+                            @if (now)
+                            {
+                                <span class="hm-badge hm-badge--open">@T["Ov_FreeNow"]</span>
+                            }
+                        </li>
+                    }
+                </ul>
+                @if (free.Length > 10)
+                {
+                    <a class="hm-help" href="@Model.DayUrl(board.Today)">@T["Ov_AndMore", free.Length - 10]</a>
+                }
+            </div>
+        }
+    </section>
+
+    @* Games together: the latest recap and the last 7 days, from the Stats tab. *@
+    @if (stats is not null)
+    {
+        <section class="hm-ov__tile" aria-labelledby="ov-together">
+            <header class="hm-ov__head">
+                <h3 id="ov-together">@DashboardIcons.Render("stats")@T["Digest_GamesTogether"]</h3>
+                <a href="#stats">@T["Stats_Title"]</a>
+            </header>
+            @if (latest is null && stats.Week.Count == 0)
+            {
+                <p class="hm-empty-note">@T[stats.Sharing < 2 ? "Ov_TogetherShare" : "Ov_TogetherNone"]</p>
+            }
+            @if (latest is not null)
+            {
+                string result = latest.Won switch { true => "won", false => "lost", null => "split" };
+                <div class="hm-ov__recap hm-ov__recap--@result">
+                    <span class="hm-ov__label">@T["Ov_Latest"] · @When(latest.StartedAt)</span>
+                    <b>@(latest.Game == StatsGame.Dota2 ? "Dota 2" : "CS2") · @T[$"Recap_Result_{result}"]</b>
+                    <span>@string.Join(", ", latest.Players.Select(player => Name(player.UserId) + (player.Pick is { Length: > 0 } pick ? " (" + pick + ")" : "")))</span>
+                </div>
+            }
+            @foreach (var week in stats.Week)
+            {
+                int decided = week.Wins + week.Losses;
+                <div class="hm-statcard__record">
+                    <span>@T["Ov_Week", week.Game == StatsGame.Dota2 ? "Dota 2" : "CS2"]</span>
+                    <b>@T["Digest_Games", week.Games, week.Wins, week.Losses]</b>
+                    @if (decided > 0)
+                    {
+                        <span class="hm-statcard__rate">@((week.Wins * 100.0 / decided).ToString("0", culture))%</span>
+                    }
+                </div>
+            }
+        </section>
+    }
+
+    @* What the group wants to play, and votes still open. *@
+    <section class="hm-ov__tile" aria-labelledby="ov-games">
+        <header class="hm-ov__head">
+            <h3 id="ov-games">@DashboardIcons.Render("games")@T["Ov_TopGames"]</h3>
+            <a href="#games">@T["Games"]</a>
+        </header>
+        @if (topGames.Length == 0)
+        {
+            <p class="hm-empty-note">@T["Ov_NoGames"]</p>
+        }
+        else
+        {
+            <ol class="hm-ov__games">
+                @foreach (var (game, interest) in topGames)
+                {
+                    <li>
+                        <span class="hm-ov__game">@game.Name</span>
+                        @if (interest is { Want.Count: > 0 })
+                        {
+                            <span class="hm-interest__want">@T["Games_GroupWant", interest.Want.Count]</span>
+                        }
+                    </li>
+                }
+            </ol>
+        }
+        @if (Model.Polls is not null)
+        {
+            <div class="hm-ov__votes">
+                <span class="hm-ov__label">@T["Ov_OpenVotes", votes.Length == 0 ? 0 : Model.Polls.Board.Open.Count]</span>
+                @if (votes.Length == 0)
+                {
+                    <a class="hm-btn hm-btn--sm" href="#votes">@T["Polls_Start"]</a>
+                }
+                else
+                {
+                    <ul>
+                        @foreach (var poll in votes)
+                        {
+                            bool voted = poll.Votes.Any(vote => vote.UserId == Model.Polls.Board.ViewerId);
+                            <li>
+                                <a href="#votes">@poll.Question</a>
+                                <small>@T["Ov_Voters", poll.Votes.Select(vote => vote.UserId).Distinct().Count()] · @T["Ov_Closes", When(poll.ClosesAt)]@(voted ? " · " + T["Ov_YouVoted"].Value : "")</small>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        }
+    </section>
+</div>

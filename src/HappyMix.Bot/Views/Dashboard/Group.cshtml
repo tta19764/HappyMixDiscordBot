@@ -124,6 +124,10 @@
     <section class="hm-card hm-section hm-stack" id="overview" aria-labelledby="overview-title" data-group-panel="overview">
         <h2 id="overview-title">@T["Overview"]</h2>
         <p class="@(group.Description is null ? "hm-subtle" : "")">@(group.Description ?? T["No_description"].Value)</p>
+        @if (detail.CanViewRoster)
+        {
+            <partial name="_GroupOverview" model="Model" />
+        }
         @if (group.Open && group.Relation is HappyMix.Application.Guilds.GroupRelation.None or HappyMix.Application.Guilds.GroupRelation.Requested)
         {
             <form class="hm-row hm-join" method="post" action="@Model.Url/@(group.Relation == HappyMix.Application.Guilds.GroupRelation.Requested ? "join/cancel" : "join")" asp-antiforgery="false">

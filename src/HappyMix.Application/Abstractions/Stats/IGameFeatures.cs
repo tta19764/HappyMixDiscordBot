@@ -21,7 +21,7 @@ public enum MetaSchedule { Off, Daily, EveryTwoDays, Weekly }
 /// <param name="Patch">Whether the post counts the current patch or the last 7 days (STRATZ).</param>
 /// <param name="Sort">How the post orders heroes (STRATZ).</param>
 public sealed record DotaMetaSettings(ulong GuildId, MetaSchedule Schedule, ulong? ChannelId, DayOfWeek Day, int Hour, DateTimeOffset? LastPostedAt,
-    int Count = 10, MetaRank Rank = MetaRank.All, MetaPatch Patch = MetaPatch.Current, MetaSort Sort = MetaSort.Score)
+    int Count = 10, MetaRank Rank = MetaRank.All, MetaPatch Patch = MetaPatch.Current, MetaSort Sort = MetaSort.Score, double MinPickRate = 1)
 {
     public static DotaMetaSettings Default(ulong guildId) => new(guildId, MetaSchedule.Off, null, DayOfWeek.Monday, 12, null);
 }
