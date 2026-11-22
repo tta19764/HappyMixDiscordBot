@@ -13,23 +13,10 @@
     string currentTheme = theme ?? "system";
     string currentThemeLabel = themes.First(item => item.Item1 == currentTheme).Item3;
     string section = side?.Active ?? "";
-    // Section links in the side panel: key, URL segment, label, icon.
-    var serverLinks = new (string Key, string Path, string Label, string Icon)[]
-    {
-        ("availability", "availability", T["Availability"].Value, "availability"),
-        ("events", "events", T["Events"].Value, "events"),
-        ("game-news", "game-news", T["GameNews_Title"].Value, "news"),
-        ("game-features", "game-features", T["Features_Title"].Value, "trophy"),
-        ("groups", "groups", T["Groups"].Value, "groups"),
-        ("my-games", "games", T["Games_Title"].Value, "games"),
-        ("votes", "votes", T["Polls_Title"].Value, "votes"),
-        ("links", "links", T["Linked_accounts"].Value, "links")
-    };
-    var adminLinks = new (string Key, string Path, string Label, string Icon)[]
-    {
-        ("settings", "settings", T["Settings"].Value, "settings"),
-        ("logs", "logs", T["Logs_Title"].Value, "logs")
-    };
+    // Section links in the side panel, in the order this browser saved (SideNavOrder).
+    var navOrder = SideNavOrder.Read(Context.Request);
+    var serverLinks = SideNavOrder.Apply(SideNavOrder.Server, navOrder);
+    var adminLinks = SideNavOrder.Apply(SideNavOrder.Admin, navOrder);
     string serverInitials = guildName is null ? "" : DashboardIcons.Initials(guildName);
 }
 <!doctype html>
@@ -73,15 +60,32 @@
                 </a>
                 @if (side is not null)
                 {
-                    <nav class="hm-side__nav" aria-label="@T["Side_Server"]">
+                    @* Reorder: a switch shows move buttons (a form that works without scripts); dashboard.js adds drag and drop. *@
+                    <form id="hm-nav-form" method="post" action="/nav-order" asp-antiforgery="false" hidden>
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="returnUrl" value="@returnUrl">
+                    </form>
+                    <nav class="hm-side__nav" aria-label="@T["Side_Server"]" data-nav-order>
                         <div class="hm-side__group">
-                            <span class="hm-side__label">@T["Side_Server"]</span>
-                            <div class="hm-side__nav">
+                            <div class="hm-side__labelrow">
+                                <span class="hm-side__label">@T["Side_Server"]</span>
+                                <label class="hm-side__edit" title="@T["Nav_Reorder_Help"]">
+                                    <input type="checkbox" id="hm-nav-edit" data-nav-edit>
+                                    @DashboardIcons.Render("grip")<span class="hm-side__edit-on">@T["Nav_Reorder"]</span><span class="hm-side__edit-off">@T["Nav_Done"]</span>
+                                </label>
+                            </div>
+                            <div class="hm-side__nav" data-nav-group="server">
                                 @foreach (var link in serverLinks)
                                 {
-                                    <a class="hm-side__link hm-side__c-@link.Key" href="/@link.Path/@side.GuildId" title="@link.Label" aria-current="@(section == link.Key ? "page" : null)">
-                                        @DashboardIcons.Render(link.Icon)<span class="hm-side__text">@link.Label</span>
-                                    </a>
+                                    <div class="hm-side__item" data-nav-key="@link.Key">
+                                        <a class="hm-side__link hm-side__c-@link.Key" href="/@link.Path/@side.GuildId" title="@T[link.Label]" aria-current="@(section == link.Key ? "page" : null)">
+                                            @DashboardIcons.Render(link.Icon)<span class="hm-side__text">@T[link.Label]</span>
+                                        </a>
+                                        <span class="hm-side__move">
+                                            <button class="hm-side__step" form="hm-nav-form" name="move" value="@link.Key:up" aria-label="@T["Nav_MoveUp", T[link.Label]]" title="@T["Nav_MoveUp", T[link.Label]]">@DashboardIcons.Render("chevron", cssClass: "hm-side__up")</button>
+                                            <button class="hm-side__step" form="hm-nav-form" name="move" value="@link.Key:down" aria-label="@T["Nav_MoveDown", T[link.Label]]" title="@T["Nav_MoveDown", T[link.Label]]">@DashboardIcons.Render("chevron")</button>
+                                        </span>
+                                    </div>
                                 }
                             </div>
                         </div>
@@ -89,16 +93,26 @@
                         {
                             <div class="hm-side__group" style="margin-top: var(--hm-space-3)">
                                 <span class="hm-side__label">@T["Side_Admin"]</span>
-                                <div class="hm-side__nav">
+                                <div class="hm-side__nav" data-nav-group="admin">
                                     @foreach (var link in adminLinks)
                                     {
-                                        <a class="hm-side__link hm-side__c-@link.Key" href="/@link.Path/@side.GuildId" title="@link.Label" aria-current="@(section == link.Key ? "page" : null)">
-                                            @DashboardIcons.Render(link.Icon)<span class="hm-side__text">@link.Label</span>
+                                        <div class="hm-side__item" data-nav-key="@link.Key">
+                                        <a class="hm-side__link hm-side__c-@link.Key" href="/@link.Path/@side.GuildId" title="@T[link.Label]" aria-current="@(section == link.Key ? "page" : null)">
+                                            @DashboardIcons.Render(link.Icon)<span class="hm-side__text">@T[link.Label]</span>
                                         </a>
+                                        <span class="hm-side__move">
+                                            <button class="hm-side__step" form="hm-nav-form" name="move" value="@link.Key:up" aria-label="@T["Nav_MoveUp", T[link.Label]]" title="@T["Nav_MoveUp", T[link.Label]]">@DashboardIcons.Render("chevron", cssClass: "hm-side__up")</button>
+                                            <button class="hm-side__step" form="hm-nav-form" name="move" value="@link.Key:down" aria-label="@T["Nav_MoveDown", T[link.Label]]" title="@T["Nav_MoveDown", T[link.Label]]">@DashboardIcons.Render("chevron")</button>
+                                        </span>
+                                    </div>
                                     }
                                 </div>
                             </div>
                         }
+                        <div class="hm-side__reorder">
+                            <p class="hm-side__reorder-help">@T["Nav_Reorder_Help"]</p>
+                            <button class="hm-side__btn" form="hm-nav-form" name="reset" value="true" data-nav-reset>@DashboardIcons.Render("refresh")<span class="hm-side__text">@T["Nav_Reset"]</span></button>
+                        </div>
                     </nav>
                 }
             </div>

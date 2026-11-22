@@ -90,6 +90,22 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
         return LocalRedirect(Url.IsLocalUrl(returnUrl) ? returnUrl : "/");
     }
 
+    // Side panel order without JavaScript: one move per click, or back to the default. dashboard.js reorders in place
+    // (buttons and drag and drop) and writes the same cookie.
+    [AllowAnonymous]
+    [HttpPost("/nav-order")]
+    public IActionResult SetNavOrder(string? move, bool reset, string? returnUrl)
+    {
+        var options = new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Secure = Request.IsHttps, SameSite = SameSiteMode.Lax, Path = "/" };
+        if (reset)
+            Response.Cookies.Delete(SideNavOrder.Cookie, new CookieOptions { Path = "/" });
+        else if (move?.Split(':') is [var key, var direction] && direction is "up" or "down")
+            Response.Cookies.Append(SideNavOrder.Cookie, string.Join(SideNavOrder.Separator, SideNavOrder.Move(SideNavOrder.Read(Request), key, direction == "up" ? -1 : 1)), options);
+        else
+            return BadRequest();
+        return LocalRedirect(Url.IsLocalUrl(returnUrl) ? returnUrl : "/");
+    }
+
     [HttpPost("/logout")]
     public IActionResult Logout() => SignOut(new AuthenticationProperties { RedirectUri = "/login?signedOut=true" });
 
@@ -164,12 +180,24 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
         return Redirect($"/availability/{guildId}{(weekly ? "?view=weekly" : "")}#dnd");
     }
 
+    /// <summary>
+    /// One kind per weekly range: the editor posts a type (free time or do not disturb) and, for free time, a certainty.
+    /// A do-not-disturb type wins; without types (older pages) the certainty list is used as it is.
+    /// </summary>
+    internal static string[] RangeKinds(string[]? types, string[]? kinds)
+    {
+        kinds ??= [];
+        if (types is null || types.Length == 0)
+            return kinds;
+        return types.Select((type, index) => type == "dnd" ? "dnd" : index < kinds.Length && kinds[index] == "tentative" ? "tentative" : "definite").ToArray();
+    }
+
     [HttpPost("/availability/{guildId}")]
     public async Task<IActionResult> Save(ulong guildId, string action, string? start, string? end,
         DayOfWeek? day, string? offset, Guid? windowId, string? startHour, string? startMinute,
         string? endHour, string? endMinute, bool allDay = false, bool tentative = false,
         string[]? rangeStartHour = null, string[]? rangeStartMinute = null, string[]? rangeEndHour = null,
-        string[]? rangeEndMinute = null, string[]? rangeKind = null, DayOfWeek[]? copyTo = null,
+        string[]? rangeEndMinute = null, string[]? rangeKind = null, string[]? rangeType = null, DayOfWeek[]? copyTo = null,
         string? fromDate = null, string? toDate = null)
     {
         if (await GetDiscordMemberAsync(guildId) is not { } member)
@@ -189,7 +217,7 @@ public sealed partial class DashboardController(ISender sender, DiscordSocketCli
 
         if (action == "weekly-day" && day is { } editedDay)
             return await SaveWeeklyDayAsync(guildId, member, editedDay, offset, Times(rangeStartHour, rangeStartMinute),
-                Times(rangeEndHour, rangeEndMinute), rangeKind ?? []);
+                Times(rangeEndHour, rangeEndMinute), RangeKinds(rangeType, rangeKind));
 
         if (action == "copy-weekly" && day is { } copyFrom)
             return await CopyWeeklyAsync(guildId, member, copyFrom, copyTo ?? []);

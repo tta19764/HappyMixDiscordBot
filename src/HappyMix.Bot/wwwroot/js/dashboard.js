@@ -314,8 +314,8 @@ for (const editor of document.querySelectorAll("[data-week-editor]")) {
         pair.querySelector("[data-time-hour]").value = hour;
         minutes.value = minute;
     };
-    const tentative = item => field(item, "kind").value === "tentative";
-    const quiet = item => field(item, "kind").value === "dnd";
+    const quiet = item => (field(item, "type")?.value ?? field(item, "kind").value) === "dnd";
+    const tentative = item => !quiet(item) && field(item, "kind").value === "tentative";
 
     const read = item => {
         const start = toHours(getTime(item, "start")), end = toHours(getTime(item, "end"));
@@ -558,24 +558,29 @@ for (const editor of document.querySelectorAll("[data-week-editor]")) {
         return item;
     };
 
-    // Start a new range at 18:00 when free, otherwise in the first free gap of an hour or more.
-    const freeSlot = () => {
+    // Free time starts at 18:00 when that's open, otherwise in the first gap of an hour or more; do not disturb
+    // starts with the night (23:00–07:00 of the next morning, then shorter).
+    const freeSlot = (starts, lengths) => {
         const taken = items().map(read).filter(Boolean).sort((a, b) => a.start - b.start);
-        const fits = (from, until) => taken.every(range => until <= range.start || from >= range.end);
-        for (const from of [18, 19, 20, 21, 12, 9, 6, 0, 22, 23])
-            for (const length of [3, 2, 1])
+        const fits = (from, until) => until <= TRACK && taken.every(range => until <= range.start || from >= range.end);
+        for (const from of starts)
+            for (const length of lengths)
                 if (fits(from, from + length)) return [from, from + length];
         return null;
     };
-
-    addButton.addEventListener("click", () => {
-        const slot = freeSlot();
+    const addRange = (dnd, button) => {
+        const slot = dnd ? freeSlot([23, 22, 0, 13], [8, 6, 3, 1]) : freeSlot([18, 19, 20, 21, 12, 9, 6, 0, 22, 23], [3, 2, 1]);
         if (!slot) return;
         const item = prepare(template.content.firstElementChild.cloneNode(true));
+        const type = field(item, "type");
+        if (type) type.value = dnd ? "dnd" : "free";
         list.append(item);
         write(item, slot[0], slot[1]);
         select(item);
-    });
+    };
+    const addDnd = editor.querySelector("[data-add-dnd]");
+    addButton.addEventListener("click", () => addRange(false));
+    addDnd?.addEventListener("click", () => addRange(true));
 
     list.addEventListener("input", render);
     list.addEventListener("change", render);
@@ -588,6 +593,7 @@ for (const editor of document.querySelectorAll("[data-week-editor]")) {
     editor.classList.add("is-enhanced");
     editor.querySelector("[data-track-board]").hidden = false;
     addButton.hidden = false;
+    if (addDnd) addDnd.hidden = false;
     render();
 }
 
@@ -1662,26 +1668,39 @@ for (const image of document.querySelectorAll("[data-game-art]")) {
     const note = bar.querySelector("[data-marks-note]");
     const reset = bar.querySelector("[data-marks-reset]");
     const idle = note.textContent;
-    const radios = [...document.querySelectorAll(`input[type="radio"][form="${form.id}"]`)];
+    // Rows can be added by "Load more", so the radios are looked up each time.
+    const radios = () => [...document.querySelectorAll(`input[type="radio"][form="${form.id}"]`)];
     let saving = false;
 
     const changedRows = () => {
         const rows = new Set();
-        for (const radio of radios) {
+        for (const radio of radios()) {
             if (radio.checked !== (radio.dataset.initial === "1")) rows.add(radio.closest("li"));
         }
         return rows;
     };
     const refresh = () => {
         const rows = changedRows();
-        for (const radio of radios) radio.closest("li")?.classList.toggle("is-changed", rows.has(radio.closest("li")));
+        for (const radio of radios()) radio.closest("li")?.classList.toggle("is-changed", rows.has(radio.closest("li")));
         bar.classList.toggle("is-dirty", rows.size > 0);
         reset.hidden = rows.size === 0;
         note.textContent = rows.size > 0 ? note.dataset.template.replace("{0}", String(rows.size)) : idle;
     };
-    for (const radio of radios) radio.addEventListener("change", refresh);
+    document.addEventListener("change", event => {
+        if (event.target.matches?.(`input[type="radio"][form="${form.id}"]`)) refresh();
+    });
     form.addEventListener("reset", () => setTimeout(refresh));
-    form.addEventListener("submit", () => { saving = true; });
+    // Only changed rows are sent, so a long list stays a small request.
+    form.addEventListener("submit", () => {
+        saving = true;
+        const changed = changedRows();
+        for (const input of document.querySelectorAll(`[form="${form.id}"][name^="k"], [form="${form.id}"][name^="m"]`))
+            if (!changed.has(input.closest("li"))) input.disabled = true;
+    });
+    window.addEventListener("pageshow", () => {
+        saving = false;
+        for (const input of document.querySelectorAll(`[form="${form.id}"]:disabled`)) input.disabled = false;
+    });
     window.addEventListener("beforeunload", event => {
         if (saving || changedRows().size === 0) return;
         event.preventDefault();
@@ -1752,3 +1771,95 @@ for (const input of document.querySelectorAll("[data-game-filter]")) {
         for (const item of items) item.hidden = query !== "" && !item.dataset.gameName.includes(query);
     });
 }
+
+// Side panel order: move buttons work in place, and while Reorder is on, items can be dragged within their part of
+// the panel. The order is saved in the same cookie the /nav-order fallback writes.
+(() => {
+    const nav = document.querySelector("[data-nav-order]");
+    const toggle = document.querySelector("[data-nav-edit]");
+    if (!nav || !toggle) return;
+    const items = group => [...group.querySelectorAll(":scope > [data-nav-key]")];
+    const save = () => {
+        const keys = [...nav.querySelectorAll("[data-nav-key]")].map(item => item.dataset.navKey);
+        const secure = location.protocol === "https:" ? "; Secure" : "";
+        document.cookie = `hm_nav=${keys.join(".")}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
+    };
+    const setDraggable = on => nav.querySelectorAll("[data-nav-key]").forEach(item => {
+        if (on) item.setAttribute("draggable", "true"); else item.removeAttribute("draggable");
+    });
+    toggle.addEventListener("change", () => setDraggable(toggle.checked));
+
+    document.addEventListener("click", event => {
+        const button = event.target.closest?.('button[form="hm-nav-form"][name="move"]');
+        if (!button) return;
+        event.preventDefault();
+        const item = button.closest("[data-nav-key]");
+        const up = button.value.endsWith(":up");
+        const sibling = up ? item.previousElementSibling : item.nextElementSibling;
+        if (!sibling?.dataset.navKey) return;
+        if (up) sibling.before(item); else sibling.after(item);
+        save();
+        button.focus();
+    });
+    document.querySelector("[data-nav-reset]")?.addEventListener("click", () => {
+        // The default order comes from the server: drop the cookie and let the form reload the page.
+        document.cookie = "hm_nav=; Path=/; Max-Age=0; SameSite=Lax";
+    });
+
+    let dragged = null;
+    nav.addEventListener("dragstart", event => {
+        dragged = event.target.closest?.("[data-nav-key]");
+        if (!dragged || !toggle.checked) { dragged = null; return; }
+        dragged.classList.add("is-dragging");
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("text/plain", dragged.dataset.navKey);
+    });
+    nav.addEventListener("dragover", event => {
+        if (!dragged) return;
+        const over = event.target.closest?.("[data-nav-key]");
+        if (!over || over === dragged || over.parentElement !== dragged.parentElement) return;
+        event.preventDefault();
+        const box = over.getBoundingClientRect();
+        if (event.clientY < box.top + box.height / 2) over.before(dragged); else over.after(dragged);
+    });
+    nav.addEventListener("drop", event => { if (dragged) event.preventDefault(); });
+    nav.addEventListener("dragend", () => {
+        if (!dragged) return;
+        dragged.classList.remove("is-dragging");
+        dragged = null;
+        save();
+    });
+})();
+
+// My games "Load more": fetch the link's page (it lists the first N games) and append the rows that aren't shown yet.
+// Without scripts the link simply opens that page at the first new game.
+document.addEventListener("click", async event => {
+    const link = event.target.closest?.("[data-load-more-link]");
+    if (!link || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    const list = document.querySelector("[data-load-list]");
+    const box = link.closest("[data-load-more]");
+    if (!list || !box) return;
+    event.preventDefault();
+    link.setAttribute("aria-disabled", "true");
+    try {
+        const answer = await fetch(link.href, { credentials: "same-origin" });
+        if (!answer.ok) throw new Error(String(answer.status));
+        const page = new DOMParser().parseFromString(await answer.text(), "text/html");
+        const rows = [...page.querySelectorAll("[data-load-list] > li")];
+        const first = list.children.length;
+        const added = rows.slice(first).map(row => document.importNode(row, true));
+        list.append(...added);
+        for (const image of added.flatMap(row => [...row.querySelectorAll("img[data-game-art]")]))
+            image.addEventListener("error", () => gameArtFailed(image));
+        const url = new URL(link.href);
+        url.hash = "";
+        history.replaceState(history.state, "", url);
+        for (const input of document.querySelectorAll('[data-marks-form] input[name="returnUrl"], [data-load-list] input[name="returnUrl"]'))
+            input.value = url.pathname + url.search;
+        const next = page.querySelector("[data-load-more]");
+        if (next) box.replaceWith(document.importNode(next, true)); else box.remove();
+        added[0]?.querySelector('input:not([type="hidden"]), button')?.focus({ preventScroll: true });
+    } catch {
+        location.href = link.href;
+    }
+});

@@ -400,6 +400,13 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 - `ConfirmEventSeriesCommand` (POST `/events/{guild}/{event}/confirm-all`) confirms every pending upcoming date; each person who accepted one gets a single Confirmed message for their first newly confirmed date.
 - Event date boxes show weekday, day and month; compact series rows show only the times, with status and count underneath. Side panel menus open beside the panel (`position: fixed`) so its scroll area no longer clips them.
 
+### v0.1.6 menu order, weekly do not disturb, Load more and OpenDota timeouts
+
+- Side panel order (`SideNavOrder`, cookie `hm_nav`, keys joined by dots because a comma splits a cookie): a Reorder switch shows up/down buttons (`POST /nav-order` without scripts) and dashboard.js adds drag and drop; links missing from the saved order keep their default place. The move buttons are icon-only with labels, an exception to the words-only button rule.
+- Weekly day editor: each range posts `rangeType` (free / dnd) and `rangeKind` (definite / tentative); `DashboardController.RangeKinds` combines them (older pages that post only `rangeKind` still work). Certainty is hidden for do-not-disturb rows; "Add do not disturb" starts at 23:00.
+- My games: `?page=N` shows the first N × 50 games (up to `MaxListed` = 500) with a Load more link; dashboard.js appends the next batch and updates the URL. Save posts only changed rows; the server accepts up to 500.
+- OpenDota: 45-second timeout (`OpenDotaSeconds`); the card's calls run in parallel; recentMatches and peers are optional; Turbo is left out of averages.
+
 ### v0.1.5 group overview and Dota 2 stats
 
 - Group Overview (`_GroupOverview`): next event with who's going (`EventRow.Going`) and the Events tab's answer buttons; today's free members from the availability board and Live "Playing now"; the latest game together and the last 7 days per game; top games by "Want to play" marks and open votes.
