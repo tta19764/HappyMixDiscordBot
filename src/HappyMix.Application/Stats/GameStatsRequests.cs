@@ -59,28 +59,27 @@ public sealed record GetMyStatsQuery(ulong UserId) : IQuery<MyStats>;
 /// <param name="GuildId">The server the change came from, so lookup problems show in that server's Logs.</param>
 public sealed record SetStatsSharingCommand(ulong UserId, bool Share, ulong? GuildId = null) : ICommand<MyStats>;
 
-/// <summary>Refreshes the oldest stale cards of people who share. Returns how many cards were fetched.</summary>
+/// <summary>
+/// The bot's own refresh (every 10 minutes): the oldest cards of people who share that are older than
+/// <see cref="GameStats.FreshFor"/>, so everyone's cards are about an hour old at most. Returns how many cards were fetched.
+/// </summary>
 public sealed record RefreshGameStatsCommand(int Limit = 20) : ICommand<int>;
 
-/// <summary>"Refresh" on the Stats tab or the Game features page: the viewer's own cards and matches right now.</summary>
+/// <summary>
+/// "Refresh me" on a group's Stats tab or the Game features page: the viewer's own cards and matches right now. Cards that
+/// loaded fine less than <see cref="GameStats.RefreshAfter"/> ago are kept, so repeated clicks don't call the services again.
+/// </summary>
 public sealed record RefreshMyStatsCommand(ulong UserId, ulong? GuildId = null) : ICommand<MyStats>;
 
-/// <summary>
-/// "Refresh" on a group's Stats tab: cards and matches of the group's sharing members that are older than
-/// <see cref="GameStats.RefreshAfter"/>, up to <see cref="GameStats.RefreshAtOnce"/> people, so the services aren't flooded.
-/// Returns how many people were refreshed.
-/// </summary>
-public sealed record RefreshGroupStatsCommand(GroupActor Actor, Guid GroupId) : ICommand<int>;
 
 public static class GameStats
 {
     public const string DotaAppId = "570";
     public const string Cs2AppId = "730";
-    /// <summary>How long a card counts as fresh.</summary>
-    public static readonly TimeSpan FreshFor = TimeSpan.FromHours(6);
-    /// <summary>A Refresh click skips cards fetched more recently than this.</summary>
-    public static readonly TimeSpan RefreshAfter = TimeSpan.FromMinutes(5);
-    public const int RefreshAtOnce = 8;
+    /// <summary>How long a card counts as fresh: the bot refreshes older cards on its own, so they update every hour.</summary>
+    public static readonly TimeSpan FreshFor = TimeSpan.FromHours(1);
+    /// <summary>"Refresh me" keeps cards that loaded fine more recently than this.</summary>
+    public static readonly TimeSpan RefreshAfter = TimeSpan.FromMinutes(1);
     /// <summary>SteamID64 minus this is Dota's 32-bit account id (used by OpenDota and Dotabuff).</summary>
     public const long SteamIdBase = 76561197960265728;
 
@@ -192,7 +191,7 @@ public static class GameStats
 internal sealed partial class GameStatsHandlers(IGameStatsStore store, IGameStatsDirectory directory, IPlayerGameStore players, IAccountLinkStore accountLinks,
     IClock clock, ISender sender, Microsoft.Extensions.Logging.ILogger<GameStatsHandlers> logger) :
     IQueryHandler<GetGroupStatsQuery, GroupStats>, IQueryHandler<GetMyStatsQuery, MyStats>, ICommandHandler<SetStatsSharingCommand, MyStats>,
-    ICommandHandler<RefreshGameStatsCommand, int>, ICommandHandler<RefreshMyStatsCommand, MyStats>, ICommandHandler<RefreshGroupStatsCommand, int>
+    ICommandHandler<RefreshGameStatsCommand, int>, ICommandHandler<RefreshMyStatsCommand, MyStats>
 {
     private static readonly ErrorDescriptor NotFound = new("Stats.NotFound", "That group doesn't exist or you don't have access to it.");
 
@@ -255,38 +254,15 @@ internal sealed partial class GameStatsHandlers(IGameStatsStore store, IGameStat
 
     public async Task<Result<MyStats>> Handle(RefreshMyStatsCommand command, CancellationToken cancellationToken)
     {
-        if ((await store.ListSharingAsync([command.UserId])).Contains(command.UserId) && await players.GetSteamAsync(command.UserId) is { } steam)
+        var now = clock.UtcNow;
+        var cards = await store.ListCachedAsync([command.UserId]);
+        bool justLoaded = cards.Any() && cards.All(card => card.Status != StatsStatus.Error && now - card.FetchedAt < GameStats.RefreshAfter);
+        if (!justLoaded && (await store.ListSharingAsync([command.UserId])).Contains(command.UserId) && await players.GetSteamAsync(command.UserId) is { } steam)
         {
             await FetchAsync(command.UserId, steam.SteamId, command.GuildId, cancellationToken);
             await sender.Send(new RefreshPlayerMatchesCommand(command.UserId, command.GuildId), cancellationToken);
         }
         return await MineAsync(command.UserId);
-    }
-
-    public async Task<Result<int>> Handle(RefreshGroupStatsCommand command, CancellationToken cancellationToken)
-    {
-        if (await sender.Send(new GetGroupDetailQuery(command.Actor, command.GroupId), cancellationToken) is not { IsSuccess: true, Value: { CanViewRoster: true } detail })
-            return Result.Failure<int>(NotFound);
-        var now = clock.UtcNow;
-        var members = detail.Members.Append(detail.Summary.OrganizerId).Distinct().ToArray();
-        var sharing = await store.ListSharingAsync(members);
-        var cached = (await store.ListCachedAsync(members)).ToLookup(item => item.UserId);
-        // The viewer first, then the oldest cards; anything fetched in the last few minutes is skipped.
-        var due = members.Where(sharing.Contains)
-            .Select(user => (User: user, Last: cached[user].Select(item => (DateTimeOffset?)item.FetchedAt).Min()))
-            .Where(item => item.Last is null || now - item.Last >= GameStats.RefreshAfter)
-            .OrderBy(item => item.User == command.Actor.UserId ? 0 : 1).ThenBy(item => item.Last ?? DateTimeOffset.MinValue)
-            .Take(GameStats.RefreshAtOnce).ToArray();
-        int refreshed = 0;
-        foreach (var (user, _) in due)
-        {
-            if (await players.GetSteamAsync(user) is not { } steam)
-                continue;
-            await FetchAsync(user, steam.SteamId, command.Actor.GuildId, cancellationToken);
-            await sender.Send(new RefreshPlayerMatchesCommand(user, command.Actor.GuildId), cancellationToken);
-            refreshed++;
-        }
-        return refreshed;
     }
 
     public async Task<Result<int>> Handle(RefreshGameStatsCommand command, CancellationToken cancellationToken)
@@ -304,6 +280,9 @@ internal sealed partial class GameStatsHandlers(IGameStatsStore store, IGameStat
         int fetched = 0;
         foreach (var (user, _) in due)
         {
+            // Without an OpenDota key the day's budget is shared with Refresh clicks; the rest waits for tomorrow.
+            if (!directory.BackgroundBudgetLeft)
+                break;
             if (await players.GetSteamAsync(user) is not { } steam)
                 continue;
             fetched += await FetchAsync(user, steam.SteamId, null, cancellationToken);

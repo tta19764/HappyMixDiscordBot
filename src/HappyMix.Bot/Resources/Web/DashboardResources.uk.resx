@@ -2611,7 +2611,7 @@
 <data name="Stats_MembersOnly" xml:space="preserve"><value>Ділитися статистикою тут можуть лише учасники групи.</value></data>
 <data name="Stats_Dota" xml:space="preserve"><value>Dota 2</value></data>
 <data name="Stats_Cs2" xml:space="preserve"><value>CS2</value></data>
-<data name="Stats_SourceDota" xml:space="preserve"><value>З OpenDota: медаль, останні 30 днів і найчастіші герої за 90 днів.</value></data>
+<data name="Stats_SourceDota" xml:space="preserve"><value>З OpenDota, лише рейтингові матчі: медаль, останні 30 днів і найчастіші герої за 90 днів.</value></data>
 <data name="Stats_SourceCs2" xml:space="preserve"><value>З FACEIT: рівень, Elo, загальні результати й найчастіші карти.</value></data>
 <data name="Stats_Cs2Off" xml:space="preserve"><value>Статистику CS2 у цього бота ще не налаштовано (потрібен ключ FACEIT). Картки показують лише посилання на профілі.</value></data>
 <data name="Stats_NotShared" xml:space="preserve"><value>Не ділиться</value></data>
@@ -2619,7 +2619,7 @@
 <data name="Stats_LinksOnly" xml:space="preserve"><value>Лише посилання на профілі.</value></data>
 <data name="Stats_Updating" xml:space="preserve"><value>Отримуємо статистику…</value></data>
 <data name="Stats_NoPublicData" xml:space="preserve"><value>Немає відкритих даних про матчі.</value></data>
-<data name="Stats_NoPublicDataMine" xml:space="preserve"><value>Немає відкритих даних про матчі. У Dota 2 відкрийте «Налаштування» → «Параметри» → «Соціальне» й увімкніть «Відкривати дані про матчі»; статистика з'явиться після наступного матчу.</value></data>
+<data name="Stats_NoPublicDataMine" xml:space="preserve"><value>Немає відкритих даних про матчі. У Dota 2 відкрийте «Налаштування» → «Параметри» → «Соціальне» й увімкніть «Відкривати дані про матчі»; статистика з'явиться після наступного матчу. Якщо це вже ввімкнено: картка враховує лише рейтингові матчі, тож вона заповниться після рейтингової гри.</value></data>
 <data name="Stats_NoFaceit" xml:space="preserve"><value>Немає акаунта FACEIT.</value></data>
 <data name="Stats_NoFaceitMine" xml:space="preserve"><value>Для цього акаунта Steam немає акаунта FACEIT. Під'єднайте Steam на faceit.com, щоб тут з'явився ваш рівень.</value></data>
 <data name="Stats_ErrorDota" xml:space="preserve"><value>Не вдалося зв'язатися з OpenDota. Спробуємо знову незабаром.</value></data>
@@ -2651,7 +2651,7 @@
 <data name="Dota_Medal_7" xml:space="preserve"><value>Божество</value></data>
 <data name="Dota_Medal_8" xml:space="preserve"><value>Титан</value></data>
 <data name="Guide_stats_Title" xml:space="preserve"><value>Статистика</value></data>
-<data name="Guide_stats_Body" xml:space="preserve"><value>Групи, що грають у Dota 2 або CS2, мають вкладку «Статистика» з карткою для кожного учасника. Поширення вимкнене, доки ви не ввімкнете «Показувати мою ігрову статистику моїм групам»; тоді воно діє для всіх ваших груп, а вимкнення видаляє збережену статистику й матчі. Картки Dota 2 беруться з OpenDota й потребують увімкненого «Expose Public Match Data» у Dota 2: медаль, останні 30 днів, найчастіші герої, найчастіша роль (позиції з STRATZ, якщо бот має ключ, інакше лінії), зміна медалі відтоді, як бот почав зберігати її щодня, оцінка MMR за рейтинговими перемогами й поразками (справжній MMR не публічний), останні 20 матчів із середніми показниками та з ким ви граєте найчастіше. Картки CS2 беруться з FACEIT (рівень, Elo, K/D, хедшоти, мапи), якщо бот має ключ FACEIT. «Дуети» показують учасників, які найбільше грали в одній команді. Коли двоє чи більше учасників, які діляться статистикою, грають той самий матч, він з'являється в «Нещодавніх спільних іграх», а організатор може також публікувати ці підсумки в каналі групи. Картки оновлюються кожні кілька годин, матчі — приблизно щопівгодини.</value></data>
+<data name="Guide_stats_Body" xml:space="preserve"><value>Групи, що грають у Dota 2 або CS2, мають вкладку «Статистика» з карткою для кожного учасника. Поширення вимкнене, доки ви не ввімкнете «Показувати мою ігрову статистику моїм групам»; тоді воно діє для всіх ваших груп, а вимкнення видаляє збережену статистику й матчі. Картки Dota 2 беруться з OpenDota й потребують увімкненого «Expose Public Match Data» у Dota 2: медаль, останні 30 днів, найчастіші герої, найчастіша роль (позиції з STRATZ, якщо бот має ключ, інакше лінії), зміна медалі відтоді, як бот почав зберігати її щодня, оцінка MMR за рейтинговими перемогами й поразками (справжній MMR не публічний), останні 20 матчів із середніми показниками та з ким ви граєте найчастіше. Картки CS2 беруться з FACEIT (рівень, Elo, K/D, хедшоти, мапи), якщо бот має ключ FACEIT. «Дуети» показують учасників, які найбільше грали в одній команді. Коли двоє чи більше учасників, які діляться статистикою, грають той самий матч, він з'являється в «Нещодавніх спільних іграх», а організатор може також публікувати ці підсумки в каналі групи. Бот оновлює картки щогодини, а матчі — приблизно щопівгодини; «Оновити мою статистику» одразу перезавантажує ваші. Картки Dota 2 враховують лише рейтингові матчі; «Нещодавні спільні ігри» — усі режими.</value></data>
 <data name="Recap_Title" xml:space="preserve"><value>Нещодавні спільні ігри</value></data>
 <data name="Recap_None" xml:space="preserve"><value>За останні два тижні спільних ігор немає. Коли двоє чи більше учасників, які діляться статистикою, грають в одному матчі, він з'явиться тут.</value></data>
 <data name="Recap_Result_won" xml:space="preserve"><value>Перемога</value></data>
@@ -2682,11 +2682,10 @@
 <data name="Features_MyStats" xml:space="preserve"><value>Ваша ігрова статистика</value></data>
 <data name="Features_MyStatsLead" xml:space="preserve"><value>Ті самі картки, які ваші групи бачать на вкладці «Статистика». Перемикач тут змінює вибір усюди.</value></data>
 <data name="Features_Cs2Soon" xml:space="preserve"><value>Більше функцій для CS2 з'явиться згодом. Ваша статистика CS2 — вище й на вкладці «Статистика» груп, які грають у CS2.</value></data>
-<data name="Stats_Refresh" xml:space="preserve"><value>Оновити</value></data>
-<data name="Stats_RefreshHelp" xml:space="preserve"><value>Перезавантажити картки й нещодавні матчі учасників, які діляться статистикою (не частіше ніж раз на 5 хвилин для людини).</value></data>
+<data name="Stats_Refresh" xml:space="preserve"><value>Оновити мою статистику</value></data>
+<data name="Stats_RefreshHelp" xml:space="preserve"><value>Перезавантажити ваші картки й нещодавні матчі зараз. Бот сам оновлює всіх, хто ділиться статистикою, щогодини.</value></data>
 <data name="Stats_RefreshMine" xml:space="preserve"><value>Оновити мою статистику</value></data>
 <data name="Stats_Refreshed" xml:space="preserve"><value>Статистику оновлено</value></data>
-<data name="Stats_RefreshNothing" xml:space="preserve"><value>Усе вже оновлювалося кілька хвилин тому</value></data>
 <data name="Stats_Why" xml:space="preserve"><value>Чому?</value></data>
 <data name="Meta_Title" xml:space="preserve"><value>Dota 2 · Мета-герої за лініями</value></data>
 <data name="Meta_Lead" xml:space="preserve"><value>Герої з найкращим відсотком перемог на кожній лінії в нещодавніх публічних матчах, за даними OpenDota. На кожній лінії враховано всіх, хто там грав, і керрі, і підтримку.</value></data>
@@ -2724,7 +2723,7 @@
 <data name="Meta_Err_Schedule" xml:space="preserve"><value>Виберіть правильний розклад, день і годину.</value></data>
 <data name="Meta_Err_Channel" xml:space="preserve"><value>Спершу виберіть або створіть канал.</value></data>
 <data name="Guide_features_Title" xml:space="preserve"><value>Ігрові функції</value></data>
-<data name="Guide_features_Body" xml:space="preserve"><value>Сторінка «Ігрові функції» показує ігри з додатковими можливостями на цьому сервері — картками, таблицею або списком, з пошуком. Кожна гра має власну сторінку з вкладками. На вкладці статистики — ваші картки з тим самим перемикачем, що й на вкладках «Статистика» груп, кнопка «Оновити» і, якщо запит не вдався, точна причина під «Чому?». Для Dota 2 є також мета-герої: виберіть патч, роль, ранг, порядок і мінімальну частоту вибору, а потім натисніть «Шукати». Мета-оцінка — найнижчий відсоток перемог, який герой імовірно має з огляду на кількість ігор, тож кілька вдалих ігор не виводять героя нагору; героїв, яких беруть менше ніж в 1% матчів, за замовчуванням приховано. На вкладці «Публікації в Discord» адміністратори сервера вибирають канал (або створюють #dota-meta), публікують одразу або щодня, раз на два дні чи раз на тиждень.</value></data>
+<data name="Guide_features_Body" xml:space="preserve"><value>Сторінка «Ігрові функції» показує ігри з додатковими можливостями на цьому сервері — картками, таблицею або списком, з пошуком. Кожна гра має власну сторінку з вкладками. На вкладці статистики — ваші картки з тим самим перемикачем, що й на вкладках «Статистика» груп, кнопка «Оновити мою статистику» і, якщо запит не вдався, точна причина під «Чому?». Для Dota 2 є також мета-герої: виберіть патч, роль, ранг, порядок і мінімальну частоту вибору, а потім натисніть «Шукати». Мета-оцінка — найнижчий відсоток перемог, який герой імовірно має з огляду на кількість ігор, тож кілька вдалих ігор не виводять героя нагору; героїв, яких беруть менше ніж в 1% матчів, за замовчуванням приховано. На вкладці «Публікації в Discord» адміністратори сервера вибирають канал (або створюють #dota-meta), публікують одразу або щодня, раз на два дні чи раз на тиждень.</value></data>
 <data name="Meta_Count" xml:space="preserve"><value>Героїв на лінію</value></data>
 <data name="Meta_TopN" xml:space="preserve"><value>Топ-{0}</value></data>
 <data name="Meta_SearchTitle" xml:space="preserve"><value>Dota 2 · Мета-герої</value></data>
@@ -2797,16 +2796,16 @@
 <data name="Dota_Lane_Roam" xml:space="preserve"><value>Роумінг</value></data>
 <data name="Dota_MostPlayed" xml:space="preserve"><value>Найчастіше грає</value></data>
 <data name="Dota_RoleTitle" xml:space="preserve"><value>{0}: {1} ігор · {2} перемог</value></data>
-<data name="Dota_RolesStratz" xml:space="preserve"><value>Позиції за останні {0} матчів, дані STRATZ.</value></data>
-<data name="Dota_RolesOpenDota" xml:space="preserve"><value>Лінії за останні {0} матчів, дані OpenDota (вона не розрізняє позиції 4 і 5).</value></data>
+<data name="Dota_RolesStratz" xml:space="preserve"><value>Позиції за останні {0} рейтингових матчів, дані STRATZ.</value></data>
+<data name="Dota_RolesOpenDota" xml:space="preserve"><value>Лінії за останні {0} рейтингових матчів, дані OpenDota (вона не розрізняє позиції 4 і 5).</value></data>
 <data name="Dota_RankChange" xml:space="preserve"><value>{0} ★ з {1}</value></data>
 <data name="Dota_RankChangeHelp" xml:space="preserve"><value>Зміна медалі: бот зберігає медаль раз на день, бо OpenDota показує лише поточну. У кожній медалі 5 зірок.</value></data>
 <data name="Dota_Mmr" xml:space="preserve"><value>≈ {0} MMR · {1} рейтингових</value></data>
 <data name="Dota_MmrHelp" xml:space="preserve"><value>Оцінка: близько {0} MMR за кожну рейтингову перемогу чи поразку в останніх матчах. Dota 2 не робить справжній MMR публічним.</value></data>
-<data name="Dota_LastN" xml:space="preserve"><value>Останні {0}</value></data>
+<data name="Dota_LastN" xml:space="preserve"><value>Останні {0} рейтингових</value></data>
 <data name="Dota_WinStreak" xml:space="preserve"><value>{0} перемог поспіль</value></data>
 <data name="Dota_LossStreak" xml:space="preserve"><value>{0} поразок поспіль</value></data>
-<data name="Dota_FormLabel" xml:space="preserve"><value>Останні {0} матчів, від найстарішого: {1} виграно, {2} програно</value></data>
+<data name="Dota_FormLabel" xml:space="preserve"><value>Останні {0} рейтингових матчів, від найстарішого: {1} виграно, {2} програно</value></data>
 <data name="Dota_MoreStats" xml:space="preserve"><value>Більше статистики</value></data>
 <data name="Dota_Kda" xml:space="preserve"><value>Сер. K / D / A</value></data>
 <data name="Dota_GpmXpm" xml:space="preserve"><value>GPM / XPM</value></data>
@@ -2815,7 +2814,7 @@
 <data name="Dota_BestWith" xml:space="preserve"><value>Найбільше ігор разом з</value></data>
 <data name="Stats_WithGroup" xml:space="preserve"><value>З групою, 14 днів</value></data>
 <data name="Stats_Duos" xml:space="preserve"><value>Дуети</value></data>
-<data name="Stats_DuosHelp" xml:space="preserve"><value>Учасники, які найбільше грали в одній команді, за весь час, дані OpenDota.</value></data>
+<data name="Stats_DuosHelp" xml:space="preserve"><value>Учасники, які найбільше грали в одній команді в рейтингових матчах, за весь час, дані OpenDota.</value></data>
 <data name="Ov_NextEvent" xml:space="preserve"><value>Наступна подія</value></data>
 <data name="Ov_AllEvents" xml:space="preserve"><value>Усі події</value></data>
 <data name="Ov_Going" xml:space="preserve"><value>Ідуть</value></data>

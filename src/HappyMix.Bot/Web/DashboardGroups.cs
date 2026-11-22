@@ -193,16 +193,14 @@ public sealed partial class DashboardController
         return Redirect($"/groups/{guildId}/{groupId}#stats");
     }
 
-    /// <summary>"Refresh" on the Stats tab: the group's sharing members' cards and matches, the viewer's first.</summary>
+    /// <summary>"Refresh me" on the Stats tab: the viewer's own cards and matches (everyone's refresh hourly on their own).</summary>
     [HttpPost("/groups/{guildId}/{groupId:guid}/stats/refresh")]
     public async Task<IActionResult> RefreshGroupStats(ulong guildId, Guid groupId)
     {
         if (await GetGroupActorAsync(guildId) is not ({ } actor, { } viewer, _))
             return NotMember();
-        var result = await sender.Send(new HappyMix.Application.Stats.RefreshGroupStatsCommand(actor, groupId), HttpContext.RequestAborted);
-        if (result.IsFailure)
-            return GroupNotFound(guildId);
-        TempData["GroupBannerTitle"] = result.Value == 0 ? text["Stats_RefreshNothing"].Value : text["Stats_Refreshed"].Value;
+        await sender.Send(new HappyMix.Application.Stats.RefreshMyStatsCommand(actor.UserId, guildId), HttpContext.RequestAborted);
+        TempData["GroupBannerTitle"] = text["Stats_Refreshed"].Value;
         return Redirect($"/groups/{guildId}/{groupId}#stats");
     }
 

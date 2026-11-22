@@ -70,7 +70,12 @@ internal sealed partial class MatchRecapHandlers(IGameStatsStore store, IGameSta
                     due.Add((user, game, last ?? DateTimeOffset.MinValue));
             }
         foreach (var (user, game, _) in due.OrderBy(item => item.Last).Take(Math.Max(1, command.Limit)))
+        {
+            // Without an OpenDota key the day's budget is shared with Refresh clicks; the rest waits for tomorrow.
+            if (!directory.BackgroundBudgetLeft)
+                break;
             await FetchMatchesAsync(user, game, null, cancellationToken);
+        }
         await store.PruneMatchesAsync(now - MatchRecaps.KeepFor);
 
         int posted = 0;

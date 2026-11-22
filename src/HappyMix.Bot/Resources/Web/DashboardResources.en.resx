@@ -2611,7 +2611,7 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Stats_MembersOnly" xml:space="preserve"><value>Only members of the group can share their stats here.</value></data>
 <data name="Stats_Dota" xml:space="preserve"><value>Dota 2</value></data>
 <data name="Stats_Cs2" xml:space="preserve"><value>CS2</value></data>
-<data name="Stats_SourceDota" xml:space="preserve"><value>From OpenDota: medal, the last 30 days and the most played heroes of the last 90 days.</value></data>
+<data name="Stats_SourceDota" xml:space="preserve"><value>From OpenDota, ranked matches only: medal, the last 30 days and the most played heroes of the last 90 days.</value></data>
 <data name="Stats_SourceCs2" xml:space="preserve"><value>From FACEIT: level, Elo, lifetime results and the most played maps.</value></data>
 <data name="Stats_Cs2Off" xml:space="preserve"><value>CS2 stats aren't set up on this bot yet (it needs a FACEIT key). Cards show profile links only.</value></data>
 <data name="Stats_NotShared" xml:space="preserve"><value>Not shared</value></data>
@@ -2619,7 +2619,7 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Stats_LinksOnly" xml:space="preserve"><value>Profile links only.</value></data>
 <data name="Stats_Updating" xml:space="preserve"><value>Getting stats…</value></data>
 <data name="Stats_NoPublicData" xml:space="preserve"><value>No public match data.</value></data>
-<data name="Stats_NoPublicDataMine" xml:space="preserve"><value>No public match data. In Dota 2, open Settings → Options → Social and turn on “Expose Public Match Data”; stats appear after your next match.</value></data>
+<data name="Stats_NoPublicDataMine" xml:space="preserve"><value>No public match data. In Dota 2, open Settings → Options → Social and turn on “Expose Public Match Data”; stats appear after your next match. If it's already on, the card counts ranked matches only, so it fills in after a ranked game.</value></data>
 <data name="Stats_NoFaceit" xml:space="preserve"><value>No FACEIT account.</value></data>
 <data name="Stats_NoFaceitMine" xml:space="preserve"><value>No FACEIT account for this Steam account. Connect Steam on faceit.com to show your level here.</value></data>
 <data name="Stats_ErrorDota" xml:space="preserve"><value>Couldn't reach OpenDota. Trying again soon.</value></data>
@@ -2651,7 +2651,7 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Dota_Medal_7" xml:space="preserve"><value>Divine</value></data>
 <data name="Dota_Medal_8" xml:space="preserve"><value>Immortal</value></data>
 <data name="Guide_stats_Title" xml:space="preserve"><value>Stats</value></data>
-<data name="Guide_stats_Body" xml:space="preserve"><value>Groups that play Dota 2 or CS2 have a Stats tab with a card for each member. Sharing is off until you turn on “Show my game stats to my groups”; it then applies to all your groups, and turning it off deletes the saved stats and matches. Dota 2 cards come from OpenDota and need “Expose Public Match Data” on in Dota 2: medal, the last 30 days, most played heroes, most played role (positions from STRATZ when the bot has a key, otherwise lanes), medal change since the bot started saving it daily, an MMR estimate from ranked wins and losses (the real MMR isn't public), the last 20 matches with averages, and who you play with most. CS2 cards come from FACEIT (level, Elo, K/D, headshots, maps) when the bot has a FACEIT key. Duos lists the members who played on the same team the most. When two or more sharing members play the same match, it appears under Recent games together, and the organizer can also have these recaps posted in the group's channel. Cards refresh every few hours and matches about every half hour.</value></data>
+<data name="Guide_stats_Body" xml:space="preserve"><value>Groups that play Dota 2 or CS2 have a Stats tab with a card for each member. Sharing is off until you turn on “Show my game stats to my groups”; it then applies to all your groups, and turning it off deletes the saved stats and matches. Dota 2 cards come from OpenDota and need “Expose Public Match Data” on in Dota 2: medal, the last 30 days, most played heroes, most played role (positions from STRATZ when the bot has a key, otherwise lanes), medal change since the bot started saving it daily, an MMR estimate from ranked wins and losses (the real MMR isn't public), the last 20 matches with averages, and who you play with most. CS2 cards come from FACEIT (level, Elo, K/D, headshots, maps) when the bot has a FACEIT key. Duos lists the members who played on the same team the most. When two or more sharing members play the same match, it appears under Recent games together, and the organizer can also have these recaps posted in the group's channel. The bot refreshes cards every hour and matches about every half hour; Refresh me reloads your own right away. Dota 2 cards count ranked matchmaking games only; Recent games together count every mode.</value></data>
 <data name="Recap_Title" xml:space="preserve"><value>Recent games together</value></data>
 <data name="Recap_None" xml:space="preserve"><value>No games together in the last two weeks. When two or more members who share their stats play the same match, it shows up here.</value></data>
 <data name="Recap_Result_won" xml:space="preserve"><value>Won</value></data>
@@ -2682,11 +2682,10 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Features_MyStats" xml:space="preserve"><value>Your game stats</value></data>
 <data name="Features_MyStatsLead" xml:space="preserve"><value>The same cards your groups see on their Stats tab. Changing the switch here changes it everywhere.</value></data>
 <data name="Features_Cs2Soon" xml:space="preserve"><value>More CS2 features are coming. Your CS2 stats are above and on the Stats tab of groups that play CS2.</value></data>
-<data name="Stats_Refresh" xml:space="preserve"><value>Refresh</value></data>
-<data name="Stats_RefreshHelp" xml:space="preserve"><value>Reload the cards and recent matches of members who share their stats (not more often than every 5 minutes per person).</value></data>
-<data name="Stats_RefreshMine" xml:space="preserve"><value>Refresh my stats</value></data>
+<data name="Stats_Refresh" xml:space="preserve"><value>Refresh me</value></data>
+<data name="Stats_RefreshHelp" xml:space="preserve"><value>Reload your own cards and recent matches now. The bot refreshes everyone who shares every hour on its own.</value></data>
+<data name="Stats_RefreshMine" xml:space="preserve"><value>Refresh me</value></data>
 <data name="Stats_Refreshed" xml:space="preserve"><value>Stats refreshed</value></data>
-<data name="Stats_RefreshNothing" xml:space="preserve"><value>Everything was refreshed in the last few minutes</value></data>
 <data name="Stats_Why" xml:space="preserve"><value>Why?</value></data>
 <data name="Meta_Title" xml:space="preserve"><value>Dota 2 · Meta heroes by lane</value></data>
 <data name="Meta_Lead" xml:space="preserve"><value>The heroes with the best win rate in each lane in recent public matches, from OpenDota. Each lane counts everyone who played there, cores and supports.</value></data>
@@ -2724,7 +2723,7 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Meta_Err_Schedule" xml:space="preserve"><value>Choose a valid schedule, day and hour.</value></data>
 <data name="Meta_Err_Channel" xml:space="preserve"><value>Choose or create a channel first.</value></data>
 <data name="Guide_features_Title" xml:space="preserve"><value>Game features</value></data>
-<data name="Guide_features_Body" xml:space="preserve"><value>The Game features page lists the games that have extras on this server, as cards, a table or a list, with a search. Each game has its own page with tabs. Your stats tab shows your cards with the same switch as on group Stats tabs, a Refresh button and, when a lookup fails, the exact reason under “Why?”. Dota 2 also has Meta heroes: pick the patch, role, rank, order and minimum pick rate, then press Search. The meta score is the lowest win rate a hero is likely to have given its number of games, so a few lucky games don't top the list; heroes picked in under 1% of matches are hidden by default. On Posting in Discord, server admins choose a channel (or create #dota-meta), post right away or set it to post every day, every two days or once a week.</value></data>
+<data name="Guide_features_Body" xml:space="preserve"><value>The Game features page lists the games that have extras on this server, as cards, a table or a list, with a search. Each game has its own page with tabs. Your stats tab shows your cards with the same switch as on group Stats tabs, a Refresh me button and, when a lookup fails, the exact reason under “Why?”. Dota 2 also has Meta heroes: pick the patch, role, rank, order and minimum pick rate, then press Search. The meta score is the lowest win rate a hero is likely to have given its number of games, so a few lucky games don't top the list; heroes picked in under 1% of matches are hidden by default. On Posting in Discord, server admins choose a channel (or create #dota-meta), post right away or set it to post every day, every two days or once a week.</value></data>
 <data name="Meta_Count" xml:space="preserve"><value>Heroes per lane</value></data>
 <data name="Meta_TopN" xml:space="preserve"><value>Top {0}</value></data>
 <data name="Meta_SearchTitle" xml:space="preserve"><value>Dota 2 · Meta heroes</value></data>
@@ -2797,16 +2796,16 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Dota_Lane_Roam" xml:space="preserve"><value>Roaming</value></data>
 <data name="Dota_MostPlayed" xml:space="preserve"><value>Mostly plays</value></data>
 <data name="Dota_RoleTitle" xml:space="preserve"><value>{0}: {1} games · {2} won</value></data>
-<data name="Dota_RolesStratz" xml:space="preserve"><value>Positions over the last {0} matches, from STRATZ.</value></data>
-<data name="Dota_RolesOpenDota" xml:space="preserve"><value>Lanes over the last {0} matches, from OpenDota (it can't tell position 4 from 5).</value></data>
+<data name="Dota_RolesStratz" xml:space="preserve"><value>Positions over the last {0} ranked matches, from STRATZ.</value></data>
+<data name="Dota_RolesOpenDota" xml:space="preserve"><value>Lanes over the last {0} ranked matches, from OpenDota (it can't tell position 4 from 5).</value></data>
 <data name="Dota_RankChange" xml:space="preserve"><value>{0} ★ since {1}</value></data>
 <data name="Dota_RankChangeHelp" xml:space="preserve"><value>Medal change: the bot saves the medal once a day, because OpenDota only shows the current one. Each medal has 5 stars.</value></data>
 <data name="Dota_Mmr" xml:space="preserve"><value>≈ {0} MMR · {1} ranked</value></data>
 <data name="Dota_MmrHelp" xml:space="preserve"><value>An estimate: about {0} MMR per ranked win or loss in the last matches. Dota 2 doesn't make the real MMR public.</value></data>
-<data name="Dota_LastN" xml:space="preserve"><value>Last {0}</value></data>
+<data name="Dota_LastN" xml:space="preserve"><value>Last {0} ranked</value></data>
 <data name="Dota_WinStreak" xml:space="preserve"><value>{0} wins in a row</value></data>
 <data name="Dota_LossStreak" xml:space="preserve"><value>{0} losses in a row</value></data>
-<data name="Dota_FormLabel" xml:space="preserve"><value>Last {0} matches, oldest first: {1} won, {2} lost</value></data>
+<data name="Dota_FormLabel" xml:space="preserve"><value>Last {0} ranked matches, oldest first: {1} won, {2} lost</value></data>
 <data name="Dota_MoreStats" xml:space="preserve"><value>More stats</value></data>
 <data name="Dota_Kda" xml:space="preserve"><value>Avg. K / D / A</value></data>
 <data name="Dota_GpmXpm" xml:space="preserve"><value>GPM / XPM</value></data>
@@ -2815,7 +2814,7 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Dota_BestWith" xml:space="preserve"><value>Most games with</value></data>
 <data name="Stats_WithGroup" xml:space="preserve"><value>With the group, 14 days</value></data>
 <data name="Stats_Duos" xml:space="preserve"><value>Duos</value></data>
-<data name="Stats_DuosHelp" xml:space="preserve"><value>Members who played on the same team the most, all time, from OpenDota.</value></data>
+<data name="Stats_DuosHelp" xml:space="preserve"><value>Members who played on the same team the most in ranked matches, all time, from OpenDota.</value></data>
 <data name="Ov_NextEvent" xml:space="preserve"><value>Next event</value></data>
 <data name="Ov_AllEvents" xml:space="preserve"><value>All events</value></data>
 <data name="Ov_Going" xml:space="preserve"><value>Going</value></data>

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Net;
 using System.Text.Json;
@@ -24,6 +25,23 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
     public const string OpenDotaClient = "OpenDota";
     /// <summary>How long one OpenDota call may take: its match endpoints often need more than 10 seconds.</summary>
     public const int OpenDotaSeconds = 45;
+    /// <summary>
+    /// OpenDota allows 2,000 calls a day without a key. Scheduled refreshes stop at this many calls (per UTC day) so
+    /// Refresh clicks, match recaps and the hero list keep working.
+    /// </summary>
+    public const int FreeBackgroundCalls = 1500;
+    private readonly Lock callsLock = new();
+    /// <summary>Requests on their way, by URL (or STRATZ query): an identical request waits for the same answer instead of asking again.</summary>
+    private readonly ConcurrentDictionary<string, Lazy<Task<string>>> inFlight = new(StringComparer.Ordinal);
+    /// <summary>Ranked matchmaking: the card counts only these games.</summary>
+    internal const int RankedLobby = 7;
+    private const string Ranked = "lobby_type=7";
+    /// <summary>OpenDota's player matches, ranked only, with the fields the card reads.</summary>
+    internal const string RankedMatchesQuery = Ranked + "&limit=20&project=kills&project=deaths&project=assists&project=gold_per_min"
+        + "&project=xp_per_min&project=lane_role&project=is_roaming&project=party_size&project=game_mode&project=lobby_type"
+        + "&project=radiant_win&project=player_slot&project=start_time&project=hero_id";
+    private DateOnly callsDay;
+    private int callsToday;
     public const string FaceitClient = "Faceit";
     private const string OpenDota = "https://api.opendota.com/api/";
     private const string Faceit = "https://open.faceit.com/data/v4/";
@@ -42,6 +60,20 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
 
     public bool Cs2Enabled => FaceitKey is not null;
 
+    public bool BackgroundBudgetLeft => OpenDotaKey is not null || OpenDotaCallsToday(0) < FreeBackgroundCalls;
+
+    /// <summary>Adds <paramref name="added"/> calls to today's OpenDota count and returns the count.</summary>
+    private int OpenDotaCallsToday(int added)
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        lock (callsLock)
+        {
+            if (callsDay != today)
+                (callsDay, callsToday) = (today, 0);
+            return callsToday += added;
+        }
+    }
+
     public void Dispose() => heroesLock.Dispose();
 
     public async Task<StatsFetch<DotaProfile>> GetDotaAsync(string steamId64, CancellationToken cancellationToken)
@@ -50,17 +82,17 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
             return new(StatsStatus.NoAccount, null, "The Steam ID isn't a valid SteamID64.");
         try
         {
-            using var client = clients.CreateClient(OpenDotaClient);
             string id = accountId.ToString(CultureInfo.InvariantCulture);
             // OpenDota's match endpoints can each take 10+ seconds, so every call starts at once. The card needs the
             // first three; the last matches, teammates and positions are extras that may fail without losing it.
-            var playerTask = OpenDotaAsync(client, $"players/{id}", null, cancellationToken);
-            var recordTask = OpenDotaAsync(client, $"players/{id}/wl", "date=30", cancellationToken);
-            var playedTask = OpenDotaAsync(client, $"players/{id}/heroes", "date=90", cancellationToken);
-            var recentTask = ExtraAsync(client, $"players/{id}/recentMatches", cancellationToken);
-            var peersTask = ExtraAsync(client, $"players/{id}/peers", cancellationToken);
+            // Everything on the card counts ranked matchmaking games only.
+            var playerTask = OpenDotaAsync($"players/{id}", null, cancellationToken);
+            var recordTask = OpenDotaAsync($"players/{id}/wl", "date=30&" + Ranked, cancellationToken);
+            var playedTask = OpenDotaAsync($"players/{id}/heroes", "date=90&" + Ranked, cancellationToken);
+            var recentTask = ExtraAsync($"players/{id}/matches", RankedMatchesQuery, cancellationToken);
+            var peersTask = ExtraAsync($"players/{id}/peers", Ranked, cancellationToken);
             var positionsTask = PositionsAsync(accountId, cancellationToken);
-            var heroesTask = HeroesAsync(client, cancellationToken);
+            var heroesTask = HeroesAsync(cancellationToken);
             using var recent = await recentTask;
             using var peers = await peersTask;
             var positions = await positionsTask;
@@ -69,7 +101,7 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
             using var played = await playedTask;
             var profile = ParseDota(accountId, player.RootElement, record.RootElement, played.RootElement, await heroesTask);
             if (profile is null)
-                return new(StatsStatus.NoPublicData, null, $"OpenDota has no rank and no matches for account {id}: \"Expose Public Match Data\" is probably off in Dota 2.");
+                return new(StatsStatus.NoPublicData, null, $"OpenDota has no rank and no ranked matches for account {id}: \"Expose Public Match Data\" is probably off in Dota 2, or there were no ranked games in the last 90 days.");
             var (last, lanes) = recent is null ? (null, []) : ParseRecent(recent.RootElement);
             return new(StatsStatus.Ok, profile with
             {
@@ -107,11 +139,11 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
     }
 
     /// <summary>An OpenDota answer the card can do without: a failure is logged and gives null.</summary>
-    private async Task<JsonDocument?> ExtraAsync(HttpClient client, string path, CancellationToken cancellationToken)
+    private async Task<JsonDocument?> ExtraAsync(string path, string? query, CancellationToken cancellationToken)
     {
         try
         {
-            return await OpenDotaAsync(client, path, null, cancellationToken);
+            return await OpenDotaAsync(path, query, cancellationToken);
         }
         catch (Exception error) when (!cancellationToken.IsCancellationRequested && Reason("OpenDota", error) is { } reason)
         {
@@ -168,9 +200,9 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
             {
                 if (GameStats.DotaAccountId(steamId64) is not { } accountId)
                     return new(StatsStatus.NoAccount, null, "The Steam ID isn't a valid SteamID64.");
-                using var client = clients.CreateClient(OpenDotaClient);
-                using var recent = await OpenDotaAsync(client, $"players/{accountId.ToString(CultureInfo.InvariantCulture)}/recentMatches", null, cancellationToken);
-                return new(StatsStatus.Ok, ParseDotaMatches(userId, recent.RootElement, await HeroesAsync(client, cancellationToken)));
+                // Recaps of games together count every mode, not only ranked.
+                using var recent = await OpenDotaAsync($"players/{accountId.ToString(CultureInfo.InvariantCulture)}/recentMatches", null, cancellationToken);
+                return new(StatsStatus.Ok, ParseDotaMatches(userId, recent.RootElement, await HeroesAsync(cancellationToken)));
             }
 
             if (FaceitKey is not { } key)
@@ -201,12 +233,11 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
     {
         try
         {
-            using var client = clients.CreateClient(OpenDotaClient);
-            var names = await HeroesAsync(client, cancellationToken);
+            var names = await HeroesAsync(cancellationToken);
             var lanes = new Dictionary<DotaLane, IReadOnlyList<MetaHero>>();
             foreach (var lane in Enum.GetValues<DotaLane>())
             {
-                using var answer = await OpenDotaAsync(client, "scenarios/laneRoles", $"lane_role={(int)lane}", cancellationToken);
+                using var answer = await OpenDotaAsync("scenarios/laneRoles", $"lane_role={(int)lane}", cancellationToken);
                 lanes[lane] = ParseLaneRoles(answer.RootElement, names);
             }
             return new(StatsStatus.Ok, new DotaMeta(DateTimeOffset.UtcNow, lanes));
@@ -249,10 +280,9 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
             return new(StatsStatus.NoAccount, null, "Stratz__ApiKey isn't set on the server.");
         try
         {
-            using var openDota = clients.CreateClient(OpenDotaClient);
-            var names = await HeroesAsync(openDota, cancellationToken);
+            var names = await HeroesAsync(cancellationToken);
             var now = DateTimeOffset.UtcNow;
-            var current = filter.Patch == MetaPatch.Current ? await CurrentPatchAsync(openDota, cancellationToken) : null;
+            var current = filter.Patch == MetaPatch.Current ? await CurrentPatchAsync(cancellationToken) : null;
             // Days are exact for a week; an older patch is counted in STRATZ's weeks.
             bool daily = current is not { } released || now - released.Date <= TimeSpan.FromDays(7);
             DateTimeOffset from = current is { } since ? StartOf(since.Date, daily) : now.AddDays(-7);
@@ -271,17 +301,21 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
     /// <summary>Posts a GraphQL query to STRATZ; a failed answer or a GraphQL error becomes a <see cref="LookupFailedException"/>.</summary>
     private async Task<JsonDocument> StratzAsync(string key, string query, CancellationToken cancellationToken)
     {
-        using var client = clients.CreateClient(StratzClient);
-        using var request = new HttpRequestMessage(HttpMethod.Post, Stratz)
+        string body = await SharedAsync("STRATZ " + query, async () =>
         {
-            Content = new StringContent(JsonSerializer.Serialize(new { query }), System.Text.Encoding.UTF8, "application/json")
-        };
-        request.Headers.Authorization = new("Bearer", key);
-        using var answer = await client.SendAsync(request, cancellationToken);
-        string body = await answer.Content.ReadAsStringAsync(cancellationToken);
-        if (!answer.IsSuccessStatusCode)
-            throw new LookupFailedException($"STRATZ answered {(int)answer.StatusCode} {answer.ReasonPhrase}: {Snippet(body)}"
-                + (answer.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden ? " Check Stratz__ApiKey." : ""));
+            using var client = clients.CreateClient(StratzClient);
+            using var request = new HttpRequestMessage(HttpMethod.Post, Stratz)
+            {
+                Content = new StringContent(JsonSerializer.Serialize(new { query }), System.Text.Encoding.UTF8, "application/json")
+            };
+            request.Headers.Authorization = new("Bearer", key);
+            using var answer = await client.SendAsync(request, CancellationToken.None);
+            string text = await answer.Content.ReadAsStringAsync(CancellationToken.None);
+            if (!answer.IsSuccessStatusCode)
+                throw new LookupFailedException($"STRATZ answered {(int)answer.StatusCode} {answer.ReasonPhrase}: {Snippet(text)}"
+                    + (answer.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden ? " Check Stratz__ApiKey." : ""));
+            return text;
+        }, cancellationToken);
         var document = JsonDocument.Parse(body);
         if (document.RootElement.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Array && errors.GetArrayLength() > 0)
         {
@@ -298,7 +332,7 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
     internal static string StratzPositionsQuery(long accountId)
     {
         string id = accountId.ToString(CultureInfo.InvariantCulture);
-        return $"{{ player(steamAccountId: {id}) {{ matches(request: {{ take: {PositionMatches} }}) {{ players(steamAccountId: {id}) {{ position isVictory }} }} }} }}";
+        return $"{{ player(steamAccountId: {id}) {{ matches(request: {{ take: {PositionMatches}, lobbyTypeIds: [{RankedLobby}] }}) {{ players(steamAccountId: {id}) {{ position isVictory }} }} }} }}";
     }
 
     /// <summary>Games and wins per position (1–5) from STRATZ's last matches, most played first. Matches without a position are skipped.</summary>
@@ -328,8 +362,8 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
             .OrderByDescending(role => role.Games).ThenByDescending(role => role.Wins).ThenBy(role => role.Key, StringComparer.Ordinal).ToArray();
 
     /// <summary>
-    /// The last matches from OpenDota's recentMatches: form, streak, averages, solo vs party, ranked results, and games per
-    /// lane (OpenDota's lane_role; is_roaming counts as "roam"). Null when there are no matches.
+    /// The last ranked matches from OpenDota's player matches: form, streak, averages, solo vs party, ranked results, and
+    /// games per lane (OpenDota's lane_role; is_roaming counts as "roam"). Null when there are no matches.
     /// </summary>
     internal static (DotaRecent? Recent, IReadOnlyList<DotaRole> Lanes) ParseRecent(JsonElement recent)
     {
@@ -463,11 +497,11 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
     }
 
     /// <summary>The newest Dota 2 patch and when it came out, from OpenDota's patch list (STRATZ's list lags behind).</summary>
-    private async Task<(string Name, DateTimeOffset Date)?> CurrentPatchAsync(HttpClient client, CancellationToken cancellationToken)
+    private async Task<(string Name, DateTimeOffset Date)?> CurrentPatchAsync(CancellationToken cancellationToken)
     {
         if (patch is { } known && DateTimeOffset.UtcNow - patchAt < PatchFor)
             return known;
-        using var document = await OpenDotaAsync(client, "constants/patch", null, cancellationToken);
+        using var document = await OpenDotaAsync("constants/patch", null, cancellationToken);
         patch = LatestPatch(document.RootElement) ?? patch;
         patchAt = DateTimeOffset.UtcNow;
         return patch;
@@ -497,8 +531,65 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
     /// <summary>A failed answer: the service, the endpoint (never the key), the HTTP status and the start of the body.</summary>
     internal sealed class LookupFailedException(string message) : Exception(message);
 
-    private Task<JsonDocument> OpenDotaAsync(HttpClient client, string path, string? query, CancellationToken cancellationToken) =>
-        RequestAsync(client, "OpenDota", path, OpenDotaUrl(path, query), null, false, cancellationToken)!;
+    /// <summary>
+    /// One OpenDota GET. While the same URL is already on its way (a Refresh click during the hourly refresh, two
+    /// people opening the same page), the caller waits for that answer instead of sending the request again.
+    /// </summary>
+    private async Task<JsonDocument> OpenDotaAsync(string path, string? query, CancellationToken cancellationToken)
+    {
+        string url = OpenDotaUrl(path, query);
+        string body = await SharedAsync(url, async () =>
+        {
+            OpenDotaCallsToday(1);
+            using var client = clients.CreateClient(OpenDotaClient);
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            using var answer = await client.SendAsync(request, CancellationToken.None);
+            string text = await answer.Content.ReadAsStringAsync(CancellationToken.None);
+            if (!answer.IsSuccessStatusCode)
+                throw Failed("OpenDota", path, answer, text);
+            return text;
+        }, cancellationToken);
+        return JsonDocument.Parse(body);
+    }
+
+    /// <summary>
+    /// Runs <paramref name="send"/> once for all callers with the same <paramref name="key"/> while it is on its way.
+    /// The call itself isn't cancelled when one caller gives up (the client's timeout ends it), so the others still get it.
+    /// </summary>
+    internal async Task<string> SharedAsync(string key, Func<Task<string>> send, CancellationToken cancellationToken)
+    {
+        var shared = inFlight.GetOrAdd(key, _ =>
+        {
+            // Each candidate removes only itself, so a losing candidate of a race never removes the stored one.
+            Lazy<Task<string>>? self = null;
+            self = new Lazy<Task<string>>(async () =>
+            {
+                try
+                {
+                    return await send();
+                }
+                finally
+                {
+                    inFlight.TryRemove(new KeyValuePair<string, Lazy<Task<string>>>(key, self!));
+                }
+            });
+            return self;
+        });
+        return await shared.Value.WaitAsync(cancellationToken);
+    }
+
+    private static LookupFailedException Failed(string service, string path, HttpResponseMessage answer, string body)
+    {
+        string hint = answer.StatusCode switch
+        {
+            HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden when service == "FACEIT" => " Check Faceit__ApiKey: it must be a server-side key.",
+            HttpStatusCode.TooManyRequests => " The service's rate limit was hit; the next refresh tries again.",
+            _ => ""
+        };
+        string snippet = body.Length > 160 ? body[..160] + "…" : body;
+        return new LookupFailedException(
+            $"{service} answered {(int)answer.StatusCode} {answer.ReasonPhrase} for {path}: {snippet.ReplaceLineEndings(" ")}{hint}");
+    }
 
     private static Task<JsonDocument?> FaceitAsync(HttpClient client, string key, string path, bool allowNotFound, CancellationToken cancellationToken) =>
         RequestAsync(client, "FACEIT", path.Split('?')[0], Faceit + path, key, allowNotFound, cancellationToken);
@@ -514,17 +605,7 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
             return null;
         string body = await answer.Content.ReadAsStringAsync(cancellationToken);
         if (!answer.IsSuccessStatusCode)
-        {
-            string hint = answer.StatusCode switch
-            {
-                HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden when service == "FACEIT" => " Check Faceit__ApiKey: it must be a server-side key.",
-                HttpStatusCode.TooManyRequests => " The service's rate limit was hit; the next refresh tries again.",
-                _ => ""
-            };
-            string snippet = body.Length > 160 ? body[..160] + "…" : body;
-            throw new LookupFailedException(
-                $"{service} answered {(int)answer.StatusCode} {answer.ReasonPhrase} for {path}: {snippet.ReplaceLineEndings(" ")}{hint}");
-        }
+            throw Failed(service, path, answer, body);
         return JsonDocument.Parse(body);
     }
 
@@ -657,7 +738,7 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
             maps);
     }
 
-    private async Task<IReadOnlyDictionary<int, (string Name, string? Image)>> HeroesAsync(HttpClient client, CancellationToken cancellationToken)
+    private async Task<IReadOnlyDictionary<int, (string Name, string? Image)>> HeroesAsync(CancellationToken cancellationToken)
     {
         if (heroes is { } known && DateTimeOffset.UtcNow - heroesAt < HeroesFor)
             return known;
@@ -666,7 +747,7 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
         {
             if (heroes is { } again && DateTimeOffset.UtcNow - heroesAt < HeroesFor)
                 return again;
-            using var document = await OpenDotaAsync(client, "constants/heroes", null, cancellationToken);
+            using var document = await OpenDotaAsync("constants/heroes", null, cancellationToken);
             heroes = ParseHeroes(document.RootElement);
             heroesAt = DateTimeOffset.UtcNow;
             return heroes;

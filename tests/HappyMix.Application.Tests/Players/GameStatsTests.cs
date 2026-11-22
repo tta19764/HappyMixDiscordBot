@@ -78,7 +78,7 @@ public sealed class GameStatsTests
             """);
         Assert.Equal([new DotaPeer(9, 12, 5), new DotaPeer(7, 3, 2)], GameStatsDirectory.ParsePeers(peers.RootElement));
 
-        Assert.Equal("{ player(steamAccountId: 42) { matches(request: { take: 50 }) { players(steamAccountId: 42) { position isVictory } } } }",
+        Assert.Equal("{ player(steamAccountId: 42) { matches(request: { take: 50, lobbyTypeIds: [7] }) { players(steamAccountId: 42) { position isVictory } } } }",
             GameStatsDirectory.StratzPositionsQuery(42));
         using var positions = JsonDocument.Parse("""
             {"data":{"player":{"matches":[
@@ -104,6 +104,7 @@ public sealed class GameStatsTests
 
         // A refresh the same day replaces the day's medal; the next day adds one, and a failed fetch keeps the history.
         fixture.Stats.RankTier = 51;
+        fixture.Clock.Advance(GameStats.RefreshAfter);
         await sender.Send(new RefreshMyStatsCommand(Kai));
         fixture.Clock.Advance(TimeSpan.FromDays(1));
         fixture.Stats.RankTier = 52;
@@ -210,6 +211,85 @@ public sealed class GameStatsTests
         kai = (await sender.Send(new GetGroupStatsQuery(Actor(Mira), groupId))).Value.Cards.Single(card => card.UserId == Kai);
         Assert.Equal((false, null), (kai.Shares, kai.Dota));
         Assert.Null((await sender.Send(new GetMyStatsQuery(Kai))).Value.Dota);
+    }
+
+    [Fact]
+    public async Task IdenticalRequestsOnTheirWayShareOneCall()
+    {
+        using var directory = new GameStatsDirectory(new NoClients(), new Microsoft.Extensions.Configuration.ConfigurationManager(),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<GameStatsDirectory>.Instance);
+        int sent = 0;
+        var answer = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        Task<string> Send() { Interlocked.Increment(ref sent); return answer.Task; }
+
+        // Three callers ask for the same URL while it's on its way: one request; one caller giving up doesn't stop it.
+        using var giveUp = new CancellationTokenSource();
+        var first = directory.SharedAsync("players/1/wl", Send, CancellationToken.None);
+        var second = directory.SharedAsync("players/1/wl", Send, CancellationToken.None);
+        var leaving = directory.SharedAsync("players/1/wl", Send, giveUp.Token);
+        var other = directory.SharedAsync("players/2/wl", () => Task.FromResult("other"), CancellationToken.None);
+        await giveUp.CancelAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => leaving);
+        answer.SetResult("{}");
+        Assert.Equal(("{}", "{}", "other"), (await first, await second, await other));
+        Assert.Equal(1, sent);
+
+        // Once it's answered, the next ask is a new request; a failure reaches every waiting caller and isn't kept.
+        var failing = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var a = directory.SharedAsync("players/1/wl", () => { sent++; return failing.Task; }, CancellationToken.None);
+        var b = directory.SharedAsync("players/1/wl", () => { sent++; return failing.Task; }, CancellationToken.None);
+        failing.SetException(new InvalidOperationException("500"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => a);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => b);
+        Assert.Equal("again", await directory.SharedAsync("players/1/wl", () => { sent++; return Task.FromResult("again"); }, CancellationToken.None));
+        Assert.Equal(3, sent);
+    }
+
+    private sealed class NoClients : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name) => throw new InvalidOperationException("No requests in this test.");
+    }
+
+    [Fact]
+    public async Task RefreshMeReloadsOnlyYourCardsAndTheBotRefreshesHourly()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var sender = fixture.Sender;
+        await sender.Send(new LinkSteamCommand(Kai, KaiSteam));
+        await sender.Send(new LinkSteamCommand(Mira, MiraSteam));
+        await sender.Send(new SetStatsSharingCommand(Kai, true));
+        await sender.Send(new SetStatsSharingCommand(Mira, true));
+        fixture.Stats.Asked.Clear();
+
+        // A click right after a good load keeps the cards; a minute later only the clicker's are fetched.
+        await sender.Send(new RefreshMyStatsCommand(Kai));
+        Assert.Empty(fixture.Stats.Asked);
+        fixture.Clock.Advance(GameStats.RefreshAfter);
+        await sender.Send(new RefreshMyStatsCommand(Kai));
+        Assert.Equal([KaiSteam], fixture.Stats.Asked);
+
+        // A failed load can be retried at once.
+        fixture.Stats.Fail = true;
+        fixture.Clock.Advance(GameStats.RefreshAfter);
+        await sender.Send(new RefreshMyStatsCommand(Kai));
+        fixture.Stats.Fail = false;
+        await sender.Send(new RefreshMyStatsCommand(Kai));
+        Assert.Equal([KaiSteam, KaiSteam, KaiSteam], fixture.Stats.Asked);
+
+        // Within the hour the bot leaves both alone; after it, both are reloaded (two cards each).
+        fixture.Stats.Asked.Clear();
+        Assert.Equal(0, (await sender.Send(new RefreshGameStatsCommand())).Value);
+        fixture.Clock.Advance(TimeSpan.FromHours(1));
+        Assert.Equal(4, (await sender.Send(new RefreshGameStatsCommand())).Value);
+        Assert.Equal([KaiSteam, MiraSteam], fixture.Stats.Asked.Order());
+
+        // When the day's OpenDota budget is spent, the bot waits; Refresh me still works.
+        fixture.Clock.Advance(TimeSpan.FromHours(1));
+        fixture.Stats.BackgroundBudgetLeft = false;
+        Assert.Equal(0, (await sender.Send(new RefreshGameStatsCommand())).Value);
+        fixture.Stats.Asked.Clear();
+        await sender.Send(new RefreshMyStatsCommand(Mira));
+        Assert.Equal([MiraSteam], fixture.Stats.Asked);
     }
 
     [Fact]
@@ -377,6 +457,7 @@ public sealed class GameStatsTests
         public bool Fail { get; set; }
         public int RankTier { get; set; } = 45;
         public bool Cs2Enabled => true;
+        public bool BackgroundBudgetLeft { get; set; } = true;
 
         public Task<StatsFetch<DotaProfile>> GetDotaAsync(string steamId64, CancellationToken cancellationToken)
         {
