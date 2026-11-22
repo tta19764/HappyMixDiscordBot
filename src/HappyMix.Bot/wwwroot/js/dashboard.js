@@ -1743,3 +1743,12 @@ for (const form of document.querySelectorAll("[data-dnd-form]")) {
     form.addEventListener("change", describe);
     sync();
 }
+
+// Game features list: the search box also filters the games as you type (the Search button still works without scripts).
+for (const input of document.querySelectorAll("[data-game-filter]")) {
+    const items = [...document.querySelectorAll("[data-game-name]")];
+    input.addEventListener("input", () => {
+        const query = input.value.trim().toLowerCase();
+        for (const item of items) item.hidden = query !== "" && !item.dataset.gameName.includes(query);
+    });
+}

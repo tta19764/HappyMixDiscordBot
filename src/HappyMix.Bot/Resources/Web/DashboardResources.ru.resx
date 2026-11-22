@@ -1978,7 +1978,7 @@
 <data name="Guide_weekly_Title" xml:space="preserve"><value>Недельное расписание и копирование</value></data>
 <data name="Guide_weekly_Body" xml:space="preserve"><value>Откройте недельное расписание и выберите день. Добавьте промежутки времени, укажите для каждого «Точно» или «Возможно» и сохраните день. Расписание повторяется еженедельно. Копирование дня включает часы, уверенность и часовой пояс. Вставьте текст в редактор другого дня, примените и сохраните. В поле копирования работают Ctrl+C и Ctrl+V.</value></data>
 <data name="Guide_groups_Title" xml:space="preserve"><value>Группы и общее расписание</value></data>
-<data name="Guide_groups_Body" xml:space="preserve"><value>Создайте группу, добавьте описание и игры, пригласите участников сервера. На странице группы строка вкладок вверху переключает обзор, доступность, участников, события, голосования, список просмотра, игры и настройки. Приглашённые принимают приглашение в Discord или на сайте и получают роль группы. На доске группы видна доступность участников. Открытую группу видят все в разделе «Открыты для вступления»: люди просятся, а организатор их принимает. Участники могут предлагать игры с любой платформы, а организатор добавляет их. Организаторы и модераторы управляют группой. Восстановление ролей назначает их по сохранённому составу. Выход снимает роль группы. Закрытие удаляет состав и роль.</value></data>
+<data name="Guide_groups_Body" xml:space="preserve"><value>Создайте группу, добавьте описание и игры, пригласите участников сервера. На странице группы строка вкладок вверху переключает обзор, доступность, участников, события, голосования, список просмотра, игры и настройки. Приглашённые принимают приглашение в Discord или на сайте и получают роль группы. На доске группы видна доступность участников. Открытую группу видят все в разделе «Открыты для вступления»: люди просятся, а организатор их принимает. Участники могут предлагать игры с любой платформы, а организатор добавляет их. Организаторы и модераторы управляют группой. Восстановление ролей назначает их по сохранённому составу. Выход снимает роль группы. Закрытие удаляет состав и роль. «Обзор» показывает группу с первого взгляда: ближайшее событие с теми, кто идёт, и кнопками ответа, кто свободен сегодня и играет сейчас, последнюю совместную игру и результаты недели, топ игр и открытые голосования.</value></data>
 <data name="Guide_events_Title" xml:space="preserve"><value>События и приглашения</value></data>
 <data name="Guide_events_Body" xml:space="preserve"><value>Создайте событие для группы или выберите отдельных участников. Задайте даты, часы и часовой пояс. Для повторяющегося события согласитесь один раз, чтобы присоединиться к серии; отказывайтесь или отменяйте участие в отдельных датах, не меняя остальных. Организатор подтверждает каждую дату, когда достаточно людей могут прийти, и может отменить одну дату или оставшуюся серию. Подтверждённые события отображаются в доступности. Откройте «Уведомления в канале» группы или события, чтобы выбрать канал или создать канал с её названием, задать язык и время напоминания и при желании публиковать обновления о запланированных, подтверждённых или отменённых событиях. События используют настройки группы, пока не получат собственные. Напоминания упоминают согласившихся участников и организатора, только если их нет ни в одном голосовом канале сервера, с учётом связанных аккаунтов. Повторяющееся событие отправляет каждому одно приглашение: «Принять все даты» или «Отклонить все даты» отвечает за всю серию. Отменённые события и даты удаляются через несколько минут после отмены.</value></data>
 <data name="Guide_game-news_Title" xml:space="preserve"><value>Подписки на новости игр</value></data>
@@ -2651,7 +2651,7 @@
 <data name="Dota_Medal_7" xml:space="preserve"><value>Божество</value></data>
 <data name="Dota_Medal_8" xml:space="preserve"><value>Титан</value></data>
 <data name="Guide_stats_Title" xml:space="preserve"><value>Статистика</value></data>
-<data name="Guide_stats_Body" xml:space="preserve"><value>Группы, которые играют в Dota 2 или CS2, имеют вкладку «Статистика» с карточкой каждого участника. Пока вы не включите «Показывать мою игровую статистику моим группам», ничего не показывается; после этого выбор действует для всех ваших групп, а выключение удаляет сохранённую статистику и матчи. Карточки Dota 2 берут данные из OpenDota (медаль, победы и поражения за 30 дней, самые частые герои) и требуют включённого «Открывать данные о матчах» в Dota 2. Карточки CS2 берут данные из FACEIT (уровень, Elo, K/D, хедшоты, карты), если у бота есть ключ FACEIT. Когда двое или больше участников, делящихся статистикой, играют в одном матче, он появляется в разделе «Недавние совместные игры», а организатор может включить публикацию этих итогов в канале группы. Карточки и матчи обновляются регулярно и ссылаются на OpenDota, Dotabuff, FACEIT, Leetify и Steam.</value></data>
+<data name="Guide_stats_Body" xml:space="preserve"><value>Группы, играющие в Dota 2 или CS2, имеют вкладку «Статистика» с карточкой для каждого участника. Показ выключен, пока вы не включите «Показывать мою игровую статистику моим группам»; тогда он действует для всех ваших групп, а выключение удаляет сохранённую статистику и матчи. Карточки Dota 2 берутся из OpenDota и требуют включённого «Expose Public Match Data» в Dota 2: медаль, последние 30 дней, частые герои, самая частая роль (позиции из STRATZ, если у бота есть ключ, иначе линии), изменение медали с тех пор, как бот начал сохранять её ежедневно, оценка MMR по рейтинговым победам и поражениям (настоящий MMR не публичный), последние 20 матчей со средними показателями и с кем вы играете чаще всего. Карточки CS2 берутся из FACEIT (уровень, Elo, K/D, хедшоты, карты), если у бота есть ключ FACEIT. «Дуэты» показывают участников, которые больше всего играли в одной команде. Когда двое или больше участников, делящихся статистикой, играют один матч, он появляется в «Недавних совместных играх», а организатор может также публиковать эти итоги в канале группы. Карточки обновляются каждые несколько часов, матчи — примерно каждые полчаса.</value></data>
 <data name="Recap_Title" xml:space="preserve"><value>Недавние совместные игры</value></data>
 <data name="Recap_None" xml:space="preserve"><value>За последние две недели совместных игр нет. Когда двое или больше участников, которые делятся статистикой, играют в одном матче, он появится здесь.</value></data>
 <data name="Recap_Result_won" xml:space="preserve"><value>Победа</value></data>
@@ -2678,7 +2678,7 @@
 <data name="Digest_MostPlayed" xml:space="preserve"><value>чаще всего {0} ×{1}</value></data>
 <data name="Digest_Best" xml:space="preserve"><value>лучше всех: {0} выиграл(а) {1} из {2}</value></data>
 <data name="Features_Title" xml:space="preserve"><value>Игровые функции</value></data>
-<data name="Features_Lead" xml:space="preserve"><value>Дополнения для отдельных игр: ваша статистика Dota 2 и CS2 и мета Dota 2 для этого сервера.</value></data>
+<data name="Features_Lead" xml:space="preserve"><value>Функции для отдельных игр на этом сервере. Выберите игру, чтобы увидеть свою статистику и её инструменты.</value></data>
 <data name="Features_MyStats" xml:space="preserve"><value>Ваша игровая статистика</value></data>
 <data name="Features_MyStatsLead" xml:space="preserve"><value>Те же карточки, которые ваши группы видят на вкладке «Статистика». Переключатель здесь меняет выбор везде.</value></data>
 <data name="Features_Cs2Soon" xml:space="preserve"><value>Больше функций для CS2 появится позже. Ваша статистика CS2 — выше и на вкладке «Статистика» групп, которые играют в CS2.</value></data>
@@ -2724,7 +2724,7 @@
 <data name="Meta_Err_Schedule" xml:space="preserve"><value>Выберите правильное расписание, день и час.</value></data>
 <data name="Meta_Err_Channel" xml:space="preserve"><value>Сначала выберите или создайте канал.</value></data>
 <data name="Guide_features_Title" xml:space="preserve"><value>Игровые функции</value></data>
-<data name="Guide_features_Body" xml:space="preserve"><value>На странице «Игровые функции» собраны дополнения для отдельных игр. Здесь ваша статистика Dota 2 и CS2 с тем же переключателем, что и на вкладках «Статистика» групп, кнопка «Обновить» и, если загрузка не удалась, точная причина в разделе «Почему?». Для Dota 2 есть мета-герои по линиям из OpenDota; администраторы сервера выбирают канал (или создают #dota-meta), публикуют мету сразу или настраивают публикацию каждый день, каждые два дня или раз в неделю в выбранное время.</value></data>
+<data name="Guide_features_Body" xml:space="preserve"><value>Страница «Игровые функции» показывает игры с дополнительными возможностями на этом сервере — карточками, таблицей или списком, с поиском. У каждой игры своя страница с вкладками. На вкладке статистики — ваши карточки с тем же переключателем, что и на вкладках «Статистика» групп, кнопка «Обновить» и, если запрос не удался, точная причина под «Почему?». Для Dota 2 есть также мета-герои: выберите патч, роль, ранг, порядок и минимальную частоту выбора, затем нажмите «Искать». Мета-оценка — самый низкий процент побед, который герой вероятно имеет с учётом количества игр, поэтому несколько удачных игр не выводят героя наверх; героев, которых берут меньше чем в 1% матчей, по умолчанию скрыто. На вкладке «Публикации в Discord» администраторы сервера выбирают канал (или создают #dota-meta), публикуют сразу или каждый день, раз в два дня или раз в неделю.</value></data>
 <data name="Meta_Count" xml:space="preserve"><value>Героев на линию</value></data>
 <data name="Meta_TopN" xml:space="preserve"><value>Топ-{0}</value></data>
 <data name="Meta_SearchTitle" xml:space="preserve"><value>Dota 2 · Мета-герои</value></data>
@@ -2762,4 +2762,78 @@
 <data name="Meta_PostByLane" xml:space="preserve"><value>Публикация показывает лёгкую, центральную и сложную линии из OpenDota.</value></data>
 <data name="Meta_RolesTitle" xml:space="preserve"><value>Мета Dota 2 по ролям</value></data>
 <data name="Meta_RolesLegend" xml:space="preserve"><value>Процент побед · частота выбора, рейтинговый All Pick</value></data>
+<data name="Features_Games" xml:space="preserve"><value>Игры</value></data>
+<data name="Features_SearchGames" xml:space="preserve"><value>Найти игру</value></data>
+<data name="Features_View" xml:space="preserve"><value>Показать как</value></data>
+<data name="Features_ViewCards" xml:space="preserve"><value>Карточки</value></data>
+<data name="Features_ViewTable" xml:space="preserve"><value>Таблица</value></data>
+<data name="Features_ViewList" xml:space="preserve"><value>Список</value></data>
+<data name="Features_NoGames" xml:space="preserve"><value>Нет игр по вашему запросу.</value></data>
+<data name="Features_Game" xml:space="preserve"><value>Игра</value></data>
+<data name="Features_Available" xml:space="preserve"><value>Функции</value></data>
+<data name="Features_Status" xml:space="preserve"><value>Состояние</value></data>
+<data name="Features_ListHelp" xml:space="preserve"><value>Новые игры будут появляться здесь, когда получат функции.</value></data>
+<data name="Features_AllGames" xml:space="preserve"><value>Все игры</value></data>
+<data name="Features_MoreSoon" xml:space="preserve"><value>Больше функций позже</value></data>
+<data name="Features_StatusSharing" xml:space="preserve"><value>Вы делитесь статистикой</value></data>
+<data name="Features_StatusNotSharing" xml:space="preserve"><value>Ваша статистика скрыта</value></data>
+<data name="Features_StatusMeta" xml:space="preserve"><value>Публикации меты: {0}</value></data>
+<data name="Features_StatusMetaOff" xml:space="preserve"><value>Публикации меты выключены</value></data>
+<data name="Features_StatusCs2Off" xml:space="preserve"><value>Статистике CS2 нужен ключ FACEIT</value></data>
+<data name="Feature_stats" xml:space="preserve"><value>Ваша статистика</value></data>
+<data name="Feature_meta" xml:space="preserve"><value>Мета-герои</value></data>
+<data name="Feature_recaps" xml:space="preserve"><value>Совместные игры</value></data>
+<data name="Feature_digest" xml:space="preserve"><value>Итог недели</value></data>
+<data name="Meta_Tab" xml:space="preserve"><value>Мета-герои</value></data>
+<data name="Meta_MinPick" xml:space="preserve"><value>Выбирают хотя бы</value></data>
+<data name="Meta_MinPick_Any" xml:space="preserve"><value>Любая частота</value></data>
+<data name="Meta_MinPick_N" xml:space="preserve"><value>{0}% матчей</value></data>
+<data name="Meta_ExplainTitle" xml:space="preserve"><value>Как работает мета-оценка</value></data>
+<data name="Meta_Explain1" xml:space="preserve"><value>Сам процент побед вводит в заблуждение: герой, выигравший 60 из 100 игр, выглядит лучше того, кто выиграл 5 400 из 10 000 (54%), но 100 игр могут быть случайностью. Мета-оценка показывает, каким как минимум является процент побед с учётом количества игр.</value></data>
+<data name="Meta_Explain2" xml:space="preserve"><value>Технически это нижняя граница 95% интервала Уилсона: 60 из 100 даёт около 50,2, а 5 400 из 10 000 — около 53,0, поэтому проверенный герой стоит выше. Чем больше игр, тем ближе оценка к настоящему проценту побед.</value></data>
+<data name="Meta_Explain3" xml:space="preserve"><value>Частота выбора — доля матчей, где героя играли на выбранной роли. «Выбирают хотя бы» скрывает ситуативных героев, например оффлейнеров, которых берут меньше чем в 1% игр, даже если их показатели хорошие. По умолчанию — 1%.</value></data>
+<data name="Meta_Explain4" xml:space="preserve"><value>Данные: STRATZ, только рейтинговые игры All Pick. «Текущий патч» считается с первого полного дня после выхода патча. Результаты хранятся час, поэтому смена порядка или частоты выбора не делает нового запроса к STRATZ.</value></data>
+<data name="Dota_Lane_Jungle" xml:space="preserve"><value>Лес</value></data>
+<data name="Dota_Lane_Roam" xml:space="preserve"><value>Роуминг</value></data>
+<data name="Dota_MostPlayed" xml:space="preserve"><value>Чаще всего играет</value></data>
+<data name="Dota_RoleTitle" xml:space="preserve"><value>{0}: {1} игр · {2} побед</value></data>
+<data name="Dota_RolesStratz" xml:space="preserve"><value>Позиции за последние {0} матчей, данные STRATZ.</value></data>
+<data name="Dota_RolesOpenDota" xml:space="preserve"><value>Линии за последние {0} матчей, данные OpenDota (она не различает позиции 4 и 5).</value></data>
+<data name="Dota_RankChange" xml:space="preserve"><value>{0} ★ с {1}</value></data>
+<data name="Dota_RankChangeHelp" xml:space="preserve"><value>Изменение медали: бот сохраняет медаль раз в день, потому что OpenDota показывает только текущую. В каждой медали 5 звёзд.</value></data>
+<data name="Dota_Mmr" xml:space="preserve"><value>≈ {0} MMR · {1} рейтинговых</value></data>
+<data name="Dota_MmrHelp" xml:space="preserve"><value>Оценка: около {0} MMR за каждую рейтинговую победу или поражение в последних матчах. Dota 2 не делает настоящий MMR публичным.</value></data>
+<data name="Dota_LastN" xml:space="preserve"><value>Последние {0}</value></data>
+<data name="Dota_WinStreak" xml:space="preserve"><value>{0} побед подряд</value></data>
+<data name="Dota_LossStreak" xml:space="preserve"><value>{0} поражений подряд</value></data>
+<data name="Dota_FormLabel" xml:space="preserve"><value>Последние {0} матчей, от самого старого: {1} выиграно, {2} проиграно</value></data>
+<data name="Dota_MoreStats" xml:space="preserve"><value>Больше статистики</value></data>
+<data name="Dota_Kda" xml:space="preserve"><value>Ср. K / D / A</value></data>
+<data name="Dota_GpmXpm" xml:space="preserve"><value>GPM / XPM</value></data>
+<data name="Dota_Solo" xml:space="preserve"><value>Соло</value></data>
+<data name="Dota_Party" xml:space="preserve"><value>В пати</value></data>
+<data name="Dota_BestWith" xml:space="preserve"><value>Больше всего игр вместе с</value></data>
+<data name="Stats_WithGroup" xml:space="preserve"><value>С группой, 14 дней</value></data>
+<data name="Stats_Duos" xml:space="preserve"><value>Дуэты</value></data>
+<data name="Stats_DuosHelp" xml:space="preserve"><value>Участники, которые больше всего играли в одной команде, за всё время, данные OpenDota.</value></data>
+<data name="Ov_NextEvent" xml:space="preserve"><value>Следующее событие</value></data>
+<data name="Ov_AllEvents" xml:space="preserve"><value>Все события</value></data>
+<data name="Ov_Going" xml:space="preserve"><value>Идут</value></data>
+<data name="Ov_Today" xml:space="preserve"><value>Сегодня</value></data>
+<data name="Ov_TodayOther" xml:space="preserve"><value>Откройте доступность на сегодня, чтобы увидеть, кто свободен.</value></data>
+<data name="Ov_NobodyFree" xml:space="preserve"><value>Никто ещё не отметил свободное время на сегодня.</value></data>
+<data name="Ov_FreeToday" xml:space="preserve"><value>Свободны сегодня: {0}</value></data>
+<data name="Ov_FreeNow" xml:space="preserve"><value>Свободен сейчас</value></data>
+<data name="Ov_Maybe" xml:space="preserve"><value>возможно</value></data>
+<data name="Ov_AndMore" xml:space="preserve"><value>и ещё {0}</value></data>
+<data name="Ov_Latest" xml:space="preserve"><value>Последняя</value></data>
+<data name="Ov_Week" xml:space="preserve"><value>{0}, 7 дней</value></data>
+<data name="Ov_TogetherShare" xml:space="preserve"><value>Совместные игры появятся, когда хотя бы двое участников поделятся статистикой.</value></data>
+<data name="Ov_TogetherNone" xml:space="preserve"><value>Нет совместных игр за последние две недели.</value></data>
+<data name="Ov_TopGames" xml:space="preserve"><value>Топ игр</value></data>
+<data name="Ov_NoGames" xml:space="preserve"><value>Игр ещё не добавлено.</value></data>
+<data name="Ov_OpenVotes" xml:space="preserve"><value>Открытые голосования: {0}</value></data>
+<data name="Ov_Voters" xml:space="preserve"><value>проголосовали: {0}</value></data>
+<data name="Ov_Closes" xml:space="preserve"><value>закончится {0}</value></data>
+<data name="Ov_YouVoted" xml:space="preserve"><value>вы проголосовали</value></data>
 </root>

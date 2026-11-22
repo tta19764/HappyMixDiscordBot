@@ -24,10 +24,13 @@ public sealed record GameFeatures(MyStats Mine, DotaMetaSettings Meta, DotaMeta?
 /// <param name="Filter">The meta search's filters; the lane meta is loaded only when the search isn't available.</param>
 public sealed record GetGameFeaturesQuery(ulong GuildId, ulong UserId, MetaFilter? Filter = null) : IQuery<GameFeatures>;
 
+/// <summary>The server's meta post settings, for the game list and the channel button.</summary>
+public sealed record GetDotaMetaSettingsQuery(ulong GuildId) : IQuery<DotaMetaSettings>;
+
 /// <summary>Saves where and how often the meta is posted. Server admins only (checked by the caller).</summary>
 /// <param name="Count">Heroes per lane, from <see cref="DotaMetas.Counts"/>.</param>
 public sealed record SaveDotaMetaCommand(ulong GuildId, MetaSchedule Schedule, ulong? ChannelId, DayOfWeek Day, int Hour, int Count = DotaMetas.DefaultCount,
-    MetaRank Rank = MetaRank.All, MetaPatch Patch = MetaPatch.Current, MetaSort Sort = MetaSort.Score) : ICommand<DotaMetaSettings>;
+    MetaRank Rank = MetaRank.All, MetaPatch Patch = MetaPatch.Current, MetaSort Sort = MetaSort.Score, double MinPickRate = 1) : ICommand<DotaMetaSettings>;
 
 /// <summary>
 /// Posts the meta in the server's meta channel now ("Post now"), with data at most an hour old: by role from STRATZ
@@ -47,13 +50,20 @@ public static class DotaMetas
     /// <summary>The choices offered for heroes per lane.</summary>
     public static readonly int[] Counts = [5, 10, 15, 20];
 
-    /// <summary>The heroes of a search in the chosen order.</summary>
-    public static IReadOnlyList<RankedHero> Sorted(IEnumerable<RankedHero> heroes, MetaSort sort) => sort switch
+    /// <summary>The choices offered for the minimum pick rate, in percent.</summary>
+    public static readonly double[] MinPickRates = [0, 0.5, 1, 2, 3, 5];
+
+    /// <summary>The heroes of a search picked in at least <paramref name="minPickRate"/>% of matches, in the chosen order.</summary>
+    public static IReadOnlyList<RankedHero> Sorted(IEnumerable<RankedHero> heroes, MetaSort sort, double minPickRate = 0)
     {
-        MetaSort.WinRate => heroes.OrderByDescending(hero => hero.WinRate).ThenByDescending(hero => hero.Games).ToArray(),
-        MetaSort.PickRate => heroes.OrderByDescending(hero => hero.PickRate).ToArray(),
-        _ => heroes.OrderByDescending(hero => hero.Score).ToArray()
-    };
+        var common = heroes.Where(hero => hero.PickRate >= minPickRate);
+        return sort switch
+        {
+            MetaSort.WinRate => common.OrderByDescending(hero => hero.WinRate).ThenByDescending(hero => hero.Games).ToArray(),
+            MetaSort.PickRate => common.OrderByDescending(hero => hero.PickRate).ToArray(),
+            _ => common.OrderByDescending(hero => hero.Score).ToArray()
+        };
+    }
 
     /// <summary>The cache entry for a filter; the order is applied after reading, so every sort shares one entry.</summary>
     public static string SearchKey(MetaFilter filter) => $"stratz:{filter.Patch}:{filter.Position}:{filter.Rank}";
@@ -75,16 +85,19 @@ public static class DotaMetas
 
 internal sealed class GameFeatureHandlers(IGameFeatureStore store, IDotaMetaSource source, IEnumerable<IHeroMetaSource> heroSources,
     IEnumerable<IDotaMetaPublisher> publishers, IGuildSettingsStore settings, IClock clock, ISender sender) :
-    IQueryHandler<GetGameFeaturesQuery, GameFeatures>, ICommandHandler<SaveDotaMetaCommand, DotaMetaSettings>,
+    IQueryHandler<GetGameFeaturesQuery, GameFeatures>, ICommandHandler<SaveDotaMetaCommand, DotaMetaSettings>, IQueryHandler<GetDotaMetaSettingsQuery, DotaMetaSettings>,
     ICommandHandler<PostDotaMetaCommand, bool>, ICommandHandler<RunDotaMetaScheduleCommand, int>
 {
     private IHeroMetaSource? Search => heroSources.FirstOrDefault(item => item.Enabled);
+
+    public async Task<Result<DotaMetaSettings>> Handle(GetDotaMetaSettingsQuery query, CancellationToken cancellationToken) =>
+        await store.GetDotaMetaAsync(query.GuildId);
 
     public async Task<Result<GameFeatures>> Handle(GetGameFeaturesQuery query, CancellationToken cancellationToken)
     {
         var mine = (await sender.Send(new GetMyStatsQuery(query.UserId), cancellationToken)).Value;
         var saved = await store.GetDotaMetaAsync(query.GuildId);
-        var filter = query.Filter ?? new MetaFilter(saved.Patch, 0, saved.Rank, saved.Sort);
+        var filter = query.Filter ?? new MetaFilter(saved.Patch, 0, saved.Rank, saved.Sort, saved.MinPickRate);
         if (Search is not null)
         {
             var (found, problem) = await HeroMetaAsync(filter, DotaMetas.PostWith, cancellationToken);
@@ -93,7 +106,7 @@ internal sealed class GameFeatureHandlers(IGameFeatureStore store, IDotaMetaSour
             return new GameFeatures(mine, saved, lanes, laneError, clock.UtcNow)
             {
                 SearchEnabled = true, Filter = filter, SearchError = problem,
-                Search = found is null ? null : found with { Filter = filter, Heroes = DotaMetas.Sorted(found.Heroes, filter.Sort) }
+                Search = found is null ? null : found with { Filter = filter, Heroes = DotaMetas.Sorted(found.Heroes, filter.Sort, filter.MinPickRate) }
             };
         }
         var (meta, error) = await MetaAsync(DotaMetas.ShowFor, cancellationToken);
@@ -103,7 +116,7 @@ internal sealed class GameFeatureHandlers(IGameFeatureStore store, IDotaMetaSour
     public async Task<Result<DotaMetaSettings>> Handle(SaveDotaMetaCommand command, CancellationToken cancellationToken)
     {
         if (!Enum.IsDefined(command.Schedule) || !Enum.IsDefined(command.Day) || command.Hour is < 0 or > 23 || !DotaMetas.Counts.Contains(command.Count)
-            || !Enum.IsDefined(command.Rank) || !Enum.IsDefined(command.Patch) || !Enum.IsDefined(command.Sort))
+            || !Enum.IsDefined(command.Rank) || !Enum.IsDefined(command.Patch) || !Enum.IsDefined(command.Sort) || !DotaMetas.MinPickRates.Contains(command.MinPickRate))
             return Result.Failure<DotaMetaSettings>(new ErrorDescriptor("Features.Invalid", "Choose a valid schedule, day and hour."));
         if (command.Schedule != MetaSchedule.Off && command.ChannelId is null)
             return Result.Failure<DotaMetaSettings>(new ErrorDescriptor("Features.NoChannel", "Choose or create a channel first."));
@@ -111,7 +124,7 @@ internal sealed class GameFeatureHandlers(IGameFeatureStore store, IDotaMetaSour
         var updated = saved with
         {
             Schedule = command.Schedule, ChannelId = command.ChannelId, Day = command.Day, Hour = command.Hour, Count = command.Count,
-            Rank = command.Rank, Patch = command.Patch, Sort = command.Sort
+            Rank = command.Rank, Patch = command.Patch, Sort = command.Sort, MinPickRate = command.MinPickRate
         };
         await store.SaveDotaMetaAsync(updated);
         return updated;
@@ -128,10 +141,11 @@ internal sealed class GameFeatureHandlers(IGameFeatureStore store, IDotaMetaSour
         if (Search is not null)
             for (int position = 1; position <= 5; position++)
             {
-                var (found, _) = await HeroMetaAsync(new MetaFilter(saved.Patch, position, saved.Rank, saved.Sort), DotaMetas.PostWith, cancellationToken);
+                var filter = new MetaFilter(saved.Patch, position, saved.Rank, saved.Sort, saved.MinPickRate);
+                var (found, _) = await HeroMetaAsync(filter, DotaMetas.PostWith, cancellationToken);
                 if (found is null)
                     break;
-                roles.Add(found with { Heroes = DotaMetas.Sorted(found.Heroes, saved.Sort) });
+                roles.Add(found with { Filter = filter, Heroes = DotaMetas.Sorted(found.Heroes, saved.Sort, saved.MinPickRate) });
             }
         if (roles.Count == 5)
         {

@@ -1,0 +1,101 @@
+@using System.Globalization
+@using HappyMix.Application.Abstractions.Stats
+@using HappyMix.Application.Stats
+@model DotaMoreModel
+@* The extra Dota 2 lines on a stats card (My games, Game features and a group's Stats tab). *@
+@{
+    var culture = CultureInfo.CurrentCulture;
+    var profile = Model.Profile;
+    string Percent(int wins, int games) => games == 0 ? "—" : (wins * 100.0 / games).ToString("0", culture) + "%";
+    string Role(string key) => key switch
+    {
+        "1" or "2" or "3" or "4" or "5" => T[$"Meta_Position_{key}"].Value,
+        "safe" => T["Meta_Lane_Safe"].Value,
+        "mid" => T["Meta_Lane_Mid"].Value,
+        "off" => T["Meta_Lane_Off"].Value,
+        "jungle" => T["Dota_Lane_Jungle"].Value,
+        "roam" => T["Dota_Lane_Roam"].Value,
+        _ => key
+    };
+    var today = DateOnly.FromDateTime(Model.Now.UtcDateTime);
+    var change = GameStats.RankChange(profile, today);
+    int? mmr = GameStats.MmrEstimate(profile.Recent);
+    int roleGames = profile.Roles.Sum(role => role.Games);
+    string Signed(int value) => (value > 0 ? "+" : value < 0 ? "−" : "±") + Math.Abs(value).ToString(culture);
+}
+<div class="hm-dotamore">
+    @if (profile.Roles.Count > 0 && roleGames > 0)
+    {
+        var top = profile.Roles[0];
+        <div class="hm-statcard__record">
+            <span>@T["Dota_MostPlayed"]</span>
+            <b>@Role(top.Key)</b>
+            <span class="hm-statcard__rate">@Percent(top.Games, roleGames)</span>
+        </div>
+        <div class="hm-rolebar" role="img" aria-label="@string.Join(", ", profile.Roles.Select(role => Role(role.Key) + " " + Percent(role.Games, roleGames)))">
+            @foreach (var role in profile.Roles)
+            {
+                <span class="hm-rolebar__part hm-rolebar__part--@role.Key" style="flex-grow: @role.Games.ToString(CultureInfo.InvariantCulture)"
+                      title="@T["Dota_RoleTitle", Role(role.Key), role.Games, Percent(role.Wins, role.Games)]"></span>
+            }
+        </div>
+        <p class="hm-dotamore__note">@T[profile.RolesFrom == "STRATZ" ? "Dota_RolesStratz" : "Dota_RolesOpenDota", roleGames]</p>
+    }
+
+    @if (change is not null || mmr is not null)
+    {
+        <p class="hm-dotamore__chips">
+            @if (change is var (stars, since))
+            {
+                <span class="hm-trend @(stars > 0 ? "hm-trend--up" : stars < 0 ? "hm-trend--down" : "")"
+                      title="@T["Dota_RankChangeHelp"]">@T["Dota_RankChange", Signed(stars), since.ToString("d MMM", culture)]</span>
+            }
+            @if (mmr is { } estimate && profile.Recent is { } ranked)
+            {
+                <span class="hm-trend @(estimate > 0 ? "hm-trend--up" : estimate < 0 ? "hm-trend--down" : "")"
+                      title="@T["Dota_MmrHelp", GameStats.MmrPerGame]">@T["Dota_Mmr", Signed(estimate), ranked.RankedGames]</span>
+            }
+        </p>
+    }
+
+    @if (profile.Recent is { } recent)
+    {
+        <div class="hm-statcard__record">
+            <span>@T["Dota_LastN", recent.Matches]</span>
+            <b>@T["Stats_WinsLosses", recent.Wins, recent.Matches - recent.Wins]</b>
+            @if (Math.Abs(recent.Streak) >= 2)
+            {
+                <span class="hm-statcard__rate">@T[recent.Streak > 0 ? "Dota_WinStreak" : "Dota_LossStreak", Math.Abs(recent.Streak)]</span>
+            }
+        </div>
+        @* Oldest on the left, the latest match on the right. *@
+        <div class="hm-form" role="img" aria-label="@T["Dota_FormLabel", recent.Matches, recent.Wins, recent.Matches - recent.Wins]">
+            @foreach (char result in recent.Form.Reverse())
+            {
+                <span class="hm-form__@(result == 'W' ? "w" : "l")"></span>
+            }
+        </div>
+        <details class="hm-dotamore__more">
+            <summary>@T["Dota_MoreStats"]</summary>
+            <dl class="hm-statcard__facts">
+                <div><dt>@T["Dota_Kda"]</dt><dd>@recent.Kills.ToString("0.#", culture) / @recent.Deaths.ToString("0.#", culture) / @recent.Assists.ToString("0.#", culture)</dd></div>
+                <div><dt>@T["Dota_GpmXpm"]</dt><dd>@recent.Gpm.ToString(culture) / @recent.Xpm.ToString(culture)</dd></div>
+                <div><dt>@T["Dota_Solo"]</dt><dd>@T["Stats_GamesRate", recent.SoloGames, Percent(recent.SoloWins, recent.SoloGames)]</dd></div>
+                <div><dt>@T["Dota_Party"]</dt><dd>@T["Stats_GamesRate", recent.PartyGames, Percent(recent.PartyWins, recent.PartyGames)]</dd></div>
+            </dl>
+            @if (Model.Teammates.Count > 0)
+            {
+                <ul class="hm-statcard__list" aria-label="@T["Dota_BestWith"]">
+                    <li class="hm-dotamore__subhead">@T["Dota_BestWith"]</li>
+                    @foreach (var (name, games, wins) in Model.Teammates)
+                    {
+                        <li>
+                            <span class="hm-statcard__what">@name</span>
+                            <span class="hm-statcard__num">@T["Stats_GamesRate", games, Percent(wins, games)]</span>
+                        </li>
+                    }
+                </ul>
+            }
+        </details>
+    }
+</div>

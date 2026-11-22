@@ -171,6 +171,9 @@
                                         }
                                     </ul>
                                 }
+                                var teammates = stats.Duos.Where(duo => duo.First == card.UserId || duo.Second == card.UserId).Take(3)
+                                    .Select(duo => (Model.Names.Name(duo.First == card.UserId ? duo.Second : duo.First, Localize), duo.Games, duo.Wins)).ToArray();
+                                <partial name="_DotaMore" model="new DotaMoreModel(profile, stats.Now, teammates)" />
                             }
                             else if (!dota && card.Cs2Profile is { } cs2)
                             {
@@ -205,6 +208,14 @@
                             else
                             {
                                 <p class="hm-statcard__state">@T[dota ? "Stats_ErrorDota" : "Stats_ErrorCs2"]</p>
+                            }
+                            @if (card.Shares && stats.WithGroup.TryGetValue((card.UserId, game), out var withGroup))
+                            {
+                                <div class="hm-statcard__record hm-statcard__record--group">
+                                    <span>@T["Stats_WithGroup"]</span>
+                                    <b>@T["Stats_WinsLosses", withGroup.Wins, withGroup.Games - withGroup.Wins]</b>
+                                    <span class="hm-statcard__rate">@Percent(withGroup.Wins * 100.0 / withGroup.Games)</span>
+                                </div>
                             }
                             @if (mine && cached is { Status: StatsStatus.Error, Reason.Length: > 0 } failedCard)
                             {
@@ -242,6 +253,25 @@
                     </li>
                 }
             </ul>
+
+            @if (dota && stats.Duos.Count > 0)
+            {
+                <section class="hm-duos" aria-labelledby="duos-title">
+                    <h3 id="duos-title">@T["Stats_Duos"]</h3>
+                    <p class="hm-help">@T["Stats_DuosHelp"]</p>
+                    <ol class="hm-duos__list">
+                        @foreach (var duo in stats.Duos.Take(5))
+                        {
+                            double rate = duo.Wins * 100.0 / duo.Games;
+                            <li>
+                                <span class="hm-duos__names">@Model.Names.Name(duo.First, Localize) <span aria-hidden="true">+</span> @Model.Names.Name(duo.Second, Localize)</span>
+                                <span class="hm-statcard__num">@T["Stats_GamesRate", duo.Games, Percent(rate)]</span>
+                                <span class="hm-winbar" role="img" aria-label="@T["Stats_WinRate", Percent(rate)]"><span style="width: @rate.ToString("0.#", CultureInfo.InvariantCulture)%"></span></span>
+                            </li>
+                        }
+                    </ol>
+                </section>
+            }
 
             @* Games together: a match two or more sharing members played, newest first. *@
             @{ var recaps = stats.Recaps.Where(recap => recap.Game == game).ToArray(); }

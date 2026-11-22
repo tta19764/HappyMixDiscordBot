@@ -21,7 +21,34 @@ public sealed record DotaHero(int Id, string Name, string? Image, int Games, int
 /// <param name="Wins">Wins over the last 30 days.</param>
 /// <param name="TopHeroes">Most played heroes over the last 90 days.</param>
 public sealed record DotaProfile(long AccountId, string? Persona, int? RankTier, int? LeaderboardRank, int Wins, int Losses,
-    IReadOnlyList<DotaHero> TopHeroes);
+    IReadOnlyList<DotaHero> TopHeroes)
+{
+    /// <summary>The last (up to) 20 matches: form, averages, solo vs party and ranked results.</summary>
+    public DotaRecent? Recent { get; init; }
+    /// <summary>Games per role, most played first: positions 1–5 from STRATZ, or lanes from OpenDota.</summary>
+    public IReadOnlyList<DotaRole> Roles { get; init; } = [];
+    /// <summary>"STRATZ" (positions over the last 50 matches) or "OpenDota" (lanes over the last 20).</summary>
+    public string? RolesFrom { get; init; }
+    /// <summary>People played with on the same team (OpenDota peers), most games first.</summary>
+    public IReadOnlyList<DotaPeer> Peers { get; init; } = [];
+    /// <summary>The medal once a day, kept by the bot: OpenDota only knows the current one. Oldest first.</summary>
+    public IReadOnlyList<DotaRankPoint> RankHistory { get; init; } = [];
+}
+
+/// <param name="Form">Newest first: W for a win, L for a loss.</param>
+/// <param name="Streak">Positive: wins in a row; negative: losses in a row.</param>
+/// <param name="RankedGames">Ranked matchmaking games among them (the ones that move MMR).</param>
+public sealed record DotaRecent(int Matches, int Wins, string Form, int Streak, double Kills, double Deaths, double Assists, int Gpm, int Xpm,
+    int SoloGames, int SoloWins, int PartyGames, int PartyWins, int RankedGames, int RankedWins);
+
+/// <param name="Key">"1"–"5" for positions (STRATZ), or "safe", "mid", "off", "jungle", "roam" for lanes (OpenDota).</param>
+public sealed record DotaRole(string Key, int Games, int Wins);
+
+/// <param name="AccountId">Dota's 32-bit account id.</param>
+/// <param name="Games">Games on the same team.</param>
+public sealed record DotaPeer(long AccountId, int Games, int Wins);
+
+public sealed record DotaRankPoint(DateOnly Day, int RankTier);
 
 public sealed record Cs2Map(string Name, int Matches, double? WinRate);
 

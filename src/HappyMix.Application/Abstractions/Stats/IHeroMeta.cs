@@ -10,7 +10,9 @@ public enum MetaPatch { Current, LastWeek }
 public enum MetaSort { Score, WinRate, PickRate }
 
 /// <param name="Position">0 for any role, otherwise position 1 (carry) to 5 (hard support).</param>
-public sealed record MetaFilter(MetaPatch Patch = MetaPatch.Current, int Position = 0, MetaRank Rank = MetaRank.All, MetaSort Sort = MetaSort.Score);
+/// <param name="MinPickRate">Heroes picked in fewer than this percent of matches are left out (situational picks).</param>
+public sealed record MetaFilter(MetaPatch Patch = MetaPatch.Current, int Position = 0, MetaRank Rank = MetaRank.All, MetaSort Sort = MetaSort.Score,
+    double MinPickRate = 1);
 
 /// <param name="PickRate">Percent of matches with the hero in this role (any role: percent of all matches).</param>
 public sealed record RankedHero(int HeroId, string Name, string? Image, int Games, int Wins, double PickRate)

@@ -11,6 +11,9 @@ public sealed record EventRow(Guid EventId, DateOnly Date, string Title, string 
     string? GroupName, EventCounts Counts, bool Repeats, bool? MyAnswer, bool Withdrawn, bool IsOrganizer, bool IsInvitee,
     string Organizer, string Url, string DayShort, string DayNumber, bool DmFailed)
 {
+    /// <summary>People who said they're going to this date, in the order they answered.</summary>
+    public IReadOnlyList<ulong> Going { get; init; } = [];
+
     public string StatusKey => Status switch { OccurrenceStatus.Confirmed => "confirmed", OccurrenceStatus.Canceled => "canceled", _ => "pending" };
 
     /// <summary>The short month in the viewer's language, in the form used after a day number ("Nov", "лист.", "нояб.").</summary>
@@ -138,7 +141,11 @@ public static class EventText
         return new EventRow(details.Event.Id, occurrence.Date, details.Event.Title, When(occurrence, zone), zone.Id, occurrence.Status, groupName,
             EventRules.Count(details, occurrence.Date), details.Event.Recurrence != EventRecurrence.Once, mine?.Accepted, mine?.Withdrawn == true,
             details.Event.OrganizerId == viewer, details.Invitees.Contains(viewer), name(details.Event.OrganizerId),
-            $"/events/{guildId}/{details.Event.Id}?date={occurrence.Date:yyyy-MM-dd}", start.ToString("ddd", culture), start.Day.ToString(culture), dmFailed);
+            $"/events/{guildId}/{details.Event.Id}?date={occurrence.Date:yyyy-MM-dd}", start.ToString("ddd", culture), start.Day.ToString(culture), dmFailed)
+        {
+            Going = details.Responses.Where(item => item.Date == occurrence.Date && item.Accepted && !item.Withdrawn)
+                .OrderBy(item => item.At).Select(item => item.UserId).Distinct().ToArray()
+        };
     }
 
     public static TimeZoneInfo Zone(GuildEvent guildEvent) =>

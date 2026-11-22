@@ -18,7 +18,7 @@ internal sealed class SqliteGameFeatureStore(IDbContextFactory<HappyMixDbContext
                 (DayOfWeek)row.Day, (int)row.Hour, row.LastPostedUtc is { } at ? DateTimeOffset.FromUnixTimeSeconds(at) : null, (int)row.TopCount,
                 Enum.TryParse<MetaRank>(row.MetaRank, out var rank) ? rank : MetaRank.All,
                 Enum.TryParse<MetaPatch>(row.MetaPatch, out var patch) ? patch : MetaPatch.Current,
-                Enum.TryParse<MetaSort>(row.MetaSort, out var sort) ? sort : MetaSort.Score);
+                Enum.TryParse<MetaSort>(row.MetaSort, out var sort) ? sort : MetaSort.Score, row.MinPick);
     }
 
     public async Task SaveDotaMetaAsync(DotaMetaSettings settings)
@@ -27,12 +27,12 @@ internal sealed class SqliteGameFeatureStore(IDbContextFactory<HappyMixDbContext
         string? channel = settings.ChannelId?.ToString(CultureInfo.InvariantCulture);
         long? last = settings.LastPostedAt?.ToUnixTimeSeconds();
         await db.Database.ExecuteSqlInterpolatedAsync($"""
-            INSERT INTO DotaMetaSettings (GuildId, Schedule, ChannelId, Day, Hour, LastPostedUtc, TopCount, MetaRank, MetaPatch, MetaSort)
+            INSERT INTO DotaMetaSettings (GuildId, Schedule, ChannelId, Day, Hour, LastPostedUtc, TopCount, MetaRank, MetaPatch, MetaSort, MinPick)
             VALUES ({Id(settings.GuildId)}, {settings.Schedule.ToString()}, {channel}, {(int)settings.Day}, {settings.Hour}, {last}, {settings.Count},
-                {settings.Rank.ToString()}, {settings.Patch.ToString()}, {settings.Sort.ToString()})
+                {settings.Rank.ToString()}, {settings.Patch.ToString()}, {settings.Sort.ToString()}, {settings.MinPickRate})
             ON CONFLICT (GuildId) DO UPDATE SET Schedule = excluded.Schedule, ChannelId = excluded.ChannelId, Day = excluded.Day,
                 Hour = excluded.Hour, LastPostedUtc = excluded.LastPostedUtc, TopCount = excluded.TopCount, MetaRank = excluded.MetaRank,
-                MetaPatch = excluded.MetaPatch, MetaSort = excluded.MetaSort
+                MetaPatch = excluded.MetaPatch, MetaSort = excluded.MetaSort, MinPick = excluded.MinPick
             """);
     }
 
@@ -55,6 +55,6 @@ internal sealed class SqliteGameFeatureStore(IDbContextFactory<HappyMixDbContext
     private static string Id(ulong value) => value.ToString(CultureInfo.InvariantCulture);
 
     private sealed record MetaRow(string GuildId, string Schedule, string? ChannelId, long Day, long Hour, long? LastPostedUtc, long TopCount,
-        string MetaRank, string MetaPatch, string MetaSort);
+        string MetaRank, string MetaPatch, string MetaSort, double MinPick);
     private sealed record CacheRow(string Key, string Payload, long FetchedUtc);
 }

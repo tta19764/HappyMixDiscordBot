@@ -400,6 +400,12 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 - `ConfirmEventSeriesCommand` (POST `/events/{guild}/{event}/confirm-all`) confirms every pending upcoming date; each person who accepted one gets a single Confirmed message for their first newly confirmed date.
 - Event date boxes show weekday, day and month; compact series rows show only the times, with status and count underneath. Side panel menus open beside the panel (`position: fixed`) so its scroll area no longer clips them.
 
+### v0.1.5 group overview and Dota 2 stats
+
+- Group Overview (`_GroupOverview`): next event with who's going (`EventRow.Going`) and the Events tab's answer buttons; today's free members from the availability board and Live "Playing now"; the latest game together and the last 7 days per game; top games by "Want to play" marks and open votes.
+- Dota 2 cards (`DotaProfile.Recent`, `Roles`, `Peers`, `RankHistory`): OpenDota `recentMatches` (last 20: form, streak, K/D/A, GPM/XPM, solo vs party, ranked results) and `peers`; positions 1–5 from STRATZ `player.matches` (50 matches) when `Stratz__ApiKey` is set, else OpenDota lanes. The medal is saved once a day inside the cached card for 90 days (no migration) to show its change; the MMR estimate is ranked wins minus losses × 25. Group Stats tab: games with the group (14 days, from recaps), most games with, and Duos. `/games stats` gets a second Dota 2 line.
+- Game features: game list (`/game-features/{guild}`, cards / table / list with search, view kept in a cookie) and a page per game (`/game-features/{guild}/{game}`) with tabs. The meta search runs on Search only; minimum pick rate filter (default 1%, migration `20261206000100_AddMetaMinPickRate` for posts) and a meta score explanation.
+
 ### v0.1.4 weekly summary and Game features
 
 - Weekly summary (`WeeklyDigestRequests`, migration `20261205000100_AddWeeklyDigest`): "Last 7 days" on the Stats tab (games together, record, most played hero/map, best performer with 3+ games) and an organizer switch for a Monday 10:00 post of last week (`post-weekly-digests`, hourly, once per group and week).

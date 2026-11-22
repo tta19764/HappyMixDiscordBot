@@ -49,6 +49,96 @@ public sealed class GameStatsTests
     }
 
     [Fact]
+    public void RecentMatchesPeersAndPositionsAddToTheDotaCard()
+    {
+        // Newest first: two wins, then a loss and a win. Ranked is lobby type 7; party_size above 1 is a party.
+        using var recent = JsonDocument.Parse("""
+            [{"match_id":4,"player_slot":1,"radiant_win":true,"kills":10,"deaths":2,"assists":5,"gold_per_min":600,"xp_per_min":700,"party_size":1,"lobby_type":7,"lane_role":2,"is_roaming":false},
+             {"match_id":3,"player_slot":130,"radiant_win":false,"kills":6,"deaths":4,"assists":9,"gold_per_min":500,"xp_per_min":600,"party_size":2,"lobby_type":7,"lane_role":2,"is_roaming":false},
+             {"match_id":2,"player_slot":2,"radiant_win":false,"kills":2,"deaths":8,"assists":4,"gold_per_min":300,"xp_per_min":400,"party_size":2,"lobby_type":0,"lane_role":3,"is_roaming":false},
+             {"match_id":1,"player_slot":3,"radiant_win":true,"kills":4,"deaths":6,"assists":2,"gold_per_min":400,"xp_per_min":500,"party_size":null,"lobby_type":7,"lane_role":1,"is_roaming":true}]
+            """);
+        var (last, lanes) = GameStatsDirectory.ParseRecent(recent.RootElement);
+        Assert.Equal(new DotaRecent(4, 3, "WWLW", 2, 5.5, 5, 5, 450, 550, 2, 2, 2, 1, 3, 3), last);
+        Assert.Equal([new DotaRole("mid", 2, 2), new DotaRole("roam", 1, 1), new DotaRole("off", 1, 0)], lanes);
+        Assert.Equal(75, GameStats.MmrEstimate(last)); // 3 ranked games, all won: (3 - 0) × 25
+        using var empty = JsonDocument.Parse("[]");
+        Assert.Null(GameStatsDirectory.ParseRecent(empty.RootElement).Recent);
+
+        using var peers = JsonDocument.Parse("""
+            [{"account_id":7,"with_games":3,"with_win":2,"games":9},{"account_id":8,"with_games":0,"with_win":0},{"account_id":9,"with_games":12,"with_win":5}]
+            """);
+        Assert.Equal([new DotaPeer(9, 12, 5), new DotaPeer(7, 3, 2)], GameStatsDirectory.ParsePeers(peers.RootElement));
+
+        Assert.Equal("{ player(steamAccountId: 42) { matches(request: { take: 50 }) { players(steamAccountId: 42) { position isVictory } } } }",
+            GameStatsDirectory.StratzPositionsQuery(42));
+        using var positions = JsonDocument.Parse("""
+            {"data":{"player":{"matches":[
+              {"players":[{"position":"POSITION_4","isVictory":true}]},{"players":[{"position":"POSITION_4","isVictory":false}]},
+              {"players":[{"position":"POSITION_1","isVictory":true}]},{"players":[{"position":null,"isVictory":true}]},{"players":[]}]}}}
+            """);
+        Assert.Equal([new DotaRole("4", 2, 1), new DotaRole("1", 1, 1)], GameStatsDirectory.ParseStratzPositions(positions.RootElement));
+        using var nobody = JsonDocument.Parse("""{"data":{"player":null}}""");
+        Assert.Empty(GameStatsDirectory.ParseStratzPositions(nobody.RootElement));
+    }
+
+    [Fact]
+    public async Task TheMedalIsSavedDailySoItsChangeShows()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var sender = fixture.Sender;
+        await sender.Send(new LinkSteamCommand(Kai, KaiSteam));
+        await sender.Send(new SetStatsSharingCommand(Kai, true)); // Legend 5
+        var today = DateOnly.FromDateTime(fixture.Clock.UtcNow.UtcDateTime);
+        var first = GameStats.Read<DotaProfile>((await sender.Send(new GetMyStatsQuery(Kai))).Value.Dota)!;
+        Assert.Equal([new DotaRankPoint(today, 45)], first.RankHistory);
+        Assert.Null(GameStats.RankChange(first, today)); // nothing earlier to compare with yet
+
+        // A refresh the same day replaces the day's medal; the next day adds one, and a failed fetch keeps the history.
+        fixture.Stats.RankTier = 51;
+        await sender.Send(new RefreshMyStatsCommand(Kai));
+        fixture.Clock.Advance(TimeSpan.FromDays(1));
+        fixture.Stats.RankTier = 52;
+        await sender.Send(new RefreshMyStatsCommand(Kai));
+        fixture.Stats.Fail = true;
+        await sender.Send(new RefreshMyStatsCommand(Kai));
+        var card = GameStats.Read<DotaProfile>((await sender.Send(new GetMyStatsQuery(Kai))).Value.Dota)!;
+        Assert.Equal([new DotaRankPoint(today, 51), new DotaRankPoint(today.AddDays(1), 52)], card.RankHistory);
+        Assert.Equal((1, today), GameStats.RankChange(card, today.AddDays(1)));
+        // Legend 5 → Ancient 2 is two stars; points older than the window don't count.
+        var longer = card with { RankHistory = [new DotaRankPoint(today.AddDays(-40), 35), new DotaRankPoint(today, 45)] };
+        Assert.Equal((2, today), GameStats.RankChange(longer with { RankTier = 52 }, today.AddDays(1)));
+        Assert.Null(GameStats.RankChange(card with { RankTier = null }, today.AddDays(1)));
+        Assert.Equal((1, 20, 35), (GameStats.StarsOf(11), GameStats.StarsOf(45), GameStats.StarsOf(80)));
+    }
+
+    [Fact]
+    public void DuosComeFromPeersAndGamesWithTheGroupFromRecaps()
+    {
+        long kai = GameStats.DotaAccountId(KaiSteam)!.Value, mira = GameStats.DotaAccountId(MiraSteam)!.Value;
+        DotaProfile Profile(params DotaPeer[] peers) => new(0, null, 45, null, 1, 1, []) { Peers = peers };
+        CachedStats Card(DotaProfile profile) => new(0, StatsGame.Dota2, StatsStatus.Ok, JsonSerializer.Serialize(profile, GameStats.Json), DateTimeOffset.UnixEpoch);
+        PlayerStatsCard[] cards =
+        [
+            new(Kai, true, KaiSteam, Card(Profile(new DotaPeer(mira, 30, 18), new DotaPeer(999, 50, 25))), null),
+            new(Mira, true, MiraSteam, Card(Profile(new DotaPeer(kai, 31, 19))), null),
+            // Taro doesn't share: his peers aren't used and nobody is paired with him.
+            new(Taro, false, "76561198000000003", Card(Profile(new DotaPeer(kai, 80, 40))), null)
+        ];
+        Assert.Equal([new DotaDuo(Kai, Mira, 31, 19)], GameStats.Duos(cards));
+
+        PlayerMatch Line(ulong user, bool won, string id) => new(user, StatsGame.Dota2, id, DateTimeOffset.UnixEpoch, 1800, won, null, null, 1, 1, 1);
+        var recaps = new[]
+        {
+            new GroupRecap(Guid.Empty, StatsGame.Dota2, "1", DateTimeOffset.UnixEpoch, 1800, [Line(Kai, true, "1"), Line(Mira, true, "1")]),
+            new GroupRecap(Guid.Empty, StatsGame.Dota2, "2", DateTimeOffset.UnixEpoch, 1800, [Line(Kai, false, "2"), Line(Mira, true, "2")])
+        };
+        var with = GameStats.WithGroup(recaps);
+        Assert.Equal(new WinRecord(2, 1), with[(Kai, StatsGame.Dota2)]);
+        Assert.Equal(new WinRecord(2, 2), with[(Mira, StatsGame.Dota2)]);
+    }
+
+    [Fact]
     public void FaceitAnswersBecomeACard()
     {
         using var player = JsonDocument.Parse("""
@@ -277,13 +367,14 @@ public sealed class GameStatsTests
     {
         public List<string> Asked { get; } = [];
         public bool Fail { get; set; }
+        public int RankTier { get; set; } = 45;
         public bool Cs2Enabled => true;
 
         public Task<StatsFetch<DotaProfile>> GetDotaAsync(string steamId64, CancellationToken cancellationToken)
         {
             Asked.Add(steamId64);
             return Task.FromResult(Fail ? new StatsFetch<DotaProfile>(StatsStatus.Error, null)
-                : new StatsFetch<DotaProfile>(StatsStatus.Ok, new DotaProfile(GameStats.DotaAccountId(steamId64)!.Value, "kai", 45, null, 10, 5,
+                : new StatsFetch<DotaProfile>(StatsStatus.Ok, new DotaProfile(GameStats.DotaAccountId(steamId64)!.Value, "kai", RankTier, null, 10, 5,
                     [new DotaHero(14, "Pudge", null, 8, 5)])));
         }
 

@@ -107,6 +107,26 @@ public sealed class PlayerGamesModule(ISender sender) : InteractionModuleBase<So
             : "Sharing is on.\n" + StatsText(Context.User.GlobalName ?? Context.User.Username, stats));
     }
 
+    /// <summary>The second Dota 2 line: last matches and streak, most played role, MMR estimate.</summary>
+    internal static string DotaMore(HappyMix.Application.Abstractions.Stats.DotaProfile profile)
+    {
+        var parts = new List<string>();
+        if (profile.Recent is { } recent)
+            parts.Add($"last {recent.Matches} {recent.Wins}W {recent.Matches - recent.Wins}L"
+                + (Math.Abs(recent.Streak) >= 2 ? $", {Math.Abs(recent.Streak)} {(recent.Streak > 0 ? "wins" : "losses")} in a row" : ""));
+        if (profile.Roles is [var top, ..] && profile.Roles.Sum(role => role.Games) is > 0 and var games)
+            parts.Add($"mostly {Role(top.Key)} ({top.Games * 100 / games}%)");
+        if (HappyMix.Application.Stats.GameStats.MmrEstimate(profile.Recent) is { } mmr)
+            parts.Add($"≈ {(mmr >= 0 ? "+" : "−")}{Math.Abs(mmr)} MMR over {profile.Recent!.RankedGames} ranked");
+        return string.Join(" · ", parts);
+
+        static string Role(string key) => key switch
+        {
+            "1" => "pos 1 carry", "2" => "pos 2 mid", "3" => "pos 3 offlane", "4" => "pos 4 support", "5" => "pos 5 hard support",
+            "safe" => "safe lane", "off" => "offlane", "roam" => "roaming", _ => key
+        };
+    }
+
     /// <summary>A short card in plain text: Dota 2 medal and record, CS2 FACEIT level, and profile links.</summary>
     internal static string StatsText(string name, HappyMix.Application.Stats.MyStats stats)
     {
@@ -123,6 +143,8 @@ public sealed class PlayerGamesModule(ISender sender) : InteractionModuleBase<So
             _ => "OpenDota didn't answer; try again later"
         };
         lines.Add($"Dota 2: {dota}" + (account is { } id ? $" · <https://www.opendota.com/players/{id}> · <https://www.dotabuff.com/players/{id}>" : ""));
+        if (HappyMix.Application.Stats.GameStats.Read<HappyMix.Application.Abstractions.Stats.DotaProfile>(stats.Dota) is { } more && DotaMore(more) is { Length: > 0 } extra)
+            lines.Add("Dota 2: " + extra);
         if (stats.Cs2Enabled)
         {
             string cs2 = stats.Cs2 switch

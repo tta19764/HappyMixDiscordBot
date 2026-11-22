@@ -54,14 +54,41 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
             using var record = await OpenDotaAsync(client, $"players/{id}/wl", "date=30", cancellationToken);
             using var played = await OpenDotaAsync(client, $"players/{id}/heroes", "date=90", cancellationToken);
             var profile = ParseDota(accountId, player.RootElement, record.RootElement, played.RootElement, await HeroesAsync(client, cancellationToken));
-            return profile is null
-                ? new(StatsStatus.NoPublicData, null, $"OpenDota has no rank and no matches for account {id}: \"Expose Public Match Data\" is probably off in Dota 2.")
-                : new(StatsStatus.Ok, profile);
+            if (profile is null)
+                return new(StatsStatus.NoPublicData, null, $"OpenDota has no rank and no matches for account {id}: \"Expose Public Match Data\" is probably off in Dota 2.");
+            using var recent = await OpenDotaAsync(client, $"players/{id}/recentMatches", null, cancellationToken);
+            using var peers = await OpenDotaAsync(client, $"players/{id}/peers", null, cancellationToken);
+            var (last, lanes) = ParseRecent(recent.RootElement);
+            var positions = await PositionsAsync(accountId, cancellationToken);
+            return new(StatsStatus.Ok, profile with
+            {
+                Recent = last,
+                Roles = positions is { Count: > 0 } ? positions : lanes,
+                RolesFrom = positions is { Count: > 0 } ? "STRATZ" : lanes.Count > 0 ? "OpenDota" : null,
+                Peers = ParsePeers(peers.RootElement)
+            });
         }
         catch (Exception error) when (Reason("OpenDota", error) is { } reason)
         {
             LogLookupFailed(logger, "OpenDota", reason);
             return new(StatsStatus.Error, null, reason);
+        }
+    }
+
+    /// <summary>Positions 1–5 from STRATZ when its key is set; null (lanes from OpenDota are used instead) when it isn't or fails.</summary>
+    private async Task<IReadOnlyList<DotaRole>?> PositionsAsync(long accountId, CancellationToken cancellationToken)
+    {
+        if (StratzKey is not { } key)
+            return null;
+        try
+        {
+            using var document = await StratzAsync(key, StratzPositionsQuery(accountId), cancellationToken);
+            return ParseStratzPositions(document.RootElement);
+        }
+        catch (Exception error) when (Reason("STRATZ", error) is { } reason)
+        {
+            LogLookupFailed(logger, "STRATZ positions", reason);
+            return null;
         }
     }
 
@@ -185,20 +212,7 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
             bool daily = current is not { } released || now - released.Date <= TimeSpan.FromDays(7);
             DateTimeOffset from = current is { } since ? StartOf(since.Date, daily) : now.AddDays(-7);
 
-            using var client = clients.CreateClient(StratzClient);
-            using var request = new HttpRequestMessage(HttpMethod.Post, Stratz)
-            {
-                Content = new StringContent(JsonSerializer.Serialize(new { query = StratzQuery(filter, daily) }), System.Text.Encoding.UTF8, "application/json")
-            };
-            request.Headers.Authorization = new("Bearer", key);
-            using var answer = await client.SendAsync(request, cancellationToken);
-            string body = await answer.Content.ReadAsStringAsync(cancellationToken);
-            if (!answer.IsSuccessStatusCode)
-                throw new LookupFailedException($"STRATZ answered {(int)answer.StatusCode} {answer.ReasonPhrase}: {Snippet(body)}"
-                    + (answer.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden ? " Check Stratz__ApiKey." : ""));
-            using var document = JsonDocument.Parse(body);
-            if (document.RootElement.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Array && errors.GetArrayLength() > 0)
-                throw new LookupFailedException("STRATZ refused the query: " + (Text(errors[0], "message") ?? Snippet(errors.ToString())));
+            using var document = await StratzAsync(key, StratzQuery(filter, daily), cancellationToken);
             var rows = document.RootElement.GetProperty("data").GetProperty("heroStats").GetProperty(daily ? "winDay" : "winWeek");
             return new(StatsStatus.Ok, ParseStratz(filter, rows, daily ? "day" : "week", from, names, current?.Name, current?.Date, now));
         }
@@ -208,6 +222,120 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
             return new(StatsStatus.Error, null, reason);
         }
     }
+
+    /// <summary>Posts a GraphQL query to STRATZ; a failed answer or a GraphQL error becomes a <see cref="LookupFailedException"/>.</summary>
+    private async Task<JsonDocument> StratzAsync(string key, string query, CancellationToken cancellationToken)
+    {
+        using var client = clients.CreateClient(StratzClient);
+        using var request = new HttpRequestMessage(HttpMethod.Post, Stratz)
+        {
+            Content = new StringContent(JsonSerializer.Serialize(new { query }), System.Text.Encoding.UTF8, "application/json")
+        };
+        request.Headers.Authorization = new("Bearer", key);
+        using var answer = await client.SendAsync(request, cancellationToken);
+        string body = await answer.Content.ReadAsStringAsync(cancellationToken);
+        if (!answer.IsSuccessStatusCode)
+            throw new LookupFailedException($"STRATZ answered {(int)answer.StatusCode} {answer.ReasonPhrase}: {Snippet(body)}"
+                + (answer.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden ? " Check Stratz__ApiKey." : ""));
+        var document = JsonDocument.Parse(body);
+        if (document.RootElement.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Array && errors.GetArrayLength() > 0)
+        {
+            string message = Text(errors[0], "message") ?? Snippet(errors.ToString());
+            document.Dispose();
+            throw new LookupFailedException("STRATZ refused the query: " + message);
+        }
+        return document;
+    }
+
+    /// <summary>How many of a player's last matches STRATZ is asked about for their positions.</summary>
+    internal const int PositionMatches = 50;
+
+    internal static string StratzPositionsQuery(long accountId)
+    {
+        string id = accountId.ToString(CultureInfo.InvariantCulture);
+        return $"{{ player(steamAccountId: {id}) {{ matches(request: {{ take: {PositionMatches} }}) {{ players(steamAccountId: {id}) {{ position isVictory }} }} }} }}";
+    }
+
+    /// <summary>Games and wins per position (1–5) from STRATZ's last matches, most played first. Matches without a position are skipped.</summary>
+    internal static IReadOnlyList<DotaRole> ParseStratzPositions(JsonElement root)
+    {
+        if (!root.TryGetProperty("data", out var data) || !data.TryGetProperty("player", out var player) || player.ValueKind != JsonValueKind.Object
+            || !player.TryGetProperty("matches", out var matches) || matches.ValueKind != JsonValueKind.Array)
+            return [];
+        var counts = new Dictionary<string, (int Games, int Wins)>(StringComparer.Ordinal);
+        foreach (var match in matches.EnumerateArray())
+        {
+            if (!match.TryGetProperty("players", out var players) || players.ValueKind != JsonValueKind.Array || players.GetArrayLength() == 0)
+                continue;
+            var line = players[0];
+            string number = Text(line, "position")?.Replace("POSITION_", "", StringComparison.Ordinal) ?? "";
+            if (number is not ("1" or "2" or "3" or "4" or "5"))
+                continue;
+            var count = counts.GetValueOrDefault(number);
+            bool won = line.TryGetProperty("isVictory", out var victory) && victory.ValueKind == JsonValueKind.True;
+            counts[number] = (count.Games + 1, count.Wins + (won ? 1 : 0));
+        }
+        return Roles(counts);
+    }
+
+    private static DotaRole[] Roles(Dictionary<string, (int Games, int Wins)> counts) =>
+        counts.Select(item => new DotaRole(item.Key, item.Value.Games, item.Value.Wins))
+            .OrderByDescending(role => role.Games).ThenByDescending(role => role.Wins).ThenBy(role => role.Key, StringComparer.Ordinal).ToArray();
+
+    /// <summary>
+    /// The last matches from OpenDota's recentMatches: form, streak, averages, solo vs party, ranked results, and games per
+    /// lane (OpenDota's lane_role; is_roaming counts as "roam"). Null when there are no matches.
+    /// </summary>
+    internal static (DotaRecent? Recent, IReadOnlyList<DotaRole> Lanes) ParseRecent(JsonElement recent)
+    {
+        if (recent.ValueKind != JsonValueKind.Array)
+            return (null, []);
+        var form = new System.Text.StringBuilder();
+        int wins = 0, kills = 0, deaths = 0, assists = 0, gpm = 0, xpm = 0, solo = 0, soloWins = 0, party = 0, partyWins = 0, ranked = 0, rankedWins = 0;
+        var lanes = new Dictionary<string, (int Games, int Wins)>(StringComparer.Ordinal);
+        // OpenDota lists the newest match first.
+        foreach (var match in recent.EnumerateArray().Where(match => Number(match, "match_id") is not null))
+        {
+            bool radiant = (Int(match, "player_slot") ?? 0) < 128;
+            bool won = radiant == (match.TryGetProperty("radiant_win", out var radiantWin) && radiantWin.ValueKind == JsonValueKind.True);
+            form.Append(won ? 'W' : 'L');
+            wins += won ? 1 : 0;
+            kills += Int(match, "kills") ?? 0;
+            deaths += Int(match, "deaths") ?? 0;
+            assists += Int(match, "assists") ?? 0;
+            gpm += Int(match, "gold_per_min") ?? 0;
+            xpm += Int(match, "xp_per_min") ?? 0;
+            if ((Int(match, "party_size") ?? 1) <= 1) { solo++; soloWins += won ? 1 : 0; }
+            else { party++; partyWins += won ? 1 : 0; }
+            // Ranked matchmaking is lobby type 7; those are the games that move MMR.
+            if (Int(match, "lobby_type") == 7) { ranked++; rankedWins += won ? 1 : 0; }
+            string? lane = match.TryGetProperty("is_roaming", out var roaming) && roaming.ValueKind == JsonValueKind.True ? "roam"
+                : Int(match, "lane_role") switch { 1 => "safe", 2 => "mid", 3 => "off", 4 => "jungle", _ => null };
+            if (lane is not null)
+            {
+                var count = lanes.GetValueOrDefault(lane);
+                lanes[lane] = (count.Games + 1, count.Wins + (won ? 1 : 0));
+            }
+        }
+        int games = form.Length;
+        if (games == 0)
+            return (null, []);
+        string text = form.ToString();
+        int streak = text.TakeWhile(result => result == text[0]).Count() * (text[0] == 'W' ? 1 : -1);
+        return (new DotaRecent(games, wins, text, streak, Math.Round(kills / (double)games, 1), Math.Round(deaths / (double)games, 1),
+            Math.Round(assists / (double)games, 1), gpm / games, xpm / games, solo, soloWins, party, partyWins, ranked, rankedWins), Roles(lanes));
+    }
+
+    /// <summary>How many teammates from OpenDota's peers are kept on the card (enough to find the group's members among them).</summary>
+    internal const int PeersKept = 100;
+
+    /// <summary>OpenDota's peers: people played with on the same team, most games first.</summary>
+    internal static IReadOnlyList<DotaPeer> ParsePeers(JsonElement peers) =>
+        peers.ValueKind != JsonValueKind.Array ? [] : peers.EnumerateArray()
+            .Select(peer => new DotaPeer((long)(Number(peer, "account_id") ?? 0), Int(peer, "with_games") ?? 0, Int(peer, "with_win") ?? 0))
+            .Where(peer => peer.AccountId > 0 && peer.Games > 0)
+            .OrderByDescending(peer => peer.Games).ThenBy(peer => peer.AccountId)
+            .Take(PeersKept).ToArray();
 
     /// <summary>
     /// The GraphQL query for one filter: ranked All Pick only, per hero, by day (or week), for the role and ranks.

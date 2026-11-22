@@ -36,6 +36,8 @@
 @if (mine.Shares && mine.SteamId is not null)
 {
     <ul class="hm-stats__cards">
+        @if (Model.Only is null or StatsGame.Dota2)
+        {
         <li>
             <article class="hm-statcard hm-statcard--mine" aria-label="Dota 2">
                 <header class="hm-statcard__head">
@@ -68,6 +70,7 @@
                             </li>
                         }
                     </ul>
+                    <partial name="_DotaMore" model="new DotaMoreModel(profile, Model.Now, [])" />
                 }
                 <partial name="_StatsReason" model="(mine.Dota, true)" />
                 <footer class="hm-statcard__foot">
@@ -85,6 +88,9 @@
                 </footer>
             </article>
         </li>
+        }
+        @if (Model.Only is null or StatsGame.Cs2)
+        {
         <li>
             <article class="hm-statcard hm-statcard--mine" aria-label="CS2">
                 <header class="hm-statcard__head">
@@ -132,6 +138,7 @@
                 </footer>
             </article>
         </li>
+        }
     </ul>
     <form method="post" action="@Model.RefreshUrl" asp-antiforgery="false">
         @Html.AntiForgeryToken()
