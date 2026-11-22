@@ -2664,4 +2664,102 @@
 <data name="Recap_Won" xml:space="preserve"><value>🏆 **{0}** разом виграли матч у {1}</value></data>
 <data name="Recap_Lost" xml:space="preserve"><value>💀 **{0}** разом програли матч у {1}</value></data>
 <data name="Recap_Split" xml:space="preserve"><value>⚔️ **{0}** зіграли матч у {1} по різні боки</value></data>
+<data name="Digest_Last7" xml:space="preserve"><value>Останні 7 днів</value></data>
+<data name="Digest_GamesTogether" xml:space="preserve"><value>Спільні ігри</value></data>
+<data name="Digest_Record" xml:space="preserve"><value>Результат групи</value></data>
+<data name="Digest_TopHero" xml:space="preserve"><value>Найчастіший герой</value></data>
+<data name="Digest_TopMap" xml:space="preserve"><value>Найчастіша карта</value></data>
+<data name="Digest_BestPlayer" xml:space="preserve"><value>Найкращий гравець</value></data>
+<data name="Digest_WonOf" xml:space="preserve"><value>виграно {0} з {1}</value></data>
+<data name="Digest_Channel_Post" xml:space="preserve"><value>Публікувати підсумок тижня щопонеділка</value></data>
+<data name="Digest_Channel_Help" xml:space="preserve"><value>У понеділок із 10:00 — підсумок спільних ігор за минулий тиждень: ігри, перемоги й поразки, найчастіший герой чи карта й найкращий гравець. Тижні без спільних ігор пропускаються.</value></data>
+<data name="Digest_Title" xml:space="preserve"><value>📅 **{0}** · тиждень від {1}</value></data>
+<data name="Digest_Games" xml:space="preserve"><value>спільних ігор: {0} · перемог {1}, поразок {2}</value></data>
+<data name="Digest_MostPlayed" xml:space="preserve"><value>найчастіше {0} ×{1}</value></data>
+<data name="Digest_Best" xml:space="preserve"><value>найкраще: {0} виграв(-ла) {1} з {2}</value></data>
+<data name="Features_Title" xml:space="preserve"><value>Ігрові функції</value></data>
+<data name="Features_Lead" xml:space="preserve"><value>Додатки для окремих ігор: ваша статистика Dota 2 і CS2 та мета Dota 2 для цього сервера.</value></data>
+<data name="Features_MyStats" xml:space="preserve"><value>Ваша ігрова статистика</value></data>
+<data name="Features_MyStatsLead" xml:space="preserve"><value>Ті самі картки, які ваші групи бачать на вкладці «Статистика». Перемикач тут змінює вибір усюди.</value></data>
+<data name="Features_Cs2Soon" xml:space="preserve"><value>Більше функцій для CS2 з'явиться згодом. Ваша статистика CS2 — вище й на вкладці «Статистика» груп, які грають у CS2.</value></data>
+<data name="Stats_Refresh" xml:space="preserve"><value>Оновити</value></data>
+<data name="Stats_RefreshHelp" xml:space="preserve"><value>Перезавантажити картки й нещодавні матчі учасників, які діляться статистикою (не частіше ніж раз на 5 хвилин для людини).</value></data>
+<data name="Stats_RefreshMine" xml:space="preserve"><value>Оновити мою статистику</value></data>
+<data name="Stats_Refreshed" xml:space="preserve"><value>Статистику оновлено</value></data>
+<data name="Stats_RefreshNothing" xml:space="preserve"><value>Усе вже оновлювалося кілька хвилин тому</value></data>
+<data name="Stats_Why" xml:space="preserve"><value>Чому?</value></data>
+<data name="Meta_Title" xml:space="preserve"><value>Dota 2 · Мета-герої за лініями</value></data>
+<data name="Meta_Lead" xml:space="preserve"><value>Герої з найкращим відсотком перемог на кожній лінії в нещодавніх публічних матчах, за даними OpenDota. На кожній лінії враховано всіх, хто там грав, і керрі, і підтримку.</value></data>
+<data name="Meta_Updated" xml:space="preserve"><value>Оновлено {0}</value></data>
+<data name="Meta_Lane_Safe" xml:space="preserve"><value>Безпечна лінія</value></data>
+<data name="Meta_Lane_Mid" xml:space="preserve"><value>Середня лінія</value></data>
+<data name="Meta_Lane_Off" xml:space="preserve"><value>Складна лінія</value></data>
+<data name="Meta_Games" xml:space="preserve"><value>{0} ігор</value></data>
+<data name="Meta_Source" xml:space="preserve"><value>У рейтинг потрапляють лише герої, яких грали щонайменше в 0,5% ігор лінії, тож рідкісні випадкові піки не заважають. Дані оновлюються кожні кілька годин.</value></data>
+<data name="Meta_Failed" xml:space="preserve"><value>Не вдалося завантажити мету з OpenDota.</value></data>
+<data name="Meta_Stale" xml:space="preserve"><value>OpenDota не відповів; показано старіші дані.</value></data>
+<data name="Meta_Posting" xml:space="preserve"><value>Публікація в Discord</value></data>
+<data name="Meta_ChannelIs" xml:space="preserve"><value>Публікації надходять у {0}.</value></data>
+<data name="Meta_NoChannel" xml:space="preserve"><value>Канал ще не вибрано.</value></data>
+<data name="Meta_LastPosted" xml:space="preserve"><value>востаннє опубліковано {0}</value></data>
+<data name="Meta_Channel" xml:space="preserve"><value>Канал</value></data>
+<data name="Meta_ChooseChannel" xml:space="preserve"><value>Виберіть канал</value></data>
+<data name="Meta_Schedule" xml:space="preserve"><value>Публікувати автоматично</value></data>
+<data name="Meta_Schedule_Off" xml:space="preserve"><value>Вимкнено (лише «Опублікувати зараз»)</value></data>
+<data name="Meta_Schedule_Daily" xml:space="preserve"><value>Щодня</value></data>
+<data name="Meta_Schedule_EveryTwoDays" xml:space="preserve"><value>Кожні два дні</value></data>
+<data name="Meta_Schedule_Weekly" xml:space="preserve"><value>Раз на тиждень</value></data>
+<data name="Meta_Day" xml:space="preserve"><value>День</value></data>
+<data name="Meta_Hour" xml:space="preserve"><value>З</value></data>
+<data name="Meta_ScheduleHelp" xml:space="preserve"><value>Час за {0}. Запланована публікація виходить протягом години після вибраного часу.</value></data>
+<data name="Meta_CreateChannel" xml:space="preserve"><value>Створити #dota-meta</value></data>
+<data name="Meta_PostNow" xml:space="preserve"><value>Опублікувати зараз</value></data>
+<data name="Meta_Saved" xml:space="preserve"><value>Налаштування мети збережено</value></data>
+<data name="Meta_Posted" xml:space="preserve"><value>Мету опубліковано</value></data>
+<data name="Meta_ChannelCreated" xml:space="preserve"><value>Канал {0} створено й вибрано для мети</value></data>
+<data name="Meta_ChannelFailed" xml:space="preserve"><value>Discord не створив канал ({0}). HappyMix потрібен дозвіл «Керувати каналами».</value></data>
+<data name="Meta_NoGuild" xml:space="preserve"><value>HappyMix зараз не бачить цей сервер.</value></data>
+<data name="Meta_ChannelTopic" xml:space="preserve"><value>Мета-герої Dota 2 за лініями від HappyMix</value></data>
+<data name="Meta_PostLead" xml:space="preserve"><value>Найкращий відсоток перемог на кожній лінії в нещодавніх публічних матчах.</value></data>
+<data name="Meta_Err_Schedule" xml:space="preserve"><value>Виберіть правильний розклад, день і годину.</value></data>
+<data name="Meta_Err_Channel" xml:space="preserve"><value>Спершу виберіть або створіть канал.</value></data>
+<data name="Guide_features_Title" xml:space="preserve"><value>Ігрові функції</value></data>
+<data name="Guide_features_Body" xml:space="preserve"><value>На сторінці «Ігрові функції» зібрано додатки для окремих ігор. Тут ваша статистика Dota 2 і CS2 з тим самим перемикачем, що й на вкладках «Статистика» груп, кнопка «Оновити» і, якщо завантаження не вдалося, точна причина в розділі «Чому?». Для Dota 2 є мета-герої за лініями з OpenDota; адміністратори сервера вибирають канал (або створюють #dota-meta), публікують мету одразу чи налаштовують публікацію щодня, кожні два дні або раз на тиждень у вибраний час.</value></data>
+<data name="Meta_Count" xml:space="preserve"><value>Героїв на лінію</value></data>
+<data name="Meta_TopN" xml:space="preserve"><value>Топ-{0}</value></data>
+<data name="Meta_SearchTitle" xml:space="preserve"><value>Dota 2 · Мета-герої</value></data>
+<data name="Meta_SearchLead" xml:space="preserve"><value>Відсоток перемог і виборів героїв у рейтингових іграх All Pick за даними STRATZ. Виберіть патч, роль і ранг, які вас цікавлять.</value></data>
+<data name="Meta_Search" xml:space="preserve"><value>Пошук мети</value></data>
+<data name="Meta_PatchLabel" xml:space="preserve"><value>Ігри</value></data>
+<data name="Meta_Patch" xml:space="preserve"><value>Патч {0}</value></data>
+<data name="Meta_Patch_Current" xml:space="preserve"><value>Поточний патч</value></data>
+<data name="Meta_Patch_LastWeek" xml:space="preserve"><value>Останні 7 днів</value></data>
+<data name="Meta_Role" xml:space="preserve"><value>Роль</value></data>
+<data name="Meta_Position_0" xml:space="preserve"><value>Будь-яка роль</value></data>
+<data name="Meta_Position_1" xml:space="preserve"><value>Поз. 1 · Керрі</value></data>
+<data name="Meta_Position_2" xml:space="preserve"><value>Поз. 2 · Мідер</value></data>
+<data name="Meta_Position_3" xml:space="preserve"><value>Поз. 3 · Офлейн</value></data>
+<data name="Meta_Position_4" xml:space="preserve"><value>Поз. 4 · Роумер</value></data>
+<data name="Meta_Position_5" xml:space="preserve"><value>Поз. 5 · Повна підтримка</value></data>
+<data name="Meta_RankLabel" xml:space="preserve"><value>Ранг</value></data>
+<data name="Meta_Rank_All" xml:space="preserve"><value>Усі ранги</value></data>
+<data name="Meta_Rank_HeraldGuardian" xml:space="preserve"><value>Вісник – Вартовий</value></data>
+<data name="Meta_Rank_CrusaderArchon" xml:space="preserve"><value>Лицар – Герой</value></data>
+<data name="Meta_Rank_LegendAncient" xml:space="preserve"><value>Легенда – Володар</value></data>
+<data name="Meta_Rank_DivineImmortal" xml:space="preserve"><value>Божество – Титан</value></data>
+<data name="Meta_SortLabel" xml:space="preserve"><value>Порядок</value></data>
+<data name="Meta_Sort_Score" xml:space="preserve"><value>Мета-оцінка</value></data>
+<data name="Meta_Sort_WinRate" xml:space="preserve"><value>Відсоток перемог</value></data>
+<data name="Meta_Sort_PickRate" xml:space="preserve"><value>Частота вибору</value></data>
+<data name="Meta_SortWinRateHelp" xml:space="preserve"><value>Частка цих ігор, які герой виграв</value></data>
+<data name="Meta_SortPickRateHelp" xml:space="preserve"><value>Частка матчів, у яких героя вибрали на цю роль</value></data>
+<data name="Meta_Wins" xml:space="preserve"><value>перемог</value></data>
+<data name="Meta_Picks" xml:space="preserve"><value>виборів</value></data>
+<data name="Meta_Scope" xml:space="preserve"><value>{0} матчів із {1} · оновлено {2}</value></data>
+<data name="Meta_SearchHelp" xml:space="preserve"><value>Мета-оцінка — це відсоток перемог з урахуванням кількості ігор (нижня межа 95% інтервалу), тож сильні й популярні герої йдуть першими, а випадкові рідкісні піки — ні. Героїв, яких грали менше ніж у 0,25% ігор, не враховано. Результати оновлюються щогодини.</value></data>
+<data name="Meta_SearchFailed" xml:space="preserve"><value>Не вдалося завантажити мету зі STRATZ; нижче — мета за лініями з OpenDota.</value></data>
+<data name="Meta_PostByRole" xml:space="preserve"><value>Публікація показує позиції 1–5 з вибраними вище іграми, рангом і порядком.</value></data>
+<data name="Meta_PostByLane" xml:space="preserve"><value>Публікація показує безпечну, середню й складну лінії з OpenDota.</value></data>
+<data name="Meta_RolesTitle" xml:space="preserve"><value>Мета Dota 2 за ролями</value></data>
+<data name="Meta_RolesLegend" xml:space="preserve"><value>Відсоток перемог · частота вибору, рейтинговий All Pick</value></data>
 </root>

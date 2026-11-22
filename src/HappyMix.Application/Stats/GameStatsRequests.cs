@@ -30,6 +30,10 @@ public sealed record GroupStats(IReadOnlyList<StatsGame> Games, IReadOnlyList<Pl
     public IReadOnlyList<GroupRecap> Recaps { get; init; } = [];
     /// <summary>Whether recaps are also posted in the group's notification channel.</summary>
     public bool PostRecaps { get; init; }
+    /// <summary>The last 7 days, one summary per game with games together.</summary>
+    public IReadOnlyList<GroupDigest> Week { get; init; } = [];
+    /// <summary>Whether the Monday summary is posted in the group's notification channel.</summary>
+    public bool PostDigest { get; init; }
     public bool CanManage { get; init; }
 }
 
@@ -44,10 +48,21 @@ public sealed record GetMyStatsQuery(ulong UserId) : IQuery<MyStats>;
 /// Turns stats sharing on or off for the person's Discord account (all their groups). Turning it on fetches their
 /// cards straight away; turning it off deletes the cached cards.
 /// </summary>
-public sealed record SetStatsSharingCommand(ulong UserId, bool Share) : ICommand<MyStats>;
+/// <param name="GuildId">The server the change came from, so lookup problems show in that server's Logs.</param>
+public sealed record SetStatsSharingCommand(ulong UserId, bool Share, ulong? GuildId = null) : ICommand<MyStats>;
 
 /// <summary>Refreshes the oldest stale cards of people who share. Returns how many cards were fetched.</summary>
 public sealed record RefreshGameStatsCommand(int Limit = 20) : ICommand<int>;
+
+/// <summary>"Refresh" on the Stats tab or the Game features page: the viewer's own cards and matches right now.</summary>
+public sealed record RefreshMyStatsCommand(ulong UserId, ulong? GuildId = null) : ICommand<MyStats>;
+
+/// <summary>
+/// "Refresh" on a group's Stats tab: cards and matches of the group's sharing members that are older than
+/// <see cref="GameStats.RefreshAfter"/>, up to <see cref="GameStats.RefreshAtOnce"/> people, so the services aren't flooded.
+/// Returns how many people were refreshed.
+/// </summary>
+public sealed record RefreshGroupStatsCommand(GroupActor Actor, Guid GroupId) : ICommand<int>;
 
 public static class GameStats
 {
@@ -55,6 +70,9 @@ public static class GameStats
     public const string Cs2AppId = "730";
     /// <summary>How long a card counts as fresh.</summary>
     public static readonly TimeSpan FreshFor = TimeSpan.FromHours(6);
+    /// <summary>A Refresh click skips cards fetched more recently than this.</summary>
+    public static readonly TimeSpan RefreshAfter = TimeSpan.FromMinutes(5);
+    public const int RefreshAtOnce = 8;
     /// <summary>SteamID64 minus this is Dota's 32-bit account id (used by OpenDota and Dotabuff).</summary>
     public const long SteamIdBase = 76561197960265728;
 
@@ -94,10 +112,10 @@ public static class GameStats
     public static bool IsStale(CachedStats? stats, DateTimeOffset now) => stats is null || now - stats.FetchedAt >= FreshFor;
 }
 
-internal sealed class GameStatsHandlers(IGameStatsStore store, IGameStatsDirectory directory, IPlayerGameStore players, IAccountLinkStore accountLinks,
-    IClock clock, ISender sender) :
+internal sealed partial class GameStatsHandlers(IGameStatsStore store, IGameStatsDirectory directory, IPlayerGameStore players, IAccountLinkStore accountLinks,
+    IClock clock, ISender sender, Microsoft.Extensions.Logging.ILogger<GameStatsHandlers> logger) :
     IQueryHandler<GetGroupStatsQuery, GroupStats>, IQueryHandler<GetMyStatsQuery, MyStats>, ICommandHandler<SetStatsSharingCommand, MyStats>,
-    ICommandHandler<RefreshGameStatsCommand, int>
+    ICommandHandler<RefreshGameStatsCommand, int>, ICommandHandler<RefreshMyStatsCommand, MyStats>, ICommandHandler<RefreshGroupStatsCommand, int>
 {
     private static readonly ErrorDescriptor NotFound = new("Stats.NotFound", "That group doesn't exist or you don't have access to it.");
 
@@ -128,13 +146,15 @@ internal sealed class GameStatsHandlers(IGameStatsStore store, IGameStatsDirecto
         bool isMember = links.Includes(detail.Members, query.Actor.UserId) || links.Same(detail.Summary.OrganizerId, query.Actor.UserId);
         var now = clock.UtcNow;
         var sharers = cards.Where(card => card.Shares).Select(card => card.UserId).ToArray();
-        var recaps = MatchRecaps.Find(query.GroupId, sharers, await store.ListMatchesAsync(sharers, now - MatchRecaps.ShowFor), games)
-            .Take(MatchRecaps.MaxShown).ToArray();
+        var together = MatchRecaps.Find(query.GroupId, sharers, await store.ListMatchesAsync(sharers, now - MatchRecaps.ShowFor), games);
+        var recaps = together.Take(MatchRecaps.MaxShown).ToArray();
         return new GroupStats(games, cards, (await store.ListSharingAsync([viewer])).Contains(viewer), isMember,
             await players.GetSteamAsync(viewer) is not null, directory.Cs2Enabled, now)
         {
             Recaps = recaps,
             PostRecaps = await store.GetRecapChannelAsync(query.Actor.GuildId, query.GroupId),
+            Week = WeeklyDigests.Build(together.Where(recap => now - recap.StartedAt < TimeSpan.FromDays(7))),
+            PostDigest = await store.GetDigestChannelAsync(query.Actor.GuildId, query.GroupId),
             CanManage = detail.Summary.CanManage
         };
     }
@@ -150,8 +170,44 @@ internal sealed class GameStatsHandlers(IGameStatsStore store, IGameStatsDirecto
             await store.RemoveMatchesAsync(command.UserId);
         }
         else if (await players.GetSteamAsync(command.UserId) is { } steam)
-            await FetchAsync(command.UserId, steam.SteamId, cancellationToken);
+            await FetchAsync(command.UserId, steam.SteamId, command.GuildId, cancellationToken);
         return await MineAsync(command.UserId);
+    }
+
+    public async Task<Result<MyStats>> Handle(RefreshMyStatsCommand command, CancellationToken cancellationToken)
+    {
+        if ((await store.ListSharingAsync([command.UserId])).Contains(command.UserId) && await players.GetSteamAsync(command.UserId) is { } steam)
+        {
+            await FetchAsync(command.UserId, steam.SteamId, command.GuildId, cancellationToken);
+            await sender.Send(new RefreshPlayerMatchesCommand(command.UserId, command.GuildId), cancellationToken);
+        }
+        return await MineAsync(command.UserId);
+    }
+
+    public async Task<Result<int>> Handle(RefreshGroupStatsCommand command, CancellationToken cancellationToken)
+    {
+        if (await sender.Send(new GetGroupDetailQuery(command.Actor, command.GroupId), cancellationToken) is not { IsSuccess: true, Value: { CanViewRoster: true } detail })
+            return Result.Failure<int>(NotFound);
+        var now = clock.UtcNow;
+        var members = detail.Members.Append(detail.Summary.OrganizerId).Distinct().ToArray();
+        var sharing = await store.ListSharingAsync(members);
+        var cached = (await store.ListCachedAsync(members)).ToLookup(item => item.UserId);
+        // The viewer first, then the oldest cards; anything fetched in the last few minutes is skipped.
+        var due = members.Where(sharing.Contains)
+            .Select(user => (User: user, Last: cached[user].Select(item => (DateTimeOffset?)item.FetchedAt).Min()))
+            .Where(item => item.Last is null || now - item.Last >= GameStats.RefreshAfter)
+            .OrderBy(item => item.User == command.Actor.UserId ? 0 : 1).ThenBy(item => item.Last ?? DateTimeOffset.MinValue)
+            .Take(GameStats.RefreshAtOnce).ToArray();
+        int refreshed = 0;
+        foreach (var (user, _) in due)
+        {
+            if (await players.GetSteamAsync(user) is not { } steam)
+                continue;
+            await FetchAsync(user, steam.SteamId, command.Actor.GuildId, cancellationToken);
+            await sender.Send(new RefreshPlayerMatchesCommand(user, command.Actor.GuildId), cancellationToken);
+            refreshed++;
+        }
+        return refreshed;
     }
 
     public async Task<Result<int>> Handle(RefreshGameStatsCommand command, CancellationToken cancellationToken)
@@ -171,37 +227,54 @@ internal sealed class GameStatsHandlers(IGameStatsStore store, IGameStatsDirecto
         {
             if (await players.GetSteamAsync(user) is not { } steam)
                 continue;
-            fetched += await FetchAsync(user, steam.SteamId, cancellationToken);
+            fetched += await FetchAsync(user, steam.SteamId, null, cancellationToken);
         }
         return fetched;
     }
 
     /// <summary>Fetches both cards. A failed fetch keeps the previous good card's data and only marks the error.</summary>
-    private async Task<int> FetchAsync(ulong userId, string steamId, CancellationToken cancellationToken)
+    private async Task<int> FetchAsync(ulong userId, string steamId, ulong? guildId, CancellationToken cancellationToken)
     {
         var now = clock.UtcNow;
         var previous = (await store.ListCachedAsync([userId])).ToArray();
         int fetched = 0;
         var dota = await directory.GetDotaAsync(steamId, cancellationToken);
-        await SaveAsync(userId, StatsGame.Dota2, dota.Status, dota.Profile, previous, now);
+        await SaveAsync(userId, guildId, StatsGame.Dota2, dota, previous, now);
         fetched++;
         if (directory.Cs2Enabled)
         {
             var cs2 = await directory.GetCs2Async(steamId, cancellationToken);
-            await SaveAsync(userId, StatsGame.Cs2, cs2.Status, cs2.Profile, previous, now);
+            await SaveAsync(userId, guildId, StatsGame.Cs2, cs2, previous, now);
             fetched++;
         }
         return fetched;
     }
 
-    private async Task SaveAsync<T>(ulong userId, StatsGame game, StatsStatus status, T? profile, IReadOnlyList<CachedStats> previous, DateTimeOffset now)
+    private async Task SaveAsync<T>(ulong userId, ulong? guildId, StatsGame game, StatsFetch<T> fetch, IReadOnlyList<CachedStats> previous, DateTimeOffset now)
         where T : class
     {
-        string? payload = profile is null ? null : JsonSerializer.Serialize(profile, GameStats.Json);
-        if (status == StatsStatus.Error)
+        string? payload = fetch.Profile is null ? null : JsonSerializer.Serialize(fetch.Profile, GameStats.Json);
+        if (fetch.Status == StatsStatus.Error)
             payload = previous.FirstOrDefault(item => item.Game == game)?.Payload;
-        await store.SaveCachedAsync(new CachedStats(userId, game, status, payload, now));
+        // Errors are warnings; "no public data" and "no FACEIT account" are the player's own settings, so information.
+        // The server id goes in a scope, so the entry shows in that server's Logs (without one it is bot-wide).
+        using (guildId is { } guild ? logger.BeginScope(new Dictionary<string, object> { ["GuildId"] = guild }) : null)
+        {
+            if (fetch.Status == StatsStatus.Error)
+                LogStatsFailed(logger, game, userId, fetch.Reason ?? "unknown");
+            else if (fetch.Status != StatsStatus.Ok)
+                LogStatsMissing(logger, game, userId, fetch.Reason ?? "no data");
+        }
+        await store.SaveCachedAsync(new CachedStats(userId, game, fetch.Status, payload, now, fetch.Status == StatsStatus.Ok ? null : fetch.Reason));
     }
+
+    [Microsoft.Extensions.Logging.LoggerMessage(Level = Microsoft.Extensions.Logging.LogLevel.Warning,
+        Message = "{Game} stats for {UserId} couldn't be loaded: {Reason}")]
+    private static partial void LogStatsFailed(Microsoft.Extensions.Logging.ILogger logger, StatsGame game, ulong userId, string reason);
+
+    [Microsoft.Extensions.Logging.LoggerMessage(Level = Microsoft.Extensions.Logging.LogLevel.Information,
+        Message = "{Game} stats for {UserId} have no data: {Reason}")]
+    private static partial void LogStatsMissing(Microsoft.Extensions.Logging.ILogger logger, StatsGame game, ulong userId, string reason);
 
     private async Task<MyStats> MineAsync(ulong userId)
     {

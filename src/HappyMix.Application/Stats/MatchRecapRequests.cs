@@ -16,8 +16,15 @@ namespace HappyMix.Application.Stats;
 /// <param name="GuildIds">The servers the bot is in, whose groups are checked.</param>
 public sealed record RefreshMatchesCommand(IReadOnlyCollection<ulong> GuildIds, int Limit = 20) : ICommand<int>;
 
-/// <summary>The organizer's switch: also post match recaps in the group's notification channel.</summary>
-public sealed record SetRecapChannelCommand(GroupActor Actor, Guid GroupId, bool Post) : ICommand<bool>;
+/// <summary>Reads one person's recent matches now (the Refresh buttons). Returns how many matches came back.</summary>
+/// <param name="GuildId">The server the click came from, so lookup problems show in that server's Logs.</param>
+public sealed record RefreshPlayerMatchesCommand(ulong UserId, ulong? GuildId = null) : ICommand<int>;
+
+/// <summary>
+/// The organizer's switches: also post match recaps in the group's notification channel, and (when
+/// <paramref name="Digest"/> is given) the Monday summary of last week.
+/// </summary>
+public sealed record SetRecapChannelCommand(GroupActor Actor, Guid GroupId, bool Post, bool? Digest = null) : ICommand<bool>;
 
 public static class MatchRecaps
 {
@@ -43,9 +50,9 @@ public static class MatchRecaps
             .ToArray();
 }
 
-internal sealed class MatchRecapHandlers(IGameStatsStore store, IGameStatsDirectory directory, IPlayerGameStore players, IGuildGroupStore groups,
-    IEnumerable<IRecapPublisher> publishers, IClock clock, ISender sender) :
-    ICommandHandler<RefreshMatchesCommand, int>, ICommandHandler<SetRecapChannelCommand, bool>
+internal sealed partial class MatchRecapHandlers(IGameStatsStore store, IGameStatsDirectory directory, IPlayerGameStore players, IGuildGroupStore groups,
+    IEnumerable<IRecapPublisher> publishers, IClock clock, ISender sender, Microsoft.Extensions.Logging.ILogger<MatchRecapHandlers> logger) :
+    ICommandHandler<RefreshMatchesCommand, int>, ICommandHandler<SetRecapChannelCommand, bool>, ICommandHandler<RefreshPlayerMatchesCommand, int>
 {
     public async Task<Result<int>> Handle(RefreshMatchesCommand command, CancellationToken cancellationToken)
     {
@@ -63,16 +70,7 @@ internal sealed class MatchRecapHandlers(IGameStatsStore store, IGameStatsDirect
                     due.Add((user, game, last ?? DateTimeOffset.MinValue));
             }
         foreach (var (user, game, _) in due.OrderBy(item => item.Last).Take(Math.Max(1, command.Limit)))
-        {
-            await store.SetMatchesFetchedAtAsync(user, game, now);
-            if (await players.GetSteamAsync(user) is not { } steam)
-                continue;
-            var known = (await store.ListMatchesAsync([user], now - MatchRecaps.KeepFor)).Where(match => match.Game == game)
-                .Select(match => match.MatchId).ToHashSet(StringComparer.Ordinal);
-            var fetched = await directory.GetMatchesAsync(user, game, steam.SteamId, known, cancellationToken);
-            if (fetched is { Status: StatsStatus.Ok, Profile: { Count: > 0 } matches })
-                await store.SaveMatchesAsync(matches.Where(match => now - match.StartedAt < MatchRecaps.KeepFor).ToArray());
-        }
+            await FetchMatchesAsync(user, game, null, cancellationToken);
         await store.PruneMatchesAsync(now - MatchRecaps.KeepFor);
 
         int posted = 0;
@@ -101,6 +99,37 @@ internal sealed class MatchRecapHandlers(IGameStatsStore store, IGameStatsDirect
         return posted;
     }
 
+    public async Task<Result<int>> Handle(RefreshPlayerMatchesCommand command, CancellationToken cancellationToken)
+    {
+        int found = 0;
+        foreach (var game in directory.Cs2Enabled ? new[] { StatsGame.Dota2, StatsGame.Cs2 } : [StatsGame.Dota2])
+            found += await FetchMatchesAsync(command.UserId, game, command.GuildId, cancellationToken);
+        return found;
+    }
+
+    /// <summary>Reads one person's history for one game and saves new matches; failures are logged with the reason.</summary>
+    private async Task<int> FetchMatchesAsync(ulong user, StatsGame game, ulong? guildId, CancellationToken cancellationToken)
+    {
+        var now = clock.UtcNow;
+        await store.SetMatchesFetchedAtAsync(user, game, now);
+        if (await players.GetSteamAsync(user) is not { } steam)
+            return 0;
+        var known = (await store.ListMatchesAsync([user], now - MatchRecaps.KeepFor)).Where(match => match.Game == game)
+            .Select(match => match.MatchId).ToHashSet(StringComparer.Ordinal);
+        var fetched = await directory.GetMatchesAsync(user, game, steam.SteamId, known, cancellationToken);
+        if (fetched.Status == StatsStatus.Error)
+            using (guildId is { } guild ? logger.BeginScope(new Dictionary<string, object> { ["GuildId"] = guild }) : null)
+                LogMatchesFailed(logger, game, user, fetched.Reason ?? "unknown");
+        if (fetched is not { Status: StatsStatus.Ok, Profile: { Count: > 0 } matches })
+            return 0;
+        await store.SaveMatchesAsync(matches.Where(match => now - match.StartedAt < MatchRecaps.KeepFor).ToArray());
+        return matches.Count;
+    }
+
+    [Microsoft.Extensions.Logging.LoggerMessage(Level = Microsoft.Extensions.Logging.LogLevel.Warning,
+        Message = "{Game} matches for {UserId} couldn't be loaded: {Reason}")]
+    private static partial void LogMatchesFailed(Microsoft.Extensions.Logging.ILogger logger, StatsGame game, ulong userId, string reason);
+
     public async Task<Result<bool>> Handle(SetRecapChannelCommand command, CancellationToken cancellationToken)
     {
         if (await sender.Send(new GetGroupDetailQuery(command.Actor, command.GroupId), cancellationToken) is not { IsSuccess: true, Value: { CanViewRoster: true } detail })
@@ -108,6 +137,8 @@ internal sealed class MatchRecapHandlers(IGameStatsStore store, IGameStatsDirect
         if (!detail.Summary.CanManage)
             return Result.Failure<bool>(new ErrorDescriptor("Stats.Forbidden", "Only the organizer or a moderator can change this."));
         await store.SetRecapChannelAsync(command.Actor.GuildId, command.GroupId, command.Post);
+        if (command.Digest is { } digest)
+            await store.SetDigestChannelAsync(command.Actor.GuildId, command.GroupId, digest);
         return command.Post;
     }
 }

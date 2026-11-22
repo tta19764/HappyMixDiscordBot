@@ -188,18 +188,31 @@ public sealed partial class DashboardController
     {
         if (await GetGroupActorAsync(guildId) is not ({ } actor, _, _))
             return NotMember();
-        await sender.Send(new HappyMix.Application.Stats.SetStatsSharingCommand(actor.UserId, share), HttpContext.RequestAborted);
+        await sender.Send(new HappyMix.Application.Stats.SetStatsSharingCommand(actor.UserId, share, guildId), HttpContext.RequestAborted);
         TempData["GroupBannerTitle"] = text[share ? "Stats_Shared" : "Stats_Unshared"].Value;
+        return Redirect($"/groups/{guildId}/{groupId}#stats");
+    }
+
+    /// <summary>"Refresh" on the Stats tab: the group's sharing members' cards and matches, the viewer's first.</summary>
+    [HttpPost("/groups/{guildId}/{groupId:guid}/stats/refresh")]
+    public async Task<IActionResult> RefreshGroupStats(ulong guildId, Guid groupId)
+    {
+        if (await GetGroupActorAsync(guildId) is not ({ } actor, { } viewer, _))
+            return NotMember();
+        var result = await sender.Send(new HappyMix.Application.Stats.RefreshGroupStatsCommand(actor, groupId), HttpContext.RequestAborted);
+        if (result.IsFailure)
+            return GroupNotFound(guildId);
+        TempData["GroupBannerTitle"] = result.Value == 0 ? text["Stats_RefreshNothing"].Value : text["Stats_Refreshed"].Value;
         return Redirect($"/groups/{guildId}/{groupId}#stats");
     }
 
     /// <summary>The organizer's switch: also post match recaps in the group's notification channel.</summary>
     [HttpPost("/groups/{guildId}/{groupId:guid}/stats/recaps")]
-    public async Task<IActionResult> SetRecapChannel(ulong guildId, Guid groupId, bool post)
+    public async Task<IActionResult> SetRecapChannel(ulong guildId, Guid groupId, bool post, bool digest)
     {
         if (await GetGroupActorAsync(guildId) is not ({ } actor, { } viewer, _))
             return NotMember();
-        var result = await sender.Send(new HappyMix.Application.Stats.SetRecapChannelCommand(actor, groupId, post), HttpContext.RequestAborted);
+        var result = await sender.Send(new HappyMix.Application.Stats.SetRecapChannelCommand(actor, groupId, post, digest), HttpContext.RequestAborted);
         if (result.IsFailure)
             return await RenderGroupAsync(guildId, actor, viewer, groupId, null, null, new GroupFormState("stats", text.Message(result.Error.Description)));
         TempData["GroupBannerTitle"] = text["Live_Saved"].Value;

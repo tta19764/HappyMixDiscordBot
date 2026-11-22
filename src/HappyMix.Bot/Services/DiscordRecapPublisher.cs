@@ -14,21 +14,48 @@ namespace HappyMix.Bot.Services;
 internal sealed partial class DiscordRecapPublisher(DiscordSocketClient discord, EventNotificationSettings notificationSettings,
     IOptions<CommunityDefaults> community, ILogger<DiscordRecapPublisher> logger) : IRecapPublisher
 {
-    public async Task PublishAsync(ulong guildId, string groupName, GroupRecap recap, CancellationToken cancellationToken)
+    public Task PublishAsync(ulong guildId, string groupName, GroupRecap recap, CancellationToken cancellationToken) =>
+        PostAsync(guildId, recap.GroupId, Text(groupName, recap, community.Value.LanguageCode), cancellationToken);
+
+    public Task PublishDigestAsync(ulong guildId, Guid groupId, string groupName, DateOnly weekStart,
+        IReadOnlyList<HappyMix.Application.Stats.GroupDigest> digests, CancellationToken cancellationToken) =>
+        PostAsync(guildId, groupId, DigestText(groupName, weekStart, digests, community.Value.LanguageCode), cancellationToken);
+
+    private async Task PostAsync(ulong guildId, Guid groupId, string text, CancellationToken cancellationToken)
     {
         if (discord.ConnectionState != ConnectionState.Connected
-            || await notificationSettings.GetEffectiveAsync(guildId, "group", recap.GroupId) is not { } effective || !effective.Route.Enabled
+            || await notificationSettings.GetEffectiveAsync(guildId, "group", groupId) is not { } effective || !effective.Route.Enabled
             || discord.GetGuild(guildId)?.GetTextChannel(effective.Route.Channel()) is not { } channel)
             return;
         try
         {
-            await channel.SendMessageAsync(Text(groupName, recap, community.Value.LanguageCode), allowedMentions: AllowedMentions.None,
-                options: new RequestOptions { CancelToken = cancellationToken });
+            await channel.SendMessageAsync(text, allowedMentions: AllowedMentions.None, options: new RequestOptions { CancelToken = cancellationToken });
         }
         catch (Discord.Net.HttpException error)
         {
             LogNotPosted(logger, guildId, channel.Id, error);
         }
+    }
+
+    /// <summary>
+    /// "📅 Squad · week of 16 Nov", then per game: games together, wins and losses, the most played hero or map and the
+    /// best performer.
+    /// </summary>
+    internal static string DigestText(string groupName, DateOnly weekStart, IReadOnlyList<HappyMix.Application.Stats.GroupDigest> digests, string language)
+    {
+        var culture = CultureInfo.GetCultureInfo(language is "uk" or "ru" ? language : "en");
+        var lines = new List<string> { NotificationText.Get(language, "Digest_Title", Format.Sanitize(groupName), weekStart.ToString("d MMMM", culture)) };
+        foreach (var digest in digests)
+        {
+            string line = $"**{(digest.Game == StatsGame.Dota2 ? "Dota 2" : "CS2")}**: "
+                + NotificationText.Get(language, "Digest_Games", digest.Games, digest.Wins, digest.Losses);
+            if (digest.MostPlayed is { } most)
+                line += " · " + NotificationText.Get(language, "Digest_MostPlayed", Format.Sanitize(most), digest.MostPlayedCount);
+            if (digest.Best is { } best)
+                line += " · " + NotificationText.Get(language, "Digest_Best", $"<@{best.UserId}>", best.Wins, best.Games);
+            lines.Add(line);
+        }
+        return string.Join("\n", lines);
     }
 
     /// <summary>

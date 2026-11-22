@@ -2066,3 +2066,61 @@ a:hover { color: var(--hm-text); text-decoration-color: var(--hm-text); }
 .hm-recap__hs { color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); }
 .hm-stats__channel { padding-top: var(--hm-space-3); border-top: 1px solid var(--hm-border); }
 .hm-stats__channel h3 { margin: 0; }
+
+/* Weekly digest: the last 7 days of games together -------------------------------------------------------- */
+.hm-digest { display: grid; gap: var(--hm-space-2); margin-top: var(--hm-space-4); padding: var(--hm-space-3);
+    border: 1px solid var(--hm-border); border-radius: var(--hm-radius-md); background: var(--hm-surface-2); }
+.hm-digest h3 { margin: 0; font-size: var(--hm-fs-md, 1rem); }
+.hm-digest__facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); gap: var(--hm-space-3); margin: 0; }
+.hm-digest__facts div { display: grid; gap: 2px; }
+.hm-digest__facts dt { color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); }
+.hm-digest__facts dd { margin: 0; font-weight: 700; }
+.hm-digest__facts small { color: var(--hm-text-subtle); font-weight: 500; }
+.hm-digest__players { list-style: none; margin: 0; padding: var(--hm-space-2) 0 0; display: grid; gap: 4px; border-top: 1px solid var(--hm-border); }
+.hm-digest__players li { display: flex; justify-content: space-between; gap: var(--hm-space-3); font-size: var(--hm-fs-sm); }
+
+/* Game features: lane meta, failure reasons ------------------------------------------------------------------ */
+.hm-statcard__problem { display: grid; gap: 4px; }
+.hm-statcard__problem--error .hm-statcard__state { color: var(--hm-warn); }
+.hm-statcard__why summary { cursor: pointer; color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); }
+.hm-statcard__why code { display: block; margin-top: 4px; padding: var(--hm-space-2); border-radius: var(--hm-radius-sm); background: var(--hm-surface-2);
+    font-size: var(--hm-fs-xs); white-space: pre-wrap; overflow-wrap: anywhere; }
+.hm-dmeta > * { align-self: stretch; }
+.hm-meta__lanes { width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: var(--hm-space-3); }
+.hm-meta__lane { display: grid; align-content: start; gap: var(--hm-space-2); padding: var(--hm-space-3); border: 1px solid var(--hm-border);
+    border-radius: var(--hm-radius-md); background: var(--hm-surface); }
+.hm-meta__lane h3 { margin: 0; font-size: var(--hm-fs-md, 1rem); }
+.hm-meta__lane ol { counter-reset: meta; }
+.hm-meta__lane ol li { counter-increment: meta; }
+.hm-meta__lane ol li::before { content: counter(meta); width: 1.1rem; color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); font-weight: 700; }
+.hm-meta__admin { display: grid; gap: var(--hm-space-3); padding-top: var(--hm-space-3); border-top: 1px solid var(--hm-border); }
+.hm-meta__admin h3 { margin: 0; }
+.hm-meta__admin p { margin: 0; }
+.hm-meta__form { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: var(--hm-space-3); align-items: end; }
+.hm-meta__form .hm-meta__note, .hm-meta__form .hm-row { grid-column: 1 / -1; }
+.hm-meta__form:has([data-meta-schedule] option[value="Weekly"]:checked) [data-meta-day] { display: grid; }
+.hm-meta__form [data-meta-day] { display: none; }
+.hm-meta__lane .hm-statcard__list li { flex-wrap: wrap; row-gap: 0; }
+.hm-meta__lane .hm-statcard__what { min-width: 7rem; }
+.hm-meta__lane .hm-statcard__num { margin-left: auto; }
+
+/* Meta search (STRATZ): filters and the ranked list ------------------------------------------------------------ */
+.hm-meta__search { flex: none; align-content: start; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: var(--hm-space-3); align-items: end;
+    padding: var(--hm-space-3); border: 1px solid var(--hm-border); border-radius: var(--hm-radius-md); background: var(--hm-surface-2); }
+.hm-meta__scope { margin: 0; }
+.hm-meta__results { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; counter-reset: rank; }
+.hm-meta__results li { counter-increment: rank; display: grid; grid-template-columns: 1.6rem 64px minmax(0, 1fr) auto; grid-template-rows: auto 4px;
+    align-items: center; column-gap: var(--hm-space-3); row-gap: 4px; padding: 6px var(--hm-space-2); border-radius: var(--hm-radius-sm); }
+.hm-meta__results li:nth-child(odd) { background: var(--hm-surface); }
+.hm-meta__results li::before { content: counter(rank); grid-row: 1 / 3; color: var(--hm-text-subtle); font-weight: 700; font-variant-numeric: tabular-nums; }
+.hm-meta__results img { grid-row: 1 / 3; width: 64px; height: 36px; border-radius: 4px; object-fit: cover; background: var(--hm-surface-2); }
+.hm-meta__hero { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm-meta__nums { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--hm-space-3); font-size: var(--hm-fs-sm); font-variant-numeric: tabular-nums; }
+.hm-meta__bar { grid-column: 3 / 5; height: 4px; border-radius: 999px; background: var(--hm-surface-2); overflow: hidden; }
+.hm-meta__bar span { display: block; height: 100%; background: var(--hm-c-mint); }
+@media (max-width: 40rem) {
+    .hm-meta__results li { grid-template-columns: 1.4rem 48px minmax(0, 1fr); }
+    .hm-meta__results img { width: 48px; height: 27px; }
+    .hm-meta__nums { grid-column: 3; justify-content: flex-start; }
+    .hm-meta__bar { grid-column: 3; }
+}

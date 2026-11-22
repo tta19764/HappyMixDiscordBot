@@ -34,7 +34,16 @@
             <h2 id="stats-title">@DashboardIcons.Render("stats", cssClass: "hm-heading-icon")@T["Stats_Title"]</h2>
             <p class="hm-help">@T["Stats_Lead"]</p>
         </div>
-        <span class="hm-badge">@T["Stats_Sharing", stats.Sharing, stats.Cards.Count]</span>
+        <div class="hm-row" style="gap: var(--hm-space-2)">
+            <span class="hm-badge">@T["Stats_Sharing", stats.Sharing, stats.Cards.Count]</span>
+            @if (stats.Sharing > 0)
+            {
+                <form method="post" action="@Model.Url/stats/refresh" asp-antiforgery="false">
+                    @Html.AntiForgeryToken()
+                    <button class="hm-btn hm-btn--sm" title="@T["Stats_RefreshHelp"]">@DashboardIcons.Render("refresh")@T["Stats_Refresh"]</button>
+                </form>
+            }
+        </div>
     </div>
 
     @if (statsBanner is not null)
@@ -197,6 +206,10 @@
                             {
                                 <p class="hm-statcard__state">@T[dota ? "Stats_ErrorDota" : "Stats_ErrorCs2"]</p>
                             }
+                            @if (mine && cached is { Status: StatsStatus.Error, Reason.Length: > 0 } failedCard)
+                            {
+                                <details class="hm-statcard__why"><summary>@T["Stats_Why"]</summary><code>@failedCard.Reason</code></details>
+                            }
 
                             @if (card.Shares && card.SteamId is { } steamId)
                             {
@@ -232,6 +245,30 @@
 
             @* Games together: a match two or more sharing members played, newest first. *@
             @{ var recaps = stats.Recaps.Where(recap => recap.Game == game).ToArray(); }
+            @if (stats.Week.FirstOrDefault(digest => digest.Game == game) is { } week)
+            {
+                <section class="hm-digest" aria-label="@T["Digest_Last7"]">
+                    <h3>@T["Digest_Last7"]</h3>
+                    <dl class="hm-digest__facts">
+                        <div><dt>@T["Digest_GamesTogether"]</dt><dd>@week.Games.ToString(culture)</dd></div>
+                        <div><dt>@T["Digest_Record"]</dt><dd>@T["Stats_WinsLosses", week.Wins, week.Losses]@(week.Wins + week.Losses > 0 ? " · " + Percent(week.Wins * 100.0 / (week.Wins + week.Losses)) : "")</dd></div>
+                        @if (week.MostPlayed is { } most)
+                        {
+                            <div><dt>@T[dota ? "Digest_TopHero" : "Digest_TopMap"]</dt><dd>@most <small>×@week.MostPlayedCount</small></dd></div>
+                        }
+                        @if (week.Best is { } best)
+                        {
+                            <div><dt>@T["Digest_BestPlayer"]</dt><dd>@Model.Names.Name(best.UserId, Localize) <small>@T["Digest_WonOf", best.Wins, best.Games]</small></dd></div>
+                        }
+                    </dl>
+                    <ul class="hm-digest__players">
+                        @foreach (var player in week.Players)
+                        {
+                            <li><span>@Model.Names.Name(player.UserId, Localize)</span><span class="hm-statcard__num">@T["Digest_WonOf", player.Wins, player.Games] · @player.Kills/@player.Deaths/@player.Assists</span></li>
+                        }
+                    </ul>
+                </section>
+            }
             <div class="hm-recaps">
                 <h3>@T["Recap_Title"] <span class="hm-count">@recaps.Length</span></h3>
                 @if (recaps.Length == 0)
@@ -303,6 +340,10 @@
             <label class="hm-check">
                 <input type="checkbox" name="post" value="true" checked="@stats.PostRecaps" />
                 <span>@T["Recap_Channel_Post"]<small>@T["Recap_Channel_Help"]</small></span>
+            </label>
+            <label class="hm-check">
+                <input type="checkbox" name="digest" value="true" checked="@stats.PostDigest" />
+                <span>@T["Digest_Channel_Post"]<small>@T["Digest_Channel_Help"]</small></span>
             </label>
             <div><button class="hm-btn">@T["Save"]</button></div>
         </form>

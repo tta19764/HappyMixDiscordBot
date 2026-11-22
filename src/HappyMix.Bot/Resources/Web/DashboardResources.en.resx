@@ -2664,4 +2664,102 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Recap_Won" xml:space="preserve"><value>🏆 **{0}** won a {1} match together</value></data>
 <data name="Recap_Lost" xml:space="preserve"><value>💀 **{0}** lost a {1} match together</value></data>
 <data name="Recap_Split" xml:space="preserve"><value>⚔️ **{0}** played a {1} match on opposite sides</value></data>
+<data name="Digest_Last7" xml:space="preserve"><value>Last 7 days</value></data>
+<data name="Digest_GamesTogether" xml:space="preserve"><value>Games together</value></data>
+<data name="Digest_Record" xml:space="preserve"><value>Group record</value></data>
+<data name="Digest_TopHero" xml:space="preserve"><value>Most played hero</value></data>
+<data name="Digest_TopMap" xml:space="preserve"><value>Most played map</value></data>
+<data name="Digest_BestPlayer" xml:space="preserve"><value>Best performer</value></data>
+<data name="Digest_WonOf" xml:space="preserve"><value>won {0} of {1}</value></data>
+<data name="Digest_Channel_Post" xml:space="preserve"><value>Post a weekly summary every Monday</value></data>
+<data name="Digest_Channel_Help" xml:space="preserve"><value>On Monday from 10:00, a summary of last week's games together: games, wins and losses, the most played hero or map and the best performer. Weeks without games together are skipped.</value></data>
+<data name="Digest_Title" xml:space="preserve"><value>📅 **{0}** · week of {1}</value></data>
+<data name="Digest_Games" xml:space="preserve"><value>{0} games together · {1}W {2}L</value></data>
+<data name="Digest_MostPlayed" xml:space="preserve"><value>most played {0} ×{1}</value></data>
+<data name="Digest_Best" xml:space="preserve"><value>best: {0} won {1} of {2}</value></data>
+<data name="Features_Title" xml:space="preserve"><value>Game features</value></data>
+<data name="Features_Lead" xml:space="preserve"><value>Extras for specific games: your Dota 2 and CS2 stats, and the Dota 2 meta for this server.</value></data>
+<data name="Features_MyStats" xml:space="preserve"><value>Your game stats</value></data>
+<data name="Features_MyStatsLead" xml:space="preserve"><value>The same cards your groups see on their Stats tab. Changing the switch here changes it everywhere.</value></data>
+<data name="Features_Cs2Soon" xml:space="preserve"><value>More CS2 features are coming. Your CS2 stats are above and on the Stats tab of groups that play CS2.</value></data>
+<data name="Stats_Refresh" xml:space="preserve"><value>Refresh</value></data>
+<data name="Stats_RefreshHelp" xml:space="preserve"><value>Reload the cards and recent matches of members who share their stats (not more often than every 5 minutes per person).</value></data>
+<data name="Stats_RefreshMine" xml:space="preserve"><value>Refresh my stats</value></data>
+<data name="Stats_Refreshed" xml:space="preserve"><value>Stats refreshed</value></data>
+<data name="Stats_RefreshNothing" xml:space="preserve"><value>Everything was refreshed in the last few minutes</value></data>
+<data name="Stats_Why" xml:space="preserve"><value>Why?</value></data>
+<data name="Meta_Title" xml:space="preserve"><value>Dota 2 · Meta heroes by lane</value></data>
+<data name="Meta_Lead" xml:space="preserve"><value>The heroes with the best win rate in each lane in recent public matches, from OpenDota. Each lane counts everyone who played there, cores and supports.</value></data>
+<data name="Meta_Updated" xml:space="preserve"><value>Updated {0}</value></data>
+<data name="Meta_Lane_Safe" xml:space="preserve"><value>Safe lane</value></data>
+<data name="Meta_Lane_Mid" xml:space="preserve"><value>Mid lane</value></data>
+<data name="Meta_Lane_Off" xml:space="preserve"><value>Off lane</value></data>
+<data name="Meta_Games" xml:space="preserve"><value>{0} games</value></data>
+<data name="Meta_Source" xml:space="preserve"><value>Only heroes with at least 0.5% of a lane's games are ranked, so rare picks with lucky numbers stay out. Data refreshes every few hours.</value></data>
+<data name="Meta_Failed" xml:space="preserve"><value>Couldn't load the meta from OpenDota.</value></data>
+<data name="Meta_Stale" xml:space="preserve"><value>OpenDota didn't answer; showing older data.</value></data>
+<data name="Meta_Posting" xml:space="preserve"><value>Posting in Discord</value></data>
+<data name="Meta_ChannelIs" xml:space="preserve"><value>Posts go to {0}.</value></data>
+<data name="Meta_NoChannel" xml:space="preserve"><value>No channel chosen yet.</value></data>
+<data name="Meta_LastPosted" xml:space="preserve"><value>last posted {0}</value></data>
+<data name="Meta_Channel" xml:space="preserve"><value>Channel</value></data>
+<data name="Meta_ChooseChannel" xml:space="preserve"><value>Choose a channel</value></data>
+<data name="Meta_Schedule" xml:space="preserve"><value>Post automatically</value></data>
+<data name="Meta_Schedule_Off" xml:space="preserve"><value>Off (only Post now)</value></data>
+<data name="Meta_Schedule_Daily" xml:space="preserve"><value>Every day</value></data>
+<data name="Meta_Schedule_EveryTwoDays" xml:space="preserve"><value>Every two days</value></data>
+<data name="Meta_Schedule_Weekly" xml:space="preserve"><value>Once a week</value></data>
+<data name="Meta_Day" xml:space="preserve"><value>Day</value></data>
+<data name="Meta_Hour" xml:space="preserve"><value>From</value></data>
+<data name="Meta_ScheduleHelp" xml:space="preserve"><value>Times in {0}. A due post goes out within an hour after the chosen time.</value></data>
+<data name="Meta_CreateChannel" xml:space="preserve"><value>Create #dota-meta</value></data>
+<data name="Meta_PostNow" xml:space="preserve"><value>Post now</value></data>
+<data name="Meta_Saved" xml:space="preserve"><value>Meta settings saved</value></data>
+<data name="Meta_Posted" xml:space="preserve"><value>Meta posted</value></data>
+<data name="Meta_ChannelCreated" xml:space="preserve"><value>{0} created and chosen for the meta</value></data>
+<data name="Meta_ChannelFailed" xml:space="preserve"><value>Discord didn't create the channel ({0}). HappyMix needs the Manage Channels permission.</value></data>
+<data name="Meta_NoGuild" xml:space="preserve"><value>HappyMix can't see this server right now.</value></data>
+<data name="Meta_ChannelTopic" xml:space="preserve"><value>Dota 2 meta heroes by lane, posted by HappyMix</value></data>
+<data name="Meta_PostLead" xml:space="preserve"><value>The best win rates per lane in recent public matches.</value></data>
+<data name="Meta_Err_Schedule" xml:space="preserve"><value>Choose a valid schedule, day and hour.</value></data>
+<data name="Meta_Err_Channel" xml:space="preserve"><value>Choose or create a channel first.</value></data>
+<data name="Guide_features_Title" xml:space="preserve"><value>Game features</value></data>
+<data name="Guide_features_Body" xml:space="preserve"><value>The Game features page collects extras for specific games. Your Dota 2 and CS2 stats are there with the same switch as on group Stats tabs, plus a Refresh button and, when a lookup fails, the exact reason under “Why?”. Dota 2 has the meta heroes by lane from OpenDota; server admins choose a channel (or create #dota-meta), post it right away or set it to post every day, every two days or once a week at a chosen time.</value></data>
+<data name="Meta_Count" xml:space="preserve"><value>Heroes per lane</value></data>
+<data name="Meta_TopN" xml:space="preserve"><value>Top {0}</value></data>
+<data name="Meta_SearchTitle" xml:space="preserve"><value>Dota 2 · Meta heroes</value></data>
+<data name="Meta_SearchLead" xml:space="preserve"><value>Hero win and pick rates in ranked All Pick games from STRATZ. Pick the patch, role and rank you care about.</value></data>
+<data name="Meta_Search" xml:space="preserve"><value>Meta search</value></data>
+<data name="Meta_PatchLabel" xml:space="preserve"><value>Games</value></data>
+<data name="Meta_Patch" xml:space="preserve"><value>Patch {0}</value></data>
+<data name="Meta_Patch_Current" xml:space="preserve"><value>Current patch</value></data>
+<data name="Meta_Patch_LastWeek" xml:space="preserve"><value>Last 7 days</value></data>
+<data name="Meta_Role" xml:space="preserve"><value>Role</value></data>
+<data name="Meta_Position_0" xml:space="preserve"><value>Any role</value></data>
+<data name="Meta_Position_1" xml:space="preserve"><value>Pos 1 · Carry</value></data>
+<data name="Meta_Position_2" xml:space="preserve"><value>Pos 2 · Mid</value></data>
+<data name="Meta_Position_3" xml:space="preserve"><value>Pos 3 · Offlane</value></data>
+<data name="Meta_Position_4" xml:space="preserve"><value>Pos 4 · Soft support</value></data>
+<data name="Meta_Position_5" xml:space="preserve"><value>Pos 5 · Hard support</value></data>
+<data name="Meta_RankLabel" xml:space="preserve"><value>Rank</value></data>
+<data name="Meta_Rank_All" xml:space="preserve"><value>All ranks</value></data>
+<data name="Meta_Rank_HeraldGuardian" xml:space="preserve"><value>Herald – Guardian</value></data>
+<data name="Meta_Rank_CrusaderArchon" xml:space="preserve"><value>Crusader – Archon</value></data>
+<data name="Meta_Rank_LegendAncient" xml:space="preserve"><value>Legend – Ancient</value></data>
+<data name="Meta_Rank_DivineImmortal" xml:space="preserve"><value>Divine – Immortal</value></data>
+<data name="Meta_SortLabel" xml:space="preserve"><value>Order</value></data>
+<data name="Meta_Sort_Score" xml:space="preserve"><value>Meta score</value></data>
+<data name="Meta_Sort_WinRate" xml:space="preserve"><value>Win rate</value></data>
+<data name="Meta_Sort_PickRate" xml:space="preserve"><value>Pick rate</value></data>
+<data name="Meta_SortWinRateHelp" xml:space="preserve"><value>Share of these games the hero won</value></data>
+<data name="Meta_SortPickRateHelp" xml:space="preserve"><value>Share of matches the hero was picked in this role</value></data>
+<data name="Meta_Wins" xml:space="preserve"><value>wins</value></data>
+<data name="Meta_Picks" xml:space="preserve"><value>picks</value></data>
+<data name="Meta_Scope" xml:space="preserve"><value>{0} matches since {1} · updated {2}</value></data>
+<data name="Meta_SearchHelp" xml:space="preserve"><value>Meta score is the win rate adjusted for how many games it rests on (the lower bound of its 95% range), so strong heroes that are played a lot lead and lucky rare picks don't. Heroes with fewer than 0.25% of the games are left out. Results refresh every hour.</value></data>
+<data name="Meta_SearchFailed" xml:space="preserve"><value>Couldn't load the meta from STRATZ; the meta by lane from OpenDota is below.</value></data>
+<data name="Meta_PostByRole" xml:space="preserve"><value>Posts list positions 1–5 with the games, rank and order above.</value></data>
+<data name="Meta_PostByLane" xml:space="preserve"><value>Posts list the safe, mid and off lanes from OpenDota.</value></data>
+<data name="Meta_RolesTitle" xml:space="preserve"><value>Dota 2 meta by role</value></data>
+<data name="Meta_RolesLegend" xml:space="preserve"><value>Win rate · pick rate, ranked All Pick</value></data>
 </root>

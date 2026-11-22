@@ -102,6 +102,7 @@ public static class DependencyInjection
         services.AddSingleton<DiscordGroupNotifier>();
         services.AddSingleton<IGroupNotifier>(provider => provider.GetRequiredService<DiscordGroupNotifier>());
         services.AddSingleton<HappyMix.Application.Abstractions.Stats.IRecapPublisher, DiscordRecapPublisher>();
+        services.AddSingleton<HappyMix.Application.Abstractions.Stats.IDotaMetaPublisher, DiscordDotaMetaPublisher>();
         services.AddSingleton<HappyMix.Application.Abstractions.Quiet.IHeldMessageSender>(provider => provider.GetRequiredService<DiscordGroupNotifier>());
         services.AddSingleton<DiscordMatchAnnouncementPublisher>();
         services.AddSingleton<IGuildAnnouncementPublisher>(provider =>
@@ -136,6 +137,16 @@ public static class DependencyInjection
             scheduler.AddJob<RefreshGameStatsJob>(job => job.WithIdentity(statsKey));
             scheduler.AddTrigger(trigger => trigger.ForJob(statsKey).StartAt(DateBuilder.FutureDate(2, IntervalUnit.Minute))
                 .WithSimpleSchedule(schedule => schedule.WithIntervalInMinutes(10).RepeatForever()));
+
+            JobKey metaKey = new("post-dota-meta");
+            scheduler.AddJob<RunDotaMetaScheduleJob>(job => job.WithIdentity(metaKey));
+            scheduler.AddTrigger(trigger => trigger.ForJob(metaKey).StartAt(DateBuilder.FutureDate(8, IntervalUnit.Minute))
+                .WithSimpleSchedule(schedule => schedule.WithIntervalInMinutes(60).RepeatForever()));
+
+            JobKey digestKey = new("post-weekly-digests");
+            scheduler.AddJob<PostWeeklyDigestsJob>(job => job.WithIdentity(digestKey));
+            scheduler.AddTrigger(trigger => trigger.ForJob(digestKey).StartAt(DateBuilder.FutureDate(6, IntervalUnit.Minute))
+                .WithSimpleSchedule(schedule => schedule.WithIntervalInMinutes(60).RepeatForever()));
 
             JobKey matchesKey = new("refresh-matches");
             scheduler.AddJob<RefreshMatchesJob>(job => job.WithIdentity(matchesKey));

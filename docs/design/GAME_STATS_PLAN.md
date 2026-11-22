@@ -1,6 +1,6 @@
 # Dota 2 and CS2 group stats: implementation plan
 
-Status: Phase 1 released in v0.1.2. Phase 2 (match recaps) implemented on `feature/match-recaps`. Custom-game ("in-house") features, such as a team
+Status: Phase 1 released in v0.1.2, Phase 2 (match recaps) in v0.1.3. Phase 3 (weekly digest) and the Game features page implemented on `feature/weekly-digest`. Custom-game ("in-house") features, such as a team
 balancer, hero bans and CS2 map votes, are out of scope for now.
 
 ## Goals
@@ -163,11 +163,61 @@ The original design:
 - **Channel posting** uses the group's notification route, with an organizer switch like Live's. It is
   off by default.
 
-### Phase 3: weekly digest
+### Phase 3: weekly digest (implemented)
+
+As built:
+
+- **Stats tab:** a **Last 7 days** box per game, rolling: games together, the group's record (games on opposite
+  sides count as neither a win nor a loss), the most played hero (Dota 2, across members' picks) or map (CS2,
+  per match), the best performer (highest win rate with at least 3 games), and each member's games, wins and
+  K/D/A.
+- **Monday post:** a second organizer switch, off by default. The hourly `post-weekly-digests` job posts last
+  week (Monday to Sunday in the server's zone) on Monday from 10:00 local time, once per group and week
+  (`GroupDigests`, claimed before posting). It skips weeks without games together and posts only on Mondays, so
+  turning it on midweek doesn't post an old week.
+
+The original design:
 
 On Monday morning in the server's time zone, groups with channel posting on get: games together, wins
 and losses, the most played hero or map, and the best performer (highest win rate with at least 3
 games). The Stats tab shows the same summary for the last 7 days.
+
+### Game features page (implemented with Phase 3)
+
+- **Page:** `/game-features/{guild}` in the side panel, with:
+  - **Your game stats:** the same cards and sharing switch as group Stats tabs (`GetMyStatsQuery`,
+    `SetStatsSharingCommand`), so both places stay in sync. A **Refresh my stats** button re-reads cards and
+    matches.
+  - **Dota 2 · Meta heroes by lane:** OpenDota `scenarios/laneRoles` (lanes 1–3), summed over game-length
+    buckets. Heroes with at least 0.5% of a lane's games (minimum 100) are ranked by win rate, top 5 per lane.
+    The data is cached for 6 hours for the page and 1 hour for posts.
+  - **Posting (server admins):** choose a channel or create `#dota-meta`, **Post now**, and a schedule (off,
+    every day, every two days, or weekly on a chosen day) from a chosen hour in the server's zone. The
+    `post-dota-meta` job runs hourly; each due day is marked before posting, so a broken channel isn't retried
+    every hour.
+  - **Meta search (STRATZ, needs `Stratz__ApiKey`):** filters for patch (current or last 7 days), role
+    (any or position 1–5), rank group (all, Herald–Guardian, Crusader–Archon, Legend–Ancient,
+    Divine–Immortal) and order (meta score, win rate, pick rate). It uses `heroStats.winDay` (or `winWeek` once the
+    patch is more than a week old) with `gameModeIds: [ALL_PICK_RANKED]`, `groupBy: HERO_ID`, `positionIds` and
+    `bracketIds`.
+    - STRATZ's own patch list lags (7.41f while OpenDota already lists 7.42), so the current patch's start date
+      comes from OpenDota's `constants/patch`, and the daily rows are summed from the first full day after the
+      release.
+    - Meta score is the lower bound of the 95% Wilson interval of the win rate. Heroes with under 0.25% of the
+      role's games are left out.
+    - Each filter is one request, cached for an hour; every order shares the same cache entry.
+    - Scheduled posts use the admin's saved patch, rank and order, with one column per position. If STRATZ fails,
+      posts fall back to the OpenDota lane meta.
+  - **CS2:** account stats now; more features later.
+- **Group Stats tab:** a **Refresh** button re-reads the group's sharing members, the viewer first, at most 8
+  people per click and skipping anything fetched in the last 5 minutes.
+- **Failure reasons:**
+  - Every OpenDota or FACEIT failure keeps a one-line reason: the service, the endpoint (never the key), the
+    HTTP status and the start of the answer, plus a hint for 401/403/429.
+  - The reason is stored with the card (`GameStatsCache.Reason`), shown under **Why?** on your own card, and
+    logged with `UserId`.
+  - Refreshes started from a server page also carry `GuildId`, so they appear in that server's Logs. The
+    background jobs' entries are bot-wide and visible to `Logs__OwnerIds`.
 
 ### Phase 4: ranks on Live
 
