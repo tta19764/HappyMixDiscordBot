@@ -31,6 +31,8 @@ public sealed partial class PollMessages(DiscordSocketClient discord, IPollStore
 {
     public const string PickPrefix = "poll:pick";
     public const string ClearPrefix = "poll:clear";
+    /// <summary>The answer buttons of a buy vote: <c>poll:buy:&lt;guild&gt;:&lt;poll&gt;:&lt;position&gt;</c>.</summary>
+    public const string BuyPrefix = "poll:buy";
     /// <summary>Discord's limits for polls: answer text length and longest duration in hours.</summary>
     public const int NativeAnswerLength = 55;
     public const int NativeMaxHours = 768;
@@ -70,6 +72,27 @@ public sealed partial class PollMessages(DiscordSocketClient discord, IPollStore
             // The message or channel is gone, or the bot lost access: stop trying and keep the vote on the dashboard.
             LogPostFailed(logger, poll.Id, poll.GuildId, error.HttpCode);
             await polls.SetMessageAsync(poll.Id, channelId, poll.MessageId, true, poll.Native);
+        }
+    }
+
+    /// <summary>
+    /// After a Steam import: marks the person "Already have" in open buy votes for games they now own and updates those
+    /// votes' Discord messages. Discord trouble is logged by the sync and never fails the import.
+    /// </summary>
+    public async Task SyncBuyVotesAsync(ulong userId, CancellationToken cancellationToken = default)
+    {
+        if (await sender.Send(new SyncBuyVotesCommand(userId), cancellationToken) is not { IsSuccess: true } changed)
+            return;
+        foreach (var (guildId, pollId) in changed.Value)
+        {
+            try
+            {
+                await SyncAsync(pollId, guildId, cancellationToken);
+            }
+            catch (Exception error) when (error is Discord.Net.HttpException or TimeoutException or InvalidOperationException)
+            {
+                // The vote is saved; its message catches up on the next vote or when voting ends.
+            }
         }
     }
 
@@ -117,6 +140,15 @@ public sealed partial class PollMessages(DiscordSocketClient discord, IPollStore
             }
         }
 
+        if (poll.IsBuy)
+        {
+            // A buy vote is the bot's own card with four buttons, so votes counted from Steam libraries show too.
+            var card = await target.SendMessageAsync(components: BuildBuyCard(poll, await LanguageAsync(poll), now, DashboardUrl(poll)),
+                flags: MessageFlags.ComponentsV2, allowedMentions: AllowedMentions.None, options: options);
+            await polls.SetMessageAsync(poll.Id, target.Id, card.Id, false);
+            LogPosted(logger, poll.Id, poll.GuildId, target.Name, "buy vote card");
+            return;
+        }
         if (poll.Options.Any(option => option.Media is not null))
         {
             string language = await LanguageAsync(poll);
@@ -173,7 +205,8 @@ public sealed partial class PollMessages(DiscordSocketClient discord, IPollStore
     {
         string language = await LanguageAsync(poll);
         var (media, progress) = await DetailsAsync(poll, cancellationToken);
-        var cards = BuildCards(poll, media, progress, language, clock.UtcNow, DashboardUrl(poll));
+        var cards = poll.IsBuy ? BuildBuyCard(poll, language, clock.UtcNow, DashboardUrl(poll))
+            : BuildCards(poll, media, progress, language, clock.UtcNow, DashboardUrl(poll));
         try
         {
             await channel.ModifyMessageAsync(messageId, message =>
@@ -349,6 +382,55 @@ public sealed partial class PollMessages(DiscordSocketClient discord, IPollStore
             if (dashboardUrl is not null)
                 buttons.WithButton(new ButtonBuilder().WithLabel(T("Polls_OpenDashboard")).WithStyle(ButtonStyle.Link).WithUrl(dashboardUrl));
             message.AddComponent(buttons);
+        }
+        else if (dashboardUrl is not null)
+            message.AddComponent(new ActionRowBuilder().WithButton(new ButtonBuilder().WithLabel(T("Polls_OpenDashboard")).WithStyle(ButtonStyle.Link).WithUrl(dashboardUrl)));
+        return message.Build();
+    }
+
+    /// <summary>
+    /// A buy vote's card: the game (linked to its store page), each answer with its count and who picked it, and one
+    /// button per answer while voting is open. Votes counted from Steam libraries are ordinary "Already have" votes.
+    /// </summary>
+    internal static MessageComponent BuildBuyCard(Poll poll, string language, DateTimeOffset now, string? dashboardUrl)
+    {
+        string T(string key, params object[] values) => NotificationText.Get(language, key, values);
+        bool closed = poll.IsClosed(now);
+        int voters = poll.Votes.Select(vote => vote.UserId).Distinct().Count();
+        int max = Math.Max(1, poll.Options.Max(option => poll.Count(option.Position)));
+        string game = BuyVote.StoreUrl(poll.GameKey) is { } store ? $"[{Format.Sanitize(poll.GameName ?? poll.Question)}]({store})" : Format.Sanitize(poll.GameName ?? poll.Question);
+        var container = new ContainerBuilder().WithAccentColor(closed ? new Color(0xF1C40F) : new Color(0x4CAF7A));
+        container.AddComponent(new TextDisplayBuilder(Trim($"## {(closed ? "🏁" : "🛒")} {Format.Sanitize(poll.Question)}\n{T("Buy_CardLead", game)}", 1000)));
+        container.AddComponent(new SeparatorBuilder(true, SeparatorSpacingSize.Small, null));
+        foreach (var option in poll.Options)
+        {
+            int count = poll.Count(option.Position);
+            int filled = (int)Math.Round(count * 10.0 / max);
+            var who = poll.Votes.Where(vote => vote.Position == option.Position).Select(vote => $"<@{vote.UserId}>").ToArray();
+            string line = $"**{BuyVote.Emoji[option.Position % BuyVote.Emoji.Length]} {T($"Buy_Option_{option.Position}")}**"
+                + $"\n`{new string('█', filled)}{new string('░', 10 - filled)}` **{count}**"
+                + (who.Length == 0 ? "" : " · " + string.Join(" ", who.Take(20)) + (who.Length > 20 ? " …" : ""));
+            container.AddComponent(new TextDisplayBuilder(line));
+        }
+        container.AddComponent(new SeparatorBuilder(true, SeparatorSpacingSize.Small, null));
+        string footer = closed
+            ? T("Buy_Summary", poll.Count(BuyVote.Ready), poll.Count(BuyVote.Willing), poll.Count(BuyVote.Have), poll.Count(BuyVote.Not))
+            : T("Polls_EndsAt", $"<t:{poll.ClosesAt.ToUnixTimeSeconds()}:R>") + " · " + T("Polls_Voters", voters) + " · " + T("Buy_SteamNote");
+        container.AddComponent(new TextDisplayBuilder("-# " + footer));
+
+        var message = new ComponentBuilderV2().AddComponent(container);
+        if (!closed)
+        {
+            var answers = new ActionRowBuilder();
+            foreach (var option in poll.Options)
+                answers.WithButton(new ButtonBuilder(Trim(T($"Buy_Option_{option.Position}"), 80),
+                    $"{BuyPrefix}:{poll.GuildId}:{poll.Id:N}:{option.Position.ToString(CultureInfo.InvariantCulture)}",
+                    option.Position == BuyVote.Not ? ButtonStyle.Secondary : ButtonStyle.Primary, emote: new Emoji(BuyVote.Emoji[option.Position % BuyVote.Emoji.Length])));
+            message.AddComponent(answers);
+            var more = new ActionRowBuilder().WithButton(new ButtonBuilder(T("Polls_ClearVote"), $"{ClearPrefix}:{poll.GuildId}:{poll.Id:N}", ButtonStyle.Secondary));
+            if (dashboardUrl is not null)
+                more.WithButton(new ButtonBuilder().WithLabel(T("Polls_OpenDashboard")).WithStyle(ButtonStyle.Link).WithUrl(dashboardUrl));
+            message.AddComponent(more);
         }
         else if (dashboardUrl is not null)
             message.AddComponent(new ActionRowBuilder().WithButton(new ButtonBuilder().WithLabel(T("Polls_OpenDashboard")).WithStyle(ButtonStyle.Link).WithUrl(dashboardUrl)));

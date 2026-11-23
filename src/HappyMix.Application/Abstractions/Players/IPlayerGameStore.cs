@@ -4,12 +4,19 @@ namespace HappyMix.Application.Abstractions.Players;
 public enum GamePreference { Want = 1, Can = 2, Wont = 3 }
 
 /// <summary>
-/// A Discord account's Steam account. <see cref="Verified"/> means the person signed in through Steam, which proves the
-/// account is theirs; a pasted SteamID is unverified and is enough for importing public game lists only.
+/// One of a Discord account's Steam accounts. <see cref="Verified"/> means the person signed in through Steam, which proves
+/// the account is theirs; a pasted SteamID is unverified and is enough for importing public game lists only. A person
+/// can link twink accounts next to their <see cref="IsMain"/> account; libraries of all of them are imported together.
 /// </summary>
 public sealed record SteamAccount(ulong UserId, string SteamId, bool Verified, DateTimeOffset LinkedAt, DateTimeOffset? ImportedAt)
 {
     public string ProfileUrl => $"https://steamcommunity.com/profiles/{SteamId}";
+    /// <summary>The main account (the first one linked, unless the person picked another); the others are twinks.</summary>
+    public bool IsMain { get; init; } = true;
+    /// <summary>Whether this account's Dota 2 and CS2 stats are shown to the person's groups while they share stats.</summary>
+    public bool ShowStats { get; init; } = true;
+    /// <summary>The person's own name for the account, such as "Smurf" or "Party account".</summary>
+    public string? Label { get; init; }
 }
 
 /// <summary>
@@ -23,12 +30,21 @@ public sealed record PlayerGame(ulong UserId, string Key, string Name, string? P
 /// <summary>Players' game lists and Steam links. Data belongs to the Discord account, not to a server.</summary>
 public interface IPlayerGameStore
 {
+    /// <summary>The person's main Steam account.</summary>
     Task<SteamAccount?> GetSteamAsync(ulong userId);
+    /// <summary>All the person's Steam accounts, main first, then in the order they were linked.</summary>
+    Task<IReadOnlyList<SteamAccount>> ListSteamAsync(ulong userId);
     Task<SteamAccount?> FindSteamOwnerAsync(string steamId);
     Task SaveSteamAsync(SteamAccount account);
 
-    /// <summary>Removes the Steam link and every game imported from it.</summary>
+    /// <summary>Removes every Steam link of the person and every game imported from them.</summary>
     Task RemoveSteamAsync(ulong userId);
+
+    /// <summary>Removes one Steam account; when it was the main one, the oldest remaining account becomes main.</summary>
+    Task RemoveSteamAccountAsync(ulong userId, string steamId);
+
+    /// <summary>Makes one of the person's accounts the main one.</summary>
+    Task SetMainSteamAsync(ulong userId, string steamId);
 
     Task<IReadOnlyList<PlayerGame>> ListAsync(ulong userId);
     Task<IReadOnlyList<PlayerGame>> ListForAsync(IReadOnlyCollection<ulong> userIds);

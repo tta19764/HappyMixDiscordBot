@@ -2232,7 +2232,7 @@
 <data name="Tag_films_help" xml:space="preserve"><value>Пам’ятає фільми з попередніх голосувань; посилання IMDb</value></data>
 <data name="Tag_anime_help" xml:space="preserve"><value>Пам’ятає аніме з попередніх голосувань; посилання MyAnimeList</value></data>
 <data name="Guide_votes_Title" xml:space="preserve"><value>Голосування</value></data>
-<data name="Guide_votes_Body" xml:space="preserve"><value>Голосуйте, у що грати чи що дивитися, на панелі або в Discord. У групі відкрийте «Голосування»: вбудовані теги («Ігри», «Серіали», «Фільми», «Аніме», обираються в налаштуваннях групи) додають підказки з ігор групи, її списку перегляду й попередніх голосувань, а те, що давно не обирали, показується першим. Шукайте в каталогах або вставляйте посилання Steam, IMDb, TVmaze, MyAnimeList чи AniList: тоді варіанти показують постер, рік, жанри, рейтинг і сезони чи епізоди. У Discord кожне голосування — опитування Discord; над голосуваннями за назви з’являється картка з постерами й посиланнями, а голосування для обраних людей потрапляють у приватну гілку лише з ними. Голосування групи публікуються в її каналі сповіщень; голосування сервера — в обраному каналі, або почніть його командою /vote create. Панель показує, хто за що проголосував, і результати за сьогодні й цей тиждень. Групи, що дивляться серіали, фільми чи аніме, ведуть список перегляду: додавайте назви пошуком чи посиланням, позначайте переглянуті епізоди, записуйте, де зупинилися (наприклад 23:40), завершуйте серіал одним натисканням і додавайте переможців голосувань із результатів.</value></data>
+<data name="Guide_votes_Body" xml:space="preserve"><value>Голосуйте, у що грати чи що дивитися, на панелі або в Discord. У групі відкрийте «Голосування»: вбудовані теги («Ігри», «Серіали», «Фільми», «Аніме», обираються в налаштуваннях групи) додають підказки з ігор групи, її списку перегляду й попередніх голосувань, а те, що давно не обирали, показується першим. Шукайте в каталогах або вставляйте посилання Steam, IMDb, TVmaze, MyAnimeList чи AniList: тоді варіанти показують постер, рік, жанри, рейтинг і сезони чи епізоди. У Discord кожне голосування — опитування Discord; над голосуваннями за назви з’являється картка з постерами й посиланнями, а голосування для обраних людей потрапляють у приватну гілку лише з ними. Голосування групи публікуються в її каналі сповіщень; голосування сервера — в обраному каналі, або почніть його командою /vote create. Панель показує, хто за що проголосував, і результати за сьогодні й цей тиждень. Групи, що дивляться серіали, фільми чи аніме, ведуть список перегляду: додавайте назви пошуком чи посиланням, позначайте переглянуті епізоди, записуйте, де зупинилися (наприклад 23:40), завершуйте серіал одним натисканням і додавайте переможців голосувань із результатів. «Запитати, хто купить гру» запускає голосування з чотирма відповідями (Готовий купити, Можливо, куплю, Уже маю, Не купуватиму); учасників, які мають гру в імпортованій бібліотеці Steam, автоматично враховано як «Уже маю», а в Discord для кожної відповіді є кнопка.</value></data>
 <data name="Polls_VoteCount" xml:space="preserve"><value>голосів: {0}</value></data>
 <data name="Polls_WinnerLine" xml:space="preserve"><value>🏆 Перемога: **{0}** — {1} з {2} голосів.</value></data>
 <data name="Polls_EndsAt" xml:space="preserve"><value>Голосування завершиться {0}</value></data>
@@ -2651,7 +2651,7 @@
 <data name="Dota_Medal_7" xml:space="preserve"><value>Божество</value></data>
 <data name="Dota_Medal_8" xml:space="preserve"><value>Титан</value></data>
 <data name="Guide_stats_Title" xml:space="preserve"><value>Статистика</value></data>
-<data name="Guide_stats_Body" xml:space="preserve"><value>Групи, що грають у Dota 2 або CS2, мають вкладку «Статистика» з карткою для кожного учасника. Поширення вимкнене, доки ви не ввімкнете «Показувати мою ігрову статистику моїм групам»; тоді воно діє для всіх ваших груп, а вимкнення видаляє збережену статистику й матчі. Картки Dota 2 беруться з OpenDota й потребують увімкненого «Expose Public Match Data» у Dota 2: медаль, останні 30 днів, найчастіші герої, найчастіша роль (позиції з STRATZ, якщо бот має ключ, інакше лінії), зміна медалі відтоді, як бот почав зберігати її щодня, оцінка MMR за рейтинговими перемогами й поразками (справжній MMR не публічний), останні 20 матчів із середніми показниками та з ким ви граєте найчастіше. Картки CS2 беруться з FACEIT (рівень, Elo, K/D, хедшоти, мапи), якщо бот має ключ FACEIT. «Дуети» показують учасників, які найбільше грали в одній команді. Коли двоє чи більше учасників, які діляться статистикою, грають той самий матч, він з'являється в «Нещодавніх спільних іграх», а організатор може також публікувати ці підсумки в каналі групи. Бот оновлює картки щогодини, а матчі — приблизно щопівгодини; «Оновити мою статистику» одразу перезавантажує ваші. Картки Dota 2 враховують лише рейтингові матчі; «Нещодавні спільні ігри» — усі режими.</value></data>
+<data name="Guide_stats_Body" xml:space="preserve"><value>Групи, що грають у Dota 2 або CS2, мають вкладку «Статистика» з карткою для кожного учасника. Поширення вимкнене, доки ви не ввімкнете «Показувати мою ігрову статистику моїм групам»; тоді воно діє для всіх ваших груп, а вимкнення видаляє збережену статистику й матчі. Картки Dota 2 беруться з OpenDota й потребують увімкненого «Expose Public Match Data» у Dota 2: медаль, останні 30 днів, найчастіші герої, найчастіша роль (позиції з STRATZ, якщо бот має ключ, інакше лінії), зміна медалі відтоді, як бот почав зберігати її щодня, оцінка MMR за рейтинговими перемогами й поразками (справжній MMR не публічний), останні 20 матчів із середніми показниками та з ким ви граєте найчастіше. Картки CS2 беруться з FACEIT (рівень, Elo, K/D, хедшоти, мапи), якщо бот має ключ FACEIT. «Дуети» показують учасників, які найбільше грали в одній команді. Коли двоє чи більше учасників, які діляться статистикою, грають той самий матч, він з'являється в «Нещодавніх спільних іграх», а організатор може також публікувати ці підсумки в каналі групи. Бот оновлює картки щогодини, а матчі — приблизно щопівгодини; «Оновити мою статистику» одразу перезавантажує ваші. Якщо на сторінці «Мої ігри» прив’язано твінк-акаунти, виберіть, які з них бачать ваші групи: картка для кожного акаунта, усі або жодного. Картки Dota 2 враховують лише рейтингові матчі; «Нещодавні спільні ігри» — усі режими.</value></data>
 <data name="Recap_Title" xml:space="preserve"><value>Нещодавні спільні ігри</value></data>
 <data name="Recap_None" xml:space="preserve"><value>За останні два тижні спільних ігор немає. Коли двоє чи більше учасників, які діляться статистикою, грають в одному матчі, він з'явиться тут.</value></data>
 <data name="Recap_Result_won" xml:space="preserve"><value>Перемога</value></data>
@@ -2848,4 +2848,43 @@
 <data name="Range_Free" xml:space="preserve"><value>Вільний час</value></data>
 <data name="Range_AddFree" xml:space="preserve"><value>Додати вільний час</value></data>
 <data name="Range_AddDnd" xml:space="preserve"><value>Додати «Не турбувати»</value></data>
+<data name="Meta_BuildsLegend" xml:space="preserve"><value>Збірки: посібники STRATZ · D2PT (Dota2ProTracker, гравці з високим MMR і професіонали)</value></data>
+<data name="Meta_BuildsFor" xml:space="preserve"><value>Збірки для {0}</value></data>
+<data name="Meta_BuildsStratz" xml:space="preserve"><value>Збірки предметів, умінь і талантів на STRATZ</value></data>
+<data name="Meta_BuildsD2pt" xml:space="preserve"><value>Збірки гравців з високим MMR і професіоналів на Dota2ProTracker</value></data>
+<data name="Meta_BuildsHelp" xml:space="preserve"><value>STRATZ і D2PT біля кожного героя відкривають його актуальні збірки.</value></data>
+<data name="Buy_Question" xml:space="preserve"><value>Купуватимете {0}?</value></data>
+<data name="Buy_Option_0" xml:space="preserve"><value>Готовий купити</value></data>
+<data name="Buy_Option_1" xml:space="preserve"><value>Можливо, куплю</value></data>
+<data name="Buy_Option_2" xml:space="preserve"><value>Уже маю</value></data>
+<data name="Buy_Option_3" xml:space="preserve"><value>Не купуватиму</value></data>
+<data name="Buy_Badge" xml:space="preserve"><value>Купівля</value></data>
+<data name="Buy_Start" xml:space="preserve"><value>Запитати, хто купить гру</value></data>
+<data name="Buy_Lead" xml:space="preserve"><value>Дізнайтеся, хто готовий придбати гру, перш ніж планувати навколо неї.</value></data>
+<data name="Buy_Game" xml:space="preserve"><value>Гра</value></data>
+<data name="Buy_GamePlaceholder" xml:space="preserve"><value>Назва або посилання на Steam</value></data>
+<data name="Buy_StartButton" xml:space="preserve"><value>Запитати групу</value></data>
+<data name="Buy_GameMissing" xml:space="preserve"><value>Введіть назву гри або вставте посилання на неї в Steam.</value></data>
+<data name="Buy_CardLead" xml:space="preserve"><value>🎮 {0}</value></data>
+<data name="Buy_SteamNote" xml:space="preserve"><value>Власників у Steam враховано автоматично</value></data>
+<data name="Buy_SteamHelp" xml:space="preserve"><value>учасники, які мають гру в імпортованій бібліотеці Steam, автоматично отримують «Уже маю», також після наступного імпорту.</value></data>
+<data name="Buy_Summary" xml:space="preserve"><value>{0} готові · {1} можливо · {2} мають · {3} не купуватимуть</value></data>
+<data name="Games_TwinkLinked" xml:space="preserve"><value>Додатковий акаунт додано</value></data>
+<data name="Games_MainChanged" xml:space="preserve"><value>Основний акаунт змінено</value></data>
+<data name="Games_AccountRenamed" xml:space="preserve"><value>Назву акаунта збережено</value></data>
+<data name="Games_AccountRemoved" xml:space="preserve"><value>Акаунт Steam видалено</value></data>
+<data name="Games_Accounts" xml:space="preserve"><value>Акаунти Steam</value></data>
+<data name="Games_MainAccount" xml:space="preserve"><value>Основний</value></data>
+<data name="Games_Twink" xml:space="preserve"><value>Твінк</value></data>
+<data name="Games_AccountLabel" xml:space="preserve"><value>Назва акаунта</value></data>
+<data name="Games_AccountLabelPlaceholder" xml:space="preserve"><value>Назва, напр. Смурф</value></data>
+<data name="Games_MakeMain" xml:space="preserve"><value>Зробити основним</value></data>
+<data name="Games_RemoveAccount" xml:space="preserve"><value>Видалити</value></data>
+<data name="Games_AddTwink" xml:space="preserve"><value>Додати твінк-акаунт</value></data>
+<data name="Games_AddTwinkButton" xml:space="preserve"><value>Додати акаунт</value></data>
+<data name="Games_TwinkHelp" xml:space="preserve"><value>Вхід через Steam підтверджує, що акаунт ваш. Імпорт додає бібліотеки всіх ваших акаунтів разом.</value></data>
+<data name="Games_SteamTooMany" xml:space="preserve"><value>Можна прив’язати до 5 акаунтів Steam. Спершу видаліть один.</value></data>
+<data name="Games_SteamLabelError" xml:space="preserve"><value>Назва акаунта — до 32 символів.</value></data>
+<data name="Stats_ShowAccounts" xml:space="preserve"><value>Показувати статистику для</value></data>
+<data name="Stats_ShowAccountsHelp" xml:space="preserve"><value>Ваші групи бачать картку для кожного позначеного акаунта. Зніміть усі позначки, щоб припинити поширення; збережену статистику буде видалено.</value></data>
 </root>

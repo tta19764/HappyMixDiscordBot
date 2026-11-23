@@ -35,7 +35,7 @@
             <p class="hm-help">@T["Stats_Lead"]</p>
         </div>
         <div class="hm-row" style="gap: var(--hm-space-2)">
-            <span class="hm-badge">@T["Stats_Sharing", stats.Sharing, stats.Cards.Count]</span>
+            <span class="hm-badge">@T["Stats_Sharing", stats.Sharing, stats.MemberCount]</span>
             @if (stats.YouShare && stats.SteamLinked)
             {
                 <form method="post" action="@Model.Url/stats/refresh" asp-antiforgery="false">
@@ -102,7 +102,12 @@
                         <article class="hm-statcard @(mine ? "hm-statcard--mine" : "") @(card.Shares ? "" : "hm-statcard--off")" aria-label="@Model.Names.Name(card.UserId, Localize)">
                             <header class="hm-statcard__head">
                                 <partial name="_MemberAvatars" model="avatar" />
-                                <span class="hm-statcard__name">@Model.Names.Name(card.UserId, Localize)</span>
+                                <span class="hm-statcard__name">@Model.Names.Name(card.UserId, Localize)
+                                    @if (card.Shares && stats.Cards.Count(other => other.UserId == card.UserId) > 1)
+                                    {
+                                        <small class="hm-statcard__account" title="@card.SteamId">@(card.Label ?? T[card.IsMain ? "Games_MainAccount" : "Games_Twink"].Value)@(card.IsMain || card.Label is null ? "" : " · " + T["Games_Twink"].Value)</small>
+                                    }
+                                </span>
                                 @if (dota && card.DotaProfile is { } rankOf)
                                 {
                                     var medal = GameStats.DotaMedal(rankOf.RankTier);

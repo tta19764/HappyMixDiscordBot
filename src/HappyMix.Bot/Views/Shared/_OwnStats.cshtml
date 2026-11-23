@@ -16,25 +16,29 @@
     string Medal(int? rankTier, int? leaderboard) => GameStats.DotaMedal(rankTier) is var (medal, stars)
         ? T[$"Dota_Medal_{medal}"].Value + (medal < 8 && stars > 0 ? " " + stars.ToString(culture) : "") + (leaderboard is { } place ? " #" + place.ToString(culture) : "")
         : T["Stats_Unranked"].Value;
-    var dota = GameStats.Read<DotaProfile>(mine.Dota);
-    var cs2 = GameStats.Read<Cs2Profile>(mine.Cs2);
-    long? account = GameStats.DotaAccountId(mine.SteamId);
+    // One set of cards per account whose stats are shown (twinks too); without the account list, the single card.
+    var shownAccounts = mine.Accounts.Count > 0
+        ? mine.Accounts.Where(item => item.Show).ToArray()
+        : mine.SteamId is { } only ? [new AccountStats(new HappyMix.Application.Abstractions.Players.SteamAccount(0, only, false, Model.Now, null), mine.Dota, mine.Cs2)] : [];
+    bool several = mine.Accounts.Count > 1;
 }
 @* The viewer's own Dota 2 and CS2 cards and the sharing switch: the same data and switch as every group's Stats tab. *@
-<form class="hm-stats__share" method="post" action="@Model.ShareUrl" asp-antiforgery="false">
-    @Html.AntiForgeryToken()
-    <label class="hm-check">
-        <input type="checkbox" name="share" value="true" checked="@mine.Shares" />
-        <span>@T["Stats_Share"]<small>@T["Stats_Share_Help"]</small></span>
-    </label>
-    <button class="hm-btn hm-btn--primary">@T["Save"]</button>
-</form>
+<partial name="_StatsShare" model="new StatsShareModel(Model.ShareUrl, mine.Shares, mine.Accounts.Select(item => item.Account).ToArray())" />
 @if (mine.SteamId is null)
 {
     <p class="hm-help hm-stats__hint">@DashboardIcons.Render("info")<span>@T["Stats_LinkSteam"] <a href="/games/@Model.GuildId#steam">@T["Games_Title"]</a></span></p>
 }
-@if (mine.Shares && mine.SteamId is not null)
+@if (mine.Shares && shownAccounts.Length > 0)
 {
+    foreach (var shownAccount in shownAccounts)
+    {
+    var dota = GameStats.Read<DotaProfile>(shownAccount.Dota);
+    var cs2 = GameStats.Read<Cs2Profile>(shownAccount.Cs2);
+    long? account = GameStats.DotaAccountId(shownAccount.SteamId);
+    if (several)
+    {
+        <h3 class="hm-stats__account">@(shownAccount.Account.Label ?? shownAccount.SteamId) <span class="hm-badge @(shownAccount.Account.IsMain ? "hm-badge--mint" : "")">@T[shownAccount.Account.IsMain ? "Games_MainAccount" : "Games_Twink"]</span></h3>
+    }
     <ul class="hm-stats__cards">
         @if (Model.Only is null or StatsGame.Dota2)
         {
@@ -72,7 +76,7 @@
                     </ul>
                     <partial name="_DotaMore" model="new DotaMoreModel(profile, Model.Now, [])" />
                 }
-                <partial name="_StatsReason" model="(mine.Dota, true)" />
+                <partial name="_StatsReason" model="(shownAccount.Dota, true)" />
                 <footer class="hm-statcard__foot">
                     <span class="hm-statcard__links">
                         @if (account is { } id)
@@ -81,7 +85,7 @@
                             <a href="https://www.dotabuff.com/players/@id" target="_blank" rel="noopener noreferrer">Dotabuff</a>
                         }
                     </span>
-                    @if (mine.Dota is { } fetched)
+                    @if (shownAccount.Dota is { } fetched)
                     {
                         <span class="hm-statcard__when">@Ago(fetched.FetchedAt)</span>
                     }
@@ -122,16 +126,16 @@
                         }
                     </dl>
                 }
-                <partial name="_StatsReason" model="(mine.Cs2, true)" />
+                <partial name="_StatsReason" model="(shownAccount.Cs2, true)" />
                 <footer class="hm-statcard__foot">
                     <span class="hm-statcard__links">
                         @if (cs2 is { Nickname.Length: > 0 } faceit)
                         {
                             <a href="https://www.faceit.com/en/players/@Uri.EscapeDataString(faceit.Nickname)" target="_blank" rel="noopener noreferrer">FACEIT</a>
                         }
-                        <a href="https://leetify.com/app/profile/@mine.SteamId" target="_blank" rel="noopener noreferrer">Leetify</a>
+                        <a href="https://leetify.com/app/profile/@shownAccount.SteamId" target="_blank" rel="noopener noreferrer">Leetify</a>
                     </span>
-                    @if (mine.Cs2 is { } csFetched)
+                    @if (shownAccount.Cs2 is { } csFetched)
                     {
                         <span class="hm-statcard__when">@Ago(csFetched.FetchedAt)</span>
                     }
@@ -140,6 +144,7 @@
         </li>
         }
     </ul>
+    }
     <form method="post" action="@Model.RefreshUrl" asp-antiforgery="false">
         @Html.AntiForgeryToken()
         <button class="hm-btn">@DashboardIcons.Render("refresh")@T["Stats_RefreshMine"]</button>

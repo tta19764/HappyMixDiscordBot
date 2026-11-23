@@ -2275,3 +2275,34 @@ a:hover { color: var(--hm-text); text-decoration-color: var(--hm-text); }
 
 /* Weekly day editor: Certainty only applies to free time, so do-not-disturb rows hide it (it is still posted). */
 .hm-wrange:has([data-range-type] option[value="dnd"]:checked) .hm-wrange__certainty { display: none; }
+
+/* Meta hero build links (STRATZ guides, Dota2ProTracker) */
+.hm-meta__builds { display: inline-flex; gap: var(--hm-space-1); flex-wrap: wrap; }
+.hm-meta__builds a { font-size: var(--hm-fs-xs, 0.75rem); font-weight: 600; padding: 1px 6px; border-radius: 999px; border: 1px solid var(--hm-border); color: var(--hm-text-muted); text-decoration: none; white-space: nowrap; }
+.hm-meta__builds a:hover, .hm-meta__builds a:focus-visible { color: var(--hm-text); border-color: var(--hm-accent, currentColor); }
+
+/* Buy votes */
+.hm-poll-buy { margin-top: var(--hm-space-4); }
+
+/* Steam accounts on My games: the main account and twinks */
+.hm-steam-accounts { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--hm-space-3); }
+.hm-steam-account { padding: var(--hm-space-3); border: 1px solid var(--hm-border); border-radius: var(--hm-radius-md); display: grid; gap: var(--hm-space-2); }
+.hm-steam-account.is-main { border-color: var(--hm-border-strong); }
+.hm-steam-account__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--hm-space-2); }
+.hm-steam-account__name { font-weight: 700; overflow-wrap: anywhere; }
+.hm-steam-account__meta { margin: 0; overflow-wrap: anywhere; }
+.hm-steam-account__actions { flex-wrap: wrap; gap: var(--hm-space-2); }
+.hm-steam-account__label { gap: var(--hm-space-2); flex-wrap: nowrap; }
+.hm-steam-account__label .hm-input { width: 12rem; max-width: 100%; min-height: 0; padding-block: 4px; }
+.hm-steam-add > summary { list-style: none; width: max-content; cursor: pointer; }
+.hm-steam-add > summary::-webkit-details-marker { display: none; }
+.hm-steam-add[open] > summary { margin-bottom: var(--hm-space-3); }
+.hm-steam-add > form { margin-bottom: var(--hm-space-2); }
+/* Stats: which accounts to show, and the account of a card */
+.hm-stats__accounts { border: 0; padding: 0; margin: 0; display: grid; gap: var(--hm-space-2); }
+.hm-stats__account { display: flex; align-items: center; gap: var(--hm-space-2); font-size: var(--hm-fs-md, 1rem); margin: var(--hm-space-3) 0 var(--hm-space-2); }
+.hm-statcard__account { display: block; font-weight: 500; font-size: var(--hm-fs-xs); color: var(--hm-text-muted); overflow-wrap: anywhere; }
+@media (max-width: 560px) {
+  .hm-steam-account__label { flex-wrap: wrap; }
+  .hm-steam-account__label .hm-input { width: 100%; }
+}

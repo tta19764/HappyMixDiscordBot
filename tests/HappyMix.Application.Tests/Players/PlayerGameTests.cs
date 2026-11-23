@@ -17,6 +17,50 @@ public sealed class PlayerGameTests
 {
     private const ulong Guild = 1, Kai = 10, Mira = 20, Taro = 30;
     private const string KaiSteam = "76561198000000001", MiraSteam = "76561198000000002";
+    internal const string TwinkSteam = "76561198000000003";
+
+    [Fact]
+    public async Task TwinkAccountsAreLinkedNamedSwappedRemovedAndImportedTogether()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var sender = fixture.Sender;
+        await sender.Send(new LinkSteamCommand(Kai, KaiSteam));
+        var twink = (await sender.Send(new LinkSteamCommand(Kai, TwinkSteam, Twink: true))).Value;
+        Assert.False(twink.IsMain);
+        var accounts = (await sender.Send(new GetMyGamesQuery(Kai))).Value.Accounts;
+        Assert.Equal([(KaiSteam, true), (TwinkSteam, false)], accounts.Select(account => (account.SteamId, account.IsMain)));
+
+        // One library from both accounts: Dota 2 is one game with the hours added up.
+        fixture.Steam.Library = new(SteamLibraryStatus.Ok, [new SteamOwnedGame("570", "Dota 2", 100, 10)]);
+        fixture.Steam.Libraries[TwinkSteam] = new(SteamLibraryStatus.Ok, [new SteamOwnedGame("570", "Dota 2", 50, 5), new SteamOwnedGame("1145360", "Hades", 30, 0)]);
+        var import = (await sender.Send(new ImportSteamGamesCommand(Kai))).Value;
+        Assert.Equal((2, 2, 0), (import.Added, import.Total, import.Skipped));
+        var games = (await sender.Send(new GetMyGamesQuery(Kai))).Value.Games;
+        Assert.Equal((150, 15), games.Single(game => game.Key == "steam:570") is var dota ? (dota.PlaytimeMinutes, dota.RecentMinutes) : default);
+        // A private twink is skipped; the main library still imports.
+        fixture.Steam.Libraries[TwinkSteam] = new(SteamLibraryStatus.Private, []);
+        Assert.Equal(1, (await sender.Send(new ImportSteamGamesCommand(Kai))).Value.Skipped);
+
+        Assert.True((await sender.Send(new SetSteamLabelCommand(Kai, TwinkSteam, "  Party   smurf "))).IsSuccess);
+        Assert.True((await sender.Send(new SetSteamLabelCommand(Kai, TwinkSteam, new string('x', 33)))).IsFailure);
+        Assert.True((await sender.Send(new SetMainSteamCommand(Kai, TwinkSteam))).IsSuccess);
+        Assert.True((await sender.Send(new SetMainSteamCommand(Kai, MiraSteam))).IsFailure);
+        accounts = (await sender.Send(new GetMyGamesQuery(Kai))).Value.Accounts;
+        Assert.Equal([(TwinkSteam, true, "Party smurf"), (KaiSteam, false, (string?)null)], accounts.Select(account => (account.SteamId, account.IsMain, account.Label)));
+
+        // Removing the main account makes the remaining one main; the imported games stay.
+        await sender.Send(new UnlinkSteamCommand(Kai, TwinkSteam));
+        var left = (await sender.Send(new GetMyGamesQuery(Kai))).Value;
+        Assert.Equal((KaiSteam, true), (Assert.Single(left.Accounts).SteamId, left.Accounts[0].IsMain));
+        Assert.Contains(left.Games, game => game.Key == "steam:1145360");
+
+        // A new main account next to a twink replaces only the old main one.
+        await sender.Send(new LinkSteamCommand(Kai, TwinkSteam, Twink: true));
+        await sender.Send(new LinkSteamCommand(Kai, MiraSteam));
+        accounts = (await sender.Send(new GetMyGamesQuery(Kai))).Value.Accounts;
+        Assert.Equal([(MiraSteam, true), (TwinkSteam, false)], accounts.Select(account => (account.SteamId, account.IsMain)));
+        Assert.True((await sender.Send(new LinkSteamCommand(Mira, TwinkSteam, Twink: true))).IsFailure); // someone else's account
+    }
 
     [Fact]
     public async Task PastedProfilesLinkUnverifiedAndProvenOwnersTakeThemOver()
@@ -196,10 +240,15 @@ public sealed class PlayerGameTests
             "https://steamcommunity.com/id/kai/" => KaiSteam,
             KaiSteam => KaiSteam,
             MiraSteam => MiraSteam,
+            TwinkSteam => TwinkSteam,
             _ => (string?)null
         });
 
-        public Task<SteamLibrary> GetOwnedGamesAsync(string steamId, CancellationToken cancellationToken) => Task.FromResult(Library);
+        /// <summary>Libraries of particular accounts (twinks); any other account has <see cref="Library"/>.</summary>
+        public Dictionary<string, SteamLibrary> Libraries { get; } = new(StringComparer.Ordinal);
+
+        public Task<SteamLibrary> GetOwnedGamesAsync(string steamId, CancellationToken cancellationToken) =>
+            Task.FromResult(Libraries.GetValueOrDefault(steamId) ?? Library);
 
         public Task<string?> VerifySignInAsync(IReadOnlyDictionary<string, string> response, string returnTo, CancellationToken cancellationToken) =>
             Task.FromResult(SignedIn);

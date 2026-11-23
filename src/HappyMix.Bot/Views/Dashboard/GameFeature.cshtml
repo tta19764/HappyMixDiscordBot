@@ -153,6 +153,10 @@
                                 <img src="@image" alt="" width="64" height="36" loading="lazy" data-game-art>
                             }
                             <span class="hm-meta__hero">@hero.Name</span>
+                            <span class="hm-meta__builds" aria-label="@T["Meta_BuildsFor", hero.Name]">
+                                <a href="@HappyMix.Application.Stats.DotaBuilds.Stratz(hero.HeroId)" target="_blank" rel="noopener" title="@T["Meta_BuildsStratz"]">STRATZ</a>
+                                <a href="@HappyMix.Application.Stats.DotaBuilds.ProTracker(hero.Name)" target="_blank" rel="noopener" title="@T["Meta_BuildsD2pt"]">D2PT</a>
+                            </span>
                             <span class="hm-meta__nums">
                                 <span title="@T["Meta_SortWinRateHelp"]"><b>@hero.WinRate.ToString("0.0", culture)%</b> @T["Meta_Wins"]</span>
                                 <span title="@T["Meta_SortPickRateHelp"]">@hero.PickRate.ToString("0.0", culture)% @T["Meta_Picks"]</span>
@@ -188,13 +192,17 @@
                                     }
                                     <span class="hm-statcard__what">@hero.Name</span>
                                     <span class="hm-statcard__num"><b>@hero.WinRate.ToString("0.0", culture)%</b> · @T["Meta_Games", hero.Games.ToString("N0", culture)]</span>
+                                    <span class="hm-meta__builds" aria-label="@T["Meta_BuildsFor", hero.Name]">
+                                        <a href="@HappyMix.Application.Stats.DotaBuilds.Stratz(hero.HeroId)" target="_blank" rel="noopener" title="@T["Meta_BuildsStratz"]">STRATZ</a>
+                                        <a href="@HappyMix.Application.Stats.DotaBuilds.ProTracker(hero.Name)" target="_blank" rel="noopener" title="@T["Meta_BuildsD2pt"]">D2PT</a>
+                                    </span>
                                 </li>
                             }
                         </ol>
                     </div>
                 }
             </div>
-            <p class="hm-help">@T["Meta_Source"]</p>
+            <p class="hm-help">@T["Meta_Source"] @T["Meta_BuildsHelp"]</p>
         }
 
     </section>

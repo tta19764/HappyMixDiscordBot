@@ -102,6 +102,8 @@ public static class DependencyInjection
         services.AddSingleton<DiscordGroupNotifier>();
         services.AddSingleton<IGroupNotifier>(provider => provider.GetRequiredService<DiscordGroupNotifier>());
         services.AddSingleton<HappyMix.Application.Abstractions.Stats.IRecapPublisher, DiscordRecapPublisher>();
+        services.AddHttpClient(HeroEmojis.HttpClientName, client => client.Timeout = TimeSpan.FromSeconds(8));
+        services.AddSingleton<HeroEmojis>();
         services.AddSingleton<HappyMix.Application.Abstractions.Stats.IDotaMetaPublisher, DiscordDotaMetaPublisher>();
         services.AddSingleton<HappyMix.Application.Abstractions.Quiet.IHeldMessageSender>(provider => provider.GetRequiredService<DiscordGroupNotifier>());
         services.AddSingleton<DiscordMatchAnnouncementPublisher>();

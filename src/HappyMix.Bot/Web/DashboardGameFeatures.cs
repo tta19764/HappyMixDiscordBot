@@ -43,6 +43,12 @@ public sealed record GameFeaturesPage(ulong GuildId, string GuildName, bool IsAd
 /// <summary>The extra Dota 2 lines on a stats card: role, medal change, form, averages and, on a group, best teammates.</summary>
 public sealed record DotaMoreModel(DotaProfile Profile, DateTimeOffset Now, IReadOnlyList<(string Name, int Games, int Wins)> Teammates);
 
+/// <summary>
+/// The stats sharing form: a switch, or with several linked Steam accounts one box per account (none checked = off).
+/// </summary>
+public sealed record StatsShareModel(string Action, bool Shares, IReadOnlyList<HappyMix.Application.Abstractions.Players.SteamAccount> Accounts,
+    string? ReturnAnchor = null);
+
 public sealed record OwnStatsModel(ulong GuildId, MyStats Mine, string ShareUrl, string RefreshUrl, DateTimeOffset Now, StatsGame? Only = null);
 
 public sealed partial class DashboardController
@@ -110,12 +116,12 @@ public sealed partial class DashboardController
     }
 
     [HttpPost("/game-features/{guildId}/{game}/stats/share")]
-    public async Task<IActionResult> ShareStatsFromFeatures(ulong guildId, string game, bool share)
+    public async Task<IActionResult> ShareStatsFromFeatures(ulong guildId, string game, bool share, bool pick, string[]? accounts)
     {
         if (await GetDiscordMemberAsync(guildId) is not { } member)
             return NotMember();
-        await sender.Send(new SetStatsSharingCommand(member.Id, share, guildId), HttpContext.RequestAborted);
-        return FeaturesDone(guildId, game, "stats", text[share ? "Stats_Shared" : "Stats_Unshared"].Value);
+        var mine = await ShareStatsAsync(member.Id, guildId, share, pick, accounts);
+        return FeaturesDone(guildId, game, "stats", text[mine.Shares ? "Stats_Shared" : "Stats_Unshared"].Value);
     }
 
     [HttpPost("/game-features/{guildId}/{game}/stats/refresh")]

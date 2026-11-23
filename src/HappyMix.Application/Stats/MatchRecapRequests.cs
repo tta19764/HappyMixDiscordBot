@@ -117,18 +117,26 @@ internal sealed partial class MatchRecapHandlers(IGameStatsStore store, IGameSta
     {
         var now = clock.UtcNow;
         await store.SetMatchesFetchedAtAsync(user, game, now);
-        if (await players.GetSteamAsync(user) is not { } steam)
+        // Every account whose stats the person shows (twinks too), so games together on a twink are found as well.
+        var accounts = (await players.ListSteamAsync(user)).Where(account => account.ShowStats).ToArray();
+        if (accounts.Length == 0)
             return 0;
         var known = (await store.ListMatchesAsync([user], now - MatchRecaps.KeepFor)).Where(match => match.Game == game)
             .Select(match => match.MatchId).ToHashSet(StringComparer.Ordinal);
-        var fetched = await directory.GetMatchesAsync(user, game, steam.SteamId, known, cancellationToken);
-        if (fetched.Status == StatsStatus.Error)
-            using (guildId is { } guild ? logger.BeginScope(new Dictionary<string, object> { ["GuildId"] = guild }) : null)
-                LogMatchesFailed(logger, game, user, fetched.Reason ?? "unknown");
-        if (fetched is not { Status: StatsStatus.Ok, Profile: { Count: > 0 } matches })
-            return 0;
-        await store.SaveMatchesAsync(matches.Where(match => now - match.StartedAt < MatchRecaps.KeepFor).ToArray());
-        return matches.Count;
+        int found = 0;
+        foreach (var account in accounts)
+        {
+            var fetched = await directory.GetMatchesAsync(user, game, account.SteamId, known, cancellationToken);
+            if (fetched.Status == StatsStatus.Error)
+                using (guildId is { } guild ? logger.BeginScope(new Dictionary<string, object> { ["GuildId"] = guild }) : null)
+                    LogMatchesFailed(logger, game, user, fetched.Reason ?? "unknown");
+            if (fetched is not { Status: StatsStatus.Ok, Profile: { Count: > 0 } matches })
+                continue;
+            await store.SaveMatchesAsync(matches.Where(match => now - match.StartedAt < MatchRecaps.KeepFor).ToArray());
+            known.UnionWith(matches.Select(match => match.MatchId));
+            found += matches.Count;
+        }
+        return found;
     }
 
     [Microsoft.Extensions.Logging.LoggerMessage(Level = Microsoft.Extensions.Logging.LogLevel.Warning,

@@ -9,19 +9,33 @@ using MediatR;
 
 namespace HappyMix.Application.Players;
 
-/// <summary>A player's own page: their Steam link, their games and whether library imports are set up.</summary>
-public sealed record MyGames(SteamAccount? Steam, IReadOnlyList<PlayerGame> Games, bool CanImport);
+/// <summary>A player's own page: their main Steam account, their games and whether library imports are set up.</summary>
+public sealed record MyGames(SteamAccount? Steam, IReadOnlyList<PlayerGame> Games, bool CanImport)
+{
+    /// <summary>Every linked Steam account, main first; the others are twinks.</summary>
+    public IReadOnlyList<SteamAccount> Accounts { get; init; } = [];
+}
+
+/// <summary>Limits for twink accounts.</summary>
+public static class SteamAccounts
+{
+    public const int Max = 5;
+    public const int LabelLength = 32;
+}
 
 public sealed record GetMyGamesQuery(ulong UserId) : IQuery<MyGames>;
 
-/// <summary>Links a pasted SteamID64, profile link or custom URL name. The link is unverified.</summary>
-public sealed record LinkSteamCommand(ulong UserId, string Input) : ICommand<SteamAccount>;
+/// <summary>
+/// Links a pasted SteamID64, profile link or custom URL name. The link is unverified. With <paramref name="Twink"/> the
+/// account is added next to the others; otherwise it replaces the main account.
+/// </summary>
+public sealed record LinkSteamCommand(ulong UserId, string Input, bool Twink = false) : ICommand<SteamAccount>;
 
 /// <summary>
 /// Links the Steam account proven by a Steam sign-in response (the <c>openid.*</c> values Steam sent back to
 /// <paramref name="ReturnTo"/>). It replaces an unverified claim on the same account by someone else.
 /// </summary>
-public sealed record VerifySteamCommand(ulong UserId, IReadOnlyDictionary<string, string> Response, string ReturnTo) : ICommand<SteamAccount>;
+public sealed record VerifySteamCommand(ulong UserId, IReadOnlyDictionary<string, string> Response, string ReturnTo, bool Twink = false) : ICommand<SteamAccount>;
 
 /// <summary>
 /// Links the Steam account connected to the person's Discord profile (read at dashboard sign-in). Discord verifies
@@ -29,13 +43,26 @@ public sealed record VerifySteamCommand(ulong UserId, IReadOnlyDictionary<string
 /// </summary>
 public sealed record LinkDiscordSteamCommand(ulong UserId, string SteamId, bool DiscordVerified) : ICommand<SteamAccount>;
 
-/// <summary>Removes the Steam link and every game imported from it; games added by hand stay.</summary>
-public sealed record UnlinkSteamCommand(ulong UserId) : ICommand;
+/// <summary>
+/// Removes one Steam account (<paramref name="SteamId"/>), or every link and every game imported from them when it is null
+/// or the last account. Games added by hand stay.
+/// </summary>
+public sealed record UnlinkSteamCommand(ulong UserId, string? SteamId = null) : ICommand;
 
-/// <summary>Imports the linked account's public library. New games start as "Can play"; marks already set are kept.</summary>
+/// <summary>Makes one of the person's Steam accounts the main one.</summary>
+public sealed record SetMainSteamCommand(ulong UserId, string SteamId) : ICommand;
+
+/// <summary>Names one of the person's Steam accounts ("Smurf"); an empty label removes the name.</summary>
+public sealed record SetSteamLabelCommand(ulong UserId, string SteamId, string? Label) : ICommand;
+
+/// <summary>
+/// Imports the public libraries of every linked Steam account together: a game owned on several accounts is one game with
+/// the playtimes added up. New games start as "Can play"; marks already set are kept.
+/// </summary>
 public sealed record ImportSteamGamesCommand(ulong UserId) : ICommand<SteamImport>;
 
-public sealed record SteamImport(int Added, int Updated, int Total);
+/// <param name="Skipped">Linked accounts whose library couldn't be read (private or Steam didn't answer).</param>
+public sealed record SteamImport(int Added, int Updated, int Total, int Skipped = 0);
 
 /// <summary>
 /// Adds a game by hand. <paramref name="Provider"/> and <paramref name="ExternalId"/> come from a catalog search (steam or igdb);
@@ -83,15 +110,19 @@ public static class GameKeys
 
 internal sealed class PlayerGameHandlers(IPlayerGameStore store, ISteamDirectory steam, IClock clock, ISender sender, IAccountLinkStore accountLinks)
     : IQueryHandler<GetMyGamesQuery, MyGames>, ICommandHandler<LinkSteamCommand, SteamAccount>, ICommandHandler<VerifySteamCommand, SteamAccount>,
-      ICommandHandler<LinkDiscordSteamCommand, SteamAccount>, ICommandHandler<UnlinkSteamCommand>, ICommandHandler<ImportSteamGamesCommand, SteamImport>, ICommandHandler<AddPlayerGameCommand, PlayerGame>,
+      ICommandHandler<LinkDiscordSteamCommand, SteamAccount>, ICommandHandler<UnlinkSteamCommand>, ICommandHandler<ImportSteamGamesCommand, SteamImport>,
+      ICommandHandler<SetMainSteamCommand>, ICommandHandler<SetSteamLabelCommand>, ICommandHandler<AddPlayerGameCommand, PlayerGame>,
       ICommandHandler<SetGamePreferenceCommand, PlayerGame>, ICommandHandler<SetGamePreferencesCommand, int>, ICommandHandler<RemovePlayerGameCommand>,
       IQueryHandler<GetGroupGameInterestQuery, GroupGameInterest>
 {
     private const int MaxGames = 2000;
     private static ErrorDescriptor Error(string code, string text) => new("Players." + code, text);
 
-    public async Task<Result<MyGames>> Handle(GetMyGamesQuery query, CancellationToken cancellationToken) =>
-        new MyGames(await store.GetSteamAsync(query.UserId), await store.ListAsync(query.UserId), steam.CanImport);
+    public async Task<Result<MyGames>> Handle(GetMyGamesQuery query, CancellationToken cancellationToken)
+    {
+        var accounts = await store.ListSteamAsync(query.UserId);
+        return new MyGames(accounts.Count > 0 ? accounts[0] : null, await store.ListAsync(query.UserId), steam.CanImport) { Accounts = accounts };
+    }
 
     public async Task<Result<SteamAccount>> Handle(LinkSteamCommand command, CancellationToken cancellationToken)
     {
@@ -103,21 +134,68 @@ internal sealed class PlayerGameHandlers(IPlayerGameStore store, ISteamDirectory
             return Result.Failure<SteamAccount>(Error("SteamNotFound", "That Steam profile wasn’t found. Paste your SteamID64 or the link to your profile."));
         if (await store.FindSteamOwnerAsync(id) is { } owner && owner.UserId != command.UserId)
             return Result.Failure<SteamAccount>(Error("SteamTaken", "Someone else has linked that Steam account. If it’s yours, verify it with Steam sign-in."));
-        var current = await store.GetSteamAsync(command.UserId);
-        if (current?.SteamId == id)
-            return current;
-        if (current is not null)
-            await store.RemoveSteamAsync(command.UserId);
-        var account = new SteamAccount(command.UserId, id, false, clock.UtcNow, null);
+        return await AddAsync(command.UserId, id, false, command.Twink);
+    }
+
+    /// <summary>
+    /// Adds the account: as a twink next to the others, or as the new main account in place of the old main one. Linking
+    /// an account that is already linked only upgrades it to verified.
+    /// </summary>
+    private async Task<Result<SteamAccount>> AddAsync(ulong userId, string steamId, bool verified, bool twink)
+    {
+        var accounts = await store.ListSteamAsync(userId);
+        if (accounts.FirstOrDefault(account => account.SteamId == steamId) is { } known)
+        {
+            var upgraded = known with { Verified = known.Verified || verified };
+            await store.SaveSteamAsync(upgraded);
+            return upgraded;
+        }
+        if (twink && accounts.Count > 0)
+        {
+            if (accounts.Count >= SteamAccounts.Max)
+                return Result.Failure<SteamAccount>(Error("SteamTooMany", $"You can link up to {SteamAccounts.Max} Steam accounts. Remove one first."));
+            var extra = new SteamAccount(userId, steamId, verified, clock.UtcNow, null) { IsMain = false };
+            await store.SaveSteamAsync(extra);
+            return extra;
+        }
+        // A new main account: alone it replaces everything (its games came from the old account), next to twinks only the old main goes.
+        if (accounts.FirstOrDefault(account => account.IsMain) is { } main)
+        {
+            if (accounts.Count == 1)
+                await store.RemoveSteamAsync(userId);
+            else
+                await store.RemoveSteamAccountAsync(userId, main.SteamId);
+        }
+        var account = new SteamAccount(userId, steamId, verified, clock.UtcNow, null) { IsMain = true };
         await store.SaveSteamAsync(account);
+        await store.SetMainSteamAsync(userId, steamId);
         return account;
+    }
+
+    public async Task<Result> Handle(SetMainSteamCommand command, CancellationToken cancellationToken)
+    {
+        if ((await store.ListSteamAsync(command.UserId)).All(account => account.SteamId != command.SteamId))
+            return Result.Failure(Error("SteamNotLinked", "Link your Steam account first."));
+        await store.SetMainSteamAsync(command.UserId, command.SteamId);
+        return Result.Success();
+    }
+
+    public async Task<Result> Handle(SetSteamLabelCommand command, CancellationToken cancellationToken)
+    {
+        if ((await store.ListSteamAsync(command.UserId)).FirstOrDefault(account => account.SteamId == command.SteamId) is not { } account)
+            return Result.Failure(Error("SteamNotLinked", "Link your Steam account first."));
+        string label = string.Join(' ', (command.Label ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+        if (label.Length > SteamAccounts.LabelLength || label.Any(char.IsControl))
+            return Result.Failure(Error("SteamLabel", $"Use up to {SteamAccounts.LabelLength} characters for the account name."));
+        await store.SaveSteamAsync(account with { Label = label.Length == 0 ? null : label });
+        return Result.Success();
     }
 
     public async Task<Result<SteamAccount>> Handle(VerifySteamCommand command, CancellationToken cancellationToken)
     {
         string? steamId = await steam.VerifySignInAsync(command.Response, command.ReturnTo, cancellationToken);
         return SteamIds.IsSteamId64(steamId)
-            ? await LinkProvenAsync(command.UserId, steamId!, true)
+            ? await LinkProvenAsync(command.UserId, steamId!, true, command.Twink)
             : Result.Failure<SteamAccount>(Error("SteamSignInFailed", "Steam didn’t confirm the sign-in. Try again."));
     }
 
@@ -131,35 +209,55 @@ internal sealed class PlayerGameHandlers(IPlayerGameStore store, ISteamDirectory
     }
 
     /// <summary>Links an account whose ownership is proven: an unverified claim on it by someone else gives way.</summary>
-    private async Task<Result<SteamAccount>> LinkProvenAsync(ulong userId, string steamId, bool verified)
+    private async Task<Result<SteamAccount>> LinkProvenAsync(ulong userId, string steamId, bool verified, bool twink = false)
     {
         if (await store.FindSteamOwnerAsync(steamId) is { } owner && owner.UserId != userId)
         {
             if (owner.Verified)
                 return Result.Failure<SteamAccount>(Error("SteamVerifiedElsewhere", "That Steam account is already verified by another Discord account."));
-            await store.RemoveSteamAsync(owner.UserId);
+            // Only the unverified claim on this account gives way; the other person's other accounts stay.
+            if ((await store.ListSteamAsync(owner.UserId)).Count == 1)
+                await store.RemoveSteamAsync(owner.UserId);
+            else
+                await store.RemoveSteamAccountAsync(owner.UserId, steamId);
         }
-        var current = await store.GetSteamAsync(userId);
-        if (current is not null && current.SteamId != steamId)
-            await store.RemoveSteamAsync(userId);
-        var account = current is not null && current.SteamId == steamId
-            ? current with { Verified = current.Verified || verified }
-            : new SteamAccount(userId, steamId, verified, clock.UtcNow, null);
-        await store.SaveSteamAsync(account);
-        return account;
+        return await AddAsync(userId, steamId, verified, twink);
     }
 
     public async Task<Result> Handle(UnlinkSteamCommand command, CancellationToken cancellationToken)
     {
-        await store.RemoveSteamAsync(command.UserId);
+        var accounts = await store.ListSteamAsync(command.UserId);
+        if (command.SteamId is { } one && accounts.Count > 1 && accounts.Any(account => account.SteamId == one))
+            await store.RemoveSteamAccountAsync(command.UserId, one);
+        else
+            await store.RemoveSteamAsync(command.UserId);
         return Result.Success();
     }
 
     public async Task<Result<SteamImport>> Handle(ImportSteamGamesCommand command, CancellationToken cancellationToken)
     {
-        if (await store.GetSteamAsync(command.UserId) is not { } account)
+        var accounts = await store.ListSteamAsync(command.UserId);
+        if (accounts.Count == 0)
             return Result.Failure<SteamImport>(Error("SteamNotLinked", "Link your Steam account first."));
-        var library = await steam.GetOwnedGamesAsync(account.SteamId, cancellationToken);
+        // Every account's library, merged: a game owned on several accounts counts once, with the playtimes added up.
+        var merged = new Dictionary<string, SteamOwnedGame>(StringComparer.Ordinal);
+        var imported = new List<SteamAccount>();
+        SteamLibrary? problem = null;
+        foreach (var account in accounts)
+        {
+            var owned = await steam.GetOwnedGamesAsync(account.SteamId, cancellationToken);
+            if (owned.Status != SteamLibraryStatus.Ok)
+            {
+                problem ??= owned;
+                continue;
+            }
+            imported.Add(account);
+            foreach (var game in owned.Games)
+                merged[game.AppId] = merged.TryGetValue(game.AppId, out var seen)
+                    ? seen with { PlaytimeMinutes = seen.PlaytimeMinutes + game.PlaytimeMinutes, RecentMinutes = seen.RecentMinutes + game.RecentMinutes }
+                    : game;
+        }
+        var library = imported.Count > 0 ? new SteamLibrary(SteamLibraryStatus.Ok, merged.Values.ToArray()) : problem!;
         switch (library.Status)
         {
             case SteamLibraryStatus.NotConfigured:
@@ -195,8 +293,9 @@ internal sealed class PlayerGameHandlers(IPlayerGameStore store, ISteamDirectory
             }
         }
         await store.SaveManyAsync(changes.Select(game => game with { Key = GameKeys.For(game.Provider, game.ExternalId, game.Name) }).ToArray());
-        await store.SaveSteamAsync(account with { ImportedAt = now });
-        return new SteamImport(added, updated, library.Games.Count);
+        foreach (var account in imported)
+            await store.SaveSteamAsync(account with { ImportedAt = now });
+        return new SteamImport(added, updated, library.Games.Count, accounts.Count - imported.Count);
     }
 
     public async Task<Result<PlayerGame>> Handle(AddPlayerGameCommand command, CancellationToken cancellationToken)

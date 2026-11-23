@@ -19,6 +19,13 @@ public sealed record Poll(Guid Id, ulong GuildId, Guid? GroupId, ulong CreatorId
     /// Otherwise the bot's message has a menu to vote.
     /// </summary>
     public bool Native { get; init; }
+    /// <summary>A normal vote between options, or "who will buy this game" with the fixed <see cref="BuyVote"/> answers.</summary>
+    public PollPurpose Purpose { get; init; }
+    /// <summary>For a buy vote: the game, as a My games key (<c>steam:730</c> or <c>name:…</c>), so owners can be found.</summary>
+    public string? GameKey { get; init; }
+    /// <summary>For a buy vote: the game's name.</summary>
+    public string? GameName { get; init; }
+    public bool IsBuy => Purpose == PollPurpose.Buy;
 
     public bool IsClosed(DateTimeOffset now) => ClosedAt is not null || now >= ClosesAt;
 
@@ -30,6 +37,28 @@ public sealed record Poll(Guid Id, ulong GuildId, Guid? GroupId, ulong CreatorId
     /// <summary>The option with most votes; ties go to the option listed first. Null when nobody voted.</summary>
     public PollOption? Leader => Votes.Count == 0 ? null
         : Options.OrderByDescending(option => Count(option.Position)).ThenBy(option => option.Position).First();
+}
+
+public enum PollPurpose { Choice = 0, Buy = 1 }
+
+/// <summary>
+/// The four answers of a "will you buy this game" vote, in order. Members who own the game in their imported Steam
+/// library are counted as <see cref="Have"/> automatically.
+/// </summary>
+public static class BuyVote
+{
+    public const int Ready = 0;
+    public const int Willing = 1;
+    public const int Have = 2;
+    public const int Not = 3;
+    public const string Kind = "buy";
+    /// <summary>English answers, stored with the vote; pages and Discord show the translated ones by position.</summary>
+    public static readonly string[] Labels = ["Ready to buy", "Willing to buy", "Already have", "Not going to buy"];
+    public static readonly string[] Emoji = ["🛒", "🤔", "✅", "🚫"];
+
+    /// <summary>The Steam store page when the game is a Steam game.</summary>
+    public static string? StoreUrl(string? gameKey) =>
+        gameKey is { } key && key.StartsWith("steam:", StringComparison.Ordinal) ? "https://store.steampowered.com/app/" + key[6..] : null;
 }
 
 /// <summary>
@@ -80,4 +109,7 @@ public interface IPollStore
 
     /// <summary>Replaces every vote at once with <paramref name="votes"/> (member id → chosen positions).</summary>
     Task ReplaceVotesAsync(Guid pollId, IReadOnlyDictionary<ulong, int[]> votes);
+
+    /// <summary>Open buy votes of every server, to mark new owners after a Steam import.</summary>
+    Task<IReadOnlyList<Poll>> ListOpenBuyAsync(DateTimeOffset now);
 }

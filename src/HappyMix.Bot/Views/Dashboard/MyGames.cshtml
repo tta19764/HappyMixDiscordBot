@@ -85,25 +85,80 @@
         }
         else
         {
-            <dl class="hm-games-steam">
-                <div><dt>@T["Games_Profile"]</dt><dd><a href="@steam.ProfileUrl" target="_blank" rel="noopener noreferrer" class="hm-mono">@steam.SteamId</a></dd></div>
-                <div><dt>@T["Games_LinkedOn"]</dt><dd>@When(steam.LinkedAt)</dd></div>
-                <div><dt>@T["Games_LastImport"]</dt><dd>@(steam.ImportedAt is { } imported ? When(imported) : T["Games_NeverImported"].Value)</dd></div>
-            </dl>
+            var accounts = Model.Data.Accounts.Count > 0 ? Model.Data.Accounts : [steam];
+            <ul class="hm-steam-accounts" aria-label="@T["Games_Accounts"]">
+                @foreach (var account in accounts)
+                {
+                    string fieldId = "steam-label-" + account.SteamId;
+                    <li class="hm-steam-account @(account.IsMain ? "is-main" : "")">
+                        <div class="hm-steam-account__head">
+                            <a href="@account.ProfileUrl" target="_blank" rel="noopener noreferrer" class="hm-steam-account__name">@(account.Label ?? account.SteamId)</a>
+                            <span class="hm-badge @(account.IsMain ? "hm-badge--mint" : "")">@T[account.IsMain ? "Games_MainAccount" : "Games_Twink"]</span>
+                            <span class="hm-badge @(account.Verified ? "hm-badge--mint" : "")">@DashboardIcons.Render(account.Verified ? "check" : "info")@T[account.Verified ? "Games_Verified" : "Games_NotVerified"]</span>
+                        </div>
+                        <p class="hm-help hm-steam-account__meta">
+                            <span class="hm-mono">@account.SteamId</span> · @T["Games_LinkedOn"] @When(account.LinkedAt) ·
+                            @T["Games_LastImport"] @(account.ImportedAt is { } imported ? When(imported) : T["Games_NeverImported"].Value)
+                        </p>
+                        <div class="hm-row hm-steam-account__actions">
+                            <form class="hm-row hm-steam-account__label" method="post" action="@Model.Url/steam/label" asp-antiforgery="false">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="steamId" value="@account.SteamId">
+                                <label class="hm-sr-only" for="@fieldId">@T["Games_AccountLabel"]</label>
+                                <input class="hm-input hm-input--sm" id="@fieldId" name="label" maxlength="32" value="@account.Label" placeholder="@T["Games_AccountLabelPlaceholder"]">
+                                <button class="hm-btn hm-btn--sm">@T["Save"]</button>
+                            </form>
+                            @if (!account.IsMain)
+                            {
+                                <form method="post" action="@Model.Url/steam/main" asp-antiforgery="false">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="steamId" value="@account.SteamId">
+                                    <button class="hm-btn hm-btn--sm">@T["Games_MakeMain"]</button>
+                                </form>
+                            }
+                            @if (!account.Verified)
+                            {
+                                <a class="hm-btn hm-btn--sm" href="@Model.Url/steam/signin@(account.IsMain ? "" : "?twink=true")">@T["Games_Verify"]</a>
+                            }
+                            @if (accounts.Count > 1)
+                            {
+                                <form method="post" action="@Model.Url/steam/remove" asp-antiforgery="false">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="steamId" value="@account.SteamId">
+                                    <button class="hm-btn hm-btn--ghost hm-btn--sm">@T["Games_RemoveAccount"]</button>
+                                </form>
+                            }
+                        </div>
+                    </li>
+                }
+            </ul>
             <div class="hm-row">
                 @if (Model.Data.CanImport)
                 {
                     <form method="post" action="@Model.Url/import" asp-antiforgery="false">
                         @Html.AntiForgeryToken()
-                        <button class="hm-btn hm-btn--primary">@T[steam.ImportedAt is null ? "Games_Import" : "Games_Resync"]</button>
+                        <button class="hm-btn hm-btn--primary">@T[accounts.All(account => account.ImportedAt is null) ? "Games_Import" : "Games_Resync"]</button>
                     </form>
-                }
-                @if (!steam.Verified)
-                {
-                    <a class="hm-btn" href="@Model.Url/steam/signin">@T["Games_Verify"]</a>
                 }
                 <partial name="_Confirm" model="unlink" />
             </div>
+            @if (accounts.Count < HappyMix.Application.Players.SteamAccounts.Max)
+            {
+                <details class="hm-steam-add">
+                    <summary class="hm-btn hm-btn--ghost hm-btn--sm">@DashboardIcons.Render("plus")@T["Games_AddTwink"]</summary>
+                    <form class="hm-games-link" method="post" action="@Model.Url/steam" asp-antiforgery="false">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="twink" value="true">
+                        <div class="hm-field">
+                            <label class="hm-label" for="twink-input">@T["Games_SteamInput"]</label>
+                            <input class="hm-input" id="twink-input" name="steam" required maxlength="200" autocomplete="off" spellcheck="false"
+                                   placeholder="steamcommunity.com/id/yourname">
+                        </div>
+                        <button class="hm-btn">@T["Games_AddTwinkButton"]</button>
+                    </form>
+                    <div class="hm-row"><a class="hm-btn hm-btn--sm" href="@Model.Url/steam/signin?twink=true">@T["Games_SignInWithSteam"]</a><span class="hm-help">@T["Games_TwinkHelp"]</span></div>
+                </details>
+            }
             <p class="hm-help">
                 @if (Model.Data.CanImport)
                 {
@@ -122,14 +177,8 @@
             <h2 id="stats-title">@DashboardIcons.Render("stats", cssClass: "hm-heading-icon")@T["Stats_Title"]</h2>
             <p class="hm-help">@T["Guide_stats_Body"]</p>
         </div>
-        <form class="hm-stats__share" method="post" action="@Model.Url/stats" asp-antiforgery="false">
-            @Html.AntiForgeryToken()
-            <label class="hm-check">
-                <input type="checkbox" name="share" value="true" checked="@Model.SharesStats" />
-                <span>@T["Stats_Share"]<small>@T["Stats_Share_Help"]</small></span>
-            </label>
-            <button class="hm-btn hm-btn--primary">@T["Save"]</button>
-        </form>
+        @{ var statsShare = new StatsShareModel(Model.Url + "/stats", Model.SharesStats, Model.Data.Accounts); }
+        <partial name="_StatsShare" model="statsShare" />
     </section>
 
     <section class="hm-card hm-stack" id="add" aria-labelledby="add-title">

@@ -7,6 +7,13 @@
     var board = Model.Board;
     string Localize(string key) => T.Message(key);
     Microsoft.AspNetCore.Html.IHtmlContent Icon(string kind) => DashboardIcons.Render(kind switch { "game" => "games", "series" => "series", "film" => "films", "anime" => "anime", _ => "hash" });
+    // The page uses the icon set; Discord shows the answers' emoji instead.
+    string[] BuyIcons = ["check", "idea", "done", "minus"];
+    // A buy vote's answers are fixed: shown translated, each with its icon.
+    string Label(HappyMix.Application.Abstractions.Polls.Poll poll, HappyMix.Application.Abstractions.Polls.PollOption option) =>
+        poll.IsBuy ? T[$"Buy_Option_{option.Position}"].Value : option.Label;
+    Microsoft.AspNetCore.Html.IHtmlContent OptionIcon(HappyMix.Application.Abstractions.Polls.Poll poll, HappyMix.Application.Abstractions.Polls.PollOption option) =>
+        poll.IsBuy ? DashboardIcons.Render(BuyIcons[option.Position % BuyIcons.Length]) : Icon(option.Kind);
     string Span(TimeSpan span) => span.TotalHours >= 24
         ? T["Polls_Span_dh", (int)span.TotalDays, span.Hours].Value
         : span.TotalMinutes >= 60 ? T["Polls_Span_hm", (int)span.TotalHours, span.Minutes].Value : T["Polls_Span_m", Math.Max(1, (int)Math.Ceiling(span.TotalMinutes))].Value;
@@ -94,12 +101,18 @@
         bool inDiscord = poll.Native && poll.MessageId is not null;
         <article class="hm-poll" aria-labelledby="poll-@poll.Id.ToString("N")">
             <header class="hm-poll__head">
-                <h3 id="poll-@poll.Id.ToString("N")">@poll.Question</h3>
+                <h3 id="poll-@poll.Id.ToString("N")">@poll.Question
+                    @if (poll.IsBuy && BuyVote.StoreUrl(poll.GameKey) is { } store)
+                    {
+                        <a href="@store" target="_blank" rel="noopener noreferrer" class="hm-poll__link" aria-label="@T["Polls_OpenLink", poll.GameName ?? ""]">↗</a>
+                    }
+                </h3>
                 <p class="hm-help">
                     @T["Polls_By", Model.Names.Name(poll.CreatorId, Localize)] ·
                     @T["Polls_ClosesIn", Span(poll.ClosesAt - Model.Now)] ·
                     @(Model.Electorate(poll) is { } total ? T["Polls_VotedOf", voters, total] : T["Polls_Voted_Count", voters])
                     @if (poll.Multiple) { <span class="hm-badge">@T["Polls_Multiple"]</span> }
+                    @if (poll.IsBuy) { <span class="hm-badge">@T["Buy_Badge"]</span> <span class="hm-help">@T["Buy_SteamNote"]</span> }
                 </p>
             </header>
             <form class="hm-stack hm-stack--sm" method="post" action="@Model.VoteUrl(poll)" asp-antiforgery="false">
@@ -120,7 +133,7 @@
                             {
                                 <img class="hm-poll__poster" src="@poster" alt="" loading="lazy" referrerpolicy="no-referrer">
                             }
-                            <span class="hm-poll__label"><span><span aria-hidden="true">@Icon(option.Kind)</span> @option.Label
+                            <span class="hm-poll__label"><span><span aria-hidden="true">@OptionIcon(poll, option)</span> @Label(poll, option)
                                 @if (option.Url is { } url)
                                 {
                                     <a href="@url" target="_blank" rel="noopener noreferrer" class="hm-poll__link" aria-label="@T["Polls_OpenLink", option.Label]">↗</a>
@@ -293,6 +306,42 @@
 
             <div><button class="hm-btn hm-btn--primary">@T["Polls_StartButton"]</button></div>
         </form>
+
+        @if (board.GroupId is { } buyGroup)
+        {
+            string buyId = "poll-buy-" + buyGroup.ToString("N");
+            <form class="hm-stack hm-poll-buy" id="@buyId" method="post" action="@Model.BuyUrl" asp-antiforgery="false">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="requestId" value="@Guid.NewGuid()">
+                <input type="hidden" name="returnUrl" value="@Model.ReturnUrl">
+                <input type="hidden" name="groupId" value="@buyGroup">
+                <h3 class="hm-subpanel__title">@DashboardIcons.Render("games", cssClass: "hm-heading-icon")@T["Buy_Start"]</h3>
+                <p class="hm-help">@T["Buy_Lead"]</p>
+                <div class="hm-fields hm-poll-new__row">
+                    <div class="hm-field">
+                        <label class="hm-label" for="@buyId-game">@T["Buy_Game"]</label>
+                        <input class="hm-input" id="@buyId-game" name="game" maxlength="300" required list="@buyId-games" placeholder="@T["Buy_GamePlaceholder"]">
+                        <datalist id="@buyId-games">
+                            @foreach (var item in Model.BuyChoices)
+                            {
+                                <option value="@(item.Url is { } link && link.Contains("store.steampowered.com/app/", StringComparison.Ordinal) ? item.Label + " " + link : item.Label)">@item.Label</option>
+                            }
+                        </datalist>
+                    </div>
+                    <div class="hm-field">
+                        <label class="hm-label" for="@buyId-minutes">@T["Polls_Closes"]</label>
+                        <select class="hm-select" id="@buyId-minutes" name="minutes">
+                            @foreach (var (minutes, key) in PollDurations.Choices)
+                            {
+                                <option value="@minutes" selected="@(minutes == 4320)">@T[key]</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <p class="hm-help">@string.Join(" · ", Enumerable.Range(0, 4).Select(position => T[$"Buy_Option_{position}"].Value)) — @T["Buy_SteamHelp"]</p>
+                <div><button class="hm-btn hm-btn--primary">@T["Buy_StartButton"]</button></div>
+            </form>
+        }
     </div>
 
     <div class="hm-stack hm-subpanel" id="@tabs-results" role="tabpanel" aria-labelledby="@tabs-results-tab" data-tab-panel>
@@ -322,9 +371,9 @@
                             @foreach (var option in poll.Options.OrderByDescending(option => poll.Count(option.Position)).ThenBy(option => option.Position))
                             {
                                 int count = poll.Count(option.Position);
-                                bool winner = leader?.Position == option.Position;
+                                bool winner = !poll.IsBuy && leader?.Position == option.Position;
                                 <div class="hm-poll__option @(winner ? "is-winner" : "")" style="--share: @((count * 100 / max).ToString(CultureInfo.InvariantCulture))%">
-                                    <span class="hm-poll__label"><span>@if (winner) {@DashboardIcons.Render("trophy", cssClass: "hm-heading-icon")}<span aria-hidden="true">@Icon(option.Kind)</span> @option.Label
+                                    <span class="hm-poll__label"><span>@if (winner) {@DashboardIcons.Render("trophy", cssClass: "hm-heading-icon")}<span aria-hidden="true">@OptionIcon(poll, option)</span> @Label(poll, option)
                                         @if (option.Url is { } url)
                                         {
                                             <a href="@url" target="_blank" rel="noopener noreferrer" class="hm-poll__link" aria-label="@T["Polls_OpenLink", option.Label]">↗</a>
@@ -363,7 +412,7 @@
                             <span class="hm-poll-history__winner">
                                 @if (leader is not null)
                                 {
-                                    <span>@DashboardIcons.Render("trophy", cssClass: "hm-heading-icon")@Icon(leader.Kind) @leader.Label</span>
+                                    <span>@DashboardIcons.Render("trophy", cssClass: "hm-heading-icon")@OptionIcon(poll, leader) @Label(poll, leader)</span>
                                     <small>@T["Polls_VotesOf", poll.Count(leader.Position), Model.VoterCount(poll)] · @Voters(poll, leader.Position)</small>
                                     await AddToWatchlist(leader);
                                 }
