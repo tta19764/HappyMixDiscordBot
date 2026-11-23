@@ -211,6 +211,28 @@ public sealed class VotesAndWatchlistTests
     }
 
     [Fact]
+    public void BuyVotesGetACardWithAnAnswerButtonEachAndWhoPickedWhat()
+    {
+        var options = BuyVote.Labels.Select((label, position) => new PollOption(position, label, BuyVote.Kind, null)).ToArray();
+        var poll = new Poll(Guid.NewGuid(), Guild, Guid.NewGuid(), 7, "Will you buy Hades?", false, false, Now, Now.AddDays(3), null, options, [],
+            [new PollVote(7, BuyVote.Have), new PollVote(8, BuyVote.Ready)])
+        { Purpose = PollPurpose.Buy, GameKey = "steam:1145360", GameName = "Hades" };
+        var all = Flatten(PollMessages.BuildBuyCard(poll, "en", Now, "https://dash.test/votes/1#votes").Components).ToArray();
+        string text = string.Join('\n', all.OfType<TextDisplayComponent>().Select(item => item.Content));
+        Assert.Contains("[Hades](https://store.steampowered.com/app/1145360)", text, StringComparison.Ordinal);
+        Assert.Contains("**✅ Already have**", text, StringComparison.Ordinal);
+        Assert.Contains("<@7>", text, StringComparison.Ordinal);
+        var buttons = all.OfType<ButtonComponent>().ToArray();
+        Assert.Equal(["Ready to buy", "Willing to buy", "Already have", "Not going to buy", "Take back my vote", "Open on the dashboard"],
+            buttons.Select(button => button.Label));
+        Assert.Equal($"poll:buy:{Guild}:{poll.Id:N}:2", buttons[2].CustomId);
+
+        var ended = Flatten(PollMessages.BuildBuyCard(poll with { ClosedAt = Now }, "en", Now, null).Components).ToArray();
+        Assert.Empty(ended.OfType<ButtonComponent>());
+        Assert.Contains(ended.OfType<TextDisplayComponent>(), item => item.Content.Contains("1 ready · 0 willing · 1 have it · 0 not buying", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void TitleVotesBecomeCardsWithPostersAndStayWithinDiscordLimits()
     {
         var poll = Sample();

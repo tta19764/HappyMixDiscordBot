@@ -13,7 +13,7 @@ namespace HappyMix.Bot.Interactions;
 /// Steam account connected to Discord need a browser, so they stay on the dashboard.
 /// </summary>
 [Group("games", "Your games and how much you want to play them.")]
-public sealed class PlayerGamesModule(ISender sender) : InteractionModuleBase<SocketInteractionContext>
+public sealed class PlayerGamesModule(ISender sender, IServiceProvider services) : InteractionModuleBase<SocketInteractionContext>
 {
     public enum Mark
     {
@@ -78,6 +78,9 @@ public sealed class PlayerGamesModule(ISender sender) : InteractionModuleBase<So
     {
         await DeferAsync(ephemeral: true);
         var result = await sender.Send(new ImportSteamGamesCommand(Context.User.Id));
+        // Games now owned count as "Already have" in the groups' open buy votes.
+        if (result.IsSuccess && services.GetService(typeof(HappyMix.Bot.Services.PollMessages)) is HappyMix.Bot.Services.PollMessages polls)
+            await polls.SyncBuyVotesAsync(Context.User.Id);
         await Reply(result.IsSuccess ? $"Library imported: {result.Value.Added} new, {result.Value.Updated} updated." : result.Error.Description);
     }
 

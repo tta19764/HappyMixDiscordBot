@@ -1,0 +1,28 @@
+@model StatsShareModel
+@* Sharing Dota 2 / CS2 stats: one switch, or with twink accounts a box per Steam account. No box checked turns sharing off. *@
+<form class="hm-stats__share" method="post" action="@Model.Action" asp-antiforgery="false">
+    @Html.AntiForgeryToken()
+    @if (Model.Accounts.Count > 1)
+    {
+        <input type="hidden" name="pick" value="true">
+        <fieldset class="hm-stats__accounts">
+            <legend class="hm-label">@T["Stats_ShowAccounts"]</legend>
+            @foreach (var account in Model.Accounts)
+            {
+                <label class="hm-check">
+                    <input type="checkbox" name="accounts" value="@account.SteamId" checked="@(Model.Shares && account.ShowStats)" />
+                    <span>@(account.Label ?? account.SteamId)<small>@T[account.IsMain ? "Games_MainAccount" : "Games_Twink"]@(account.Label is null ? "" : " · " + account.SteamId)</small></span>
+                </label>
+            }
+            <p class="hm-help">@T["Stats_ShowAccountsHelp"]</p>
+        </fieldset>
+    }
+    else
+    {
+        <label class="hm-check">
+            <input type="checkbox" name="share" value="true" checked="@Model.Shares" />
+            <span>@T["Stats_Share"]<small>@T["Stats_Share_Help"]</small></span>
+        </label>
+    }
+    <button class="hm-btn hm-btn--primary">@T["Save"]</button>
+</form>

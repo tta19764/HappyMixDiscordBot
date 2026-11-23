@@ -42,9 +42,11 @@ internal sealed class SqlitePollStore(IDbContextFactory<HappyMixDbContext> facto
         await using var transaction = await db.Database.BeginTransactionAsync();
         string id = poll.Id.ToString(), group = poll.GroupId?.ToString() ?? "";
         await db.Database.ExecuteSqlInterpolatedAsync($"""
-            INSERT INTO Polls (Id, GuildId, GroupId, CreatorId, Question, Multiple, Everyone, CreatedUtc, ClosesUtc, ClosedUtc, ChannelId)
+            INSERT INTO Polls (Id, GuildId, GroupId, CreatorId, Question, Multiple, Everyone, CreatedUtc, ClosesUtc, ClosedUtc, ChannelId,
+                               Purpose, GameKey, GameName)
             VALUES ({id}, {Id(poll.GuildId)}, {group}, {Id(poll.CreatorId)}, {poll.Question}, {poll.Multiple}, {poll.Everyone},
-                    {poll.CreatedAt.ToUnixTimeSeconds()}, {poll.ClosesAt.ToUnixTimeSeconds()}, NULL, {(poll.ChannelId is { } channel ? Id(channel) : null)})
+                    {poll.CreatedAt.ToUnixTimeSeconds()}, {poll.ClosesAt.ToUnixTimeSeconds()}, NULL, {(poll.ChannelId is { } channel ? Id(channel) : null)},
+                    {(poll.IsBuy ? "buy" : null)}, {poll.GameKey}, {poll.GameName})
             """);
         foreach (var option in poll.Options)
             await db.Database.ExecuteSqlInterpolatedAsync($"""
@@ -151,6 +153,15 @@ internal sealed class SqlitePollStore(IDbContextFactory<HappyMixDbContext> facto
         await transaction.CommitAsync();
     }
 
+    public async Task<IReadOnlyList<Poll>> ListOpenBuyAsync(DateTimeOffset now)
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        long stamp = now.ToUnixTimeSeconds();
+        var rows = await db.Database.SqlQuery<PollRow>(
+            $"SELECT * FROM Polls WHERE Purpose = 'buy' AND ClosedUtc IS NULL AND ClosesUtc > {stamp} LIMIT 200").ToListAsync();
+        return await LoadAsync(db, rows);
+    }
+
     private static async Task<IReadOnlyList<Poll>> LoadAsync(HappyMixDbContext db, List<PollRow> rows)
     {
         var result = new List<Poll>(rows.Count);
@@ -171,7 +182,10 @@ internal sealed class SqlitePollStore(IDbContextFactory<HappyMixDbContext> facto
                 ChannelId = row.ChannelId is { } channel ? Parse(channel) : null,
                 MessageId = row.MessageId is { } message ? Parse(message) : null,
                 Finalized = row.Finalized,
-                Native = row.Native
+                Native = row.Native,
+                Purpose = row.Purpose == "buy" ? PollPurpose.Buy : PollPurpose.Choice,
+                GameKey = row.GameKey,
+                GameName = row.GameName
             });
         }
         return result;
@@ -181,7 +195,8 @@ internal sealed class SqlitePollStore(IDbContextFactory<HappyMixDbContext> facto
     private static ulong Parse(string value) => ulong.Parse(value, CultureInfo.InvariantCulture);
 
     private sealed record PollRow(string Id, string GuildId, string GroupId, string CreatorId, string Question, bool Multiple, bool Everyone,
-        long CreatedUtc, long ClosesUtc, long? ClosedUtc, string? ChannelId, string? MessageId, bool Finalized, bool Native);
+        long CreatedUtc, long ClosesUtc, long? ClosedUtc, string? ChannelId, string? MessageId, bool Finalized, bool Native,
+        string? Purpose, string? GameKey, string? GameName);
     private sealed record OptionRow(int Position, string Label, string Kind, string? Url, string? Source, string? ExternalId);
     private sealed record VoteRow(string UserId, int Position);
     private sealed record TagRow(string GroupId, string Tag, int Position);

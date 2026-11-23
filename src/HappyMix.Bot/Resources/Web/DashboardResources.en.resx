@@ -2232,7 +2232,7 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Tag_films_help" xml:space="preserve"><value>Remembers films from earlier votes; IMDb links</value></data>
 <data name="Tag_anime_help" xml:space="preserve"><value>Remembers anime from earlier votes; MyAnimeList links</value></data>
 <data name="Guide_votes_Title" xml:space="preserve"><value>Votes</value></data>
-<data name="Guide_votes_Body" xml:space="preserve"><value>Vote on what to play or watch, on the dashboard or in Discord. In a group, open Votes: built-in tags (Games, Series, Films, Anime, chosen in the group’s Settings) add suggestions from the group’s games, its watchlist and earlier votes, and options nobody picked lately come first. Search the catalogs or paste a Steam, IMDb, TVmaze, MyAnimeList or AniList link: options then show the poster, year, genres, rating and seasons or episodes. In Discord every vote is a Discord poll; title votes get a card with posters and links above it, and votes for chosen people go into a private thread with just them. Group votes are posted in the group’s notification channel; server votes in the channel you pick, or start one with /vote create. The dashboard shows who voted for what and today’s and this week’s results. Groups watching series, films or anime keep a Watchlist: add titles by search or link, mark episodes watched, note where you stopped (like 23:40), finish a series in one click, and add vote winners from the results.</value></data>
+<data name="Guide_votes_Body" xml:space="preserve"><value>Vote on what to play or watch, on the dashboard or in Discord. In a group, open Votes: built-in tags (Games, Series, Films, Anime, chosen in the group’s Settings) add suggestions from the group’s games, its watchlist and earlier votes, and options nobody picked lately come first. Search the catalogs or paste a Steam, IMDb, TVmaze, MyAnimeList or AniList link: options then show the poster, year, genres, rating and seasons or episodes. In Discord every vote is a Discord poll; title votes get a card with posters and links above it, and votes for chosen people go into a private thread with just them. Group votes are posted in the group’s notification channel; server votes in the channel you pick, or start one with /vote create. The dashboard shows who voted for what and today’s and this week’s results. Groups watching series, films or anime keep a Watchlist: add titles by search or link, mark episodes watched, note where you stopped (like 23:40), finish a series in one click, and add vote winners from the results. “Ask who will buy a game” starts a vote with four answers (Ready to buy, Willing to buy, Already have, Not going to buy); members who own the game in their imported Steam library are counted as “Already have” automatically, and in Discord the vote has a button for each answer.</value></data>
 <data name="Polls_VoteCount" xml:space="preserve"><value>{0} votes</value></data>
 <data name="Polls_WinnerLine" xml:space="preserve"><value>🏆 **{0}** won with {1} of {2} votes.</value></data>
 <data name="Polls_EndsAt" xml:space="preserve"><value>Voting ends {0}</value></data>
@@ -2651,7 +2651,7 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Dota_Medal_7" xml:space="preserve"><value>Divine</value></data>
 <data name="Dota_Medal_8" xml:space="preserve"><value>Immortal</value></data>
 <data name="Guide_stats_Title" xml:space="preserve"><value>Stats</value></data>
-<data name="Guide_stats_Body" xml:space="preserve"><value>Groups that play Dota 2 or CS2 have a Stats tab with a card for each member. Sharing is off until you turn on “Show my game stats to my groups”; it then applies to all your groups, and turning it off deletes the saved stats and matches. Dota 2 cards come from OpenDota and need “Expose Public Match Data” on in Dota 2: medal, the last 30 days, most played heroes, most played role (positions from STRATZ when the bot has a key, otherwise lanes), medal change since the bot started saving it daily, an MMR estimate from ranked wins and losses (the real MMR isn't public), the last 20 matches with averages, and who you play with most. CS2 cards come from FACEIT (level, Elo, K/D, headshots, maps) when the bot has a FACEIT key. Duos lists the members who played on the same team the most. When two or more sharing members play the same match, it appears under Recent games together, and the organizer can also have these recaps posted in the group's channel. The bot refreshes cards every hour and matches about every half hour; Refresh me reloads your own right away. Dota 2 cards count ranked matchmaking games only; Recent games together count every mode.</value></data>
+<data name="Guide_stats_Body" xml:space="preserve"><value>Groups that play Dota 2 or CS2 have a Stats tab with a card for each member. Sharing is off until you turn on “Show my game stats to my groups”; it then applies to all your groups, and turning it off deletes the saved stats and matches. Dota 2 cards come from OpenDota and need “Expose Public Match Data” on in Dota 2: medal, the last 30 days, most played heroes, most played role (positions from STRATZ when the bot has a key, otherwise lanes), medal change since the bot started saving it daily, an MMR estimate from ranked wins and losses (the real MMR isn't public), the last 20 matches with averages, and who you play with most. CS2 cards come from FACEIT (level, Elo, K/D, headshots, maps) when the bot has a FACEIT key. Duos lists the members who played on the same team the most. When two or more sharing members play the same match, it appears under Recent games together, and the organizer can also have these recaps posted in the group's channel. The bot refreshes cards every hour and matches about every half hour; Refresh me reloads your own right away. With twink accounts linked on My games, choose which accounts your groups see: one card per account, all of them or none. Dota 2 cards count ranked matchmaking games only; Recent games together count every mode.</value></data>
 <data name="Recap_Title" xml:space="preserve"><value>Recent games together</value></data>
 <data name="Recap_None" xml:space="preserve"><value>No games together in the last two weeks. When two or more members who share their stats play the same match, it shows up here.</value></data>
 <data name="Recap_Result_won" xml:space="preserve"><value>Won</value></data>
@@ -2848,4 +2848,43 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Range_Free" xml:space="preserve"><value>Free time</value></data>
 <data name="Range_AddFree" xml:space="preserve"><value>Add free time</value></data>
 <data name="Range_AddDnd" xml:space="preserve"><value>Add do not disturb</value></data>
+<data name="Meta_BuildsLegend" xml:space="preserve"><value>Builds: STRATZ guides · D2PT (Dota2ProTracker, high-MMR and pro players)</value></data>
+<data name="Meta_BuildsFor" xml:space="preserve"><value>Builds for {0}</value></data>
+<data name="Meta_BuildsStratz" xml:space="preserve"><value>Item, skill and talent builds on STRATZ</value></data>
+<data name="Meta_BuildsD2pt" xml:space="preserve"><value>Builds of high-MMR and pro players on Dota2ProTracker</value></data>
+<data name="Meta_BuildsHelp" xml:space="preserve"><value>STRATZ and D2PT next to each hero open its current builds.</value></data>
+<data name="Buy_Question" xml:space="preserve"><value>Will you buy {0}?</value></data>
+<data name="Buy_Option_0" xml:space="preserve"><value>Ready to buy</value></data>
+<data name="Buy_Option_1" xml:space="preserve"><value>Willing to buy</value></data>
+<data name="Buy_Option_2" xml:space="preserve"><value>Already have</value></data>
+<data name="Buy_Option_3" xml:space="preserve"><value>Not going to buy</value></data>
+<data name="Buy_Badge" xml:space="preserve"><value>Buy vote</value></data>
+<data name="Buy_Start" xml:space="preserve"><value>Ask who will buy a game</value></data>
+<data name="Buy_Lead" xml:space="preserve"><value>Find out who is ready to get a game before you plan around it.</value></data>
+<data name="Buy_Game" xml:space="preserve"><value>Game</value></data>
+<data name="Buy_GamePlaceholder" xml:space="preserve"><value>Name or Steam store link</value></data>
+<data name="Buy_StartButton" xml:space="preserve"><value>Ask the group</value></data>
+<data name="Buy_GameMissing" xml:space="preserve"><value>Type a game name or paste its Steam store link.</value></data>
+<data name="Buy_CardLead" xml:space="preserve"><value>🎮 {0}</value></data>
+<data name="Buy_SteamNote" xml:space="preserve"><value>Steam owners are counted automatically</value></data>
+<data name="Buy_SteamHelp" xml:space="preserve"><value>members who own the game in their imported Steam library are marked “Already have” automatically, also after their next import.</value></data>
+<data name="Buy_Summary" xml:space="preserve"><value>{0} ready · {1} willing · {2} have it · {3} not buying</value></data>
+<data name="Games_TwinkLinked" xml:space="preserve"><value>Twink account added</value></data>
+<data name="Games_MainChanged" xml:space="preserve"><value>Main account changed</value></data>
+<data name="Games_AccountRenamed" xml:space="preserve"><value>Account name saved</value></data>
+<data name="Games_AccountRemoved" xml:space="preserve"><value>Steam account removed</value></data>
+<data name="Games_Accounts" xml:space="preserve"><value>Steam accounts</value></data>
+<data name="Games_MainAccount" xml:space="preserve"><value>Main</value></data>
+<data name="Games_Twink" xml:space="preserve"><value>Twink</value></data>
+<data name="Games_AccountLabel" xml:space="preserve"><value>Account name</value></data>
+<data name="Games_AccountLabelPlaceholder" xml:space="preserve"><value>Name, e.g. Smurf</value></data>
+<data name="Games_MakeMain" xml:space="preserve"><value>Make main</value></data>
+<data name="Games_RemoveAccount" xml:space="preserve"><value>Remove</value></data>
+<data name="Games_AddTwink" xml:space="preserve"><value>Add a twink account</value></data>
+<data name="Games_AddTwinkButton" xml:space="preserve"><value>Add account</value></data>
+<data name="Games_TwinkHelp" xml:space="preserve"><value>Signing in with Steam proves the account is yours. Import brings in the libraries of all your accounts together.</value></data>
+<data name="Games_SteamTooMany" xml:space="preserve"><value>You can link up to 5 Steam accounts. Remove one first.</value></data>
+<data name="Games_SteamLabelError" xml:space="preserve"><value>Use up to 32 characters for the account name.</value></data>
+<data name="Stats_ShowAccounts" xml:space="preserve"><value>Show stats for</value></data>
+<data name="Stats_ShowAccountsHelp" xml:space="preserve"><value>Your groups see a card for each checked account. Uncheck all to stop sharing; the saved stats are deleted.</value></data>
 </root>

@@ -251,6 +251,46 @@ public sealed class GameStatsTests
     }
 
     [Fact]
+    public async Task TwinkStatsShowOneCardPerChosenAccountOrNone()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var sender = fixture.Sender;
+        Guid groupId = await fixture.CreateGroupAsync();
+        const string Twink = PlayerGameTests.TwinkSteam;
+        await sender.Send(new LinkSteamCommand(Kai, KaiSteam));
+        await sender.Send(new LinkSteamCommand(Kai, Twink, Twink: true));
+        await sender.Send(new SetStatsSharingCommand(Kai, true));
+        Assert.Equal([KaiSteam, Twink], fixture.Stats.Asked);
+
+        var stats = (await sender.Send(new GetGroupStatsQuery(Actor(Mira), groupId))).Value;
+        var kai = stats.Cards.Where(card => card.UserId == Kai).ToArray();
+        Assert.Equal([(KaiSteam, true), (Twink, false)], kai.Select(card => (card.SteamId, card.IsMain)));
+        Assert.All(kai, card => Assert.Equal(45, card.DotaProfile!.RankTier));
+        Assert.Equal((1, 3), (stats.Sharing, stats.MemberCount));
+
+        // Only the twink: the main account's cards go away and nothing new is fetched for the twink.
+        fixture.Stats.Asked.Clear();
+        var mine = (await sender.Send(new SetStatsAccountsCommand(Kai, [Twink]))).Value;
+        Assert.Empty(fixture.Stats.Asked);
+        Assert.Equal([(KaiSteam, false, false), (Twink, true, true)], mine.Accounts.Select(item => (item.SteamId, item.Show, item.Dota is not null)));
+        Assert.Equal((true, Twink), (mine.Shares, mine.SteamId));
+        stats = (await sender.Send(new GetGroupStatsQuery(Actor(Mira), groupId))).Value;
+        Assert.Equal([Twink], stats.Cards.Where(card => card.UserId == Kai).Select(card => card.SteamId));
+
+        // Showing the main account again fetches it; none turns sharing off and deletes everything.
+        await sender.Send(new SetStatsAccountsCommand(Kai, [KaiSteam, Twink]));
+        Assert.Equal([KaiSteam], fixture.Stats.Asked);
+        mine = (await sender.Send(new SetStatsAccountsCommand(Kai, []))).Value;
+        Assert.False(mine.Shares);
+        Assert.All(mine.Accounts, item => Assert.Equal((false, (CachedStats?)null), (item.Show, item.Dota)));
+        Assert.Single((await sender.Send(new GetGroupStatsQuery(Actor(Mira), groupId))).Value.Cards, card => card.UserId == Kai);
+
+        // The switch turns every account back on when none was chosen.
+        await sender.Send(new SetStatsSharingCommand(Kai, true));
+        Assert.All((await sender.Send(new GetMyStatsQuery(Kai))).Value.Accounts, item => Assert.True(item.Show && item.Dota is not null));
+    }
+
+    [Fact]
     public async Task RefreshMeReloadsOnlyYourCardsAndTheBotRefreshesHourly()
     {
         using var fixture = await Fixture.CreateAsync();

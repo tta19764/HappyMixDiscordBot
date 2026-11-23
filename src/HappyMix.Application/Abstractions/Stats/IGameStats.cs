@@ -60,7 +60,11 @@ public sealed record Cs2Profile(string FaceitId, string Nickname, int? Level, in
 /// A fetched card for one person and game. <see cref="Payload"/> is the profile as JSON when there is one;
 /// <see cref="Reason"/> says why the last lookup didn't give a card (also written to the logs).
 /// </summary>
-public sealed record CachedStats(ulong UserId, StatsGame Game, StatsStatus Status, string? Payload, DateTimeOffset FetchedAt, string? Reason = null);
+public sealed record CachedStats(ulong UserId, StatsGame Game, StatsStatus Status, string? Payload, DateTimeOffset FetchedAt, string? Reason = null)
+{
+    /// <summary>The Steam account the card is for: the main account or a twink.</summary>
+    public string? SteamId { get; init; }
+}
 
 /// <param name="Reason">Why there's no profile: the service's answer, a missing setting, or what the player can fix.</param>
 public sealed record StatsFetch<T>(StatsStatus Status, T? Profile, string? Reason = null) where T : class;
@@ -92,6 +96,8 @@ public interface IGameStatsStore
     Task<IReadOnlyList<CachedStats>> ListCachedAsync(IReadOnlyCollection<ulong> userIds);
     Task SaveCachedAsync(CachedStats stats);
     Task RemoveCachedAsync(ulong userId);
+    /// <summary>Removes the cards of one Steam account, when it is hidden or unlinked.</summary>
+    Task RemoveCachedAsync(ulong userId, string steamId);
 
     /// <summary>Adds matches; a match already saved for that person and game is left as it is.</summary>
     Task SaveMatchesAsync(IReadOnlyCollection<PlayerMatch> matches);

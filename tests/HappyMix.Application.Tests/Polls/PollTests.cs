@@ -63,6 +63,53 @@ public sealed class PollTests
     }
 
     [Fact]
+    public async Task BuyVotesCountSteamOwnersAndCatchUpAfterAnImport()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var group = await fixture.GroupAsync(Organizer, [Kai, Mira]);
+        await fixture.Database.GetRequiredService<IGuildGroupStore>().SaveGameAsync(Guild, new GroupGame(Guid.NewGuid(), group, "Deep Rock Galactic", "steam", "548430"));
+        var players = fixture.Database.GetRequiredService<HappyMix.Application.Abstractions.Players.IPlayerGameStore>();
+        HappyMix.Application.Abstractions.Players.PlayerGame Game(ulong user, bool fromSteam) => new(user, "steam:548430", "Deep Rock Galactic", "steam", "548430",
+            HappyMix.Application.Abstractions.Players.GamePreference.Can, fromSteam, fromSteam ? 600 : null, fromSteam ? 0 : null, fixture.Clock.UtcNow);
+        await players.SaveAsync(Game(Kai, fromSteam: true));
+        await players.SaveAsync(Game(Organizer, fromSteam: false)); // marked by hand: not proof of owning it
+
+        Assert.True((await fixture.Sender.Send(new CreateBuyVoteCommand(Actor(Kai), group, "  ", "Will you buy {0}?", TimeSpan.FromDays(1), Guid.NewGuid()))).IsFailure);
+        Assert.True((await fixture.Sender.Send(new CreateBuyVoteCommand(Actor(Outsider), group, "Deep Rock Galactic", "Will you buy {0}?", TimeSpan.FromDays(1), Guid.NewGuid()))).IsFailure);
+        var id = (await fixture.Sender.Send(new CreateBuyVoteCommand(Actor(Organizer), group, "deep rock galactic", "Will you buy {0}?", TimeSpan.FromDays(3), Guid.NewGuid()))).Value;
+
+        var poll = (await fixture.Sender.Send(new GetPollQuery(Actor(Mira), id))).Value;
+        Assert.Equal((true, "steam:548430", "Deep Rock Galactic", "Will you buy Deep Rock Galactic?"), (poll.IsBuy, poll.GameKey, poll.GameName, poll.Question));
+        Assert.Equal(BuyVote.Labels, poll.Options.Select(option => option.Label));
+        Assert.Equal([new PollVote(Kai, BuyVote.Have)], poll.Votes);
+
+        // Mira says she's ready to buy, buys it, and her next Steam import counts her as an owner.
+        await fixture.Sender.Send(new VotePollCommand(Actor(Mira), id, [BuyVote.Ready]));
+        Assert.Empty((await fixture.Sender.Send(new SyncBuyVotesCommand(Mira))).Value);
+        await players.SaveAsync(Game(Mira, fromSteam: true));
+        Assert.Equal([(Guild, id)], (await fixture.Sender.Send(new SyncBuyVotesCommand(Mira))).Value);
+        Assert.Empty((await fixture.Sender.Send(new SyncBuyVotesCommand(Mira))).Value);
+        poll = (await fixture.Sender.Send(new GetPollQuery(Actor(Mira), id))).Value;
+        Assert.Equal((2, 0), (poll.Count(BuyVote.Have), poll.Count(BuyVote.Ready)));
+
+        // Ended votes are left alone.
+        fixture.Clock.Advance(TimeSpan.FromDays(4));
+        await players.SaveAsync(Game(Organizer, fromSteam: true));
+        Assert.Empty((await fixture.Sender.Send(new SyncBuyVotesCommand(Organizer))).Value);
+    }
+
+    [Fact]
+    public void BuyVoteGamesComeFromLinksGroupGamesOrNames()
+    {
+        GroupGame[] games = [new(Guid.NewGuid(), Guid.NewGuid(), "Dota 2", "steam", "570")];
+        Assert.Equal(("steam:1145360", "Hades"), BuyVoteHandlers.Resolve("https://store.steampowered.com/app/1145360/Hades/", games, []));
+        Assert.Equal(("steam:570", "Dota 2"), BuyVoteHandlers.Resolve("DOTA 2", games, []));
+        Assert.Equal(("steam:570", "Dota 2"), BuyVoteHandlers.Resolve("steam:570", games, []));
+        Assert.Equal(("name:some indie", "Some Indie"), BuyVoteHandlers.Resolve("Some Indie", games, []));
+        Assert.Null(BuyVoteHandlers.Resolve(" ", games, []));
+    }
+
+    [Fact]
     public async Task GroupVotesUseTagSuggestionsAndRememberWinners()
     {
         using var fixture = await Fixture.CreateAsync();

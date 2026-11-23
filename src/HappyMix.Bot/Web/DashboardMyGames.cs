@@ -1,4 +1,5 @@
 using System.Globalization;
+using HappyMix.Bot.Services;
 using System.Security.Cryptography;
 using HappyMix.Application.Abstractions.Players;
 using HappyMix.Application.Players;
@@ -70,6 +71,7 @@ internal static class PlayerGameOrder
 public sealed partial class DashboardController
 {
     private const string SteamStateCookie = "hm_steam_state";
+    private const string TwinkMarker = ".twink";
 
     /// <summary>
     /// The picture of a Steam game whose fixed header address failed (newer games): a redirect to the address Steam's
@@ -102,9 +104,35 @@ public sealed partial class DashboardController
     }
 
     [HttpPost("/games/{guildId}/steam")]
-    public Task<IActionResult> LinkSteam(ulong guildId, string? steam) =>
-        GamesActionAsync(guildId, userId => sender.Send(new LinkSteamCommand(userId, steam ?? ""), HttpContext.RequestAborted),
-            account => text["Games_SteamLinked"].Value);
+    public Task<IActionResult> LinkSteam(ulong guildId, string? steam, bool twink) =>
+        GamesActionAsync(guildId, userId => sender.Send(new LinkSteamCommand(userId, steam ?? "", twink), HttpContext.RequestAborted),
+            account => text[account.IsMain ? "Games_SteamLinked" : "Games_TwinkLinked"].Value, $"/games/{guildId}#steam");
+
+    /// <summary>Makes one of the viewer's Steam accounts the main one.</summary>
+    [HttpPost("/games/{guildId}/steam/main")]
+    public Task<IActionResult> SetMainSteam(ulong guildId, string? steamId) =>
+        GamesActionAsync(guildId, async userId => (await sender.Send(new SetMainSteamCommand(userId, steamId ?? ""), HttpContext.RequestAborted)) is { IsSuccess: true }
+                ? HappyMix.Domain.Abstractions.Result.Success(true)
+                : HappyMix.Domain.Abstractions.Result.Failure<bool>(new("Players.SteamNotLinked", "Link your Steam account first.")),
+            _ => text["Games_MainChanged"].Value, $"/games/{guildId}#steam");
+
+    /// <summary>Names one of the viewer's Steam accounts.</summary>
+    [HttpPost("/games/{guildId}/steam/label")]
+    public Task<IActionResult> SetSteamLabel(ulong guildId, string? steamId, string? label) =>
+        GamesActionAsync(guildId, async userId =>
+        {
+            var result = await sender.Send(new SetSteamLabelCommand(userId, steamId ?? "", label), HttpContext.RequestAborted);
+            return result.IsSuccess ? HappyMix.Domain.Abstractions.Result.Success(true) : HappyMix.Domain.Abstractions.Result.Failure<bool>(result.Error);
+        }, _ => text["Games_AccountRenamed"].Value, $"/games/{guildId}#steam");
+
+    /// <summary>Removes one Steam account (a twink, or the main one when there are others).</summary>
+    [HttpPost("/games/{guildId}/steam/remove")]
+    public Task<IActionResult> RemoveSteamAccount(ulong guildId, string? steamId) =>
+        GamesActionAsync(guildId, async userId =>
+        {
+            var result = await sender.Send(new UnlinkSteamCommand(userId, steamId ?? ""), HttpContext.RequestAborted);
+            return result.IsSuccess ? HappyMix.Domain.Abstractions.Result.Success(true) : HappyMix.Domain.Abstractions.Result.Failure<bool>(result.Error);
+        }, _ => text["Games_AccountRemoved"].Value, $"/games/{guildId}#steam");
 
     [HttpPost("/games/{guildId}/steam/discord")]
     public Task<IActionResult> LinkDiscordSteam(ulong guildId) =>
@@ -115,12 +143,13 @@ public sealed partial class DashboardController
 
     /// <summary>Starts Steam sign-in. A one-time state value in a cookie ties the answer to this browser.</summary>
     [HttpGet("/games/{guildId}/steam/signin")]
-    public async Task<IActionResult> SteamSignIn(ulong guildId)
+    public async Task<IActionResult> SteamSignIn(ulong guildId, bool twink)
     {
         if (await GetDiscordMemberAsync(guildId) is null)
             return NotMember();
         string state = Convert.ToHexString(RandomNumberGenerator.GetBytes(16));
-        Response.Cookies.Append(SteamStateCookie, state, new CookieOptions
+        // Whether the account is added as a twink rides along in the cookie, so Steam's return address stays as it was.
+        Response.Cookies.Append(SteamStateCookie, twink ? state + TwinkMarker : state, new CookieOptions
         {
             HttpOnly = true, SameSite = SameSiteMode.Lax, Secure = Request.IsHttps, MaxAge = TimeSpan.FromMinutes(10), Path = $"/games/{guildId}"
         });
@@ -134,6 +163,9 @@ public sealed partial class DashboardController
         if (await GetDiscordMemberAsync(guildId) is not { } member)
             return NotMember();
         string? expected = Request.Cookies[SteamStateCookie];
+        bool twink = expected?.EndsWith(TwinkMarker, StringComparison.Ordinal) == true;
+        if (twink)
+            expected = expected![..^TwinkMarker.Length];
         Response.Cookies.Delete(SteamStateCookie, new CookieOptions { Path = $"/games/{guildId}" });
         if (expected is null || state is null || !CryptographicOperations.FixedTimeEquals(System.Text.Encoding.ASCII.GetBytes(expected), System.Text.Encoding.ASCII.GetBytes(state)))
         {
@@ -143,7 +175,7 @@ public sealed partial class DashboardController
         var response = Request.Query.Where(pair => pair.Key.StartsWith("openid.", StringComparison.Ordinal))
             .ToDictionary(pair => pair.Key, pair => pair.Value.ToString(), StringComparer.Ordinal);
         string returnTo = $"{Request.Scheme}://{Request.Host}/games/{guildId}/steam/return";
-        var result = await sender.Send(new VerifySteamCommand(member.Id, response, returnTo), HttpContext.RequestAborted);
+        var result = await sender.Send(new VerifySteamCommand(member.Id, response, returnTo, twink), HttpContext.RequestAborted);
         SetGamesBanner(result.IsSuccess ? "success" : "error", result.IsSuccess ? text["Games_SteamVerified"].Value : text["That_didn_t_work"].Value,
             result.IsFailure ? text.Message(result.Error.Description).Value : null);
         return Redirect($"/games/{guildId}");
@@ -158,9 +190,15 @@ public sealed partial class DashboardController
         }, _ => text["Games_SteamUnlinked"].Value);
 
     [HttpPost("/games/{guildId}/import")]
-    public Task<IActionResult> ImportSteamGames(ulong guildId) =>
-        GamesActionAsync(guildId, userId => sender.Send(new ImportSteamGamesCommand(userId), HttpContext.RequestAborted),
-            import => text["Games_Imported", import.Added, import.Updated].Value);
+    public Task<IActionResult> ImportSteamGames(ulong guildId, [FromServices] PollMessages polls) =>
+        GamesActionAsync(guildId, async userId =>
+        {
+            var result = await sender.Send(new ImportSteamGamesCommand(userId), HttpContext.RequestAborted);
+            // Games now owned count as "Already have" in the groups' open buy votes.
+            if (result.IsSuccess)
+                await polls.SyncBuyVotesAsync(userId, HttpContext.RequestAborted);
+            return result;
+        }, import => text["Games_Imported", import.Added, import.Updated].Value);
 
     [HttpPost("/games/{guildId}/add")]
     public Task<IActionResult> AddPlayerGame(ulong guildId, string? name, string? steam, string? provider, string? externalId, int preference = 1) =>
@@ -190,10 +228,17 @@ public sealed partial class DashboardController
     }
 
     [HttpPost("/games/{guildId}/stats")]
-    public Task<IActionResult> ShareGameStats(ulong guildId, bool share) =>
-        GamesActionAsync(guildId, async userId => HappyMix.Domain.Abstractions.Result.Success(
-                (await sender.Send(new HappyMix.Application.Stats.SetStatsSharingCommand(userId, share, guildId), HttpContext.RequestAborted)).Value),
-            _ => text[share ? "Stats_Shared" : "Stats_Unshared"].Value, $"/games/{guildId}#stats");
+    public Task<IActionResult> ShareGameStats(ulong guildId, bool share, bool pick, string[]? accounts) =>
+        GamesActionAsync(guildId, async userId => HappyMix.Domain.Abstractions.Result.Success(await ShareStatsAsync(userId, guildId, share, pick, accounts)),
+            mine => text[mine.Shares ? "Stats_Shared" : "Stats_Unshared"].Value, $"/games/{guildId}#stats");
+
+    /// <summary>
+    /// The sharing form: the plain switch, or (with several Steam accounts) the accounts to show, where none means off.
+    /// </summary>
+    private async Task<HappyMix.Application.Stats.MyStats> ShareStatsAsync(ulong userId, ulong guildId, bool share, bool pick, string[]? accounts) =>
+        (pick
+            ? await sender.Send(new HappyMix.Application.Stats.SetStatsAccountsCommand(userId, accounts ?? [], guildId), HttpContext.RequestAborted)
+            : await sender.Send(new HappyMix.Application.Stats.SetStatsSharingCommand(userId, share, guildId), HttpContext.RequestAborted)).Value;
 
     [HttpPost("/games/{guildId}/remove")]
     public Task<IActionResult> RemovePlayerGame(ulong guildId, string? key, string? returnUrl) =>

@@ -76,6 +76,10 @@ public sealed class VoteModule(ISender sender, PollMessages messages, IOptions<C
     public Task PickAsync(string guild, string poll, string[] choices) =>
         AnswerAsync(guild, poll, choices.Select(value => int.Parse(value, CultureInfo.InvariantCulture)).ToArray());
 
+    [ComponentInteraction("poll:buy:*:*:*", ignoreGroupNames: true)]
+    public Task BuyAsync(string guild, string poll, string position) =>
+        int.TryParse(position, NumberStyles.None, CultureInfo.InvariantCulture, out int answer) ? AnswerAsync(guild, poll, [answer]) : AnswerAsync(guild, poll, []);
+
     [ComponentInteraction("poll:clear:*:*", ignoreGroupNames: true)]
     public Task ClearAsync(string guild, string poll) => AnswerAsync(guild, poll, []);
 
@@ -94,7 +98,8 @@ public sealed class VoteModule(ISender sender, PollMessages messages, IOptions<C
             return;
         }
         var poll = result.Value;
-        string chosen = string.Join(", ", poll.Options.Where(option => positions.Contains(option.Position)).Select(option => option.Label));
+        string chosen = string.Join(", ", poll.Options.Where(option => positions.Contains(option.Position))
+            .Select(option => poll.IsBuy ? NotificationText.Get(Language, $"Buy_Option_{option.Position}") : option.Label));
         await FollowupAsync(positions.Length == 0 ? NotificationText.Get(Language, "Polls_VoteRemoved") : NotificationText.Get(Language, "Polls_YouPicked", chosen),
             ephemeral: true, allowedMentions: AllowedMentions.None);
         await messages.SyncAsync(poll);

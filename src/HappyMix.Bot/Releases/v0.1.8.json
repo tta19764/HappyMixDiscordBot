@@ -1,0 +1,17 @@
+{
+  "en": [
+    "**v0.1.8 · Ask who will buy a game**\nGroups can now start a **buy vote** for a game. Choose a game from the group or members’ libraries, then answer **Ready to buy**, **Willing to buy**, **Already have**, or **Not going to buy**. Members who already own it in an imported Steam library are counted as **Already have** automatically, including after a later import. The vote works on the dashboard and in the group’s Discord channel.",
+    "**More Steam accounts, one library**\nYou can link up to five Steam accounts, name them, choose the main account, and remove an individual account without losing the rest. Import combines their public libraries and playtimes. When sharing game stats, choose exactly which linked accounts your groups can see; each selected account gets its own card and its matches can appear in games played together.",
+    "**Better Dota 2 meta posts**\nDota 2 meta posts in Discord now use hero icons, separate lane or role sections, and links beside each hero to current STRATZ guides and Dota2ProTracker builds. Long lists continue into later Discord messages instead of silently cutting off heroes."
+  ],
+  "uk": [
+    "**v0.1.8 · Запитайте, хто купить гру**\nГрупи тепер можуть почати **голосування про купівлю** гри. Оберіть гру з групи або бібліотек учасників і відповідайте: **Готовий купити**, **Готовий купити пізніше**, **Вже маю** або **Не купуватиму**. Учасників, які вже володіють грою в імпортованій бібліотеці Steam, автоматично зараховано до **Вже маю**, зокрема після наступного імпорту. Голосування працює на панелі та в Discord-каналі групи.",
+    "**Більше акаунтів Steam, одна бібліотека**\nМожна прив’язати до п’яти акаунтів Steam, назвати їх, обрати основний і видалити один акаунт, не втрачаючи інші. Імпорт об’єднує їхні публічні бібліотеки та час у грі. Для обміну ігровою статистикою оберіть, які прив’язані акаунти бачитимуть групи; кожен вибраний акаунт має власну картку, а його матчі можуть з’явитися серед спільних ігор.",
+    "**Кращі дописи мети Dota 2**\nДописи мети Dota 2 у Discord тепер мають іконки героїв, окремі розділи за лініями чи ролями та посилання біля кожного героя на актуальні гайди STRATZ і білди Dota2ProTracker. Довгі списки продовжуються в наступних повідомленнях Discord, а не тихо обрізають героїв."
+  ],
+  "ru": [
+    "**v0.1.8 · Узнайте, кто купит игру**\nГруппы теперь могут начать **голосование о покупке** игры. Выберите игру из группы или библиотек участников и ответьте: **Готов купить**, **Готов купить позже**, **Уже есть** или **Не буду покупать**. Участники, у которых игра уже есть в импортированной библиотеке Steam, автоматически попадают в **Уже есть**, в том числе после следующего импорта. Голосование работает на панели и в Discord-канале группы.",
+    "**Больше аккаунтов Steam, одна библиотека**\nМожно привязать до пяти аккаунтов Steam, назвать их, выбрать основной и удалить один аккаунт, не теряя остальные. Импорт объединяет их публичные библиотеки и время в играх. Для показа игровой статистики выберите, какие привязанные аккаунты увидят группы; у каждого выбранного аккаунта своя карточка, а его матчи могут появляться среди совместных игр.",
+    "**Улучшенные публикации меты Dota 2**\nПубликации меты Dota 2 в Discord теперь используют иконки героев, отдельные разделы по линиям или ролям и ссылки рядом с каждым героем на актуальные гайды STRATZ и билды Dota2ProTracker. Длинные списки продолжаются в следующих сообщениях Discord вместо того, чтобы молча обрезать героев."
+  ]
+}

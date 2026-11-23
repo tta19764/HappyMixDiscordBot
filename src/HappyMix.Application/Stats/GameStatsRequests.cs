@@ -11,9 +11,16 @@ using MediatR;
 
 namespace HappyMix.Application.Stats;
 
-/// <summary>One member's card: whether they share, their Steam account and the cached Dota 2 / CS2 results.</summary>
+/// <summary>
+/// One member's card for one Steam account: whether they share, the account and the cached Dota 2 / CS2 results. A member
+/// who shows several accounts (twinks) has one card per account.
+/// </summary>
 public sealed record PlayerStatsCard(ulong UserId, bool Shares, string? SteamId, CachedStats? Dota, CachedStats? Cs2)
 {
+    /// <summary>Whether the card is for the member's main Steam account.</summary>
+    public bool IsMain { get; init; } = true;
+    /// <summary>The member's name for the account, if they gave it one.</summary>
+    public string? Label { get; init; }
     public DotaProfile? DotaProfile => GameStats.Read<DotaProfile>(Dota);
     public Cs2Profile? Cs2Profile => GameStats.Read<Cs2Profile>(Cs2);
     public CachedStats? For(StatsGame game) => game == StatsGame.Dota2 ? Dota : Cs2;
@@ -25,7 +32,9 @@ public sealed record PlayerStatsCard(ulong UserId, bool Shares, string? SteamId,
 public sealed record GroupStats(IReadOnlyList<StatsGame> Games, IReadOnlyList<PlayerStatsCard> Cards, bool YouShare, bool IsMember, bool SteamLinked,
     bool Cs2Enabled, DateTimeOffset Now)
 {
-    public int Sharing => Cards.Count(card => card.Shares);
+    /// <summary>Members who share (a member with twink cards counts once).</summary>
+    public int Sharing => Cards.Where(card => card.Shares).Select(card => card.UserId).Distinct().Count();
+    public int MemberCount => Cards.Select(card => card.UserId).Distinct().Count();
     /// <summary>Matches two or more sharing members played together in the last two weeks, newest first.</summary>
     public IReadOnlyList<GroupRecap> Recaps { get; init; } = [];
     /// <summary>Whether recaps are also posted in the group's notification channel.</summary>
@@ -47,8 +56,27 @@ public sealed record WinRecord(int Games, int Wins);
 
 public sealed record GetGroupStatsQuery(GroupActor Actor, Guid GroupId) : IQuery<GroupStats>;
 
-/// <summary>The viewer's own sharing choice and cards, for My games and <c>/stats</c>.</summary>
-public sealed record MyStats(bool Shares, string? SteamId, CachedStats? Dota, CachedStats? Cs2, bool Cs2Enabled);
+/// <summary>
+/// The viewer's own sharing choice and cards, for My games and <c>/stats</c>. <see cref="SteamId"/>, <see cref="Dota"/>
+/// and <see cref="Cs2"/> are the first shown account's (or the main account's); <see cref="Accounts"/> has every account.
+/// </summary>
+public sealed record MyStats(bool Shares, string? SteamId, CachedStats? Dota, CachedStats? Cs2, bool Cs2Enabled)
+{
+    public IReadOnlyList<AccountStats> Accounts { get; init; } = [];
+}
+
+/// <summary>One linked Steam account with whether its stats are shown and its cards.</summary>
+public sealed record AccountStats(SteamAccount Account, CachedStats? Dota, CachedStats? Cs2)
+{
+    public string SteamId => Account.SteamId;
+    public bool Show => Account.ShowStats;
+}
+
+/// <summary>
+/// Chooses which of the person's Steam accounts show stats to their groups: some, all or none. None turns sharing off and
+/// deletes the saved stats; newly shown accounts are fetched straight away and hidden ones' cards are deleted.
+/// </summary>
+public sealed record SetStatsAccountsCommand(ulong UserId, IReadOnlyCollection<string> SteamIds, ulong? GuildId = null) : ICommand<MyStats>;
 
 public sealed record GetMyStatsQuery(ulong UserId) : IQuery<MyStats>;
 
@@ -191,7 +219,7 @@ public static class GameStats
 internal sealed partial class GameStatsHandlers(IGameStatsStore store, IGameStatsDirectory directory, IPlayerGameStore players, IAccountLinkStore accountLinks,
     IClock clock, ISender sender, Microsoft.Extensions.Logging.ILogger<GameStatsHandlers> logger) :
     IQueryHandler<GetGroupStatsQuery, GroupStats>, IQueryHandler<GetMyStatsQuery, MyStats>, ICommandHandler<SetStatsSharingCommand, MyStats>,
-    ICommandHandler<RefreshGameStatsCommand, int>, ICommandHandler<RefreshMyStatsCommand, MyStats>
+    ICommandHandler<RefreshGameStatsCommand, int>, ICommandHandler<RefreshMyStatsCommand, MyStats>, ICommandHandler<SetStatsAccountsCommand, MyStats>
 {
     private static readonly ErrorDescriptor NotFound = new("Stats.NotFound", "That group doesn't exist or you don't have access to it.");
 
@@ -206,22 +234,26 @@ internal sealed partial class GameStatsHandlers(IGameStatsStore store, IGameStat
         var links = await accountLinks.LoadAsync(query.Actor.GuildId);
         var members = links.Representatives(detail.Members.Append(detail.Summary.OrganizerId)).ToArray();
         var sharing = await store.ListSharingAsync(members);
-        var cached = (await store.ListCachedAsync(members)).ToLookup(item => item.UserId);
+        var cached = (await store.ListCachedAsync(members)).ToLookup(item => (item.UserId, item.SteamId));
         var cards = new List<PlayerStatsCard>();
         foreach (ulong member in members)
         {
-            bool shares = sharing.Contains(member);
-            string? steamId = shares ? (await players.GetSteamAsync(member))?.SteamId : null;
-            cards.Add(new PlayerStatsCard(member, shares, steamId,
-                shares ? cached[member].FirstOrDefault(item => item.Game == StatsGame.Dota2) : null,
-                shares ? cached[member].FirstOrDefault(item => item.Game == StatsGame.Cs2) : null));
+            // One card per shown account (main first); a member who doesn't share, or shows no account, gets one empty card.
+            var shown = sharing.Contains(member) ? await ShownAsync(member) : [];
+            if (shown.Count == 0)
+                cards.Add(new PlayerStatsCard(member, false, null, null, null));
+            foreach (var account in shown)
+                cards.Add(new PlayerStatsCard(member, true, account.SteamId,
+                    cached[(member, account.SteamId)].FirstOrDefault(item => item.Game == StatsGame.Dota2),
+                    cached[(member, account.SteamId)].FirstOrDefault(item => item.Game == StatsGame.Cs2))
+                { IsMain = account.IsMain, Label = account.Label });
         }
 
         // Sharing and Steam belong to the Discord account itself, like My games.
         ulong viewer = query.Actor.UserId;
         bool isMember = links.Includes(detail.Members, query.Actor.UserId) || links.Same(detail.Summary.OrganizerId, query.Actor.UserId);
         var now = clock.UtcNow;
-        var sharers = cards.Where(card => card.Shares).Select(card => card.UserId).ToArray();
+        var sharers = cards.Where(card => card.Shares).Select(card => card.UserId).Distinct().ToArray();
         var together = MatchRecaps.Find(query.GroupId, sharers, await store.ListMatchesAsync(sharers, now - MatchRecaps.ShowFor), games);
         var recaps = together.Take(MatchRecaps.MaxShown).ToArray();
         return new GroupStats(games, cards, (await store.ListSharingAsync([viewer])).Contains(viewer), isMember,
@@ -246,22 +278,69 @@ internal sealed partial class GameStatsHandlers(IGameStatsStore store, IGameStat
         {
             await store.RemoveCachedAsync(command.UserId);
             await store.RemoveMatchesAsync(command.UserId);
+            return await MineAsync(command.UserId);
         }
-        else if (await players.GetSteamAsync(command.UserId) is { } steam)
-            await FetchAsync(command.UserId, steam.SteamId, command.GuildId, cancellationToken);
+        // Turning sharing on shows the accounts chosen before, or every account when none was chosen.
+        var accounts = await players.ListSteamAsync(command.UserId);
+        if (accounts.Count > 0 && accounts.All(account => !account.ShowStats))
+            foreach (var account in accounts)
+                await players.SaveSteamAsync(account with { ShowStats = true });
+        foreach (var account in await ShownAsync(command.UserId))
+            await FetchAsync(command.UserId, account.SteamId, command.GuildId, cancellationToken);
         return await MineAsync(command.UserId);
     }
+
+    public async Task<Result<MyStats>> Handle(SetStatsAccountsCommand command, CancellationToken cancellationToken)
+    {
+        var accounts = await players.ListSteamAsync(command.UserId);
+        var chosen = command.SteamIds.Where(id => accounts.Any(account => account.SteamId == id)).ToHashSet(StringComparer.Ordinal);
+        if (chosen.Count == 0)
+        {
+            // None: sharing off, like the switch.
+            await store.SetSharingAsync(command.UserId, false, clock.UtcNow);
+            await store.RemoveCachedAsync(command.UserId);
+            await store.RemoveMatchesAsync(command.UserId);
+            foreach (var account in accounts.Where(account => account.ShowStats))
+                await players.SaveSteamAsync(account with { ShowStats = false });
+            return await MineAsync(command.UserId);
+        }
+        bool wasSharing = (await store.ListSharingAsync([command.UserId])).Contains(command.UserId);
+        await store.SetSharingAsync(command.UserId, true, clock.UtcNow);
+        foreach (var account in accounts)
+        {
+            bool show = chosen.Contains(account.SteamId);
+            if (account.ShowStats != show)
+                await players.SaveSteamAsync(account with { ShowStats = show });
+            if (!show)
+                await store.RemoveCachedAsync(command.UserId, account.SteamId);
+            else if (!wasSharing || !account.ShowStats)
+                await FetchAsync(command.UserId, account.SteamId, command.GuildId, cancellationToken);
+        }
+        return await MineAsync(command.UserId);
+    }
+
+    /// <summary>The person's accounts whose stats are shown, main first.</summary>
+    private async Task<IReadOnlyList<SteamAccount>> ShownAsync(ulong userId) =>
+        (await players.ListSteamAsync(userId)).Where(account => account.ShowStats).ToArray();
 
     public async Task<Result<MyStats>> Handle(RefreshMyStatsCommand command, CancellationToken cancellationToken)
     {
         var now = clock.UtcNow;
+        if (!(await store.ListSharingAsync([command.UserId])).Contains(command.UserId))
+            return await MineAsync(command.UserId);
         var cards = await store.ListCachedAsync([command.UserId]);
-        bool justLoaded = cards.Any() && cards.All(card => card.Status != StatsStatus.Error && now - card.FetchedAt < GameStats.RefreshAfter);
-        if (!justLoaded && (await store.ListSharingAsync([command.UserId])).Contains(command.UserId) && await players.GetSteamAsync(command.UserId) is { } steam)
+        bool any = false;
+        foreach (var account in await ShownAsync(command.UserId))
         {
-            await FetchAsync(command.UserId, steam.SteamId, command.GuildId, cancellationToken);
-            await sender.Send(new RefreshPlayerMatchesCommand(command.UserId, command.GuildId), cancellationToken);
+            var mine = cards.Where(card => card.SteamId == account.SteamId).ToArray();
+            bool justLoaded = mine.Length > 0 && mine.All(card => card.Status != StatsStatus.Error && now - card.FetchedAt < GameStats.RefreshAfter);
+            if (justLoaded)
+                continue;
+            await FetchAsync(command.UserId, account.SteamId, command.GuildId, cancellationToken);
+            any = true;
         }
+        if (any)
+            await sender.Send(new RefreshPlayerMatchesCommand(command.UserId, command.GuildId), cancellationToken);
         return await MineAsync(command.UserId);
     }
 
@@ -269,23 +348,24 @@ internal sealed partial class GameStatsHandlers(IGameStatsStore store, IGameStat
     {
         var now = clock.UtcNow;
         var sharers = await store.ListAllSharingAsync();
-        var cached = (await store.ListCachedAsync(sharers)).ToLookup(item => item.UserId);
-        // Oldest first; a person with no card yet counts as oldest.
-        var due = sharers.Select(user => (User: user, Oldest: cached[user].Select(item => (DateTimeOffset?)item.FetchedAt).Min()))
-            .Where(item => GameStats.IsStale(cached[item.User].FirstOrDefault(card => card.Game == StatsGame.Dota2), now)
-                || directory.Cs2Enabled && GameStats.IsStale(cached[item.User].FirstOrDefault(card => card.Game == StatsGame.Cs2), now))
-            .OrderBy(item => item.Oldest ?? DateTimeOffset.MinValue)
-            .Take(Math.Max(1, command.Limit))
-            .ToArray();
+        var cached = (await store.ListCachedAsync(sharers)).ToLookup(item => (item.UserId, item.SteamId));
+        // Every shown account of every sharer, oldest card first; an account with no card yet counts as oldest.
+        var accounts = new List<(ulong User, string SteamId, DateTimeOffset? Oldest)>();
+        foreach (ulong user in sharers)
+            foreach (var account in await ShownAsync(user))
+            {
+                var cards = cached[(user, account.SteamId)];
+                if (GameStats.IsStale(cards.FirstOrDefault(card => card.Game == StatsGame.Dota2), now)
+                    || directory.Cs2Enabled && GameStats.IsStale(cards.FirstOrDefault(card => card.Game == StatsGame.Cs2), now))
+                    accounts.Add((user, account.SteamId, cards.Select(card => (DateTimeOffset?)card.FetchedAt).Min()));
+            }
         int fetched = 0;
-        foreach (var (user, _) in due)
+        foreach (var (user, steamId, _) in accounts.OrderBy(item => item.Oldest ?? DateTimeOffset.MinValue).Take(Math.Max(1, command.Limit)))
         {
             // Without an OpenDota key the day's budget is shared with Refresh clicks; the rest waits for tomorrow.
             if (!directory.BackgroundBudgetLeft)
                 break;
-            if (await players.GetSteamAsync(user) is not { } steam)
-                continue;
-            fetched += await FetchAsync(user, steam.SteamId, null, cancellationToken);
+            fetched += await FetchAsync(user, steamId, null, cancellationToken);
         }
         return fetched;
     }
@@ -294,7 +374,7 @@ internal sealed partial class GameStatsHandlers(IGameStatsStore store, IGameStat
     private async Task<int> FetchAsync(ulong userId, string steamId, ulong? guildId, CancellationToken cancellationToken)
     {
         var now = clock.UtcNow;
-        var previous = (await store.ListCachedAsync([userId])).ToArray();
+        var previous = (await store.ListCachedAsync([userId])).Where(item => item.SteamId == steamId).ToArray();
         int fetched = 0;
         var dota = await directory.GetDotaAsync(steamId, cancellationToken);
         // OpenDota only knows today's medal: the history of earlier days is carried over from the previous card.
@@ -304,18 +384,18 @@ internal sealed partial class GameStatsHandlers(IGameStatsStore store, IGameStat
                 Profile = GameStats.WithRankHistory(fresh, GameStats.Read<DotaProfile>(previous.FirstOrDefault(item => item.Game == StatsGame.Dota2)),
                     DateOnly.FromDateTime(now.UtcDateTime))
             };
-        await SaveAsync(userId, guildId, StatsGame.Dota2, dota, previous, now);
+        await SaveAsync(userId, steamId, guildId, StatsGame.Dota2, dota, previous, now);
         fetched++;
         if (directory.Cs2Enabled)
         {
             var cs2 = await directory.GetCs2Async(steamId, cancellationToken);
-            await SaveAsync(userId, guildId, StatsGame.Cs2, cs2, previous, now);
+            await SaveAsync(userId, steamId, guildId, StatsGame.Cs2, cs2, previous, now);
             fetched++;
         }
         return fetched;
     }
 
-    private async Task SaveAsync<T>(ulong userId, ulong? guildId, StatsGame game, StatsFetch<T> fetch, IReadOnlyList<CachedStats> previous, DateTimeOffset now)
+    private async Task SaveAsync<T>(ulong userId, string steamId, ulong? guildId, StatsGame game, StatsFetch<T> fetch, IReadOnlyList<CachedStats> previous, DateTimeOffset now)
         where T : class
     {
         string? payload = fetch.Profile is null ? null : JsonSerializer.Serialize(fetch.Profile, GameStats.Json);
@@ -330,7 +410,10 @@ internal sealed partial class GameStatsHandlers(IGameStatsStore store, IGameStat
             else if (fetch.Status != StatsStatus.Ok)
                 LogStatsMissing(logger, game, userId, fetch.Reason ?? "no data");
         }
-        await store.SaveCachedAsync(new CachedStats(userId, game, fetch.Status, payload, now, fetch.Status == StatsStatus.Ok ? null : fetch.Reason));
+        await store.SaveCachedAsync(new CachedStats(userId, game, fetch.Status, payload, now, fetch.Status == StatsStatus.Ok ? null : fetch.Reason)
+        {
+            SteamId = steamId
+        });
     }
 
     [Microsoft.Extensions.Logging.LoggerMessage(Level = Microsoft.Extensions.Logging.LogLevel.Warning,
@@ -344,7 +427,12 @@ internal sealed partial class GameStatsHandlers(IGameStatsStore store, IGameStat
     private async Task<MyStats> MineAsync(ulong userId)
     {
         var cached = await store.ListCachedAsync([userId]);
-        return new MyStats((await store.ListSharingAsync([userId])).Contains(userId), (await players.GetSteamAsync(userId))?.SteamId,
-            cached.FirstOrDefault(item => item.Game == StatsGame.Dota2), cached.FirstOrDefault(item => item.Game == StatsGame.Cs2), directory.Cs2Enabled);
+        var accounts = (await players.ListSteamAsync(userId)).Select(account => new AccountStats(account,
+            cached.FirstOrDefault(item => item.SteamId == account.SteamId && item.Game == StatsGame.Dota2),
+            cached.FirstOrDefault(item => item.SteamId == account.SteamId && item.Game == StatsGame.Cs2))).ToArray();
+        bool shares = (await store.ListSharingAsync([userId])).Contains(userId);
+        // The single-card fields (Discord /stats, older callers) follow the first shown account, or the main one.
+        var first = accounts.FirstOrDefault(account => shares && account.Show) ?? accounts.FirstOrDefault();
+        return new MyStats(shares, first?.SteamId, first?.Dota, first?.Cs2, directory.Cs2Enabled) { Accounts = accounts };
     }
 }

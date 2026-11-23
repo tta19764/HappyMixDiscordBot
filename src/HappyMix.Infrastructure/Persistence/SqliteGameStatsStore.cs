@@ -43,7 +43,7 @@ internal sealed class SqliteGameStatsStore(IDbContextFactory<HappyMixDbContext> 
         return (await db.Database.SqlQuery<CacheRow>($"SELECT * FROM GameStatsCache WHERE UserId IN (SELECT value FROM json_each({ids}))").ToListAsync())
             .Where(row => Enum.TryParse<StatsGame>(row.Game, out _) && Enum.TryParse<StatsStatus>(row.Status, out _))
             .Select(row => new CachedStats(Parse(row.UserId), Enum.Parse<StatsGame>(row.Game), Enum.Parse<StatsStatus>(row.Status), row.Payload,
-                DateTimeOffset.FromUnixTimeSeconds(row.FetchedUtc), row.Reason))
+                DateTimeOffset.FromUnixTimeSeconds(row.FetchedUtc), row.Reason) { SteamId = row.SteamId.Length == 0 ? null : row.SteamId })
             .ToArray();
     }
 
@@ -51,9 +51,9 @@ internal sealed class SqliteGameStatsStore(IDbContextFactory<HappyMixDbContext> 
     {
         await using var db = await factory.CreateDbContextAsync();
         await db.Database.ExecuteSqlInterpolatedAsync($"""
-            INSERT INTO GameStatsCache (UserId, Game, Status, Payload, FetchedUtc, Reason)
-            VALUES ({Id(stats.UserId)}, {stats.Game.ToString()}, {stats.Status.ToString()}, {stats.Payload}, {stats.FetchedAt.ToUnixTimeSeconds()}, {stats.Reason})
-            ON CONFLICT (UserId, Game) DO UPDATE SET Status = excluded.Status, Payload = excluded.Payload, FetchedUtc = excluded.FetchedUtc,
+            INSERT INTO GameStatsCache (UserId, SteamId, Game, Status, Payload, FetchedUtc, Reason)
+            VALUES ({Id(stats.UserId)}, {stats.SteamId ?? ""}, {stats.Game.ToString()}, {stats.Status.ToString()}, {stats.Payload}, {stats.FetchedAt.ToUnixTimeSeconds()}, {stats.Reason})
+            ON CONFLICT (UserId, SteamId, Game) DO UPDATE SET Status = excluded.Status, Payload = excluded.Payload, FetchedUtc = excluded.FetchedUtc,
                 Reason = excluded.Reason
             """);
     }
@@ -63,6 +63,13 @@ internal sealed class SqliteGameStatsStore(IDbContextFactory<HappyMixDbContext> 
         await using var db = await factory.CreateDbContextAsync();
         string user = Id(userId);
         await db.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM GameStatsCache WHERE UserId = {user}");
+    }
+
+    public async Task RemoveCachedAsync(ulong userId, string steamId)
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        string user = Id(userId);
+        await db.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM GameStatsCache WHERE UserId = {user} AND SteamId = {steamId}");
     }
 
     public async Task SaveMatchesAsync(IReadOnlyCollection<PlayerMatch> matches)
@@ -186,5 +193,5 @@ internal sealed class SqliteGameStatsStore(IDbContextFactory<HappyMixDbContext> 
 
     private sealed record MatchRow(string UserId, string Game, string MatchId, long StartedUtc, long Duration, long Won, string? Pick, string? Image,
         long Kills, long Deaths, long Assists, double? Headshots, string? Score);
-    private sealed record CacheRow(string UserId, string Game, string Status, string? Payload, long FetchedUtc, string? Reason);
+    private sealed record CacheRow(string UserId, string SteamId, string Game, string Status, string? Payload, long FetchedUtc, string? Reason);
 }

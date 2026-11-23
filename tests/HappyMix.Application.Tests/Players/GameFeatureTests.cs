@@ -33,17 +33,43 @@ public sealed class GameFeatureTests
     }
 
     [Fact]
-    public void TwentyHeroesPerLaneFitInTheDiscordPost()
+    public void TwentyHeroesPerLaneFitTheDiscordPostWithIconsAndBuildLinks()
     {
         var heroes = Enumerable.Range(1, 25).Select(id => new MetaHero(id, "Keeper of the Light " + id, null, 123456, 70000)).ToArray();
         var meta = new DotaMeta(DateTimeOffset.UnixEpoch, new Dictionary<DotaLane, IReadOnlyList<MetaHero>>
             { [DotaLane.Safe] = heroes, [DotaLane.Mid] = heroes, [DotaLane.Off] = [] });
-        var embed = HappyMix.Bot.Services.DiscordDotaMetaPublisher.Embed(meta, 20, "en");
-        var safe = embed.Fields[0].Value.Split('\n');
+        var icons = Enumerable.Range(1, 25).ToDictionary(id => id, id => $"<:d2h{id}:1234567890123456789>");
+        var messages = HappyMix.Bot.Services.DiscordDotaMetaPublisher.Messages(meta, 20, "en", icons);
+
+        // A header, then one block per lane, split over messages Discord accepts.
+        var embeds = messages.SelectMany(message => message).ToArray();
+        Assert.Equal(4, embeds.Length);
+        Assert.All(messages, message => Assert.True(message.Length <= 10 && message.Sum(embed => embed.Length) <= 6000));
+        Assert.Equal(("Dota 2 · Meta heroes by lane", "Safe lane"), (embeds[0].Title, embeds[1].Title));
+        var safe = embeds[1].Description.Split('\n');
         Assert.Equal(20, safe.Length);
-        Assert.StartsWith("1. **Keeper of the Light 1** 56.7% · 123,456", safe[0], StringComparison.Ordinal);
-        Assert.All(embed.Fields, field => Assert.True(field.Value.Length <= 1024));
-        Assert.Equal(5, HappyMix.Bot.Services.DiscordDotaMetaPublisher.Embed(meta, 5, "en").Fields[1].Value.Split('\n').Length);
+        Assert.Equal("1. <:d2h1:1234567890123456789> **Keeper of the Light 1** 56.7% · 123,456 · [STRATZ](https://stratz.com/heroes/1/guides)"
+            + " · [D2PT](https://dota2protracker.com/hero/Keeper%20of%20the%20Light%201)", safe[0]);
+        Assert.Equal("—", embeds.Single(embed => embed.Title == "Off lane").Description);
+        Assert.Equal("OpenDota", embeds[^1].Footer!.Value.Text);
+
+        // Without icons (the bot couldn't make them) the line simply has none.
+        var plain = HappyMix.Bot.Services.DiscordDotaMetaPublisher.Messages(meta, 5, "en");
+        Assert.StartsWith("1. **Keeper of the Light 1** 56.7%", plain[0][1].Description, StringComparison.Ordinal);
+        Assert.Equal(5, plain[0][1].Description.Split('\n').Length);
+    }
+
+    [Fact]
+    public void BuildLinksAndHeroIconsUseTheRightAddresses()
+    {
+        Assert.Equal("https://stratz.com/heroes/86/guides", DotaBuilds.Stratz(86));
+        Assert.Equal("https://dota2protracker.com/hero/Nature%27s%20Prophet", DotaBuilds.ProTracker("Nature's Prophet"));
+        Assert.Equal("https://dota2protracker.com/hero/Anti-Mage", DotaBuilds.ProTracker("Anti-Mage"));
+        Assert.Equal("https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/icons/lina.png",
+            HappyMix.Bot.Services.HeroEmojis.IconUrl("https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/lina.png"));
+        Assert.Null(HappyMix.Bot.Services.HeroEmojis.IconUrl(null));
+        Assert.Equal((14, (int?)null, (int?)null), (HappyMix.Bot.Services.HeroEmojis.HeroId("d2h14"), HappyMix.Bot.Services.HeroEmojis.HeroId("pepe"),
+            HappyMix.Bot.Services.HeroEmojis.HeroId("d2hx")));
     }
 
     [Fact]
@@ -127,11 +153,13 @@ public sealed class GameFeatureTests
         var heroes = Enumerable.Range(1, 20).Select(id => new RankedHero(id, "Keeper of the Light " + id, null, 123456, 70000, 12.5)).ToArray();
         var roles = Enumerable.Range(1, 5).Select(position => new HeroMeta(new MetaFilter(MetaPatch.Current, position), "7.42", null,
             DateTimeOffset.UnixEpoch, 100000, heroes)).ToArray();
-        var embed = HappyMix.Bot.Services.DiscordDotaMetaPublisher.RolesEmbed(roles, 20, "en");
-        Assert.Equal(5, embed.Fields.Length);
-        Assert.True(embed.Length <= 6000, $"embed length {embed.Length}");
-        Assert.StartsWith("Patch 7.42 · All ranks · Meta score", embed.Description, StringComparison.Ordinal);
-        Assert.Equal("Pos 1 · Carry", embed.Fields[0].Name);
+        var messages = HappyMix.Bot.Services.DiscordDotaMetaPublisher.RoleMessages(roles, 20, "en");
+        var embeds = messages.SelectMany(message => message).ToArray();
+        Assert.Equal(6, embeds.Length);
+        Assert.All(messages, message => Assert.True(message.Sum(embed => embed.Length) <= 6000, $"message length {message.Sum(embed => embed.Length)}"));
+        Assert.StartsWith("Patch 7.42 · All ranks · Meta score", embeds[0].Description, StringComparison.Ordinal);
+        Assert.Equal("Pos 1 · Carry", embeds[1].Title);
+        Assert.Equal(20, embeds[1].Description.Split('\n').Length);
     }
 
     [Theory]
@@ -222,6 +250,8 @@ public sealed class GameFeatureTests
     private sealed class FakeSource : IDotaMetaSource
     {
         public int Calls { get; private set; }
+        /// <summary>The test clock, so fetched data is stamped with the test's time and not today's.</summary>
+        public LiveTests.MutableClock? Clock { get; set; }
 
         public Task<StatsFetch<DotaMeta>> GetMetaAsync(CancellationToken cancellationToken)
         {
@@ -232,7 +262,7 @@ public sealed class GameFeatureTests
                 [DotaLane.Mid] = [new MetaHero(14, "Pudge", null, 300, 180)],
                 [DotaLane.Off] = []
             };
-            return Task.FromResult(new StatsFetch<DotaMeta>(StatsStatus.Ok, new DotaMeta(DateTimeOffset.UtcNow, lanes)));
+            return Task.FromResult(new StatsFetch<DotaMeta>(StatsStatus.Ok, new DotaMeta(Clock?.UtcNow ?? DateTimeOffset.UtcNow, lanes)));
         }
     }
 
@@ -273,6 +303,8 @@ public sealed class GameFeatureTests
         private ServiceProvider application = null!;
         public LiveTests.MutableClock Clock { get; } = new(new DateTimeOffset(2026, 11, 22, 12, 0, 0, TimeSpan.Zero));
         public FakeSource Source { get; } = new();
+
+        private Fixture() => Source.Clock = Clock;
         public FakeStats Stats { get; } = new();
         public List<(ulong Guild, ulong Channel, int Count)> Posted { get; } = [];
         public List<IReadOnlyList<HeroMeta>> RolePosts { get; } = [];
