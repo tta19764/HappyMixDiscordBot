@@ -229,6 +229,155 @@ internal sealed partial class GameStatsDirectory(IHttpClientFactory clients, ICo
         }
     }
 
+    public async Task<StatsFetch<MatchDetail>> GetMatchDetailAsync(StatsGame game, string matchId, CancellationToken cancellationToken)
+    {
+        string service = game == StatsGame.Cs2 ? "FACEIT" : StratzKey is null ? "OpenDota" : "STRATZ";
+        try
+        {
+            if (game == StatsGame.Cs2)
+            {
+                if (FaceitKey is not { } faceitKey)
+                    return new(StatsStatus.NoAccount, null, "Faceit__ApiKey isn't set on the server, so CS2 stats are off.");
+                using var faceit = clients.CreateClient(FaceitClient);
+                using var stats = await FaceitAsync(faceit, faceitKey, $"matches/{Uri.EscapeDataString(matchId)}/stats", true, cancellationToken);
+                return stats is not null && ParseFaceitDetail(matchId, stats.RootElement) is { } match
+                    ? new(StatsStatus.Ok, match) : new(StatsStatus.NoPublicData, null, $"FACEIT has no stats for match {matchId}.");
+            }
+            if (!long.TryParse(matchId, NumberStyles.None, CultureInfo.InvariantCulture, out long id))
+                return new(StatsStatus.NoAccount, null, "Not a Dota 2 match id.");
+            var names = await HeroesAsync(cancellationToken);
+            if (StratzKey is { } key)
+            {
+                // STRATZ answers with exactly the fields shown, so one small call per match.
+                using var answer = await StratzAsync(key, StratzMatchQuery(id), cancellationToken);
+                if (answer.RootElement.TryGetProperty("data", out var data) && data.TryGetProperty("match", out var stratz)
+                    && ParseStratzMatch(stratz, names) is { } fromStratz)
+                    return new(StatsStatus.Ok, fromStratz);
+            }
+            using var open = await OpenDotaAsync($"matches/{id.ToString(CultureInfo.InvariantCulture)}", null, cancellationToken);
+            return ParseOpenDotaMatch(open.RootElement, names) is { } fromOpenDota
+                ? new(StatsStatus.Ok, fromOpenDota) : new(StatsStatus.NoPublicData, null, $"Match {matchId} has no players yet.");
+        }
+        catch (Exception error) when (Reason(service, error) is { } reason)
+        {
+            LogLookupFailed(logger, service + " match", reason);
+            return new(StatsStatus.Error, null, reason);
+        }
+    }
+
+    internal static string StratzMatchQuery(long matchId) =>
+        $"{{ match(id: {matchId.ToString(CultureInfo.InvariantCulture)}) {{ id didRadiantWin gameMode lobbyType radiantKills direKills players {{ "
+        + "steamAccountId isRadiant heroId kills deaths assists networth goldPerMinute experiencePerMinute numLastHits numDenies heroDamage "
+        + "towerDamage heroHealing level position steamAccount { name isAnonymous } } } }";
+
+    /// <summary>STRATZ's match: the score is the sum of kills per minute; private profiles keep their name hidden.</summary>
+    internal static MatchDetail? ParseStratzMatch(JsonElement match, IReadOnlyDictionary<int, (string Name, string? Image)> heroes)
+    {
+        if (match.ValueKind != JsonValueKind.Object || !match.TryGetProperty("players", out var players) || players.ValueKind != JsonValueKind.Array
+            || players.GetArrayLength() == 0 || Number(match, "id") is not { } id)
+            return null;
+        static int Sum(JsonElement match, string name) =>
+            match.TryGetProperty(name, out var minutes) && minutes.ValueKind == JsonValueKind.Array
+                ? minutes.EnumerateArray().Sum(minute => minute.ValueKind == JsonValueKind.Number ? minute.GetInt32() : 0) : 0;
+        int? winner = match.TryGetProperty("didRadiantWin", out var won) && won.ValueKind is JsonValueKind.True or JsonValueKind.False
+            ? won.ValueKind == JsonValueKind.True ? 0 : 1 : null;
+        var list = players.EnumerateArray().Select(player =>
+        {
+            int hero = Int(player, "heroId") ?? 0;
+            var known = heroes.TryGetValue(hero, out var found) ? found : ((string Name, string? Image)?)null;
+            var account = player.TryGetProperty("steamAccount", out var steam) ? steam : default;
+            bool hidden = account.ValueKind != JsonValueKind.Object || (account.TryGetProperty("isAnonymous", out var anonymous) && anonymous.ValueKind == JsonValueKind.True);
+            int? position = Text(player, "position") is { } text && text.StartsWith("POSITION_", StringComparison.Ordinal)
+                && int.TryParse(text[9..], NumberStyles.None, CultureInfo.InvariantCulture, out int value) ? value : null;
+            return new MatchParticipant(player.TryGetProperty("isRadiant", out var radiant) && radiant.ValueKind == JsonValueKind.True ? 0 : 1,
+                Number(player, "steamAccountId") is { } steamId ? ((long)steamId).ToString(CultureInfo.InvariantCulture) : null,
+                hidden ? null : Text(account, "name"), known?.Name ?? (hero > 0 ? "#" + hero.ToString(CultureInfo.InvariantCulture) : null), known?.Image,
+                Int(player, "kills") ?? 0, Int(player, "deaths") ?? 0, Int(player, "assists") ?? 0)
+            {
+                Level = Int(player, "level"), NetWorth = Int(player, "networth"), GoldPerMinute = Int(player, "goldPerMinute"),
+                XpPerMinute = Int(player, "experiencePerMinute"), LastHits = Int(player, "numLastHits"), Denies = Int(player, "numDenies"),
+                HeroDamage = Int(player, "heroDamage"), TowerDamage = Int(player, "towerDamage"), Healing = Int(player, "heroHealing"), Position = position
+            };
+        }).OrderBy(player => player.Side).ThenBy(player => player.Position ?? 9).ToArray();
+        string? mode = Text(match, "gameMode") is { } gameMode ? gameMode.ToLowerInvariant() : null;
+        bool ranked = Text(match, "lobbyType") == "RANKED" || mode == "all_pick_ranked";
+        return new MatchDetail(StatsGame.Dota2, ((long)id).ToString(CultureInfo.InvariantCulture), winner,
+            [new MatchSide(0, "Radiant", Sum(match, "radiantKills")), new MatchSide(1, "Dire", Sum(match, "direKills"))], list,
+            mode == "all_pick_ranked" ? "all_pick" : mode, ranked);
+    }
+
+    /// <summary>OpenDota's game modes by number, as lower-case codes.</summary>
+    private static readonly Dictionary<int, string> OpenDotaModes = new()
+    {
+        [1] = "all_pick", [2] = "captains_mode", [3] = "random_draft", [4] = "single_draft", [5] = "all_random", [16] = "captains_draft",
+        [18] = "ability_draft", [22] = "all_pick", [23] = "turbo"
+    };
+
+    /// <summary>OpenDota's match: players without a public account id have no name.</summary>
+    internal static MatchDetail? ParseOpenDotaMatch(JsonElement match, IReadOnlyDictionary<int, (string Name, string? Image)> heroes)
+    {
+        if (match.ValueKind != JsonValueKind.Object || !match.TryGetProperty("players", out var players) || players.ValueKind != JsonValueKind.Array
+            || players.GetArrayLength() == 0 || Number(match, "match_id") is not { } id)
+            return null;
+        int? winner = match.TryGetProperty("radiant_win", out var won) && won.ValueKind is JsonValueKind.True or JsonValueKind.False
+            ? won.ValueKind == JsonValueKind.True ? 0 : 1 : null;
+        var list = players.EnumerateArray().Select(player =>
+        {
+            int hero = Int(player, "hero_id") ?? 0;
+            var known = heroes.TryGetValue(hero, out var found) ? found : ((string Name, string? Image)?)null;
+            long? account = Number(player, "account_id") is { } value ? (long)value : null;
+            bool radiant = player.TryGetProperty("isRadiant", out var side) ? side.ValueKind == JsonValueKind.True : (Int(player, "player_slot") ?? 0) < 128;
+            return new MatchParticipant(radiant ? 0 : 1, account?.ToString(CultureInfo.InvariantCulture), account is null ? null : Text(player, "personaname"),
+                known?.Name ?? (hero > 0 ? "#" + hero.ToString(CultureInfo.InvariantCulture) : null), known?.Image,
+                Int(player, "kills") ?? 0, Int(player, "deaths") ?? 0, Int(player, "assists") ?? 0)
+            {
+                Level = Int(player, "level"), NetWorth = Int(player, "net_worth"), GoldPerMinute = Int(player, "gold_per_min"), XpPerMinute = Int(player, "xp_per_min"),
+                LastHits = Int(player, "last_hits"), Denies = Int(player, "denies"), HeroDamage = Int(player, "hero_damage"),
+                TowerDamage = Int(player, "tower_damage"), Healing = Int(player, "hero_healing")
+            };
+        }).OrderBy(player => player.Side).ToArray();
+        int? gameMode = Int(match, "game_mode");
+        return new MatchDetail(StatsGame.Dota2, ((long)id).ToString(CultureInfo.InvariantCulture), winner,
+            [new MatchSide(0, "Radiant", Int(match, "radiant_score")), new MatchSide(1, "Dire", Int(match, "dire_score"))], list,
+            gameMode is { } number && OpenDotaModes.TryGetValue(number, out var code) ? code : null, Int(match, "lobby_type") == RankedLobby);
+    }
+
+    /// <summary>FACEIT's match stats: both teams with their final score and every player's numbers.</summary>
+    internal static MatchDetail? ParseFaceitDetail(string matchId, JsonElement stats)
+    {
+        if (!stats.TryGetProperty("rounds", out var rounds) || rounds.ValueKind != JsonValueKind.Array || rounds.GetArrayLength() == 0)
+            return null;
+        var round = rounds[0];
+        if (!round.TryGetProperty("teams", out var teams) || teams.ValueKind != JsonValueKind.Array)
+            return null;
+        var roundStats = round.TryGetProperty("round_stats", out var values) ? values : default;
+        var sides = new List<MatchSide>();
+        var list = new List<MatchParticipant>();
+        int? winner = null;
+        int side = 0;
+        foreach (var team in teams.EnumerateArray())
+        {
+            var teamStats = team.TryGetProperty("team_stats", out var found) ? found : default;
+            sides.Add(new MatchSide(side, Text(teamStats, "Team") ?? (side == 0 ? "Team 1" : "Team 2"), Int(teamStats, "Final Score")));
+            if (Text(teamStats, "Team Win") == "1")
+                winner = side;
+            if (team.TryGetProperty("players", out var members) && members.ValueKind == JsonValueKind.Array)
+                foreach (var member in members.EnumerateArray())
+                {
+                    var numbers = member.TryGetProperty("player_stats", out var playerStats) ? playerStats : default;
+                    list.Add(new MatchParticipant(side, Text(member, "player_id"), Text(member, "nickname"), null, null,
+                        Int(numbers, "Kills") ?? 0, Int(numbers, "Deaths") ?? 0, Int(numbers, "Assists") ?? 0)
+                    {
+                        Headshots = Number(numbers, "Headshots %"), Adr = Number(numbers, "ADR"), Mvps = Int(numbers, "MVPs")
+                    });
+                }
+            side++;
+        }
+        return list.Count == 0 ? null : new MatchDetail(StatsGame.Cs2, matchId, winner, sides,
+            list.OrderBy(player => player.Side).ThenByDescending(player => player.Kills).ToArray(),
+            Map: roundStats.ValueKind == JsonValueKind.Object ? Text(roundStats, "Map") : null);
+    }
+
     public async Task<StatsFetch<DotaMeta>> GetMetaAsync(CancellationToken cancellationToken)
     {
         try

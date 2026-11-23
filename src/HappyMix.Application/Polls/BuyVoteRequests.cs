@@ -10,21 +10,24 @@ using MediatR;
 namespace HappyMix.Application.Polls;
 
 /// <summary>
-/// Starts a "will you buy this game" vote in a group. <paramref name="Game"/> is a name, a Steam store link or a My games
-/// key (<c>steam:730</c>); <paramref name="QuestionFormat"/> is the question in the asker's language with {0} for the game.
-/// Members who own the game in their imported Steam library are counted as "Already have" straight away.
+/// Starts a "will you buy this game" vote: in a group (<paramref name="GroupId"/>), or in the server for chosen people
+/// (<paramref name="Audience"/>) or everyone (<paramref name="Everyone"/>). <paramref name="Game"/> is a name, a Steam
+/// store link or a My games key (<c>steam:730</c>); <paramref name="QuestionFormat"/> is the question in the asker's
+/// language with {0} for the game. Voters who own the game in their imported Steam library are counted as "Already have"
+/// straight away.
 /// </summary>
-public sealed record CreateBuyVoteCommand(GroupActor Actor, Guid GroupId, string Game, string QuestionFormat, TimeSpan Duration, Guid RequestId,
-    ulong? ChannelId = null) : ICommand<Guid>;
+public sealed record CreateBuyVoteCommand(GroupActor Actor, Guid? GroupId, string Game, string QuestionFormat, TimeSpan Duration, Guid RequestId,
+    ulong? ChannelId = null, IReadOnlyList<ulong>? Audience = null, bool Everyone = false) : ICommand<Guid>;
 
 /// <summary>
-/// After a Steam import: marks the person "Already have" in open buy votes of their groups for games they now own.
+/// After a Steam import: marks the person "Already have" in open buy votes they can vote in (their groups' votes, server
+/// votes for everyone in a server they're in, and votes they were chosen for) for games they now own.
 /// Returns the votes that changed, so their Discord messages can be updated.
 /// </summary>
 public sealed record SyncBuyVotesCommand(ulong UserId) : ICommand<IReadOnlyList<(ulong GuildId, Guid PollId)>>;
 
 internal sealed class BuyVoteHandlers(IPollStore polls, IAccountLinkStore accountLinks, IPlayerGameStore players, IGuildGroupStore groups,
-    IClock clock, ISender sender) :
+    IClock clock, ISender sender, IEnumerable<IGuildMemberGateway> gateways) :
     ICommandHandler<CreateBuyVoteCommand, Guid>, ICommandHandler<SyncBuyVotesCommand, IReadOnlyList<(ulong GuildId, Guid PollId)>>
 {
     private static readonly ErrorDescriptor NotFound = new("Poll.NotFound", "That vote doesn't exist or isn't for you.");
@@ -32,26 +35,48 @@ internal sealed class BuyVoteHandlers(IPollStore polls, IAccountLinkStore accoun
     public async Task<Result<Guid>> Handle(CreateBuyVoteCommand command, CancellationToken cancellationToken)
     {
         var actor = command.Actor;
-        if (await sender.Send(new GetGroupDetailQuery(actor, command.GroupId), cancellationToken) is not { IsSuccess: true, Value: { CanViewRoster: true } group })
-            return Result.Failure<Guid>(NotFound);
+        GroupDetail? group = null;
+        if (command.GroupId is { } groupId)
+        {
+            if (await sender.Send(new GetGroupDetailQuery(actor, groupId), cancellationToken) is not { IsSuccess: true, Value: { CanViewRoster: true } found })
+                return Result.Failure<Guid>(NotFound);
+            group = found;
+        }
         if (await polls.GetAsync(actor.GuildId, command.RequestId) is not null)
             return command.RequestId;
         if (command.Duration < PollRules.MinDuration || command.Duration > PollRules.MaxDuration)
             return Fail("Polls_Duration");
 
         var links = await accountLinks.LoadAsync(actor.GuildId);
-        var voters = group.Members.Append(group.Summary.OrganizerId).Select(links.Member).Distinct().ToArray();
+        ulong creator = links.Member(actor.UserId);
+        bool everyone = group is null && command.Everyone;
+        // Who votes: the group, the chosen people with the asker, or (for everyone) whoever owns the game, found below.
+        ulong[] voters = group is not null ? group.Members.Append(group.Summary.OrganizerId).Select(links.Member).Distinct().ToArray()
+            : everyone ? [creator]
+            : (command.Audience ?? []).Select(links.Member).Append(creator).Distinct().ToArray();
+        if (group is null && !everyone && (voters.Length < 2 || voters.Length > PollRules.MaxAudience))
+            return Fail("Polls_Audience");
         var libraries = await players.ListForAsync(voters.SelectMany(links.Accounts).ToArray());
-        if (Resolve(command.Game, group.Games, libraries) is not { } game)
+        if (Resolve(command.Game, group?.Games ?? await groups.ListGamesAsync(actor.GuildId), libraries) is not { } game)
             return Fail("Buy_GameMissing");
+        if (everyone)
+        {
+            var owners = await players.ListOwnersAsync(game.Key, game.Name);
+            var inServer = new List<ulong>();
+            foreach (ulong owner in owners.Select(item => item.UserId).Distinct())
+                if (await IsInServerAsync(actor.GuildId, owner))
+                    inServer.Add(owner);
+            voters = inServer.Select(links.Member).Append(creator).Distinct().ToArray();
+            libraries = owners.Where(item => inServer.Contains(item.UserId)).Concat(libraries).ToArray();
+        }
 
         string question = string.Format(System.Globalization.CultureInfo.InvariantCulture, command.QuestionFormat, game.Name);
         if (question.Length > PollRules.QuestionLength)
             question = question[..(PollRules.QuestionLength - 1)] + "…";
         var now = clock.UtcNow;
         var options = BuyVote.Labels.Select((label, position) => new PollOption(position, label, BuyVote.Kind, null)).ToArray();
-        var poll = new Poll(command.RequestId, actor.GuildId, command.GroupId, links.Member(actor.UserId), question, false, false, now,
-            now + command.Duration, null, options, [], [])
+        var poll = new Poll(command.RequestId, actor.GuildId, command.GroupId, creator, question, false, everyone, now,
+            now + command.Duration, null, options, group is null && !everyone ? voters : [], [])
         {
             ChannelId = command.ChannelId,
             Purpose = PollPurpose.Buy,
@@ -68,16 +93,20 @@ internal sealed class BuyVoteHandlers(IPollStore polls, IAccountLinkStore accoun
     {
         var changed = new List<(ulong GuildId, Guid PollId)>();
         var open = await polls.ListOpenBuyAsync(clock.UtcNow);
-        foreach (var guild in open.Where(poll => poll.GroupId is not null && poll.GameKey is not null).GroupBy(poll => poll.GuildId))
+        foreach (var guild in open.Where(poll => poll.GameKey is not null).GroupBy(poll => poll.GuildId))
         {
             var links = await accountLinks.LoadAsync(guild.Key);
             ulong member = links.Member(command.UserId);
             var library = await players.ListForAsync(links.Accounts(member));
             var groupList = await groups.ListAsync(guild.Key);
+            bool? inServer = null;
             foreach (var poll in guild)
             {
-                if (groupList.FirstOrDefault(item => item.Id == poll.GroupId) is not { } group
-                    || !group.Members.Append(group.OrganizerId).Any(account => links.Same(account, member))
+                bool mayVote = poll.GroupId is { } groupId
+                    ? groupList.FirstOrDefault(item => item.Id == groupId) is { } group && group.Members.Append(group.OrganizerId).Any(account => links.Same(account, member))
+                    : poll.Everyone ? inServer ??= await IsInServerAsync(guild.Key, command.UserId)
+                    : poll.Audience.Contains(member) || poll.CreatorId == member;
+                if (!mayVote
                     || poll.Votes.Any(vote => vote.UserId == member && vote.Position == BuyVote.Have)
                     || !Owns(library, links.Accounts(member), poll.GameKey!, poll.GameName))
                     continue;
@@ -128,6 +157,14 @@ internal sealed class BuyVoteHandlers(IPollStore polls, IAccountLinkStore accoun
     internal static bool Owns(IReadOnlyList<PlayerGame> libraries, IReadOnlyCollection<ulong> accounts, string gameKey, string? gameName) =>
         libraries.Any(game => (game.FromSteam || game.PlaytimeMinutes is not null) && accounts.Contains(game.UserId)
             && (game.Key == gameKey || gameKey.StartsWith("name:", StringComparison.Ordinal) && string.Equals(game.Name, gameName, StringComparison.OrdinalIgnoreCase)));
+
+    /// <summary>Whether the person is in the server; without a way to check (tests), nobody is counted automatically.</summary>
+    private async Task<bool> IsInServerAsync(ulong guildId, ulong userId)
+    {
+        foreach (var gateway in gateways)
+            return await gateway.IsMemberAsync(guildId, userId);
+        return false;
+    }
 
     private static Result<Guid> Fail(string key) => Result.Failure<Guid>(new ErrorDescriptor("Poll.Invalid", key));
 }

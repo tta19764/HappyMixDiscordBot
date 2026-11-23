@@ -109,6 +109,7 @@ public sealed partial class LogsTests
             .AddSingleton(storage.GetRequiredService<HappyMix.Application.Abstractions.Guilds.IAccountLinkStore>())
             .AddSingleton(storage.GetRequiredService<HappyMix.Application.Abstractions.Polls.IPollStore>())
             .AddSingleton(storage.GetRequiredService<HappyMix.Application.Abstractions.Watch.IWatchStore>())
+            .AddSingleton(storage.GetRequiredService<HappyMix.Application.Abstractions.Players.IPlayerGameStore>())
             .AddSingleton<HappyMix.Application.Abstractions.Media.IMediaCatalog>(new FakeCatalog())
             .AddSingleton<HappyMix.Application.Abstractions.IClock>(new PollTests.MutableClock())
             .AddApplication().BuildServiceProvider();

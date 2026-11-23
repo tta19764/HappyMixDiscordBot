@@ -1501,6 +1501,22 @@ for (const image of document.querySelectorAll("[data-game-art]")) {
     }
 })();
 
+// Votes: filter running votes and results by type (a normal vote or "will you buy").
+(() => {
+    for (const filter of document.querySelectorAll("[data-poll-filter]")) {
+        const panel = filter.closest("[data-tab-panel]") ?? filter.parentElement;
+        const chips = [...filter.querySelectorAll("[data-poll-filter-type]")];
+        filter.hidden = false;
+        for (const chip of chips) {
+            chip.addEventListener("click", () => {
+                const type = chip.dataset.pollFilterType;
+                chips.forEach(other => other.setAttribute("aria-pressed", String(other === chip)));
+                for (const item of panel.querySelectorAll("[data-poll-type]")) item.hidden = type !== "" && item.dataset.pollType !== type;
+            });
+        }
+    }
+})();
+
 // Catalog search: find a game, series, film or anime and add it as a vote option or to the watchlist.
 (() => {
     for (const box of document.querySelectorAll("[data-media-search]")) {

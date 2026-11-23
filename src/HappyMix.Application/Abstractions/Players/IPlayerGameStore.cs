@@ -48,6 +48,8 @@ public interface IPlayerGameStore
 
     Task<IReadOnlyList<PlayerGame>> ListAsync(ulong userId);
     Task<IReadOnlyList<PlayerGame>> ListForAsync(IReadOnlyCollection<ulong> userIds);
+    /// <summary>Everyone's entries of one game imported from Steam (by key, or by name), for "who already has it".</summary>
+    Task<IReadOnlyList<PlayerGame>> ListOwnersAsync(string gameKey, string gameName);
     Task SaveAsync(PlayerGame game);
     Task SaveManyAsync(IReadOnlyCollection<PlayerGame> games);
     Task<bool> RemoveAsync(ulong userId, string key);

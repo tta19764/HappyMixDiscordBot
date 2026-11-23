@@ -126,6 +126,12 @@ public sealed record PollBoard(ulong ViewerId, Guid? GroupId, bool CanManageTags
 
     /// <summary>Watchlist progress of the group's titles, by catalog entry, so vote options can show "next: S2E5".</summary>
     public IReadOnlyDictionary<MediaRef, WatchItem> Progress { get; init; } = new Dictionary<MediaRef, WatchItem>();
+
+    /// <summary>
+    /// Games offered for a "will you buy" vote: the group's games and games members want (group), or the server's group
+    /// games, games the viewer wants and games from earlier votes (server).
+    /// </summary>
+    public IReadOnlyList<PollSuggestion> BuyGames { get; init; } = [];
 }
 
 /// <summary>Polls of a group (members only), or the server's own polls when <paramref name="GroupId"/> is null.</summary>
@@ -163,7 +169,7 @@ public sealed record VotePollCommand(GroupActor Actor, Guid PollId, IReadOnlyLis
 public sealed record ClosePollCommand(GroupActor Actor, Guid PollId) : ICommand<Poll>;
 
 internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLinks, IClock clock, ISender sender, IMediaCatalog catalog,
-    IWatchStore watchlist)
+    IWatchStore watchlist, HappyMix.Application.Abstractions.Players.IPlayerGameStore players, IGuildGroupStore groupStore)
     : IQueryHandler<GetPollBoardQuery, PollBoard>, IQueryHandler<GetPollQuery, Poll>, IQueryHandler<GetGroupTagsQuery, IReadOnlyDictionary<Guid, string[]>>, ICommandHandler<SetGroupTagsCommand, IReadOnlyList<string>>,
       ICommandHandler<CopyDiscordPollVoteCommand, bool>, ICommandHandler<SyncDiscordPollVotesCommand, bool>,
       ICommandHandler<CreatePollCommand, Guid>, ICommandHandler<VotePollCommand, Poll>, ICommandHandler<ClosePollCommand, Poll>
@@ -202,6 +208,7 @@ internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLi
         return new PollBoard(viewer, query.GroupId, group?.Summary.CanManage == true, tags, DefaultQuestion(tags),
             open, visible.Where(poll => poll.IsClosed(now)).ToArray(), suggestions, group is null ? [] : Voters(group))
         {
+            BuyGames = group is not null ? suggestions.Where(item => item.Kind == "game").ToArray() : await ServerBuyGamesAsync(actor, viewer, all),
             Media = media,
             Progress = tracked.Where(item => item.Source is not null && item.ExternalId is not null)
                 .ToDictionary(item => new MediaRef(item.Source!, item.ExternalId!))
@@ -364,6 +371,24 @@ internal sealed class PollHandlers(IPollStore polls, IAccountLinkStore accountLi
         {
             return null;
         }
+    }
+
+    /// <summary>Games for a server "will you buy" vote: ones the viewer wants first, then the server's group games and earlier vote options.</summary>
+    private async Task<PollSuggestion[]> ServerBuyGamesAsync(GroupActor actor, ulong viewer, IReadOnlyList<Poll> history)
+    {
+        var games = new Dictionary<string, PollSuggestion>(StringComparer.OrdinalIgnoreCase);
+        foreach (var game in (await players.ListAsync(viewer)).Where(game => game.Preference == HappyMix.Application.Abstractions.Players.GamePreference.Want))
+            games.TryAdd(game.Name, new PollSuggestion(game.Name, "game", game.Provider == "steam" ? $"https://store.steampowered.com/app/{game.ExternalId}" : null, "wanted", 0, 0, null, 1));
+        foreach (var poll in history)
+        {
+            if (poll.IsBuy && poll.GameName is { } asked)
+                games.TryAdd(asked, new PollSuggestion(asked, "game", BuyVote.StoreUrl(poll.GameKey), "history", 1, 0, null));
+            foreach (var option in poll.Options.Where(option => option.Kind == "game"))
+                games.TryAdd(option.Label, new PollSuggestion(option.Label, "game", option.Url, "history", 1, 0, null));
+        }
+        foreach (var game in await groupStore.ListGamesAsync(actor.GuildId))
+            games.TryAdd(game.Name, new PollSuggestion(game.Name, "game", game.SteamAppId is { } app ? $"https://store.steampowered.com/app/{app}" : null, "group", 0, 0, null));
+        return games.Values.Take(60).ToArray();
     }
 
     private async Task<GroupDetail?> GroupAsync(GroupActor actor, Guid groupId) =>

@@ -85,6 +85,45 @@ public sealed record GroupRecap(Guid GroupId, StatsGame Game, string MatchId, Da
 {
     /// <summary>Won, lost, or null when the members played on opposite sides.</summary>
     public bool? Won => Players.All(player => player.Won) ? true : Players.All(player => !player.Won) ? false : null;
+
+    /// <summary>Everyone in the match, both teams, once it was read; null until then.</summary>
+    public MatchDetail? Detail { get; init; }
+}
+
+/// <summary>
+/// A whole match: both sides with their score and every player. Side 0 is Radiant (Dota 2) or the first FACEIT team.
+/// </summary>
+/// <param name="Mode">Dota 2: the game mode as a lower-case code like all_pick or turbo. CS2: null.</param>
+/// <param name="Map">CS2: the map, like de_mirage.</param>
+public sealed record MatchDetail(StatsGame Game, string MatchId, int? WinningSide, IReadOnlyList<MatchSide> Sides,
+    IReadOnlyList<MatchParticipant> Players, string? Mode = null, bool Ranked = false, string? Map = null);
+
+/// <param name="Name">Radiant, Dire, or the FACEIT team name.</param>
+/// <param name="Score">Dota 2: kills. CS2: rounds won.</param>
+public sealed record MatchSide(int Side, string Name, int? Score);
+
+/// <summary>
+/// One player of a match. <see cref="Name"/> is null for players who keep their match data private.
+/// <see cref="AccountId"/> is the Dota 2 account id (32-bit) or the FACEIT player id.
+/// </summary>
+/// <param name="Pick">Dota 2: the hero.</param>
+public sealed record MatchParticipant(int Side, string? AccountId, string? Name, string? Pick, string? Image, int Kills, int Deaths, int Assists)
+{
+    public int? Level { get; init; }
+    public int? NetWorth { get; init; }
+    public int? GoldPerMinute { get; init; }
+    public int? XpPerMinute { get; init; }
+    public int? LastHits { get; init; }
+    public int? Denies { get; init; }
+    public int? HeroDamage { get; init; }
+    public int? TowerDamage { get; init; }
+    public int? Healing { get; init; }
+    /// <summary>Dota 2: position 1–5 when the service knows it.</summary>
+    public int? Position { get; init; }
+    /// <summary>CS2: headshot percentage, average damage per round and MVP stars.</summary>
+    public double? Headshots { get; init; }
+    public double? Adr { get; init; }
+    public int? Mvps { get; init; }
 }
 
 /// <summary>Stats sharing choices and the card cache.</summary>
@@ -105,7 +144,12 @@ public interface IGameStatsStore
     Task<DateTimeOffset?> MatchesFetchedAtAsync(ulong userId, StatsGame game);
     Task SetMatchesFetchedAtAsync(ulong userId, StatsGame game, DateTimeOffset at);
     Task RemoveMatchesAsync(ulong userId);
+    /// <summary>Removes matches (and their details) that started before <paramref name="before"/>.</summary>
     Task PruneMatchesAsync(DateTimeOffset before);
+
+    /// <summary>Saved details of matches, by game and match id; matches without details are left out.</summary>
+    Task<IReadOnlyDictionary<(StatsGame Game, string MatchId), MatchDetail>> ListMatchDetailsAsync(IReadOnlyCollection<(StatsGame Game, string MatchId)> matches);
+    Task SaveMatchDetailAsync(MatchDetail detail, DateTimeOffset startedAt, DateTimeOffset at);
 
     /// <summary>Records that a group's recap of a match was handled; false when it already was.</summary>
     Task<bool> MarkRecapAsync(ulong guildId, Guid groupId, StatsGame game, string matchId, DateTimeOffset at);
@@ -147,4 +191,8 @@ public interface IGameStatsDirectory
     /// <param name="known">Match ids already saved, so the service isn't asked for their details again.</param>
     Task<StatsFetch<IReadOnlyList<PlayerMatch>>> GetMatchesAsync(ulong userId, StatsGame game, string steamId64,
         IReadOnlySet<string> known, CancellationToken cancellationToken);
+
+    /// <summary>Every player of one match (STRATZ or OpenDota for Dota 2, FACEIT for CS2). One call per match.</summary>
+    Task<StatsFetch<MatchDetail>> GetMatchDetailAsync(StatsGame game, string matchId, CancellationToken cancellationToken) =>
+        Task.FromResult(new StatsFetch<MatchDetail>(StatsStatus.NoAccount, null, "Match details aren't available."));
 }

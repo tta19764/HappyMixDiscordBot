@@ -99,6 +99,50 @@ public sealed class PollTests
     }
 
     [Fact]
+    public async Task BuyVotesAreAVoteTypeForTheServerAndChosenPeopleToo()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var group = await fixture.GroupAsync(Organizer, [Kai]);
+        await fixture.Database.GetRequiredService<IGuildGroupStore>().SaveGameAsync(Guild, new GroupGame(Guid.NewGuid(), group, "Deep Rock Galactic", "steam", "548430"));
+        var players = fixture.Database.GetRequiredService<HappyMix.Application.Abstractions.Players.IPlayerGameStore>();
+        HappyMix.Application.Abstractions.Players.PlayerGame Owned(ulong user) => new(user, "steam:548430", "Deep Rock Galactic", "steam", "548430",
+            HappyMix.Application.Abstractions.Players.GamePreference.Can, true, 600, 0, fixture.Clock.UtcNow);
+        await players.SaveAsync(Owned(Kai));
+        await players.SaveAsync(Owned(Outsider)); // owns it, but isn't in the server
+        fixture.ServerMembers.UnionWith([Organizer, Kai, Mira]);
+
+        // Server votes offer the server's group games.
+        var board = (await fixture.Sender.Send(new GetPollBoardQuery(Actor(Mira), null))).Value;
+        Assert.Contains(board.BuyGames, item => item.Label == "Deep Rock Galactic" && item.Url == "https://store.steampowered.com/app/548430");
+
+        // Chosen people: the asker and whoever was picked; owners among them are counted at once.
+        Assert.True((await fixture.Sender.Send(new CreateBuyVoteCommand(Actor(Organizer), null, "Deep Rock Galactic", "Will you buy {0}?",
+            TimeSpan.FromDays(1), Guid.NewGuid()))).IsFailure);
+        var chosen = (await fixture.Sender.Send(new CreateBuyVoteCommand(Actor(Organizer), null, "Deep Rock Galactic", "Will you buy {0}?",
+            TimeSpan.FromDays(1), Guid.NewGuid(), Audience: [Kai]))).Value;
+        var poll = (await fixture.Sender.Send(new GetPollQuery(Actor(Kai), chosen))).Value;
+        Assert.Equal((true, (Guid?)null, false), (poll.IsBuy, poll.GroupId, poll.Everyone));
+        Assert.Equal([Organizer, Kai], poll.Audience.Order());
+        Assert.Equal([new PollVote(Kai, BuyVote.Have)], poll.Votes);
+        Assert.True((await fixture.Sender.Send(new GetPollQuery(Actor(Mira), chosen))).IsFailure);
+
+        // Everyone in the server: owners who are in the server are counted, others aren't.
+        var everyone = (await fixture.Sender.Send(new CreateBuyVoteCommand(Actor(Organizer), null, "https://store.steampowered.com/app/548430/",
+            "Will you buy {0}?", TimeSpan.FromDays(1), Guid.NewGuid(), Everyone: true))).Value;
+        poll = (await fixture.Sender.Send(new GetPollQuery(Actor(Mira), everyone))).Value;
+        Assert.Equal((true, "Deep Rock Galactic"), (poll.Everyone, poll.GameName));
+        Assert.Equal([new PollVote(Kai, BuyVote.Have)], poll.Votes);
+
+        // Mira buys it: her import counts her in the server-wide vote, not in the one she wasn't chosen for.
+        await players.SaveAsync(Owned(Mira));
+        Assert.Equal([(Guild, everyone)], (await fixture.Sender.Send(new SyncBuyVotesCommand(Mira))).Value);
+        await players.SaveAsync(Owned(Outsider) with { Name = "Deep Rock Galactic" });
+        Assert.Empty((await fixture.Sender.Send(new SyncBuyVotesCommand(Outsider))).Value);
+        board = (await fixture.Sender.Send(new GetPollBoardQuery(Actor(Organizer), null))).Value;
+        Assert.Equal(2, board.Open.Count);
+    }
+
+    [Fact]
     public void BuyVoteGamesComeFromLinksGroupGamesOrNames()
     {
         GroupGame[] games = [new(Guid.NewGuid(), Guid.NewGuid(), "Dota 2", "steam", "570")];
@@ -188,6 +232,8 @@ public sealed class PollTests
         private SqliteTestDatabase database = null!;
         private ServiceProvider application = null!;
         public MutableClock Clock { get; } = new();
+        /// <summary>Who Discord says is in the server.</summary>
+        public HashSet<ulong> ServerMembers { get; } = [];
         public ISender Sender => application.GetRequiredService<ISender>();
         public IServiceProvider Database => database.Services;
 
@@ -206,6 +252,7 @@ public sealed class PollTests
                 .AddSingleton<IClock>(fixture.Clock)
                 .AddSingleton(storage.GetRequiredService<HappyMix.Application.Abstractions.Players.IPlayerGameStore>())
                 .AddSingleton<HappyMix.Application.Abstractions.Players.ISteamDirectory>(new NoSteam())
+                .AddSingleton<IGuildMemberGateway>(new InServer(fixture.ServerMembers))
                 .AddApplication().BuildServiceProvider();
             return fixture;
         }
@@ -222,6 +269,12 @@ public sealed class PollTests
             application?.Dispose();
             database?.Dispose();
         }
+    }
+
+    private sealed class InServer(HashSet<ulong> members) : IGuildMemberGateway
+    {
+        public Task<bool> IsAdministratorAsync(ulong guildId, ulong userId) => Task.FromResult(false);
+        public Task<bool> IsMemberAsync(ulong guildId, ulong userId) => Task.FromResult(guildId == Guild && members.Contains(userId));
     }
 
     internal sealed class MutableClock : IClock

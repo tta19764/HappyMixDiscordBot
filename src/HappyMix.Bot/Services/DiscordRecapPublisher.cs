@@ -3,6 +3,7 @@ using Discord;
 using Discord.WebSocket;
 using HappyMix.Application.Abstractions.Guilds;
 using HappyMix.Application.Abstractions.Stats;
+using HappyMix.Application.Stats;
 using Microsoft.Extensions.Options;
 
 namespace HappyMix.Bot.Services;
@@ -70,15 +71,41 @@ internal sealed partial class DiscordRecapPublisher(DiscordSocketClient discord,
         string map = recap.Game == StatsGame.Cs2 && first.Pick is { Length: > 0 } pick
             ? " · " + Format.Sanitize(pick) + (first.Score is { Length: > 0 } score ? $" ({Format.Sanitize(score)})" : "") : "";
         var lines = new List<string> { NotificationText.Get(language, key, Format.Sanitize(groupName), game) + map + " · " + minutes };
+        // With the whole match read: the score of both sides, the mode, and each member's economy numbers.
+        var detail = recap.Detail;
+        var members = MatchRecaps.Members(recap).ToDictionary(item => item.Value, item => detail!.Players[item.Key]);
+        if (detail is { Sides.Count: 2 } && detail.Sides[0].Score is { } left && detail.Sides[1].Score is { } right)
+        {
+            string Side(MatchSide side) => Format.Sanitize(detail.Game == StatsGame.Dota2 && side.Name is "Radiant" or "Dire"
+                ? NotificationText.Get(language, "Recap_Side_" + side.Name) : side.Name);
+            var mode = new List<string>();
+            if (detail.Ranked) mode.Add(NotificationText.Get(language, "Recap_Ranked"));
+            if (detail.Mode is { } code && NotificationText.Get(language, "Recap_Mode_" + code) is var name && name != "Recap_Mode_" + code) mode.Add(name);
+            lines.Add($"{Side(detail.Sides[0])} **{left} : {right}** {Side(detail.Sides[1])}" + (mode.Count > 0 ? " · " + string.Join(" · ", mode) : ""));
+        }
         lines.AddRange(recap.Players.Select(player =>
             $"<@{player.UserId}> " + (recap.Won is null ? (player.Won ? "✅ " : "❌ ") : "")
             + (recap.Game == StatsGame.Dota2 && player.Pick is { Length: > 0 } hero ? Format.Sanitize(hero) + " · " : "")
             + $"{player.Kills}/{player.Deaths}/{player.Assists}"
-            + (player.Headshots is { } headshots ? " · " + NotificationText.Get(language, "Recap_Headshots", headshots.ToString("0", CultureInfo.InvariantCulture)) : "")));
+            + (player.Headshots is { } headshots ? " · " + NotificationText.Get(language, "Recap_Headshots", headshots.ToString("0", CultureInfo.InvariantCulture)) : "")
+            + (members.TryGetValue(player.UserId, out var line) ? Economy(line, language) : "")));
         lines.Add(recap.Game == StatsGame.Dota2
-            ? $"<https://www.opendota.com/matches/{recap.MatchId}> · <https://www.dotabuff.com/matches/{recap.MatchId}>"
+            ? $"<https://stratz.com/matches/{recap.MatchId}> · <https://www.opendota.com/matches/{recap.MatchId}> · <https://www.dotabuff.com/matches/{recap.MatchId}>"
             : $"<https://www.faceit.com/en/cs2/room/{Uri.EscapeDataString(recap.MatchId)}>");
         return string.Join("\n", lines);
+    }
+
+    /// <summary>" · 16.4k NW · 586 GPM" for Dota 2, " · 92 ADR" for CS2; empty when the numbers are missing.</summary>
+    private static string Economy(MatchParticipant player, string language)
+    {
+        string text = "";
+        if (player.NetWorth is { } worth)
+            text += " · " + NotificationText.Get(language, "Recap_NetWorthShort", (worth / 1000.0).ToString("0.0", CultureInfo.InvariantCulture));
+        if (player.GoldPerMinute is { } gold)
+            text += " · " + gold.ToString(CultureInfo.InvariantCulture) + " GPM";
+        if (player.Adr is { } adr)
+            text += " · " + adr.ToString("0", CultureInfo.InvariantCulture) + " ADR";
+        return text;
     }
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Match recap for server {GuildId} was not posted in channel {ChannelId}")]

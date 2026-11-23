@@ -1,0 +1,14 @@
+{
+  "en": [
+    "**v0.1.9 · Vote types**\nVotes now come in two types: **Pick an option** and **Will you buy?**. On the New vote tab, choose the type first; the form shows only what that type needs. A buy vote is no longer limited to groups: ask the whole server or only chosen people, post it in a channel, or start one in Discord with `/vote buy`. People who own the game in an imported Steam library are still counted as **Already have** automatically. Running votes and results can be filtered by type.",
+    "**Whole matches in games together**\n**Recent games together** now shows the whole match: the score, the game mode and every player on both teams. Dota 2 matches show heroes, positions, K/D/A, net worth, GPM/XPM, last hits and hero damage; CS2 matches show K/D/A, ADR, headshots and MVPs. Group members are highlighted, and players with private match data are shown without a name. Discord recaps now include the score, the mode and each member’s net worth and GPM."
+  ],
+  "uk": [
+    "**v0.1.9 · Типи голосувань**\nГолосування тепер мають два типи: **Вибір варіанта** і **Чи купите?**. На вкладці нового голосування спершу оберіть тип — форма покаже лише потрібне для нього. Голосування про купівлю більше не обмежене групами: запитайте весь сервер або лише вибраних людей, опублікуйте його в каналі чи почніть у Discord командою `/vote buy`. Тих, хто має гру в імпортованій бібліотеці Steam, як і раніше автоматично враховано як **Уже маю**. Поточні голосування й результати можна фільтрувати за типом.",
+    "**Повні матчі у спільних іграх**\n**Нещодавні спільні ігри** тепер показують увесь матч: рахунок, режим і всіх гравців обох команд. Для Dota 2 видно героїв, позиції, В/С/Д, цінність, GPM/XPM, добивання й шкоду героям; для CS2 — В/С/Д, ADR, хедшоти й MVP. Учасників групи виділено, а гравців із прихованими даними матчів показано без імені. Підсумки в Discord тепер містять рахунок, режим, а також цінність і GPM кожного учасника."
+  ],
+  "ru": [
+    "**v0.1.9 · Типы голосований**\nГолосования теперь бывают двух типов: **Выбор варианта** и **Купите?**. На вкладке нового голосования сначала выберите тип — форма покажет только нужное для него. Голосование о покупке больше не ограничено группами: спросите весь сервер или только выбранных людей, опубликуйте его в канале или начните в Discord командой `/vote buy`. Те, у кого игра есть в импортированной библиотеке Steam, по-прежнему автоматически учитываются как **Уже есть**. Текущие голосования и результаты можно фильтровать по типу.",
+    "**Полные матчи в совместных играх**\n**Недавние совместные игры** теперь показывают весь матч: счёт, режим и всех игроков обеих команд. Для Dota 2 видны герои, позиции, У/С/П, ценность, GPM/XPM, добивания и урон героям; для CS2 — У/С/П, ADR, хедшоты и MVP. Участники группы выделены, а игроки со скрытыми данными матчей показаны без имени. Итоги в Discord теперь содержат счёт, режим, а также ценность и GPM каждого участника."
+  ]
+}

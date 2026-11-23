@@ -96,6 +96,15 @@ internal sealed class SqlitePlayerGameStore(IDbContextFactory<HappyMixDbContext>
         return result;
     }
 
+    public async Task<IReadOnlyList<PlayerGame>> ListOwnersAsync(string gameKey, string gameName)
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        return (await db.Database.SqlQuery<GameRow>($"""
+                SELECT * FROM PlayerGames WHERE (GameKey = {gameKey} OR Name = {gameName} COLLATE NOCASE)
+                    AND (FromSteam = 1 OR PlaytimeMinutes IS NOT NULL) LIMIT 2000
+                """).ToListAsync()).Select(ToGame).ToArray();
+    }
+
     public Task SaveAsync(PlayerGame game) => SaveManyAsync([game]);
 
     public async Task SaveManyAsync(IReadOnlyCollection<PlayerGame> games)
