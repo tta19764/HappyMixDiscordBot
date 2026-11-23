@@ -429,6 +429,107 @@ public sealed class GameStatsTests
     }
 
     [Fact]
+    public async Task GamesTogetherShowTheWholeMatchWithMembersMarked()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var sender = fixture.Sender;
+        Guid groupId = await fixture.CreateGroupAsync();
+        await sender.Send(new LinkSteamCommand(Kai, KaiSteam));
+        await sender.Send(new LinkSteamCommand(Mira, MiraSteam));
+        await sender.Send(new SetStatsSharingCommand(Kai, true));
+        await sender.Send(new SetStatsSharingCommand(Mira, true));
+        var now = fixture.Clock.UtcNow;
+        fixture.Stats.Matches[Kai] = [new(Kai, StatsGame.Dota2, "7001", now.AddHours(-1), 2000, true, "Pudge", null, 12, 3, 15),
+            new(Kai, StatsGame.Dota2, "7000", now.AddDays(-2), 2000, true, "Lion", null, 1, 1, 1)];
+        fixture.Stats.Matches[Mira] = [new(Mira, StatsGame.Dota2, "7001", now.AddHours(-1), 2000, true, "Lion", null, 2, 8, 20),
+            new(Mira, StatsGame.Dota2, "7000", now.AddDays(-2), 2000, true, "Pudge", null, 1, 1, 1)];
+        MatchParticipant Player(int side, string? name, string hero, int kills) =>
+            new(side, null, name, hero, null, kills, 3, 15) { NetWorth = 16357, GoldPerMinute = 586 };
+        fixture.Stats.Details["7001"] = new MatchDetail(StatsGame.Dota2, "7001", 0, [new(0, "Radiant", 34), new(1, "Dire", 28)],
+            [Player(0, "stranger", "Axe", 4), Player(0, "kai", "Pudge", 12), Player(0, null, "Lion", 2), Player(1, "enemy", "Sniper", 9)], "all_pick", true);
+        await sender.Send(new SetRecapChannelCommand(Actor(Kai), groupId, true));
+
+        // The job reads each match shown on the Stats tab once; one without public data is remembered too.
+        await sender.Send(new RefreshMatchesCommand([Guild]));
+        Assert.Equal(["7001", "7000"], fixture.Stats.DetailsAsked);
+        var posted = Assert.Single(fixture.Posted.Recaps);
+        Assert.Equal(4, posted.Detail!.Players.Count);
+        var stats = (await sender.Send(new GetGroupStatsQuery(Actor(Mira), groupId))).Value;
+        var recap = stats.Recaps[0];
+        Assert.Equal(("7001", 34), (recap.MatchId, recap.Detail!.Sides[0].Score));
+        Assert.Null(stats.Recaps[1].Detail);
+        Assert.Equal(new Dictionary<int, ulong> { [1] = Kai, [2] = Mira }, MatchRecaps.Members(recap));
+
+        fixture.Clock.Advance(MatchRecaps.FetchEvery);
+        await sender.Send(new RefreshMatchesCommand([Guild]));
+        Assert.Equal(2, fixture.Stats.DetailsAsked.Count);
+
+        string text = HappyMix.Bot.Services.DiscordRecapPublisher.Text("Squad", posted, "en");
+        Assert.Contains("Radiant **34 : 28** Dire · Ranked · All Pick", text, StringComparison.Ordinal);
+        Assert.Contains("<@10> Pudge · 12/3/15 · 16.4k NW · 586 GPM", text, StringComparison.Ordinal);
+        Assert.Contains("https://stratz.com/matches/7001", text, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task WholeMatchesWaitWhenTheDailyBudgetIsUsedUp()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var sender = fixture.Sender;
+        await fixture.CreateGroupAsync();
+        await sender.Send(new LinkSteamCommand(Kai, KaiSteam));
+        await sender.Send(new LinkSteamCommand(Mira, MiraSteam));
+        await sender.Send(new SetStatsSharingCommand(Kai, true));
+        await sender.Send(new SetStatsSharingCommand(Mira, true));
+        await sender.Send(new RefreshPlayerMatchesCommand(Kai));
+        var now = fixture.Clock.UtcNow;
+        fixture.Stats.Matches[Kai] = [new(Kai, StatsGame.Dota2, "7001", now.AddHours(-1), 2000, true, "Pudge", null, 1, 1, 1)];
+        fixture.Stats.Matches[Mira] = [new(Mira, StatsGame.Dota2, "7001", now.AddHours(-1), 2000, true, "Lion", null, 1, 1, 1)];
+        await sender.Send(new RefreshPlayerMatchesCommand(Kai));
+        await sender.Send(new RefreshPlayerMatchesCommand(Mira));
+        fixture.Stats.BackgroundBudgetLeft = false;
+        await sender.Send(new RefreshMatchesCommand([Guild]));
+        Assert.Empty(fixture.Stats.DetailsAsked);
+    }
+
+    [Fact]
+    public void WholeMatchAnswersListEveryPlayer()
+    {
+        var names = new Dictionary<int, (string Name, string? Image)> { [14] = ("Pudge", "https://cdn/pudge.png"), [26] = ("Lion", null) };
+        using var stratz = JsonDocument.Parse("""
+            {"id":7001,"didRadiantWin":false,"gameMode":"ALL_PICK_RANKED","lobbyType":"RANKED","radiantKills":[1,2,3],"direKills":[4,5],"players":[
+             {"steamAccountId":41,"isRadiant":true,"heroId":14,"kills":12,"deaths":3,"assists":15,"networth":16357,"goldPerMinute":586,"experiencePerMinute":747,
+              "numLastHits":238,"numDenies":2,"heroDamage":11388,"towerDamage":10053,"heroHealing":0,"level":18,"position":"POSITION_3","steamAccount":{"name":"kai","isAnonymous":false}},
+             {"steamAccountId":42,"isRadiant":false,"heroId":26,"kills":2,"deaths":8,"assists":20,"position":"POSITION_5","steamAccount":{"name":"hidden","isAnonymous":true}}]}
+            """);
+        var match = GameStatsDirectory.ParseStratzMatch(stratz.RootElement, names)!;
+        Assert.Equal(("7001", 1, 6, 9, "all_pick", true), (match.MatchId, match.WinningSide, match.Sides[0].Score, match.Sides[1].Score, match.Mode, match.Ranked));
+        Assert.Equal(("kai", "Pudge", 3, 16357, 586, 747, 238), (match.Players[0].Name, match.Players[0].Pick, match.Players[0].Position,
+            match.Players[0].NetWorth, match.Players[0].GoldPerMinute, match.Players[0].XpPerMinute, match.Players[0].LastHits));
+        Assert.Equal((1, (string?)null, "Lion"), (match.Players[1].Side, match.Players[1].Name, match.Players[1].Pick)); // private profile: no name
+        Assert.Null(GameStatsDirectory.ParseStratzMatch(JsonDocument.Parse("null").RootElement, names));
+
+        using var openDota = JsonDocument.Parse("""
+            {"match_id":7001,"radiant_win":true,"radiant_score":30,"dire_score":12,"game_mode":23,"lobby_type":0,"players":[
+             {"account_id":41,"personaname":"kai","isRadiant":true,"hero_id":14,"kills":5,"deaths":1,"assists":7,"net_worth":9000,"gold_per_min":600},
+             {"account_id":null,"personaname":"ghost","isRadiant":false,"hero_id":26,"kills":0,"deaths":5,"assists":1}]}
+            """);
+        match = GameStatsDirectory.ParseOpenDotaMatch(openDota.RootElement, names)!;
+        Assert.Equal((0, 30, 12, "turbo", false), (match.WinningSide, match.Sides[0].Score, match.Sides[1].Score, match.Mode, match.Ranked));
+        Assert.Equal(("kai", 9000, (string?)null), (match.Players[0].Name, match.Players[0].NetWorth, match.Players[1].Name));
+
+        using var faceit = JsonDocument.Parse("""
+            {"rounds":[{"round_stats":{"Map":"de_mirage","Score":"13 / 9"},"teams":[
+              {"team_stats":{"Team":"team_kai","Final Score":"13","Team Win":"1"},"players":[
+                {"player_id":"kai-id","nickname":"kai","player_stats":{"Kills":"24","Deaths":"15","Assists":"4","Headshots %":"52","ADR":"91.5","MVPs":"5"}}]},
+              {"team_stats":{"Team":"team_x","Final Score":"9","Team Win":"0"},"players":[
+                {"player_id":"x-id","nickname":"x","player_stats":{"Kills":"10","Deaths":"20","Assists":"2"}}]}]}]}
+            """);
+        match = GameStatsDirectory.ParseFaceitDetail("1-abc", faceit.RootElement)!;
+        Assert.Equal(("de_mirage", 0, "team_kai", 13, 9), (match.Map, match.WinningSide, match.Sides[0].Name, match.Sides[0].Score, match.Sides[1].Score));
+        Assert.Equal(("kai", 91.5, 5, 1), (match.Players[0].Name, match.Players[0].Adr, match.Players[0].Mvps, match.Players[1].Side));
+    }
+
+    [Fact]
     public void AWeekOfGamesTogetherIsSummed()
     {
         var at = new DateTimeOffset(2026, 11, 18, 18, 0, 0, TimeSpan.Zero);
@@ -517,6 +618,17 @@ public sealed class GameStatsTests
             CancellationToken cancellationToken) =>
             Task.FromResult(new StatsFetch<IReadOnlyList<PlayerMatch>>(StatsStatus.Ok,
                 Matches.GetValueOrDefault(userId)?.Where(match => match.Game == game).ToArray() ?? []));
+
+        /// <summary>Whole matches by id; any other match has no public data.</summary>
+        public Dictionary<string, MatchDetail> Details { get; } = [];
+        public List<string> DetailsAsked { get; } = [];
+
+        public Task<StatsFetch<MatchDetail>> GetMatchDetailAsync(StatsGame game, string matchId, CancellationToken cancellationToken)
+        {
+            DetailsAsked.Add(matchId);
+            return Task.FromResult(Details.TryGetValue(matchId, out var detail)
+                ? new StatsFetch<MatchDetail>(StatsStatus.Ok, detail) : new StatsFetch<MatchDetail>(StatsStatus.NoPublicData, null));
+        }
     }
 
     private sealed class Posted : IRecapPublisher

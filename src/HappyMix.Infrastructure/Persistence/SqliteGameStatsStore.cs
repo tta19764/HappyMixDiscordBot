@@ -133,6 +133,45 @@ internal sealed class SqliteGameStatsStore(IDbContextFactory<HappyMixDbContext> 
         long at = before.ToUnixTimeSeconds();
         await db.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM PlayerMatches WHERE StartedUtc < {at}");
         await db.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM GroupRecaps WHERE HandledUtc < {at}");
+        await db.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM MatchDetails WHERE StartedUtc < {at}");
+    }
+
+    public async Task<IReadOnlyDictionary<(StatsGame Game, string MatchId), MatchDetail>> ListMatchDetailsAsync(IReadOnlyCollection<(StatsGame Game, string MatchId)> matches)
+    {
+        var found = new Dictionary<(StatsGame, string), MatchDetail>();
+        if (matches.Count == 0)
+            return found;
+        await using var db = await factory.CreateDbContextAsync();
+        string keys = JsonSerializer.Serialize(matches.Select(match => match.Game + ":" + match.MatchId).Distinct());
+        var rows = await db.Database.SqlQuery<DetailRow>(
+            $"SELECT Game, MatchId, Payload FROM MatchDetails WHERE Game || ':' || MatchId IN (SELECT value FROM json_each({keys}))").ToListAsync();
+        foreach (var row in rows)
+            if (Enum.TryParse<StatsGame>(row.Game, out var game) && Read(row.Payload) is { } detail)
+                found[(game, row.MatchId)] = detail;
+        return found;
+    }
+
+    public async Task SaveMatchDetailAsync(MatchDetail detail, DateTimeOffset startedAt, DateTimeOffset at)
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        await db.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO MatchDetails (Game, MatchId, StartedUtc, Payload, FetchedUtc)
+            VALUES ({detail.Game.ToString()}, {detail.MatchId}, {startedAt.ToUnixTimeSeconds()}, {JsonSerializer.Serialize(detail)}, {at.ToUnixTimeSeconds()})
+            ON CONFLICT (Game, MatchId) DO UPDATE SET Payload = excluded.Payload, FetchedUtc = excluded.FetchedUtc
+            """);
+    }
+
+    /// <summary>A saved match; null when it was written by a version whose shape can't be read any more.</summary>
+    private static MatchDetail? Read(string payload)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<MatchDetail>(payload);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     public async Task<bool> MarkRecapAsync(ulong guildId, Guid groupId, StatsGame game, string matchId, DateTimeOffset at)
@@ -193,5 +232,6 @@ internal sealed class SqliteGameStatsStore(IDbContextFactory<HappyMixDbContext> 
 
     private sealed record MatchRow(string UserId, string Game, string MatchId, long StartedUtc, long Duration, long Won, string? Pick, string? Image,
         long Kills, long Deaths, long Assists, double? Headshots, string? Score);
+    private sealed record DetailRow(string Game, string MatchId, string Payload);
     private sealed record CacheRow(string UserId, string SteamId, string Game, string Status, string? Payload, long FetchedUtc, string? Reason);
 }

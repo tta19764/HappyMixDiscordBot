@@ -26,6 +26,20 @@
     bool several = stats.Games.Count > 1;
     var zone = Model.Live?.Zone ?? TimeZoneInfo.Utc;
     string When(DateTimeOffset at) => TimeZoneInfo.ConvertTime(at, zone).ToString("ddd d MMM, HH:mm", culture);
+    string Thousands(int? value) => value is not { } number ? "–" : number >= 10000 ? (number / 1000.0).ToString("0.0", culture) + "k" : number.ToString("N0", culture);
+    string Side(MatchDetail match, MatchSide side) => match.Game == StatsGame.Dota2 && side.Name is "Radiant" or "Dire" ? T["Recap_Side_" + side.Name].Value : side.Name;
+    string Mode(MatchDetail match)
+    {
+        var parts = new List<string>();
+        if (match.Ranked) parts.Add(T["Recap_Ranked"].Value);
+        if (match.Mode is { } mode)
+        {
+            var known = T["Recap_Mode_" + mode];
+            parts.Add(known.ResourceNotFound ? culture.TextInfo.ToTitleCase(mode.Replace('_', ' ')) : known.Value);
+        }
+        if (match.Map is { Length: > 0 } map) parts.Add(map);
+        return string.Join(" · ", parts);
+    }
     BannerModel? statsBanner = Model.ErrorFor("stats") is { } statsError ? new BannerModel("error", T["That_didn_t_work"].Value, statsError) : null;
 }
 <section class="hm-card hm-section hm-stack hm-stats" id="stats" aria-labelledby="stats-title" data-group-panel="stats">
@@ -317,17 +331,31 @@
                         {
                             string result = recap.Won switch { true => "won", false => "lost", null => "split" };
                             var first = recap.Players[0];
+                            var match = recap.Detail;
                             <li class="hm-recap hm-recap--@result">
                                 <div class="hm-recap__head">
                                     <span class="hm-recap__result">@T[$"Recap_Result_{result}"]</span>
                                     <span class="hm-recap__when">@When(recap.StartedAt) · @T["Live_Minutes", Math.Max(1, recap.DurationSeconds / 60)]</span>
-                                    @if (!dota && first.Pick is { Length: > 0 } map)
+                                    @if (match is not null && Mode(match) is { Length: > 0 } mode)
+                                    {
+                                        <span class="hm-recap__map">@mode</span>
+                                    }
+                                    else if (!dota && first.Pick is { Length: > 0 } map)
                                     {
                                         <span class="hm-recap__map">@map@(first.Score is { Length: > 0 } score ? " · " + score : "")</span>
+                                    }
+                                    @if (match is { Sides.Count: 2 } && match.Sides[0].Score is { } left && match.Sides[1].Score is { } right)
+                                    {
+                                        <span class="hm-recap__score" aria-label="@T["Recap_Score"]">
+                                            <span class="@(match.WinningSide == 0 ? "is-winner" : "")">@Side(match, match.Sides[0])</span>
+                                            <b>@left.ToString(culture) : @right.ToString(culture)</b>
+                                            <span class="@(match.WinningSide == 1 ? "is-winner" : "")">@Side(match, match.Sides[1])</span>
+                                        </span>
                                     }
                                     <span class="hm-recap__links">
                                         @if (dota)
                                         {
+                                            <a href="https://stratz.com/matches/@recap.MatchId" target="_blank" rel="noopener noreferrer">STRATZ</a>
                                             <a href="https://www.opendota.com/matches/@recap.MatchId" target="_blank" rel="noopener noreferrer">OpenDota</a>
                                             <a href="https://www.dotabuff.com/matches/@recap.MatchId" target="_blank" rel="noopener noreferrer">Dotabuff</a>
                                         }
@@ -359,6 +387,90 @@
                                         </li>
                                     }
                                 </ul>
+                                @if (match is null)
+                                {
+                                    <p class="hm-help">@T["Recap_MatchPending"]</p>
+                                }
+                                else
+                                {
+                                    var memberOf = MatchRecaps.Members(recap);
+                                    <details class="hm-recap__match" open="@(recap == recaps[0])">
+                                        <summary>@T["Recap_AllPlayers", match.Players.Count] <small>@T["Recap_MembersMarked"]</small></summary>
+                                        @foreach (var side in match.Sides)
+                                        {
+                                            var team = match.Players.Select((player, index) => (player, index)).Where(item => item.player.Side == side.Side).ToArray();
+                                            if (team.Length == 0) { continue; }
+                                            <div class="hm-recap__team @(match.WinningSide == side.Side ? "is-winner" : "")">
+                                                <h4>@Side(match, side)@if (match.WinningSide == side.Side) { <span class="hm-badge hm-badge--mint">@T["Recap_Result_won"]</span> }@if (side.Score is { } teamScore) { <span class="hm-recap__team-score">@teamScore.ToString(culture)</span> }</h4>
+                                                <div class="hm-recap__table-wrap">
+                                                    <table class="hm-recap__table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th scope="col">@T["Recap_Player"]</th>
+                                                                <th scope="col" class="num">@T["Recap_KdaShort"]</th>
+                                                                @if (dota)
+                                                                {
+                                                                    <th scope="col" class="num">@T["Recap_NetWorth"]</th>
+                                                                    <th scope="col" class="num">@T["Recap_GpmXpm"]</th>
+                                                                    <th scope="col" class="num">@T["Recap_LhDn"]</th>
+                                                                    <th scope="col" class="num">@T["Recap_Damage"]</th>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <th scope="col" class="num">@T["Recap_Adr"]</th>
+                                                                    <th scope="col" class="num">@T["Recap_Hs"]</th>
+                                                                    <th scope="col" class="num">@T["Recap_Mvps"]</th>
+                                                                }
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach (var (player, index) in team)
+                                                            {
+                                                                bool isMember = memberOf.TryGetValue(index, out ulong memberId);
+                                                                <tr class="@(isMember ? "is-member" : "")">
+                                                                    <th scope="row">
+                                                                        <span class="hm-recap__person">
+                                                                            @if (dota && player.Image is { } art)
+                                                                            {
+                                                                                <img src="@art" alt="" width="40" height="22" loading="lazy" data-game-art>
+                                                                            }
+                                                                            <span>
+                                                                                @if (isMember)
+                                                                                {
+                                                                                    <b>@Model.Names.Name(memberId, Localize)</b>
+                                                                                    <span class="hm-badge hm-badge--custom">@T["Recap_Member"]</span>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <span class="@(player.Name is null ? "hm-subtle" : "")">@(player.Name ?? T["Recap_Hidden"].Value)</span>
+                                                                                }
+                                                                                <small>@(dota ? player.Pick : null)@(dota && player.Position is { } position ? " · " + T["Recap_Position", position].Value : "")@(dota && player.Level is { } level ? " · " + T["Recap_Level", level].Value : "")@(isMember && player.Name is { } nick ? " · " + nick : "")</small>
+                                                                            </span>
+                                                                        </span>
+                                                                    </th>
+                                                                    <td class="num hm-recap__kda">@player.Kills/@player.Deaths/@player.Assists</td>
+                                                                    @if (dota)
+                                                                    {
+                                                                        <td class="num">@Thousands(player.NetWorth)</td>
+                                                                        <td class="num">@(player.GoldPerMinute?.ToString(culture) ?? "–") / @(player.XpPerMinute?.ToString(culture) ?? "–")</td>
+                                                                        <td class="num">@(player.LastHits?.ToString(culture) ?? "–") / @(player.Denies?.ToString(culture) ?? "–")</td>
+                                                                        <td class="num">@Thousands(player.HeroDamage)</td>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <td class="num">@(player.Adr?.ToString("0", culture) ?? "–")</td>
+                                                                        <td class="num">@(player.Headshots is { } hs ? hs.ToString("0", culture) + "%" : "–")</td>
+                                                                        <td class="num">@(player.Mvps?.ToString(culture) ?? "–")</td>
+                                                                    }
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        }
+                                    </details>
+                                }
                             </li>
                         }
                     </ul>

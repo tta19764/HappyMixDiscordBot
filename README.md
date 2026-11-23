@@ -400,6 +400,20 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 - `ConfirmEventSeriesCommand` (POST `/events/{guild}/{event}/confirm-all`) confirms every pending upcoming date; each person who accepted one gets a single Confirmed message for their first newly confirmed date.
 - Event date boxes show weekday, day and month; compact series rows show only the times, with status and count underneath. Side panel menus open beside the panel (`position: fixed`) so its scroll area no longer clips them.
 
+### v0.1.9 vote types and whole matches
+
+- Vote types: `Poll.Purpose` (Choice / Buy) is the type. The New vote tab has a type picker (`.hm-poll-types`, shown with CSS `:has()`; without it both templates show) and one form per type; both share `WhereAndWho` (group channel, or server channel and Everyone / Chosen people). Active and Results have type filter chips (`data-poll-filter`, dashboard.js).
+- Buy votes outside groups: `CreateBuyVoteCommand` takes an optional `GroupId`, `Audience` and `Everyone`. For everyone, owners come from `IPlayerGameStore.ListOwnersAsync` and are counted only when `IGuildMemberGateway` says they are in the server; `SyncBuyVotesCommand` follows the same rules (group members, chosen people, or server members). Server boards offer `PollBoard.BuyGames`: games the viewer wants, earlier vote games and the server's group games. `/vote buy` starts one in Discord.
+- Whole matches (`MatchDetail`, `MatchSide`, `MatchParticipant`; table `MatchDetails`, migration `20261208000100_AddMatchDetails`, pruned with matches): the recap job reads up to `MatchRecaps.DetailsPerRun` = 8 matches per run that the Stats tab shows, from STRATZ `match(id)` when `Stratz__ApiKey` is set, else OpenDota `matches/{id}`, and FACEIT `matches/{id}/stats` for CS2. Matches without public players are saved without players and not asked again. Members are matched by hero (Dota 2) or by side and K/D/A (CS2) in `MatchRecaps.Members`. Private profiles have no name. Discord recaps add the score, the mode and members' net worth and GPM.
+
+### v0.1.8 buy votes, twink accounts and meta posts
+
+- Buy votes in groups with four fixed answers; Steam owners are counted as Already have on creation and after imports. Up to five Steam accounts per person, with labels, a main account and per-account stats sharing. Dota 2 meta posts with hero emojis, lane or role blocks and STRATZ / Dota2ProTracker links.
+
+### v0.1.7 hourly stats and ranked-only Dota 2 cards
+
+- Shared cards refresh hourly within the OpenDota free budget (`FreeBackgroundCalls`); Refresh me reloads only your own cards. Dota 2 card numbers use ranked matchmaking only, and identical OpenDota/STRATZ requests in flight are shared.
+
 ### v0.1.6 menu order, weekly do not disturb, Load more and OpenDota timeouts
 
 - Side panel order (`SideNavOrder`, cookie `hm_nav`, keys joined by dots because a comma splits a cookie): a Reorder switch shows up/down buttons (`POST /nav-order` without scripts) and dashboard.js adds drag and drop; links missing from the saved order keep their default place. The move buttons are icon-only with labels, an exception to the words-only button rule.

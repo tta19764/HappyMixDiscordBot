@@ -2232,7 +2232,7 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Tag_films_help" xml:space="preserve"><value>Remembers films from earlier votes; IMDb links</value></data>
 <data name="Tag_anime_help" xml:space="preserve"><value>Remembers anime from earlier votes; MyAnimeList links</value></data>
 <data name="Guide_votes_Title" xml:space="preserve"><value>Votes</value></data>
-<data name="Guide_votes_Body" xml:space="preserve"><value>Vote on what to play or watch, on the dashboard or in Discord. In a group, open Votes: built-in tags (Games, Series, Films, Anime, chosen in the group’s Settings) add suggestions from the group’s games, its watchlist and earlier votes, and options nobody picked lately come first. Search the catalogs or paste a Steam, IMDb, TVmaze, MyAnimeList or AniList link: options then show the poster, year, genres, rating and seasons or episodes. In Discord every vote is a Discord poll; title votes get a card with posters and links above it, and votes for chosen people go into a private thread with just them. Group votes are posted in the group’s notification channel; server votes in the channel you pick, or start one with /vote create. The dashboard shows who voted for what and today’s and this week’s results. Groups watching series, films or anime keep a Watchlist: add titles by search or link, mark episodes watched, note where you stopped (like 23:40), finish a series in one click, and add vote winners from the results. “Ask who will buy a game” starts a vote with four answers (Ready to buy, Willing to buy, Already have, Not going to buy); members who own the game in their imported Steam library are counted as “Already have” automatically, and in Discord the vote has a button for each answer.</value></data>
+<data name="Guide_votes_Body" xml:space="preserve"><value>Vote on what to play or watch, on the dashboard or in Discord. In a group, open Votes: built-in tags (Games, Series, Films, Anime, chosen in the group’s Settings) add suggestions from the group’s games, its watchlist and earlier votes, and options nobody picked lately come first. Search the catalogs or paste a Steam, IMDb, TVmaze, MyAnimeList or AniList link: options then show the poster, year, genres, rating and seasons or episodes. In Discord every vote is a Discord poll; title votes get a card with posters and links above it, and votes for chosen people go into a private thread with just them. Group votes are posted in the group’s notification channel; server votes in the channel you pick, or start one with /vote create. The dashboard shows who voted for what and today’s and this week’s results. Groups watching series, films or anime keep a Watchlist: add titles by search or link, mark episodes watched, note where you stopped (like 23:40), finish a series in one click, and add vote winners from the results. Votes come in two types, and New vote shows the template of the one you pick. “Pick an option” lists your options; “Will you buy?” asks about one game with four fixed answers (Ready to buy, Willing to buy, Already have, Not going to buy), in a group, for the whole server or for chosen people. Voters who own the game in their imported Steam library are counted as “Already have” automatically, also after their next import, and in Discord the vote has a button for each answer; /vote buy starts one from Discord. Running votes and results can be filtered by type.</value></data>
 <data name="Polls_VoteCount" xml:space="preserve"><value>{0} votes</value></data>
 <data name="Polls_WinnerLine" xml:space="preserve"><value>🏆 **{0}** won with {1} of {2} votes.</value></data>
 <data name="Polls_EndsAt" xml:space="preserve"><value>Voting ends {0}</value></data>
@@ -2312,7 +2312,7 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="HelpV007_7" xml:space="preserve"><value>Show open votes you can take part in.</value></data>
 <data name="HelpV007_8" xml:space="preserve"><value>End a vote you started before its time.</value></data>
 <data name="HelpV007_9" xml:space="preserve"><value>The vote to end</value></data>
-<data name="HelpV007_10" xml:space="preserve"><value>Use /vote create in the channel where people should vote; pick a group to limit it to its members. Votes started on the dashboard appear in Discord too when a channel is chosen. Vote with the menu under the message.</value></data>
+<data name="HelpV007_10" xml:space="preserve"><value>Use /vote create in the channel where people should vote, or /vote buy to ask who will buy a game; pick a group to limit it to its members. Votes started on the dashboard appear in Discord too when a channel is chosen. Vote with the menu or buttons under the message.</value></data>
 <data name="Polls_VoteInDiscord" xml:space="preserve"><value>Vote in Discord</value></data>
 <data name="Polls_VoteInDiscordHelp" xml:space="preserve"><value>Votes are cast in the Discord poll; the results and voters here follow it.</value></data>
 <data name="Polls_Err_Discord" xml:space="preserve"><value>This vote is a Discord poll. Vote in Discord.</value></data>
@@ -2651,7 +2651,7 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Dota_Medal_7" xml:space="preserve"><value>Divine</value></data>
 <data name="Dota_Medal_8" xml:space="preserve"><value>Immortal</value></data>
 <data name="Guide_stats_Title" xml:space="preserve"><value>Stats</value></data>
-<data name="Guide_stats_Body" xml:space="preserve"><value>Groups that play Dota 2 or CS2 have a Stats tab with a card for each member. Sharing is off until you turn on “Show my game stats to my groups”; it then applies to all your groups, and turning it off deletes the saved stats and matches. Dota 2 cards come from OpenDota and need “Expose Public Match Data” on in Dota 2: medal, the last 30 days, most played heroes, most played role (positions from STRATZ when the bot has a key, otherwise lanes), medal change since the bot started saving it daily, an MMR estimate from ranked wins and losses (the real MMR isn't public), the last 20 matches with averages, and who you play with most. CS2 cards come from FACEIT (level, Elo, K/D, headshots, maps) when the bot has a FACEIT key. Duos lists the members who played on the same team the most. When two or more sharing members play the same match, it appears under Recent games together, and the organizer can also have these recaps posted in the group's channel. The bot refreshes cards every hour and matches about every half hour; Refresh me reloads your own right away. With twink accounts linked on My games, choose which accounts your groups see: one card per account, all of them or none. Dota 2 cards count ranked matchmaking games only; Recent games together count every mode.</value></data>
+<data name="Guide_stats_Body" xml:space="preserve"><value>Groups that play Dota 2 or CS2 have a Stats tab with a card for each member. Sharing is off until you turn on “Show my game stats to my groups”; it then applies to all your groups, and turning it off deletes the saved stats and matches. Dota 2 cards come from OpenDota and need “Expose Public Match Data” on in Dota 2: medal, the last 30 days, most played heroes, most played role (positions from STRATZ when the bot has a key, otherwise lanes), medal change since the bot started saving it daily, an MMR estimate from ranked wins and losses (the real MMR isn't public), the last 20 matches with averages, and who you play with most. CS2 cards come from FACEIT (level, Elo, K/D, headshots, maps) when the bot has a FACEIT key. Duos lists the members who played on the same team the most. When two or more sharing members play the same match, it appears under Recent games together, and the organizer can also have these recaps posted in the group's channel. The bot refreshes cards every hour and matches about every half hour; Refresh me reloads your own right away. With twink accounts linked on My games, choose which accounts your groups see: one card per account, all of them or none. Dota 2 cards count ranked matchmaking games only; Recent games together count every mode. Each game together also shows the whole match: the score, the mode and every player of both teams with K/D/A, net worth, GPM/XPM, last hits and damage (Dota 2, from STRATZ or OpenDota) or ADR, headshots and MVPs (CS2, from FACEIT), with group members highlighted. Players who keep their match data private are shown without a name.</value></data>
 <data name="Recap_Title" xml:space="preserve"><value>Recent games together</value></data>
 <data name="Recap_None" xml:space="preserve"><value>No games together in the last two weeks. When two or more members who share their stats play the same match, it shows up here.</value></data>
 <data name="Recap_Result_won" xml:space="preserve"><value>Won</value></data>
@@ -2887,4 +2887,43 @@ Reminder: {5} min before · Updates: {6}</value></data>
 <data name="Games_SteamLabelError" xml:space="preserve"><value>Use up to 32 characters for the account name.</value></data>
 <data name="Stats_ShowAccounts" xml:space="preserve"><value>Show stats for</value></data>
 <data name="Stats_ShowAccountsHelp" xml:space="preserve"><value>Your groups see a card for each checked account. Uncheck all to stop sharing; the saved stats are deleted.</value></data>
+<data name="Polls_Type" xml:space="preserve"><value>Vote type</value></data>
+<data name="Polls_Type_all" xml:space="preserve"><value>All</value></data>
+<data name="Polls_Type_choice" xml:space="preserve"><value>Pick an option</value></data>
+<data name="Polls_Type_choiceHelp" xml:space="preserve"><value>People choose between the options you list: games, titles or anything else.</value></data>
+<data name="Polls_Type_buy" xml:space="preserve"><value>Will you buy?</value></data>
+<data name="Polls_Type_buyHelp" xml:space="preserve"><value>Ask who will buy a game: ready, willing, already have it, or not buying.</value></data>
+<data name="Polls_FilterType" xml:space="preserve"><value>Show votes of one type</value></data>
+<data name="Buy_Answers" xml:space="preserve"><value>Answers</value></data>
+<data name="Buy_SteamHelpAll" xml:space="preserve"><value>Voters who own the game in their imported Steam library are marked “Already have” automatically, also after their next import.</value></data>
+<data name="Buy_StartButtonServer" xml:space="preserve"><value>Start the vote</value></data>
+<data name="Recap_Side_Radiant" xml:space="preserve"><value>Radiant</value></data>
+<data name="Recap_Side_Dire" xml:space="preserve"><value>Dire</value></data>
+<data name="Recap_Ranked" xml:space="preserve"><value>Ranked</value></data>
+<data name="Recap_Mode_all_pick" xml:space="preserve"><value>All Pick</value></data>
+<data name="Recap_Mode_turbo" xml:space="preserve"><value>Turbo</value></data>
+<data name="Recap_Mode_captains_mode" xml:space="preserve"><value>Captains Mode</value></data>
+<data name="Recap_Mode_captains_draft" xml:space="preserve"><value>Captains Draft</value></data>
+<data name="Recap_Mode_single_draft" xml:space="preserve"><value>Single Draft</value></data>
+<data name="Recap_Mode_random_draft" xml:space="preserve"><value>Random Draft</value></data>
+<data name="Recap_Mode_all_random" xml:space="preserve"><value>All Random</value></data>
+<data name="Recap_Mode_ability_draft" xml:space="preserve"><value>Ability Draft</value></data>
+<data name="Recap_Score" xml:space="preserve"><value>Score</value></data>
+<data name="Recap_AllPlayers" xml:space="preserve"><value>All players ({0})</value></data>
+<data name="Recap_MembersMarked" xml:space="preserve"><value>group members are highlighted</value></data>
+<data name="Recap_MatchPending" xml:space="preserve"><value>Every player of this match, with net worth, GPM and damage, shows up here within a few minutes.</value></data>
+<data name="Recap_Player" xml:space="preserve"><value>Player</value></data>
+<data name="Recap_KdaShort" xml:space="preserve"><value>K/D/A</value></data>
+<data name="Recap_NetWorth" xml:space="preserve"><value>Net worth</value></data>
+<data name="Recap_GpmXpm" xml:space="preserve"><value>GPM / XPM</value></data>
+<data name="Recap_LhDn" xml:space="preserve"><value>LH / DN</value></data>
+<data name="Recap_Damage" xml:space="preserve"><value>Hero damage</value></data>
+<data name="Recap_Adr" xml:space="preserve"><value>ADR</value></data>
+<data name="Recap_Hs" xml:space="preserve"><value>HS</value></data>
+<data name="Recap_Mvps" xml:space="preserve"><value>MVP</value></data>
+<data name="Recap_Hidden" xml:space="preserve"><value>Private profile</value></data>
+<data name="Recap_Member" xml:space="preserve"><value>In the group</value></data>
+<data name="Recap_Position" xml:space="preserve"><value>Pos {0}</value></data>
+<data name="Recap_Level" xml:space="preserve"><value>Lvl {0}</value></data>
+<data name="Recap_NetWorthShort" xml:space="preserve"><value>{0}k NW</value></data>
 </root>

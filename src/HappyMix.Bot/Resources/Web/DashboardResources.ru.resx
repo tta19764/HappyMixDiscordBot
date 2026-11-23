@@ -2232,7 +2232,7 @@
 <data name="Tag_films_help" xml:space="preserve"><value>Помнит фильмы из прошлых голосований; ссылки IMDb</value></data>
 <data name="Tag_anime_help" xml:space="preserve"><value>Помнит аниме из прошлых голосований; ссылки MyAnimeList</value></data>
 <data name="Guide_votes_Title" xml:space="preserve"><value>Голосования</value></data>
-<data name="Guide_votes_Body" xml:space="preserve"><value>Голосуйте, во что играть или что смотреть, на панели или в Discord. В группе откройте «Голосования»: встроенные теги («Игры», «Сериалы», «Фильмы», «Аниме», выбираются в настройках группы) добавляют подсказки из игр группы, её списка просмотра и прошлых голосований, а то, что давно не выбирали, показывается первым. Ищите в каталогах или вставляйте ссылки Steam, IMDb, TVmaze, MyAnimeList или AniList: тогда варианты показывают постер, год, жанры, рейтинг и сезоны или эпизоды. В Discord каждое голосование — опрос Discord; над голосованиями за названия появляется карточка с постерами и ссылками, а голосования для выбранных людей попадают в приватную ветку только с ними. Голосования группы публикуются в её канале уведомлений; голосования сервера — в выбранном канале, или начните его командой /vote create. Панель показывает, кто за что проголосовал, и результаты за сегодня и эту неделю. Группы, смотрящие сериалы, фильмы или аниме, ведут список просмотра: добавляйте названия поиском или ссылкой, отмечайте просмотренные эпизоды, записывайте, где остановились (например 23:40), завершайте сериал одним нажатием и добавляйте победителей голосований из результатов. «Спросить, кто купит игру» запускает голосование с четырьмя ответами (Готов купить, Возможно, куплю, Уже есть, Не буду покупать); участники, у которых игра есть в импортированной библиотеке Steam, автоматически учитываются как «Уже есть», а в Discord у каждого ответа есть кнопка.</value></data>
+<data name="Guide_votes_Body" xml:space="preserve"><value>Голосуйте, во что играть или что смотреть, на панели или в Discord. В группе откройте «Голосования»: встроенные теги («Игры», «Сериалы», «Фильмы», «Аниме», выбираются в настройках группы) добавляют подсказки из игр группы, её списка просмотра и прошлых голосований, а то, что давно не выбирали, показывается первым. Ищите в каталогах или вставляйте ссылки Steam, IMDb, TVmaze, MyAnimeList или AniList: тогда варианты показывают постер, год, жанры, рейтинг и сезоны или эпизоды. В Discord каждое голосование — опрос Discord; над голосованиями за названия появляется карточка с постерами и ссылками, а голосования для выбранных людей попадают в приватную ветку только с ними. Голосования группы публикуются в её канале уведомлений; голосования сервера — в выбранном канале, или начните его командой /vote create. Панель показывает, кто за что проголосовал, и результаты за сегодня и эту неделю. Группы, смотрящие сериалы, фильмы или аниме, ведут список просмотра: добавляйте названия поиском или ссылкой, отмечайте просмотренные эпизоды, записывайте, где остановились (например 23:40), завершайте сериал одним нажатием и добавляйте победителей голосований из результатов. Голосования бывают двух типов, и «Новое голосование» показывает шаблон выбранного. «Выбор варианта» содержит ваши варианты; «Купите?» спрашивает об одной игре с четырьмя постоянными ответами (Готов купить, Возможно, куплю, Уже есть, Не буду покупать) — в группе, для всего сервера или для выбранных людей. Те, у кого игра есть в импортированной библиотеке Steam, автоматически учитываются как «Уже есть», в том числе после следующего импорта, а в Discord у каждого ответа есть кнопка; /vote buy запускает такое голосование из Discord. Текущие голосования и результаты можно фильтровать по типу.</value></data>
 <data name="Polls_VoteCount" xml:space="preserve"><value>голосов: {0}</value></data>
 <data name="Polls_WinnerLine" xml:space="preserve"><value>🏆 Победа: **{0}** — {1} из {2} голосов.</value></data>
 <data name="Polls_EndsAt" xml:space="preserve"><value>Голосование завершится {0}</value></data>
@@ -2312,7 +2312,7 @@
 <data name="HelpV007_7" xml:space="preserve"><value>Показать открытые голосования, в которых вы можете участвовать.</value></data>
 <data name="HelpV007_8" xml:space="preserve"><value>Досрочно завершить ваше голосование.</value></data>
 <data name="HelpV007_9" xml:space="preserve"><value>Голосование, которое нужно завершить</value></data>
-<data name="HelpV007_10" xml:space="preserve"><value>Используйте /vote create в канале, где должны голосовать; выберите группу, чтобы голосовали только её участники. Голосования с панели тоже появляются в Discord, если выбран канал. Голосуйте через меню под сообщением.</value></data>
+<data name="HelpV007_10" xml:space="preserve"><value>Используйте /vote create в канале, где должны голосовать, или /vote buy, чтобы узнать, кто купит игру; выберите группу, чтобы голосовали только её участники. Голосования с панели тоже появляются в Discord, если выбран канал. Голосуйте через меню или кнопки под сообщением.</value></data>
 <data name="Polls_VoteInDiscord" xml:space="preserve"><value>Голосовать в Discord</value></data>
 <data name="Polls_VoteInDiscordHelp" xml:space="preserve"><value>Голосуют в опросе Discord; результаты и участники здесь обновляются по нему.</value></data>
 <data name="Polls_Err_Discord" xml:space="preserve"><value>Это голосование — опрос Discord. Голосуйте в Discord.</value></data>
@@ -2651,7 +2651,7 @@
 <data name="Dota_Medal_7" xml:space="preserve"><value>Божество</value></data>
 <data name="Dota_Medal_8" xml:space="preserve"><value>Титан</value></data>
 <data name="Guide_stats_Title" xml:space="preserve"><value>Статистика</value></data>
-<data name="Guide_stats_Body" xml:space="preserve"><value>Группы, играющие в Dota 2 или CS2, имеют вкладку «Статистика» с карточкой для каждого участника. Показ выключен, пока вы не включите «Показывать мою игровую статистику моим группам»; тогда он действует для всех ваших групп, а выключение удаляет сохранённую статистику и матчи. Карточки Dota 2 берутся из OpenDota и требуют включённого «Expose Public Match Data» в Dota 2: медаль, последние 30 дней, частые герои, самая частая роль (позиции из STRATZ, если у бота есть ключ, иначе линии), изменение медали с тех пор, как бот начал сохранять её ежедневно, оценка MMR по рейтинговым победам и поражениям (настоящий MMR не публичный), последние 20 матчей со средними показателями и с кем вы играете чаще всего. Карточки CS2 берутся из FACEIT (уровень, Elo, K/D, хедшоты, карты), если у бота есть ключ FACEIT. «Дуэты» показывают участников, которые больше всего играли в одной команде. Когда двое или больше участников, делящихся статистикой, играют один матч, он появляется в «Недавних совместных играх», а организатор может также публиковать эти итоги в канале группы. Бот обновляет карточки каждый час, а матчи — примерно каждые полчаса; «Обновить мою статистику» сразу перезагружает ваши. Если на странице «Мои игры» привязаны твинк-аккаунты, выберите, какие из них видят ваши группы: карточка для каждого аккаунта, все или ни одного. Карточки Dota 2 учитывают только рейтинговые матчи; «Недавние совместные игры» — все режимы.</value></data>
+<data name="Guide_stats_Body" xml:space="preserve"><value>Группы, играющие в Dota 2 или CS2, имеют вкладку «Статистика» с карточкой для каждого участника. Показ выключен, пока вы не включите «Показывать мою игровую статистику моим группам»; тогда он действует для всех ваших групп, а выключение удаляет сохранённую статистику и матчи. Карточки Dota 2 берутся из OpenDota и требуют включённого «Expose Public Match Data» в Dota 2: медаль, последние 30 дней, частые герои, самая частая роль (позиции из STRATZ, если у бота есть ключ, иначе линии), изменение медали с тех пор, как бот начал сохранять её ежедневно, оценка MMR по рейтинговым победам и поражениям (настоящий MMR не публичный), последние 20 матчей со средними показателями и с кем вы играете чаще всего. Карточки CS2 берутся из FACEIT (уровень, Elo, K/D, хедшоты, карты), если у бота есть ключ FACEIT. «Дуэты» показывают участников, которые больше всего играли в одной команде. Когда двое или больше участников, делящихся статистикой, играют один матч, он появляется в «Недавних совместных играх», а организатор может также публиковать эти итоги в канале группы. Бот обновляет карточки каждый час, а матчи — примерно каждые полчаса; «Обновить мою статистику» сразу перезагружает ваши. Если на странице «Мои игры» привязаны твинк-аккаунты, выберите, какие из них видят ваши группы: карточка для каждого аккаунта, все или ни одного. Карточки Dota 2 учитывают только рейтинговые матчи; «Недавние совместные игры» — все режимы. Каждая совместная игра также показывает весь матч: счёт, режим и всех игроков обеих команд с У/С/П, ценностью, GPM/XPM, добиваниями и уроном (Dota 2, из STRATZ или OpenDota) или ADR, хедшотами и MVP (CS2, из FACEIT); участники группы выделены. Игроки, скрывающие данные матчей, показаны без имени.</value></data>
 <data name="Recap_Title" xml:space="preserve"><value>Недавние совместные игры</value></data>
 <data name="Recap_None" xml:space="preserve"><value>За последние две недели совместных игр нет. Когда двое или больше участников, которые делятся статистикой, играют в одном матче, он появится здесь.</value></data>
 <data name="Recap_Result_won" xml:space="preserve"><value>Победа</value></data>
@@ -2887,4 +2887,43 @@
 <data name="Games_SteamLabelError" xml:space="preserve"><value>Название аккаунта — до 32 символов.</value></data>
 <data name="Stats_ShowAccounts" xml:space="preserve"><value>Показывать статистику для</value></data>
 <data name="Stats_ShowAccountsHelp" xml:space="preserve"><value>Ваши группы видят карточку для каждого отмеченного аккаунта. Снимите все отметки, чтобы прекратить показ; сохранённая статистика будет удалена.</value></data>
+<data name="Polls_Type" xml:space="preserve"><value>Тип голосования</value></data>
+<data name="Polls_Type_all" xml:space="preserve"><value>Все</value></data>
+<data name="Polls_Type_choice" xml:space="preserve"><value>Выбор варианта</value></data>
+<data name="Polls_Type_choiceHelp" xml:space="preserve"><value>Участники выбирают из вариантов, которые вы укажете: игры, тайтлы или что угодно ещё.</value></data>
+<data name="Polls_Type_buy" xml:space="preserve"><value>Купите?</value></data>
+<data name="Polls_Type_buyHelp" xml:space="preserve"><value>Узнайте, кто купит игру: готов, возможно, уже есть или не будет покупать.</value></data>
+<data name="Polls_FilterType" xml:space="preserve"><value>Показать голосования одного типа</value></data>
+<data name="Buy_Answers" xml:space="preserve"><value>Ответы</value></data>
+<data name="Buy_SteamHelpAll" xml:space="preserve"><value>Те, у кого игра есть в импортированной библиотеке Steam, автоматически отмечаются как «Уже есть», в том числе после следующего импорта.</value></data>
+<data name="Buy_StartButtonServer" xml:space="preserve"><value>Начать голосование</value></data>
+<data name="Recap_Side_Radiant" xml:space="preserve"><value>Силы Света</value></data>
+<data name="Recap_Side_Dire" xml:space="preserve"><value>Силы Тьмы</value></data>
+<data name="Recap_Ranked" xml:space="preserve"><value>Рейтинговая</value></data>
+<data name="Recap_Mode_all_pick" xml:space="preserve"><value>All Pick</value></data>
+<data name="Recap_Mode_turbo" xml:space="preserve"><value>Turbo</value></data>
+<data name="Recap_Mode_captains_mode" xml:space="preserve"><value>Captains Mode</value></data>
+<data name="Recap_Mode_captains_draft" xml:space="preserve"><value>Captains Draft</value></data>
+<data name="Recap_Mode_single_draft" xml:space="preserve"><value>Single Draft</value></data>
+<data name="Recap_Mode_random_draft" xml:space="preserve"><value>Random Draft</value></data>
+<data name="Recap_Mode_all_random" xml:space="preserve"><value>All Random</value></data>
+<data name="Recap_Mode_ability_draft" xml:space="preserve"><value>Ability Draft</value></data>
+<data name="Recap_Score" xml:space="preserve"><value>Счёт</value></data>
+<data name="Recap_AllPlayers" xml:space="preserve"><value>Все игроки ({0})</value></data>
+<data name="Recap_MembersMarked" xml:space="preserve"><value>участники группы выделены</value></data>
+<data name="Recap_MatchPending" xml:space="preserve"><value>Все игроки этого матча с ценностью, GPM и уроном появятся здесь через несколько минут.</value></data>
+<data name="Recap_Player" xml:space="preserve"><value>Игрок</value></data>
+<data name="Recap_KdaShort" xml:space="preserve"><value>У/С/П</value></data>
+<data name="Recap_NetWorth" xml:space="preserve"><value>Ценность</value></data>
+<data name="Recap_GpmXpm" xml:space="preserve"><value>GPM / XPM</value></data>
+<data name="Recap_LhDn" xml:space="preserve"><value>LH / DN</value></data>
+<data name="Recap_Damage" xml:space="preserve"><value>Урон героям</value></data>
+<data name="Recap_Adr" xml:space="preserve"><value>ADR</value></data>
+<data name="Recap_Hs" xml:space="preserve"><value>HS</value></data>
+<data name="Recap_Mvps" xml:space="preserve"><value>MVP</value></data>
+<data name="Recap_Hidden" xml:space="preserve"><value>Скрытый профиль</value></data>
+<data name="Recap_Member" xml:space="preserve"><value>В группе</value></data>
+<data name="Recap_Position" xml:space="preserve"><value>Поз. {0}</value></data>
+<data name="Recap_Level" xml:space="preserve"><value>Ур. {0}</value></data>
+<data name="Recap_NetWorthShort" xml:space="preserve"><value>{0}k ценности</value></data>
 </root>

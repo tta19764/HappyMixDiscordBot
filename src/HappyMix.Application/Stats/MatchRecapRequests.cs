@@ -36,6 +36,43 @@ public static class MatchRecaps
     public static readonly TimeSpan PostWithin = TimeSpan.FromDays(1);
     public static readonly TimeSpan KeepFor = TimeSpan.FromDays(30);
     public const int MaxShown = 10;
+    /// <summary>Whole matches read per scheduled run (one STRATZ, OpenDota or FACEIT call each), newest first.</summary>
+    public const int DetailsPerRun = 8;
+
+    /// <summary>The recaps with their whole match attached where it was read.</summary>
+    public static IReadOnlyList<GroupRecap> WithDetails(IEnumerable<GroupRecap> recaps, IReadOnlyDictionary<(StatsGame Game, string MatchId), MatchDetail> details) =>
+        recaps.Select(recap => details.TryGetValue((recap.Game, recap.MatchId), out var detail) && detail.Players.Count > 0 ? recap with { Detail = detail } : recap)
+            .ToArray();
+
+    /// <summary>
+    /// Which players of the whole match are the group's members: by hero in Dota 2 (each hero is picked once), and by
+    /// side and kills, deaths and assists in CS2. Returns the player's index in <see cref="MatchDetail.Players"/> → member.
+    /// </summary>
+    public static IReadOnlyDictionary<int, ulong> Members(GroupRecap recap)
+    {
+        var found = new Dictionary<int, ulong>();
+        if (recap.Detail is not { } detail)
+            return found;
+        foreach (var member in recap.Players)
+        {
+            int index = -1;
+            for (int i = 0; i < detail.Players.Count && index < 0; i++)
+            {
+                var player = detail.Players[i];
+                if (found.ContainsKey(i))
+                    continue;
+                bool same = detail.Game == StatsGame.Dota2
+                    ? member.Pick is { Length: > 0 } && string.Equals(player.Pick, member.Pick, StringComparison.OrdinalIgnoreCase)
+                    : (player.Kills, player.Deaths, player.Assists) == (member.Kills, member.Deaths, member.Assists)
+                        && (detail.WinningSide is not { } winner || (player.Side == winner) == member.Won);
+                if (same)
+                    index = i;
+            }
+            if (index >= 0)
+                found[index] = member.UserId;
+        }
+        return found;
+    }
 
     /// <summary>Matches at least two of <paramref name="members"/> played, newest first.</summary>
     public static IReadOnlyList<GroupRecap> Find(Guid groupId, IReadOnlyCollection<ulong> members, IEnumerable<PlayerMatch> matches,
@@ -79,6 +116,7 @@ internal sealed partial class MatchRecapHandlers(IGameStatsStore store, IGameSta
         await store.PruneMatchesAsync(now - MatchRecaps.KeepFor);
 
         int posted = 0;
+        int detailsLeft = MatchRecaps.DetailsPerRun;
         foreach (ulong guildId in command.GuildIds)
         {
             var gameLists = (await groups.ListGamesAsync(guildId)).ToLookup(game => game.GroupId);
@@ -88,9 +126,15 @@ internal sealed partial class MatchRecapHandlers(IGameStatsStore store, IGameSta
                 var members = group.Members.Append(group.OrganizerId).Distinct().Where(sharers.Contains).ToArray();
                 if (groupGames.Count == 0 || members.Length < 2)
                     continue;
+                // Games together shown on the Stats tab get their whole match read once: every player of both teams.
+                var shown = MatchRecaps.Find(group.Id, members, await store.ListMatchesAsync(members, now - MatchRecaps.ShowFor), groupGames)
+                    .Take(MatchRecaps.MaxShown).ToArray();
+                detailsLeft -= await FetchDetailsAsync(shown, detailsLeft, cancellationToken);
                 var recent = await store.ListMatchesAsync(members, now - MatchRecaps.PostWithin);
                 bool post = await store.GetRecapChannelAsync(guildId, group.Id);
-                foreach (var recap in MatchRecaps.Find(group.Id, members, recent, groupGames).Reverse())
+                var found = MatchRecaps.Find(group.Id, members, recent, groupGames);
+                var details = await store.ListMatchDetailsAsync(found.Select(recap => (recap.Game, recap.MatchId)).ToArray());
+                foreach (var recap in MatchRecaps.WithDetails(found, details).Reverse())
                 {
                     // Every recap is marked, posted or not, so turning the channel on later doesn't post old games.
                     if (!await store.MarkRecapAsync(guildId, group.Id, recap.Game, recap.MatchId, now) || !post)
@@ -110,6 +154,33 @@ internal sealed partial class MatchRecapHandlers(IGameStatsStore store, IGameSta
         foreach (var game in directory.Cs2Enabled ? new[] { StatsGame.Dota2, StatsGame.Cs2 } : [StatsGame.Dota2])
             found += await FetchMatchesAsync(command.UserId, game, command.GuildId, cancellationToken);
         return found;
+    }
+
+    /// <summary>
+    /// Reads the whole match of recaps that don't have it yet, newest first, at most <paramref name="limit"/> calls.
+    /// Returns how many calls were made.
+    /// </summary>
+    private async Task<int> FetchDetailsAsync(GroupRecap[] recaps, int limit, CancellationToken cancellationToken)
+    {
+        if (limit <= 0 || recaps.Length == 0)
+            return 0;
+        var saved = await store.ListMatchDetailsAsync(recaps.Select(recap => (recap.Game, recap.MatchId)).ToArray());
+        int calls = 0;
+        foreach (var recap in recaps.Where(recap => !saved.ContainsKey((recap.Game, recap.MatchId))))
+        {
+            if (calls >= limit || !directory.BackgroundBudgetLeft)
+                break;
+            calls++;
+            var fetched = await directory.GetMatchDetailAsync(recap.Game, recap.MatchId, cancellationToken);
+            if (fetched is { Status: StatsStatus.Ok, Profile: { } detail })
+                await store.SaveMatchDetailAsync(detail, recap.StartedAt, clock.UtcNow);
+            else if (fetched.Status == StatsStatus.NoPublicData)
+                // The service has no players for this match: remembered without players, so it isn't asked again.
+                await store.SaveMatchDetailAsync(new MatchDetail(recap.Game, recap.MatchId, null, [], []), recap.StartedAt, clock.UtcNow);
+            else
+                break;
+        }
+        return calls;
     }
 
     /// <summary>Reads one person's history for one game and saves new matches; failures are logged with the reason.</summary>

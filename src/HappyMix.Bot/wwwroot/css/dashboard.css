@@ -2282,7 +2282,7 @@ a:hover { color: var(--hm-text); text-decoration-color: var(--hm-text); }
 .hm-meta__builds a:hover, .hm-meta__builds a:focus-visible { color: var(--hm-text); border-color: var(--hm-accent, currentColor); }
 
 /* Buy votes */
-.hm-poll-buy { margin-top: var(--hm-space-4); }
+.hm-poll-buy { margin-top: 0; }
 
 /* Steam accounts on My games: the main account and twinks */
 .hm-steam-accounts { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--hm-space-3); }
@@ -2306,3 +2306,48 @@ a:hover { color: var(--hm-text); text-decoration-color: var(--hm-text); }
   .hm-steam-account__label { flex-wrap: wrap; }
   .hm-steam-account__label .hm-input { width: 100%; }
 }
+
+/* v0.1.9: whole matches in "Recent games together", members highlighted. */
+.hm-recap__score { display: inline-flex; align-items: center; gap: var(--hm-space-2); font-variant-numeric: tabular-nums; }
+.hm-recap__score b { font-size: var(--hm-fs-md, 1rem); }
+.hm-recap__score .is-winner { color: var(--hm-c-mint); font-weight: 700; }
+.hm-recap__match { border-top: 1px solid var(--hm-border); padding-top: var(--hm-space-2); }
+.hm-recap__match > summary { cursor: pointer; font-weight: 600; font-size: var(--hm-fs-sm); }
+.hm-recap__match > summary small { font-weight: 400; color: var(--hm-text-subtle); margin-left: var(--hm-space-2); }
+.hm-recap__team { margin-top: var(--hm-space-3); }
+.hm-recap__team h4 { display: flex; align-items: center; gap: var(--hm-space-2); margin: 0 0 var(--hm-space-1); font-size: var(--hm-fs-sm); }
+.hm-recap__team.is-winner h4 { color: var(--hm-c-mint); }
+.hm-recap__team-score { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--hm-text-subtle); }
+.hm-recap__table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.hm-recap__table { width: 100%; border-collapse: collapse; font-size: var(--hm-fs-sm); }
+.hm-recap__table th, .hm-recap__table td { padding: 4px var(--hm-space-2); border-bottom: 1px solid var(--hm-border); text-align: left; white-space: nowrap; }
+.hm-recap__table thead th { font-size: var(--hm-fs-xs); color: var(--hm-text-subtle); font-weight: 600; }
+.hm-recap__table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.hm-recap__table tbody th { font-weight: 400; }
+.hm-recap__table tr.is-member { background: var(--hm-brand-tint); }
+.hm-recap__table tr.is-member th { box-shadow: inset 3px 0 0 var(--hm-brand); }
+.hm-recap__person { display: flex; align-items: center; gap: var(--hm-space-2); }
+.hm-recap__person img { width: 40px; height: 22px; border-radius: 3px; object-fit: cover; flex: none; }
+.hm-recap__person > span { display: grid; }
+.hm-recap__person small { color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); }
+.hm-recap__person .hm-badge { justify-self: start; }
+
+/* v0.1.9: vote types. The New vote tab shows the template of the chosen type. */
+.hm-poll-types { border: 0; padding: 0; margin: 0 0 var(--hm-space-4); display: grid; gap: var(--hm-space-2); grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.hm-poll-types > legend { padding: 0; margin-bottom: var(--hm-space-2); }
+.hm-poll-type { position: relative; display: block; cursor: pointer; }
+.hm-poll-type input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.hm-poll-type > span { display: grid; grid-template-columns: auto 1fr; column-gap: var(--hm-space-2); align-items: center; height: 100%;
+    padding: var(--hm-space-3); border: 1px solid var(--hm-border); border-radius: var(--hm-radius-md); background: var(--hm-surface); }
+.hm-poll-type > span small { grid-column: 2; color: var(--hm-text-subtle); font-size: var(--hm-fs-xs); }
+.hm-poll-type input:checked + span { border-color: var(--hm-brand); background: var(--hm-brand-tint); box-shadow: inset 0 0 0 1px var(--hm-brand); }
+.hm-poll-type input:focus-visible + span { outline: 2px solid var(--hm-brand); outline-offset: 2px; }
+.hm-poll-new:has(.hm-poll-types input[value="buy"]:checked) .hm-poll-new__choice { display: none; }
+.hm-poll-new:has(.hm-poll-types input[value="choice"]:checked) .hm-poll-new__buy { display: none; }
+.hm-poll-buy__preview ul { list-style: none; margin: var(--hm-space-1) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--hm-space-2); }
+.hm-poll-buy__preview li { display: inline-flex; align-items: center; gap: 6px; padding: 4px var(--hm-space-2); border: 1px solid var(--hm-border);
+    border-radius: 999px; font-size: var(--hm-fs-sm); }
+.hm-poll-filter { gap: var(--hm-space-2); flex-wrap: wrap; }
+.hm-poll--buy { border-left-color: var(--hm-mint); }
+/* Wide match tables scroll inside their box instead of stretching the page on phones. */
+.hm-recaps, .hm-recaps__list, .hm-recap, .hm-recap__match, .hm-recap__team, .hm-recap__table-wrap { min-width: 0; max-width: 100%; }

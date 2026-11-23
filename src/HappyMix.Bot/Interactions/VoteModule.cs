@@ -42,6 +42,27 @@ public sealed class VoteModule(ISender sender, PollMessages messages, IOptions<C
         await FollowupAsync(NotificationText.Get(Language, "Polls_Started"), ephemeral: true);
     }
 
+    [SlashCommand("buy", "Ask who will buy a game: ready, willing, already have it, or not buying.")]
+    public async Task BuyAsync(
+        [Summary(description: "The game: a name or a Steam store link"), MaxLength(300)] string game,
+        [Summary(description: "Only members of this group vote"), Autocomplete(typeof(VoteGroupAutocomplete))] string? group = null,
+        [Summary(description: "When voting ends"), Choice("12 hours", 720), Choice("1 day", 1440), Choice("3 days", 4320),
+         Choice("1 week", 10080)] int duration = 4320)
+    {
+        await DeferAsync(ephemeral: true);
+        Guid? groupId = Guid.TryParse(group, out var parsed) ? parsed : null;
+        // Steam owners are counted as "Already have" straight away; everyone else answers with the buttons.
+        var result = await sender.Send(new CreateBuyVoteCommand(Actor(), groupId, game, NotificationText.Get(Language, "Buy_Question"),
+            TimeSpan.FromMinutes(duration), Guid.NewGuid(), Context.Channel.Id, Everyone: groupId is null));
+        if (result.IsFailure)
+        {
+            await FollowupAsync(Message(result.Error.Description), ephemeral: true);
+            return;
+        }
+        await messages.SyncAsync(result.Value, Context.Guild.Id);
+        await FollowupAsync(NotificationText.Get(Language, "Polls_Started"), ephemeral: true);
+    }
+
     [SlashCommand("list", "Show open votes you can take part in.")]
     public async Task ListAsync()
     {

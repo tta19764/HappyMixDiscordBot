@@ -255,7 +255,9 @@ internal sealed partial class GameStatsHandlers(IGameStatsStore store, IGameStat
         var now = clock.UtcNow;
         var sharers = cards.Where(card => card.Shares).Select(card => card.UserId).Distinct().ToArray();
         var together = MatchRecaps.Find(query.GroupId, sharers, await store.ListMatchesAsync(sharers, now - MatchRecaps.ShowFor), games);
-        var recaps = together.Take(MatchRecaps.MaxShown).ToArray();
+        var shownRecaps = together.Take(MatchRecaps.MaxShown).ToArray();
+        var recaps = MatchRecaps.WithDetails(shownRecaps,
+            await store.ListMatchDetailsAsync(shownRecaps.Select(recap => (recap.Game, recap.MatchId)).ToArray()));
         return new GroupStats(games, cards, (await store.ListSharingAsync([viewer])).Contains(viewer), isMember,
             await players.GetSteamAsync(viewer) is not null, directory.Cs2Enabled, now)
         {

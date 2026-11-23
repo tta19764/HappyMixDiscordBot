@@ -38,6 +38,60 @@
             .OrderBy(name => name, StringComparer.CurrentCultureIgnoreCase).ToArray();
         return names.Length <= 6 ? string.Join(", ", names) : string.Join(", ", names.Take(6)) + " " + T["Arg0_more", names.Length - 6].Value;
     }
+    string TypeOf(HappyMix.Application.Abstractions.Polls.Poll poll) => poll.IsBuy ? "buy" : "choice";
+    // Where a new vote is posted and who votes in it: the same for every vote type.
+    async Task WhereAndWho(string id)
+    {
+        if (Model.IsGroup)
+        {
+            <p class="hm-help hm-poll-new__where">@DashboardIcons.Render("hash")@(Model.GroupChannel is { } where ? T["Polls_PostedIn", where] : T["Polls_GroupNoChannel"])</p>
+            return;
+        }
+        <div class="hm-field">
+            <label class="hm-label" for="@id-channel">@T["Polls_PostIn"]</label>
+            <select class="hm-select" id="@id-channel" name="channelId">
+                <option value="">@T["Polls_DashboardOnly"]</option>
+                @foreach (var (channelId, name) in Model.Channels)
+                {
+                    <option value="@channelId">#@name</option>
+                }
+            </select>
+            <p class="hm-help">@T["Polls_PostInHelp"]</p>
+        </div>
+        <fieldset class="hm-field hm-poll-audience" data-poll-audience>
+            <legend class="hm-label">@T["Polls_Who"]</legend>
+            <div class="hm-mode" role="radiogroup">
+                <label><input type="radio" name="audience" value="everyone" checked>@T["Polls_WhoEveryone"]</label>
+                <label><input type="radio" name="audience" value="chosen">@T["Polls_WhoChosen"]</label>
+            </div>
+            <div class="hm-poll-audience__pick">
+                <input class="hm-input" type="search" placeholder="@T["Polls_FindMember"]" aria-label="@T["Polls_FindMember"]" data-member-filter>
+                <div class="hm-checkbox-box hm-poll-audience__list">
+                    @foreach (var member in Model.Members)
+                    {
+                        <label class="hm-check" data-member-name="@member.DisplayName.ToLowerInvariant() @((member.Username ?? "").ToLowerInvariant())">
+                            <input type="checkbox" name="members" value="@member.Id">
+                            <partial name="_Avatar" model="new AvatarModel(member, member.DisplayName, Small: true)" />
+                            <span>@member.DisplayName</span>
+                        </label>
+                    }
+                </div>
+                <p class="hm-help" data-member-count>@T["Polls_WhoHelp"]</p>
+            </div>
+        </fieldset>
+    }
+    // Filter chips by vote type, shown when a list has more than one type.
+    async Task TypeFilter(IEnumerable<HappyMix.Application.Abstractions.Polls.Poll> list)
+    {
+        var types = list.Select(TypeOf).Distinct().ToArray();
+        if (types.Length < 2)
+            return;
+        <div class="hm-row hm-poll-filter" role="group" aria-label="@T["Polls_FilterType"]" data-poll-filter hidden>
+            <button type="button" class="hm-chip" aria-pressed="true" data-poll-filter-type="">@T["Polls_Type_all"]</button>
+            <button type="button" class="hm-chip" aria-pressed="false" data-poll-filter-type="choice">@DashboardIcons.Render("votes")@T["Polls_Type_choice"]</button>
+            <button type="button" class="hm-chip" aria-pressed="false" data-poll-filter-type="buy">@DashboardIcons.Render("games")@T["Polls_Type_buy"]</button>
+        </div>
+    }
     async Task AddToWatchlist(HappyMix.Application.Abstractions.Polls.PollOption leader)
     {
         if (board.CanManageTags && board.GroupId is { } watchGroup && leader.Kind is "series" or "film" or "anime"
@@ -93,13 +147,14 @@
     {
         <p class="hm-empty-note">@T["Polls_NoneRunning"] <a href="#@tabs-new" data-tab-link="@tabs-new">@T["Polls_Start"]</a></p>
     }
+    @{ await TypeFilter(board.Open); }
     @foreach (var poll in board.Open)
     {
         int voters = Model.VoterCount(poll);
         int max = Math.Max(1, poll.Options.Max(option => poll.Count(option.Position)));
         var mine = Model.Mine(poll);
         bool inDiscord = poll.Native && poll.MessageId is not null;
-        <article class="hm-poll" aria-labelledby="poll-@poll.Id.ToString("N")">
+        <article class="hm-poll hm-poll--@TypeOf(poll)" aria-labelledby="poll-@poll.Id.ToString("N")" data-poll-type="@TypeOf(poll)">
             <header class="hm-poll__head">
                 <h3 id="poll-@poll.Id.ToString("N")">@poll.Question
                     @if (poll.IsBuy && BuyVote.StoreUrl(poll.GameKey) is { } store)
@@ -111,8 +166,9 @@
                     @T["Polls_By", Model.Names.Name(poll.CreatorId, Localize)] ·
                     @T["Polls_ClosesIn", Span(poll.ClosesAt - Model.Now)] ·
                     @(Model.Electorate(poll) is { } total ? T["Polls_VotedOf", voters, total] : T["Polls_Voted_Count", voters])
+                    <span class="hm-badge @(poll.IsBuy ? "hm-badge--custom" : "")">@T["Polls_Type_" + TypeOf(poll)]</span>
                     @if (poll.Multiple) { <span class="hm-badge">@T["Polls_Multiple"]</span> }
-                    @if (poll.IsBuy) { <span class="hm-badge">@T["Buy_Badge"]</span> <span class="hm-help">@T["Buy_SteamNote"]</span> }
+                    @if (poll.IsBuy) { <span class="hm-help">@T["Buy_SteamNote"]</span> }
                 </p>
             </header>
             <form class="hm-stack hm-stack--sm" method="post" action="@Model.VoteUrl(poll)" asp-antiforgery="false">
@@ -187,7 +243,18 @@
 
     <div class="hm-poll-new hm-subpanel" id="@tabs-new" role="tabpanel" aria-labelledby="@tabs-new-tab" data-tab-panel>
         <h3 class="hm-subpanel__title">@T["Polls_Start"]</h3>
-        <form class="hm-stack" id="@formId" method="post" action="@Model.NewUrl" asp-antiforgery="false" data-poll-form>
+        <fieldset class="hm-poll-types">
+            <legend class="hm-label">@T["Polls_Type"]</legend>
+            <label class="hm-poll-type">
+                <input type="radio" name="@tabs-type" value="choice" checked>
+                <span>@DashboardIcons.Render("votes", cssClass: "hm-heading-icon")<b>@T["Polls_Type_choice"]</b><small>@T["Polls_Type_choiceHelp"]</small></span>
+            </label>
+            <label class="hm-poll-type">
+                <input type="radio" name="@tabs-type" value="buy">
+                <span>@DashboardIcons.Render("games", cssClass: "hm-heading-icon")<b>@T["Polls_Type_buy"]</b><small>@T["Polls_Type_buyHelp"]</small></span>
+            </label>
+        </fieldset>
+        <form class="hm-stack hm-poll-new__choice" id="@formId" method="post" action="@Model.NewUrl" asp-antiforgery="false" data-poll-form>
             @Html.AntiForgeryToken()
             <input type="hidden" name="requestId" value="@Guid.NewGuid()">
             <input type="hidden" name="returnUrl" value="@Model.ReturnUrl">
@@ -261,62 +328,30 @@
                 <label class="hm-check" style="align-self: end"><input type="checkbox" name="multiple" value="true"><span>@T["Polls_AllowMultiple"]<small>@T["Polls_AllowMultipleHelp"]</small></span></label>
             </div>
 
-            @if (Model.IsGroup)
-            {
-                <p class="hm-help hm-poll-new__where">@DashboardIcons.Render("hash")@(Model.GroupChannel is { } where ? T["Polls_PostedIn", where] : T["Polls_GroupNoChannel"])</p>
-            }
-            else
-            {
-                <div class="hm-field">
-                    <label class="hm-label" for="@formId-channel">@T["Polls_PostIn"]</label>
-                    <select class="hm-select" id="@formId-channel" name="channelId">
-                        <option value="">@T["Polls_DashboardOnly"]</option>
-                        @foreach (var (id, name) in Model.Channels)
-                        {
-                            <option value="@id">#@name</option>
-                        }
-                    </select>
-                    <p class="hm-help">@T["Polls_PostInHelp"]</p>
-                </div>
-            }
-            @if (!Model.IsGroup)
-            {
-                <fieldset class="hm-field hm-poll-audience" data-poll-audience>
-                    <legend class="hm-label">@T["Polls_Who"]</legend>
-                    <div class="hm-mode" role="radiogroup">
-                        <label><input type="radio" name="audience" value="everyone" checked>@T["Polls_WhoEveryone"]</label>
-                        <label><input type="radio" name="audience" value="chosen">@T["Polls_WhoChosen"]</label>
-                    </div>
-                    <div class="hm-poll-audience__pick">
-                        <input class="hm-input" type="search" placeholder="@T["Polls_FindMember"]" aria-label="@T["Polls_FindMember"]" data-member-filter>
-                        <div class="hm-checkbox-box hm-poll-audience__list">
-                            @foreach (var member in Model.Members)
-                            {
-                                <label class="hm-check" data-member-name="@member.DisplayName.ToLowerInvariant() @((member.Username ?? "").ToLowerInvariant())">
-                                    <input type="checkbox" name="members" value="@member.Id">
-                                    <partial name="_Avatar" model="new AvatarModel(member, member.DisplayName, Small: true)" />
-                                    <span>@member.DisplayName</span>
-                                </label>
-                            }
-                        </div>
-                        <p class="hm-help" data-member-count>@T["Polls_WhoHelp"]</p>
-                    </div>
-                </fieldset>
-            }
+            @{ await WhereAndWho(formId); }
 
             <div><button class="hm-btn hm-btn--primary">@T["Polls_StartButton"]</button></div>
         </form>
 
-        @if (board.GroupId is { } buyGroup)
-        {
-            string buyId = "poll-buy-" + buyGroup.ToString("N");
-            <form class="hm-stack hm-poll-buy" id="@buyId" method="post" action="@Model.BuyUrl" asp-antiforgery="false">
+        @{ string buyId = "poll-buy-" + (board.GroupId?.ToString("N") ?? "server"); }
+        <form class="hm-stack hm-poll-buy hm-poll-new__buy" id="@buyId" method="post" action="@Model.BuyUrl" asp-antiforgery="false" data-poll-form>
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="requestId" value="@Guid.NewGuid()">
                 <input type="hidden" name="returnUrl" value="@Model.ReturnUrl">
-                <input type="hidden" name="groupId" value="@buyGroup">
-                <h3 class="hm-subpanel__title">@DashboardIcons.Render("games", cssClass: "hm-heading-icon")@T["Buy_Start"]</h3>
+                @if (board.GroupId is { } buyGroup)
+                {
+                    <input type="hidden" name="groupId" value="@buyGroup">
+                }
                 <p class="hm-help">@T["Buy_Lead"]</p>
+                <div class="hm-poll-buy__preview" aria-label="@T["Buy_Answers"]">
+                    <span class="hm-label">@T["Buy_Answers"]</span>
+                    <ul>
+                        @for (int position = 0; position < BuyVote.Labels.Length; position++)
+                        {
+                            <li>@DashboardIcons.Render(BuyIcons[position])@T[$"Buy_Option_{position}"]</li>
+                        }
+                    </ul>
+                </div>
                 <div class="hm-fields hm-poll-new__row">
                     <div class="hm-field">
                         <label class="hm-label" for="@buyId-game">@T["Buy_Game"]</label>
@@ -338,10 +373,10 @@
                         </select>
                     </div>
                 </div>
-                <p class="hm-help">@string.Join(" · ", Enumerable.Range(0, 4).Select(position => T[$"Buy_Option_{position}"].Value)) — @T["Buy_SteamHelp"]</p>
-                <div><button class="hm-btn hm-btn--primary">@T["Buy_StartButton"]</button></div>
-            </form>
-        }
+                <p class="hm-help">@T["Buy_SteamHelpAll"]</p>
+                @{ await WhereAndWho(buyId); }
+                <div><button class="hm-btn hm-btn--primary">@T[Model.IsGroup ? "Buy_StartButton" : "Buy_StartButtonServer"]</button></div>
+        </form>
     </div>
 
     <div class="hm-stack hm-subpanel" id="@tabs-results" role="tabpanel" aria-labelledby="@tabs-results-tab" data-tab-panel>
@@ -352,6 +387,7 @@
     }
     else
     {
+        await TypeFilter(board.Ended);
         var recent = board.Ended.GroupBy(Period).ToDictionary(group => group.Key, group => group.ToArray());
         foreach (string period in new[] { "today", "week" }.Where(recent.ContainsKey))
         {
@@ -361,11 +397,12 @@
                 {
                     var leader = poll.Leader;
                     int max = Math.Max(1, poll.Options.Max(option => poll.Count(option.Position)));
-                    <article class="hm-poll hm-poll--ended">
+                    <article class="hm-poll hm-poll--ended hm-poll--@TypeOf(poll)" data-poll-type="@TypeOf(poll)">
                         <header class="hm-poll__head">
                             <h4 class="hm-row" style="gap: var(--hm-space-2)">@DashboardIcons.Render("done", cssClass: "hm-heading-icon")@poll.Question</h4>
                             <p class="hm-help">@T["Polls_EndedAt", Local(poll.EndedAt).ToString(period == "today" ? "HH:mm" : "ddd d MMM, HH:mm", CultureInfo.CurrentCulture)] ·
-                                @T["Polls_Voted_Count", Model.VoterCount(poll)]</p>
+                                @T["Polls_Voted_Count", Model.VoterCount(poll)]
+                                <span class="hm-badge @(poll.IsBuy ? "hm-badge--custom" : "")">@T["Polls_Type_" + TypeOf(poll)]</span></p>
                         </header>
                         <div class="hm-poll__options">
                             @foreach (var option in poll.Options.OrderByDescending(option => poll.Count(option.Position)).ThenBy(option => option.Position))
@@ -407,7 +444,7 @@
                     @foreach (var poll in earlier)
                     {
                         var leader = poll.Leader;
-                        <li>
+                        <li data-poll-type="@TypeOf(poll)">
                             <span class="hm-poll-history__question">@poll.Question</span>
                             <span class="hm-poll-history__winner">
                                 @if (leader is not null)

@@ -31,8 +31,8 @@ public sealed record PollsModel(ulong GuildId, PollBoard Board, MemberNames Name
     public string NewUrl => $"/votes/{GuildId}/new";
     public string BuyUrl => $"/votes/{GuildId}/buy";
 
-    /// <summary>Games offered for a buy vote: the group's games and the ones members want, from the suggestions.</summary>
-    public IEnumerable<PollSuggestion> BuyChoices => Board.Suggestions.Where(item => item.Kind == "game");
+    /// <summary>Games offered for a buy vote (see <see cref="PollBoard.BuyGames"/>).</summary>
+    public IEnumerable<PollSuggestion> BuyChoices => Board.BuyGames;
     public string VoteUrl(Poll poll) => $"/votes/{GuildId}/{poll.Id}/vote";
     public string CloseUrl(Poll poll) => $"/votes/{GuildId}/{poll.Id}/close";
     public bool CanClose(Poll poll) => poll.CreatorId == Board.ViewerId || Board.CanManageTags;
@@ -88,16 +88,20 @@ public sealed partial class DashboardController
             result.IsFailure ? text.Message(result.Error.Description).Value : null, result.IsSuccess ? "active" : "new");
     }
 
-    /// <summary>"Who will buy this game": a group vote with four fixed answers; Steam owners are counted at once.</summary>
+    /// <summary>
+    /// "Who will buy this game": a vote with four fixed answers, in a group or for the server (everyone or chosen people);
+    /// Steam owners are counted at once.
+    /// </summary>
     [HttpPost("/votes/{guildId}/buy")]
-    public async Task<IActionResult> CreateBuyVote(ulong guildId, Guid groupId, Guid requestId, string? game, int minutes, string? returnUrl,
-        [FromServices] PollMessages messages)
+    public async Task<IActionResult> CreateBuyVote(ulong guildId, Guid? groupId, Guid requestId, string? game, int minutes, string? audience,
+        ulong[]? members, ulong? channelId, string? returnUrl, [FromServices] PollMessages messages)
     {
         if (await GetGroupActorAsync(guildId) is not ({ } actor, _, _))
             return NotMember();
-        ulong? channel = await messages.GroupChannelAsync(guildId, groupId);
+        ulong? channel = groupId is { } group ? await messages.GroupChannelAsync(guildId, group)
+            : channelId is > 0 and var picked && PostableChannels(guildId, actor.UserId).Any(item => item.Id == picked) ? picked : null;
         var result = await sender.Send(new CreateBuyVoteCommand(actor, groupId, game ?? "", text["Buy_Question"].Value, TimeSpan.FromMinutes(minutes),
-            requestId == Guid.Empty ? Guid.NewGuid() : requestId, channel), HttpContext.RequestAborted);
+            requestId == Guid.Empty ? Guid.NewGuid() : requestId, channel, members ?? [], audience == "everyone"), HttpContext.RequestAborted);
         if (result.IsSuccess)
             await SyncPollAsync(messages, guildId, result.Value);
         return PollRedirect(guildId, groupId, returnUrl, result.IsSuccess ? text["Polls_Started"].Value : null,
