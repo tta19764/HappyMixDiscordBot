@@ -47,10 +47,16 @@ public static class LiveRules
     /// <summary>How long ended sessions are kept for the Live tab.</summary>
     public static readonly TimeSpan Retention = TimeSpan.FromDays(14);
     public const int MaxGameLength = 120;
+    /// <summary>
+    /// Someone with hours set this close to now is free only inside them. Without hours this close, nothing is known,
+    /// so they still get messages.
+    /// </summary>
+    public static readonly TimeSpan HoursAround = TimeSpan.FromHours(12);
 }
 
 internal sealed class LiveHandlers(ILiveStore store, IGuildGroupStore groups, IAccountLinkStore accountLinks, IPlayerGameStore players,
-    ISteamDirectory steam, IEnumerable<ILiveNotifier> notifiers, IClock clock, ISender sender) :
+    ISteamDirectory steam, IEnumerable<ILiveNotifier> notifiers, IClock clock, ISender sender, IEnumerable<IAvailabilityStore> availability,
+    IEnumerable<HappyMix.Application.Abstractions.Quiet.IQuietStore> quiet) :
     IQueryHandler<GetGroupLiveQuery, GroupLive>, ICommandHandler<SetLiveSharingCommand, GroupLive>, ICommandHandler<SetLiveChannelCommand, GroupLive>,
     ICommandHandler<ReportPlayingCommand, int>, IQueryHandler<GetLiveSharersQuery, IReadOnlyList<ulong>>, ICommandHandler<SyncSteamPlayingCommand, int>
 {
@@ -154,13 +160,41 @@ internal sealed class LiveHandlers(ILiveStore store, IGuildGroupStore groups, IA
         if (!groupGame && !members.Any(member => Marked(member, GamePreference.Want, GamePreference.Can)))
             return null;
 
+        // Only people who could join now are messaged or named: not in do-not-disturb, and free now when they set hours.
+        var reachable = await ReachableAsync(sharing.GuildId, links, members, now);
         var memberships = await store.ListMembershipsAsync(sharing.GuildId, sharing.GroupId);
-        var recipients = memberships.Where(item => item.Notify && members.Contains(links.Member(item.UserId))).Select(item => item.UserId).Distinct().ToArray();
+        var recipients = memberships.Where(item => item.Notify && members.Contains(links.Member(item.UserId)) && reachable.Contains(links.Member(item.UserId)))
+            .Select(item => item.UserId).Distinct().ToArray();
         bool channel = await store.GetChannelPostsAsync(sharing.GuildId, sharing.GroupId);
         if (recipients.Length == 0 && !channel)
             return null;
         return new LiveNotice(sharing.GuildId, sharing.GroupId, group.Name, player, game,
-            members.Where(member => Marked(member, GamePreference.Want)).ToArray(), recipients, channel);
+            members.Where(member => Marked(member, GamePreference.Want) && reachable.Contains(member)).ToArray(), recipients, channel);
+    }
+
+    /// <summary>
+    /// Members (primary accounts) who can be messaged at <paramref name="now"/>: none of their accounts is in
+    /// do-not-disturb, and they are free now or set no hours within <see cref="LiveRules.HoursAround"/> of now.
+    /// </summary>
+    private async Task<HashSet<ulong>> ReachableAsync(ulong guildId, MemberLinks links, ulong[] members, DateTimeOffset now)
+    {
+        var quietHours = await BoardRows.QuietAsync(quiet, links, members);
+        var reachable = members.Where(member => quietHours.GetValueOrDefault(member) is not { IsEmpty: false } schedule
+            || HappyMix.Application.Quiet.QuietHours.Until(schedule, now) is null).ToHashSet();
+        if (availability.FirstOrDefault() is not { } hours || reachable.Count == 0)
+            return reachable;
+
+        var from = now - LiveRules.HoursAround;
+        var until = now + LiveRules.HoursAround;
+        var snapshot = await hours.ListForMembersAsync(guildId, links.Members(reachable), from, until);
+        var today = DateOnly.FromDateTime(now.UtcDateTime);
+        var ranges = snapshot.Windows.Select(item => (Member: links.Member(item.UserId), item.Window.Start, item.Window.End))
+            .Concat(snapshot.Weekly.SelectMany(item => WeeklyOccurrences.ForDate(item.Weekly, today)
+                .Select(occurrence => (Member: links.Member(item.UserId), occurrence.Start, occurrence.End))))
+            .Where(range => range.Start < until && range.End > from)
+            .ToLookup(range => range.Member);
+        reachable.RemoveWhere(member => ranges[member].Any() && !ranges[member].Any(range => range.Start <= now && now < range.End));
+        return reachable;
     }
 
     private async Task<GroupLive> LiveAsync(GroupActor actor, GroupDetail detail)

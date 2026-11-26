@@ -73,6 +73,39 @@ public sealed class LiveTests
     }
 
     [Fact]
+    public async Task MembersWhoArentFreeOrAreInDoNotDisturbAreLeftOut()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var sender = fixture.Sender;
+        Guid groupId = await fixture.CreateGroupAsync();
+        await sender.Send(new SetLiveSharingCommand(Actor(Kai), groupId, Share: true, Notify: false));
+        await sender.Send(new SetLiveSharingCommand(Actor(Mira), groupId, Share: false, Notify: true));
+        await sender.Send(new SetLiveSharingCommand(Actor(Taro), groupId, Share: false, Notify: true));
+        await sender.Send(new AddPlayerGameCommand(Taro, "Dota 2", null, null, null, GamePreference.Want));
+        var now = fixture.Clock.UtcNow; // Friday 18:00 UTC
+        var hours = fixture.Storage.GetRequiredService<IAvailabilityStore>();
+
+        // Mira is free only later tonight; Taro is in do-not-disturb until 19:00.
+        await hours.SaveAsync(Guild, Mira, null, now.AddHours(2), now.AddHours(5));
+        await sender.Send(new HappyMix.Application.Quiet.AddQuietWeeklyCommand(Taro, [DayOfWeek.Friday], "17:00", "19:00", false, "UTC"));
+        Assert.Equal(0, (await sender.Send(new ReportPlayingCommand(Kai, "Dota 2", "discord"))).Value);
+        Assert.Empty(fixture.Notices);
+
+        // With the channel on, the post still goes out, but names nobody who can't join now.
+        await sender.Send(new SetLiveChannelCommand(Actor(Kai), groupId, true));
+        await sender.Send(new ReportPlayingCommand(Kai, null, "discord"));
+        Assert.Equal(1, (await sender.Send(new ReportPlayingCommand(Kai, "Dota 2", "discord"))).Value);
+        Assert.Equal((0, 0), (fixture.Notices[^1].DmRecipients.Count, fixture.Notices[^1].AlsoWant.Count));
+
+        // 20:00: Taro's do-not-disturb is over, and Mira's hours have started.
+        fixture.Clock.Advance(LiveRules.Cooldown);
+        await sender.Send(new ReportPlayingCommand(Kai, null, "discord"));
+        Assert.Equal(1, (await sender.Send(new ReportPlayingCommand(Kai, "Dota 2", "discord"))).Value);
+        Assert.Equal([Mira, Taro], fixture.Notices[^1].DmRecipients.Order());
+        Assert.Equal([Taro], fixture.Notices[^1].AlsoWant);
+    }
+
+    [Fact]
     public async Task SteamIsAskedOnlyAboutVerifiedAccountsOfSharers()
     {
         using var fixture = await Fixture.CreateAsync();
@@ -118,6 +151,7 @@ public sealed class LiveTests
         public MutableClock Clock { get; } = new(new DateTimeOffset(2026, 11, 20, 18, 0, 0, TimeSpan.Zero));
         public List<LiveNotice> Notices { get; } = [];
         public ISender Sender => application.GetRequiredService<ISender>();
+        public IServiceProvider Storage => database.Services;
 
         public static async Task<Fixture> CreateAsync()
         {
@@ -129,6 +163,8 @@ public sealed class LiveTests
                 .AddSingleton(storage.GetRequiredService<IAccountLinkStore>())
                 .AddSingleton(storage.GetRequiredService<IPlayerGameStore>())
                 .AddSingleton(storage.GetRequiredService<ILiveStore>())
+                .AddSingleton(storage.GetRequiredService<IAvailabilityStore>())
+                .AddSingleton(storage.GetRequiredService<HappyMix.Application.Abstractions.Quiet.IQuietStore>())
                 .AddSingleton<IClock>(fixture.Clock)
                 .AddSingleton<ISteamDirectory>(fixture.Steam)
                 .AddSingleton<ILiveNotifier>(new Recorder(fixture.Notices))

@@ -38,6 +38,18 @@
     </div>
 </header>
 
+@if (Model.Game.Placeholder)
+{
+    @* A game whose features are still being planned: one section saying so, without stats or tabs. *@
+    <section class="hm-card hm-stack hm-soon" aria-labelledby="soon-title">
+        <h2 id="soon-title">@DashboardIcons.Render("idea", cssClass: "hm-heading-icon")@T["Features_SoonTitle"]</h2>
+        <p>@T["Features_SoonLead", Model.Game.Name]</p>
+        <p class="hm-help">@T["Features_SoonHelp"]</p>
+        <div><a class="hm-btn" href="@url">@T["Features_AllGames"]</a></div>
+    </section>
+    return;
+}
+
 <nav class="hm-gtabs" aria-label="@Model.Game.Name" data-group-tabs data-default-tab="@Model.DefaultTab">
     <a class="hm-tab-c-stats" href="#stats" data-tab="stats">@DashboardIcons.Render("stats")@T["Features_MyStats"]</a>
     @if (dota)
