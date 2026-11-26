@@ -105,7 +105,7 @@ public sealed class DoNotDisturbTests
     }
 
     [Fact]
-    public async Task HeldLiveNoticesNeedThePlayerStillInTheGame()
+    public async Task LiveNoticesSkipPeopleInDoNotDisturb()
     {
         using var fixture = await Fixture.CreateAsync();
         var sender = fixture.Sender;
@@ -114,12 +114,9 @@ public sealed class DoNotDisturbTests
         await sender.Send(new HappyMix.Application.Live.SetLiveSharingCommand(new GroupActor(Guild, Mira, false), groupId, Share: false, Notify: true));
         await sender.Send(new AddQuietWeeklyCommand(Mira, [DayOfWeek.Monday], "23:00", "08:00", false, Kyiv));
 
-        // Kai starts Dota at night: the DM to Mira waits.
-        await sender.Send(new HappyMix.Application.Live.ReportPlayingCommand(Kai, "Dota 2", "discord"));
-        Assert.Equal(1, (await sender.Send(new GetQuietOverviewQuery(Mira))).Value.Held);
-
-        // Kai stops before Mira's morning: the notice is no longer true and is dropped.
-        await sender.Send(new HappyMix.Application.Live.ReportPlayingCommand(Kai, null, "discord"));
+        // Kai starts Dota at night: Mira isn't messaged, and nothing waits for her morning either.
+        Assert.Equal(0, (await sender.Send(new HappyMix.Application.Live.ReportPlayingCommand(Kai, "Dota 2", "discord"))).Value);
+        Assert.Equal(0, (await sender.Send(new GetQuietOverviewQuery(Mira))).Value.Held);
         fixture.Clock.Advance(TimeSpan.FromHours(9));
         Assert.Equal(0, (await sender.Send(new ReleaseHeldMessagesCommand())).Value);
         Assert.Empty(fixture.Sent);

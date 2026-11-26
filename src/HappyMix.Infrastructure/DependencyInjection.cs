@@ -34,10 +34,20 @@ public static class DependencyInjection
         services.AddSingleton(provider => new GameNewsStore(provider.GetRequiredService<IDbContextFactory<HappyMixDbContext>>()));
         services.AddSingleton<HappyMix.Application.Abstractions.News.IGameNewsStore>(provider => provider.GetRequiredService<GameNewsStore>());
         services.AddSingleton(provider => new NotificationRouteStore(provider.GetRequiredService<IDbContextFactory<HappyMixDbContext>>()));
-        services.AddSingleton<IGuildSettingsStore, SqliteGuildSettingsStore>();
-        services.AddSingleton<IGuildGroupStore, SqliteGuildGroupStore>();
+        // Account links, groups and server settings are read on almost every request: they go through a per-server
+        // cache that every write of these stores clears (see Caching/GuildCache.cs).
+        services.AddHybridCache();
+        services.AddSingleton<HappyMix.Infrastructure.Caching.GuildCache>();
+        services.AddSingleton<SqliteGuildSettingsStore>();
+        services.AddSingleton<SqliteGuildGroupStore>();
+        services.AddSingleton<SqliteAccountLinkStore>();
+        services.AddSingleton<IGuildSettingsStore>(provider => new HappyMix.Infrastructure.Caching.CachedGuildSettingsStore(
+            provider.GetRequiredService<SqliteGuildSettingsStore>(), provider.GetRequiredService<HappyMix.Infrastructure.Caching.GuildCache>()));
+        services.AddSingleton<IGuildGroupStore>(provider => new HappyMix.Infrastructure.Caching.CachedGuildGroupStore(
+            provider.GetRequiredService<SqliteGuildGroupStore>(), provider.GetRequiredService<HappyMix.Infrastructure.Caching.GuildCache>()));
         services.AddSingleton<IAvailabilityStore, SqliteAvailabilityStore>();
-        services.AddSingleton<IAccountLinkStore, SqliteAccountLinkStore>();
+        services.AddSingleton<IAccountLinkStore>(provider => new HappyMix.Infrastructure.Caching.CachedAccountLinkStore(
+            provider.GetRequiredService<SqliteAccountLinkStore>(), provider.GetRequiredService<HappyMix.Infrastructure.Caching.GuildCache>()));
         services.AddSingleton<HappyMix.Application.Abstractions.Polls.IPollStore, SqlitePollStore>();
         services.AddSingleton<HappyMix.Application.Abstractions.Watch.IWatchStore, SqliteWatchStore>();
         services.AddSingleton<HappyMix.Application.Abstractions.Logs.ILogStore, SqliteLogStore>();

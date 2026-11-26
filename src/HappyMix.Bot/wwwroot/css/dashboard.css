@@ -2351,3 +2351,7 @@ a:hover { color: var(--hm-text); text-decoration-color: var(--hm-text); }
 .hm-poll--buy { border-left-color: var(--hm-mint); }
 /* Wide match tables scroll inside their box instead of stretching the page on phones. */
 .hm-recaps, .hm-recaps__list, .hm-recap, .hm-recap__match, .hm-recap__team, .hm-recap__table-wrap { min-width: 0; max-width: 100%; }
+
+/* v0.1.10: games whose features are still planned (Phasmophobia). */
+.hm-ftag--soon { border-style: dashed; color: var(--hm-text-subtle); }
+.hm-soon { max-width: 44rem; }

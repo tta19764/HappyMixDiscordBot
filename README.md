@@ -400,6 +400,12 @@ API references: [Steam news pagination](https://partner.steamgames.com/doc/webap
 - `ConfirmEventSeriesCommand` (POST `/events/{guild}/{event}/confirm-all`) confirms every pending upcoming date; each person who accepted one gets a single Confirmed message for their first newly confirmed date.
 - Event date boxes show weekday, day and month; compact series rows show only the times, with status and count underneath. Side panel menus open beside the panel (`position: fixed`) so its scroll area no longer clips them.
 
+### v0.1.10 per-server cache, Live notices for free people and Phasmophobia
+
+- Per-server cache (`Infrastructure/Caching`, `Microsoft.Extensions.Caching.Hybrid` 10.9.0, which matches the 10.0.11 packages): `CachedAccountLinkStore`, `CachedGuildGroupStore` and `CachedGuildSettingsStore` wrap the SQLite stores. Reads go through `GuildCache.GetAsync`; every write goes through `GuildCache.WriteAsync`, which raises the server's generation (part of every key) and removes its `guild:{id}` tag, so a read that started before a write is never served after it. Settings writes also clear the list of every server's settings. Entries last at most 10 minutes. Values are kept as instances (`Cached<T>` is `[ImmutableObject]`), so cached records must only be replaced with `with`. `CachedStoreTests` fails for a write method that doesn't clear the cache.
+- Live notices (`LiveHandlers.ReachableAsync`): DM recipients and "also wants to play" names leave out members in do-not-disturb, and members with hours within `LiveRules.HoursAround` (12 h) of now who aren't inside one of them. Members without hours nearby still get notices. Live notices are no longer held for after do-not-disturb; the notifier's hold only catches do-not-disturb that starts in between.
+- Game features: `GameFeatureInfo.Placeholder`; Phasmophobia (Steam 739630) has a Coming soon card and page without tabs.
+
 ### v0.1.9 vote types and whole matches
 
 - Vote types: `Poll.Purpose` (Choice / Buy) is the type. The New vote tab has a type picker (`.hm-poll-types`, shown with CSS `:has()`; without it both templates show) and one form per type; both share `WhereAndWho` (group channel, or server channel and Everyone / Chosen people). Active and Results have type filter chips (`data-poll-filter`, dashboard.js).

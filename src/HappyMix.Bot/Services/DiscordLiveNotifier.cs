@@ -12,7 +12,8 @@ namespace HappyMix.Bot.Services;
 /// <summary>
 /// Live notices: a DM to each member who asked for them, and a post in the group's notification channel when the
 /// organizer turned that on. Messages use the community language; delivery problems are logged, never thrown.
-/// A recipient with do-not-disturb on gets the DM when it ends, if the player is still in that game.
+/// Recipients in do-not-disturb or not free now are left out before this (LiveHandlers); the hold below only
+/// catches do-not-disturb that starts in between.
 /// </summary>
 internal sealed partial class DiscordLiveNotifier(DiscordSocketClient discord, EventNotificationSettings notificationSettings,
     IOptions<CommunityDefaults> community, ISender sender, ILogger<DiscordLiveNotifier> logger) : ILiveNotifier, IHeldMessageSender

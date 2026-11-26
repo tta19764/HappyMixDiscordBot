@@ -5,8 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HappyMix.Bot.Web;
 
-/// <summary>A game with features on the Game features pages: its address key, Steam app and the features it has.</summary>
-public sealed record GameFeatureInfo(string Key, string Name, string AppId, string[] Features)
+/// <summary>
+/// A game with features on the Game features pages: its address key, Steam app and the features it has.
+/// A <paramref name="Placeholder"/> game has no features yet: its card and page say they are coming.
+/// </summary>
+public sealed record GameFeatureInfo(string Key, string Name, string AppId, string[] Features, bool Placeholder = false)
 {
     public string Art => SteamArt.Header(AppId);
 }
@@ -16,7 +19,8 @@ public static class GameFeatureCatalog
 {
     public static readonly GameFeatureInfo Dota2 = new("dota-2", "Dota 2", GameStats.DotaAppId, ["stats", "meta", "recaps", "digest"]);
     public static readonly GameFeatureInfo Cs2 = new("cs2", "Counter-Strike 2", GameStats.Cs2AppId, ["stats", "recaps", "digest"]);
-    public static readonly IReadOnlyList<GameFeatureInfo> All = [Dota2, Cs2];
+    public static readonly GameFeatureInfo Phasmophobia = new("phasmophobia", "Phasmophobia", "739630", [], Placeholder: true);
+    public static readonly IReadOnlyList<GameFeatureInfo> All = [Dota2, Cs2, Phasmophobia];
 
     public static GameFeatureInfo? Find(string? key) => All.FirstOrDefault(game => string.Equals(game.Key, key, StringComparison.OrdinalIgnoreCase));
 }
@@ -191,6 +195,8 @@ public sealed partial class DashboardController
     /// <summary>Short status lines for a game card: your sharing and the server's posts.</summary>
     private List<string> Status(GameFeatureInfo game, MyStats mine, DotaMetaSettings meta)
     {
+        if (game.Placeholder)
+            return [text["Features_StatusSoon"].Value];
         var lines = new List<string> { text[mine.Shares ? "Features_StatusSharing" : "Features_StatusNotSharing"].Value };
         if (game == GameFeatureCatalog.Dota2)
             lines.Add(meta.Schedule == MetaSchedule.Off || meta.ChannelId is null
