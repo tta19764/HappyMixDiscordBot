@@ -235,6 +235,16 @@ public static class DashboardIcons
         ["users"] = ["M6 5h4v4H6z", "M4 19v-6h8v6", "M15 7h4v4h-4z", "M14 19v-5h7v5"],
         ["sliders"] = ["M4 7h9", "M17 7h3", "M13 4v6", "M4 17h3", "M11 17h9", "M7 14v6"],
         ["twitch"] = ["M5 4h15v10l-4 4h-4l-3 3v-3H5z", "M11 8v4", "M15 8v4"],
+        // Phasmophobia: a ghost and the seven evidence types
+        ["ghost"] = ["M6 20V10a6 6 0 0 1 12 0v10l-2-2-2 2-2-2-2 2-2-2z", "M10 10v1", "M14 10v1"],
+        ["phasmo-emf"] = ["M7 3h10v18H7z", "M10 17v-2", "M12 17v-4", "M14 17v-6", "M10 6h4"],
+        ["phasmo-dots"] = ["M3 10h7v5H3z", "M10 12.5h2", "M15 6h1", "M19 6h1", "M15 12h1", "M19 12h1", "M15 18h1", "M19 18h1"],
+        ["phasmo-uv"] = ["M3 10h8v4H3z", "M11 9l4-3v12l-4-3", "M18 8l3-2", "M18 12h3", "M18 16l3 2"],
+        ["phasmo-freezing"] = ["M12 3v18", "M4.2 7.5l15.6 9", "M4.2 16.5l15.6-9", "M9.5 4.5 12 7l2.5-2.5", "M9.5 19.5 12 17l2.5 2.5"],
+        ["phasmo-orb"] = ["M18 12a6 6 0 1 1-12 0 6 6 0 0 1 12 0", "M10 10h1", "M20 4v2", "M19 5h2", "M4 18v2", "M3 19h2"],
+        ["phasmo-writing"] = ["M4 4h11v16H4z", "M7 8h5", "M7 11h5", "M7 14h2", "M13 18l7-7-2-2-7 7v2z"],
+        ["phasmo-spiritbox"] = ["M4 9h16v11H4z", "M7 9l9-5", "M7 13h5", "M7 16h5", "M15 13h2v3h-2z"],
+        ["cross"] = ["M6 6l12 12", "M18 6 6 18"],
         // Small marks used inside controls and lists
         ["check"] = ["M5 12l5 5 9-10"],
         ["plus"] = ["M12 5v14", "M5 12h14"],

@@ -1,0 +1,1361 @@
+[
+  {
+    "id": "aswang",
+    "name": "Aswang",
+    "evidence": ["freezing", "writing", "dots"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Cannot kill players inside official hiding spots, but marks the spot for its next hunt.",
+    "clues": [
+      "Hiding in an official closet/locker ends the hunt if it paths to you",
+      "Next hunt beelines straight to that marked hiding spot",
+      "Accelerates faster than normal during line-of-sight"
+    ],
+    "huntThreshold": {
+      "value": "50%",
+      "notes": "Standard 50% average team sanity."
+    },
+    "speed": {
+      "base": "1.53 m/s",
+      "conditional": [
+        { "text": "Accelerates faster than standard ghosts with line-of-sight, reaching up to 2.53 m/s.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Gains line-of-sight speed faster than most ghosts and remembers hiding spots that saved you.",
+    "weakness": "Cannot kill you inside an official hiding spot (closet/locker); reaching you there immediately ends the hunt.",
+    "abilities": [
+      { "text": "If it paths directly to a player inside an official hiding spot, it cannot kill them and ends the hunt immediately.", "kind": "Guaranteed" },
+      { "text": "Ending a hunt on a hiding spot places a waypoint on that location for the next hunt.", "kind": "Guaranteed" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Beelines toward the previously marked hiding spot at the start of the next hunt, even during the grace period.", "kind": "Conditional" },
+      { "text": "Reaches 2.53 m/s max line-of-sight speed faster than standard ghosts.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Hide inside an official closet or locker during a hunt; if the ghost walks right up to you and the hunt abruptly ends, it is an Aswang.",
+      "Do not reuse that same hiding spot on the next hunt, as it will rush straight there at hunt start."
+    ],
+    "notes": [
+      { "text": "Only official hiding spots (closets, lockers) trigger the hunt-ending mechanic; improvised furniture hiding spots do not.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Ghost", "https://phasmopedia.com/en/"],
+    "verifiedVersion": "Winter's Jest",
+    "unverified": []
+  },
+  {
+    "id": "banshee",
+    "name": "Banshee",
+    "evidence": ["dots", "orb", "uv"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Stalks a single target at a time and has a unique wail on the Parabolic Microphone.",
+    "clues": [
+      "Unique Banshee scream on the Parabolic Microphone",
+      "Ignores non-target players during hunts",
+      "Roams toward its target outside of hunts"
+    ],
+    "huntThreshold": {
+      "value": "50% (target)",
+      "notes": "Checks only the current target's sanity, not team average."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Standard line-of-sight acceleration up to 2.8 m/s.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Focuses on one player at a time, roaming to them and hunting based on their individual sanity.",
+    "weakness": "Produces a distinctive wail on the Parabolic Microphone more frequently.",
+    "abilities": [
+      { "text": "Selects one living player as its target; if the target dies or leaves, it picks a new target.", "kind": "Guaranteed" },
+      { "text": "Frequently roams toward its target's location when not hunting.", "kind": "Statistical" },
+      { "text": "Has a 33% chance to emit a unique Banshee scream instead of a normal paranormal sound on the Parabolic Microphone.", "kind": "Statistical" }
+    ],
+    "events": [
+      { "text": "Prefers singing ghost events, which drain 15% sanity from the target instead of 10%.", "kind": "Conditional" }
+    ],
+    "hunt": [
+      { "text": "Only chases and kills its current target if the target is inside the investigation area; other players can walk through it safely.", "kind": "Guaranteed" },
+      { "text": "If the target is outside the house during a hunt, it hunts normally and can kill anyone.", "kind": "Conditional" }
+    ],
+    "detection": [
+      "Listen with a Parabolic Microphone or Sound Sensor for the unique high-pitched Banshee wail.",
+      "In multiplayer, have players stand in different spots during a hunt (with incense ready) to see if it completely ignores everyone except one person."
+    ],
+    "notes": [
+      { "text": "If the target is outside the building, a Banshee will behave like a normal ghost and kill other players.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Banshee", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "dayan",
+    "name": "Dayan",
+    "evidence": ["emf", "orb", "spiritbox"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Speeds up when nearby players move and slows down when they stand completely still.",
+    "clues": [
+      "Speeds up if players within 10 m are moving",
+      "Slows down when nearby players stand completely still",
+      "Always uses a female ghost model"
+    ],
+    "huntThreshold": {
+      "value": "Dynamic",
+      "notes": "Depends on player movement near the ghost."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Becomes noticeably faster when players within ~10 m are moving.", "kind": "Guaranteed" },
+        { "text": "Slows down when nearby players stand completely still.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Punishes players who try to outrun or loop it while in motion.",
+    "weakness": "Slows down significantly when nearby players stop moving.",
+    "abilities": [
+      { "text": "Movement-reactive speed: nearby player movement accelerates it, while stillness slows it.", "kind": "Guaranteed" }
+    ],
+    "events": [
+      { "text": "Always spawns with a female ghost model and name.", "kind": "Guaranteed" }
+    ],
+    "hunt": [
+      { "text": "During a hunt, its footsteps noticeably speed up when you move within 10 m and slow down when you stand still.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "During a hunt, stand still while it is within ~10 m (behind cover) and listen to its footsteps, then take a few steps and listen for an immediate speed-up.",
+      "Rule out Dayan immediately if the ghost uses a male model."
+    ],
+    "notes": [
+      { "text": "Exact m/s values for its moving vs. still states are not yet confirmed on all wikis.", "kind": "Conditional" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Ghost", "https://phasmopedia.com/en/"],
+    "verifiedVersion": "Winter's Jest",
+    "unverified": ["Exact m/s speed values for moving vs still states"]
+  },
+  {
+    "id": "deildegast",
+    "name": "Deildegast",
+    "evidence": ["emf", "writing", "dots"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Starts hunts at 3.0 m/s, slowing down by 0.1 m/s for each unique non-equipment item moved.",
+    "clues": [
+      "Starts hunts extremely fast (3.0 m/s) if nothing was disturbed",
+      "No line-of-sight speed-up",
+      "Slows down by 0.1 m/s per unique non-equipment item moved since last hunt"
+    ],
+    "huntThreshold": {
+      "value": "50%",
+      "notes": "Standard 50% average team sanity."
+    },
+    "speed": {
+      "base": "0.4–3.0 m/s",
+      "conditional": [
+        { "text": "Starts at 3.0 m/s and drops by 0.1 m/s per unique non-equipment item moved by players (down to 0.4 m/s at 26 items).", "kind": "Guaranteed" },
+        { "text": "Does not gain line-of-sight acceleration.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Extremely fast (3.0 m/s) at the start of a hunt if players have not disturbed household items.",
+    "weakness": "Moving non-equipment items slows its next hunt, and it has no line-of-sight speed-up.",
+    "abilities": [
+      { "text": "Speed resets to 3.0 m/s at the start of every new hunt, reduced by 0.1 m/s per unique non-equipment item interacted with since the previous hunt.", "kind": "Guaranteed" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Constant speed throughout a hunt with zero line-of-sight acceleration.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Listen to its speed on a fresh hunt (3.0 m/s), then deliberately move 10–15 household props (cups, plates, shoes) and listen on the next hunt to confirm it slowed down.",
+      "Check if it fails to speed up when chasing you in line-of-sight."
+    ],
+    "notes": [
+      { "text": "Player equipment does not count toward the 0.1 m/s reduction; only non-equipment map props count.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Ghost", "https://phasmopedia.com/en/"],
+    "verifiedVersion": "Winter's Jest",
+    "unverified": []
+  },
+  {
+    "id": "demon",
+    "name": "Demon",
+    "evidence": ["uv", "writing", "freezing"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Hunts at 70% sanity, can hunt at any sanity via ability, and has shorter hunt cooldowns.",
+    "clues": [
+      "Hunts at 70% sanity (or any sanity with its ability)",
+      "20 s minimum hunt cooldown instead of 25 s",
+      "Incense only blocks hunts for 60 s instead of 90 s"
+    ],
+    "huntThreshold": {
+      "value": "70% (100% ability)",
+      "notes": "Normal hunts at 70% sanity; rare ability can trigger a hunt at any sanity."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Standard line-of-sight acceleration up to 2.8 m/s.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Hunts early, often, and recovers from smudge sticks faster than other ghosts.",
+    "weakness": "Crucifix effective range is increased by 50% (e.g., 4.5 m for Tier 1, 6 m for Tier 2, 7.5 m for Tier 3).",
+    "abilities": [
+      { "text": "Can randomly initiate a hunt regardless of team sanity.", "kind": "Random" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Minimum cooldown between hunts is 20 seconds (others: 25 s).", "kind": "Guaranteed" },
+      { "text": "Incense prevents hunts for only 60 seconds (others: 90 s).", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Time the gap between a smudge/hunt end and the next hunt: 20–24 s or 60–89 s after smudging confirms Demon.",
+      "If a hunt starts above 70% sanity without cursed possessions, it is a Demon."
+    ],
+    "notes": [
+      { "text": "Thaye at full age can hunt at 75% sanity, so check smudge/hunt cooldowns to distinguish them.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Demon", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "deogen",
+    "name": "Deogen",
+    "evidence": ["spiritbox", "writing", "dots"],
+    "forcedEvidence": ["spiritbox"],
+    "extraEvidence": [],
+    "summary": "Always knows where every player is, rushes at 3.0 m/s from afar, and slows to 0.4 m/s up close.",
+    "clues": [
+      "You cannot hide from it; it always knows your location",
+      "3.0 m/s at >6 m distance, slows to 0.4 m/s within 2.5 m",
+      "Unique heavy breathing response on Spirit Box within 1 m"
+    ],
+    "huntThreshold": {
+      "value": "40%",
+      "notes": "Hunts at 40% average team sanity."
+    },
+    "speed": {
+      "base": "0.4–3.0 m/s",
+      "conditional": [
+        { "text": "Moves at 3.0 m/s when >6 m from its target.", "kind": "Guaranteed" },
+        { "text": "Slows down to 0.4 m/s when within 2.5 m of its target.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Always knows where all players are during a hunt, making hiding impossible.",
+    "weakness": "Moves extremely slowly (0.4 m/s) when close to its target, making it easy to loop.",
+    "abilities": [
+      { "text": "33% chance to give a unique heavy breathing/bull-like sound on the Spirit Box when standing within 1 m of it.", "kind": "Statistical" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Ignores hiding spots and paths directly to the nearest player.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "During a hunt, listen for very fast footsteps approaching that suddenly drop to a crawl as it gets close, then walk around a table or island to loop it.",
+      "Stand within 1 m of the ghost and ask Spirit Box questions for the unique heavy breathing."
+    ],
+    "notes": [
+      { "text": "Spirit Box is forced on Nightmare and Insanity.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Deogen", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "gallu",
+    "name": "Gallu",
+    "evidence": ["emf", "uv", "spiritbox"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Cycles between Normal, Enraged, and Weakened states when interacting with protective equipment.",
+    "clues": [
+      "Three states: Normal (50%), Enraged (60%), Weakened (40%)",
+      "Crucifixes, salt, and incense can shift its state",
+      "Speed and aggression change with its current state"
+    ],
+    "huntThreshold": {
+      "value": "40% / 50% / 60%",
+      "notes": "Weakened: 40%, Normal: 50%, Enraged: 60%."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Speed shifts dynamically between its Normal, Enraged (faster), and Weakened (slower) states.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Becomes enraged with a higher hunt threshold (60%) and faster speed after certain defensive interactions.",
+    "weakness": "Can enter a weakened state (40% hunt threshold, slower speed) depending on protective item interactions.",
+    "abilities": [
+      { "text": "Burning a crucifix, being smudged with incense, or stepping in salt can trigger a state transition.", "kind": "Guaranteed" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Hunt speed and threshold reflect whichever state (Normal, Enraged, Weakened) it is currently in.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Observe whether its hunt speed or sanity threshold shifts after burning a crucifix, stepping in salt, or being smudged."
+    ],
+    "notes": [
+      { "text": "Exact m/s values for Enraged and Weakened states are still being documented.", "kind": "Conditional" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Ghost", "https://phasmopedia.com/en/"],
+    "verifiedVersion": "Winter's Jest",
+    "unverified": ["Exact m/s values for Enraged and Weakened states"]
+  },
+  {
+    "id": "goryo",
+    "name": "Goryo",
+    "evidence": ["emf", "uv", "dots"],
+    "forcedEvidence": ["dots"],
+    "extraEvidence": [],
+    "summary": "D.O.T.S. silhouettes are only visible through a Video Camera when no player is in the ghost room.",
+    "clues": [
+      "D.O.T.S. only visible on Video Camera with no one in the room",
+      "Never changes its favourite room",
+      "Rarely roams far from its room"
+    ],
+    "huntThreshold": {
+      "value": "50%",
+      "notes": "Standard 50% average team sanity."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Standard line-of-sight acceleration up to 2.8 m/s.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Rarely leaves its favourite room and hides its D.O.T.S. state from players standing inside.",
+    "weakness": "Never changes its favourite room, even on higher difficulties.",
+    "abilities": [
+      { "text": "Cannot enter D.O.T.S. state while any player is in the same room.", "kind": "Guaranteed" },
+      { "text": "D.O.T.S. silhouette can only be seen through a Video Camera, not with the naked eye.", "kind": "Guaranteed" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Standard hunt behaviour.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Place a Video Camera aimed at the D.O.T.S. Projector, leave the room, and watch from the van or hallway.",
+      "If you see D.O.T.S. with the naked eye or while someone is in the room, rule out Goryo."
+    ],
+    "notes": [
+      { "text": "D.O.T.S. Projector is forced on Nightmare and Insanity.", "kind": "Guaranteed" }
+    ],
+    "distinctive": false,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Goryo", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "hantu",
+    "name": "Hantu",
+    "evidence": ["uv", "orb", "freezing"],
+    "forcedEvidence": ["freezing"],
+    "extraEvidence": [],
+    "summary": "Moves faster in cold rooms, emits freezing breath during hunts, and cannot turn on the breaker.",
+    "clues": [
+      "Visible freezing breath from its mouth during hunts when breaker is off",
+      "Faster in cold rooms (up to 2.7 m/s), slower in warm rooms (1.4 m/s)",
+      "Never turns the fuse box on; has no line-of-sight speed-up"
+    ],
+    "huntThreshold": {
+      "value": "50%",
+      "notes": "Standard 50% average team sanity."
+    },
+    "speed": {
+      "base": "1.4–2.7 m/s",
+      "conditional": [
+        { "text": "1.4 m/s in warm rooms (>=15°C) up to 2.7 m/s in freezing rooms (<0°C).", "kind": "Guaranteed" },
+        { "text": "Does not gain line-of-sight acceleration.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Moves very fast in cold rooms and throughout the house when the fuse box is off.",
+    "weakness": "Moves slowly in warm rooms and never turns the fuse box on.",
+    "abilities": [
+      { "text": "Cannot turn the fuse box on, and has double the chance to turn it off.", "kind": "Guaranteed" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Emits visible freezing breath from its mouth during hunts if the fuse box is off.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Turn off the fuse box and look for freezing breath coming from the ghost's mouth during a hunt.",
+      "Listen for its speed dropping noticeably when it leaves its cold ghost room into a warm hallway."
+    ],
+    "notes": [
+      { "text": "Freezing Temperatures is forced on Nightmare and Insanity.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Hantu", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "jinn",
+    "name": "Jinn",
+    "evidence": ["emf", "uv", "freezing"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Sprints at 2.5 m/s toward distant players in line-of-sight when the fuse box is on, and never turns it off.",
+    "clues": [
+      "2.5 m/s in line-of-sight when >3 m away and fuse box is on",
+      "Never turns the fuse box off",
+      "Ability drains 25% sanity near it and leaves EMF at the fuse box"
+    ],
+    "huntThreshold": {
+      "value": "50%",
+      "notes": "Standard 50% average team sanity."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Instantly moves at 2.5 m/s when the fuse box is on, it has line-of-sight, and the target is >3 m away.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Closes long distances rapidly when the fuse box is on.",
+    "weakness": "Cannot use its speed or sanity-drain ability if the fuse box is off, and never turns the fuse box off.",
+    "abilities": [
+      { "text": "Can drain 25% sanity from players within 3 m (or in the same room) while leaving EMF 2/5 at the fuse box.", "kind": "Random" },
+      { "text": "Cannot turn the fuse box off directly (tripping it by turning on too many lights still works).", "kind": "Guaranteed" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Drops back to 1.7 m/s once within 3 m of its target.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Keep the fuse box on and check for EMF at the fuse box without it turning off.",
+      "During a hunt with the breaker on, watch if it immediately sprints at 2.5 m/s down a long hallway when it sees you."
+    ],
+    "notes": [
+      { "text": "If the ghost ever turns the fuse box off directly, it cannot be a Jinn.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Jinn", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "kormos",
+    "name": "Kormos",
+    "evidence": ["orb", "uv", "spiritbox"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "A visually blind ghost that hunts by sound, hearing sprinting from up to 30 m away.",
+    "clues": [
+      "Visually blind; tracks players by sound instead of line-of-sight",
+      "Hears crouching (~10 m), walking (~15 m), and sprinting (~30 m)",
+      "Hunt threshold rises to 70% if a player sprints nearby"
+    ],
+    "huntThreshold": {
+      "value": "50% (70% if sprinting)",
+      "notes": "50% default; increases to 70% if a player sprints near the ghost."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Accelerates up to 2.21 m/s when tracking player noise.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Detects footsteps and electronics from far away and hunts early (70%) if players sprint near it.",
+    "weakness": "Visually blind; crouching and staying silent makes it much harder for it to find you.",
+    "abilities": [
+      { "text": "Sprinting near the ghost raises its hunt threshold to 70%.", "kind": "Guaranteed" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Tracks players by sound: ~10 m crouched, ~15 m walking, ~30 m sprinting.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Stay crouched and silent in view of it (with incense ready) to test if it fails to see you visually.",
+      "Sprint near its room at 50–70% sanity to see if it triggers an early hunt."
+    ],
+    "notes": [
+      { "text": "Active electronics still give away your position.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Ghost", "https://phasmopedia.com/en/"],
+    "verifiedVersion": "Winter's Jest",
+    "unverified": []
+  },
+  {
+    "id": "mare",
+    "name": "Mare",
+    "evidence": ["spiritbox", "orb", "writing"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Hunts at 60% in the dark, 40% in the light, and can immediately flick lights back off.",
+    "clues": [
+      "Hunts at 60% in unlit rooms, 40% in lit rooms",
+      "Can instantly turn a light switch off right after you turn it on",
+      "Never turns a light switch on"
+    ],
+    "huntThreshold": {
+      "value": "60% dark / 40% lit",
+      "notes": "Based on whether the light in the ghost's current room is on or off."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Standard line-of-sight acceleration up to 2.8 m/s.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "More likely to hunt in the dark and frequently breaks or turns off lights.",
+    "weakness": "Keeping lights on lowers its hunt threshold to 40%.",
+    "abilities": [
+      { "text": "Has a chance to immediately turn off a light switch within ~4 m right after a player turns it on (10 s cooldown per player).", "kind": "Random" },
+      { "text": "Cannot turn a light switch on.", "kind": "Guaranteed" }
+    ],
+    "events": [
+      { "text": "Higher chance to perform light-breaking ghost events.", "kind": "Statistical" }
+    ],
+    "hunt": [
+      { "text": "Standard hunt behaviour.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Flip the light switch in the ghost room on and wait 1–2 seconds to see if it immediately flicks it back off.",
+      "If the ghost ever turns a light on, rule out Mare."
+    ],
+    "notes": [
+      { "text": "Monitor/TV screens and candles do not count as room lights for the Mare's threshold.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Mare", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "moroi",
+    "name": "Moroi",
+    "evidence": ["spiritbox", "writing", "freezing"],
+    "forcedEvidence": ["spiritbox"],
+    "extraEvidence": [],
+    "summary": "Curses players via Spirit Box/Parabolic Mic and moves faster as average sanity drops.",
+    "clues": [
+      "Speed scales from 1.5 m/s (high sanity) to 2.25 m/s (0% sanity)",
+      "Spirit Box or Parabolic Mic response curses you (double sanity drain)",
+      "Incense blinds it for 7.5 s instead of 5 s during hunts"
+    ],
+    "huntThreshold": {
+      "value": "50%",
+      "notes": "Standard 50% average team sanity."
+    },
+    "speed": {
+      "base": "1.5–2.25 m/s",
+      "conditional": [
+        { "text": "Base speed increases as average team sanity drops, reaching 2.25 m/s at 0% sanity (and up to 3.71 m/s with LOS).", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Becomes the fastest line-of-sight ghost at 0% sanity and curses players who hear it.",
+    "weakness": "Incense blinds it for 7.5 seconds during a hunt instead of 5 seconds.",
+    "abilities": [
+      { "text": "Curses any player who gets a Spirit Box response or hears a paranormal sound on the Parabolic Mic, doubling passive sanity drain.", "kind": "Guaranteed" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Blinded by incense for 7.5 s (others: 5 s).", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Check if its hunt speed noticeably increases as your team's sanity drops (or after taking Sanity Medication, which slows it down).",
+      "Time how long it wanders blindly after being smudged during a hunt (7.5 s)."
+    ],
+    "notes": [
+      { "text": "Spirit Box is forced on Nightmare and Insanity. Taking Sanity Medication cures the curse.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Moroi", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "myling",
+    "name": "Myling",
+    "evidence": ["emf", "uv", "writing"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Footsteps and vocals are only audible within 12 m during hunts, and it makes frequent Parabolic Mic sounds.",
+    "clues": [
+      "Hunt footsteps are only audible within 12 m (others: 20 m)",
+      "Flashlight flickers at 10 m, almost the same time you hear footsteps",
+      "Makes more frequent paranormal sounds on the Parabolic Microphone"
+    ],
+    "huntThreshold": {
+      "value": "50%",
+      "notes": "Standard 50% average team sanity."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Standard line-of-sight acceleration up to 2.8 m/s.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Much quieter during hunts, making it harder to hear approaching.",
+    "weakness": "Produces paranormal sounds more frequently on the Parabolic Microphone.",
+    "abilities": [
+      { "text": "Higher frequency of paranormal sounds on the Parabolic Microphone.", "kind": "Statistical" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Footsteps and vocalizations are only audible within 12 m (normal ghosts: 20 m).", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Drop a lit flashlight on the floor and stand next to it during a hunt: if the flashlight flickers before or at the exact moment you hear footsteps, it is a Myling."
+    ],
+    "notes": [
+      { "text": "On different floors, footsteps can sound muffled for any ghost—test on the same floor.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Myling", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "obake",
+    "name": "Obake",
+    "evidence": ["emf", "uv", "orb"],
+    "forcedEvidence": ["uv"],
+    "extraEvidence": [],
+    "summary": "Shapeshifts briefly during hunts, can leave 6-fingered handprints, and may skip leaving UV.",
+    "clues": [
+      "Briefly shapeshifts into another ghost model once per ~12–27 blinks during a hunt",
+      "16.7% chance to leave a 6-fingered handprint (or 2-fingered light switch / 5-fingered keyboard)",
+      "25% chance to not leave UV evidence on an interaction"
+    ],
+    "huntThreshold": {
+      "value": "50%",
+      "notes": "Standard 50% average team sanity."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Standard line-of-sight acceleration up to 2.8 m/s.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Can hide its UV evidence 25% of the time and halve the duration of existing UV prints.",
+    "weakness": "Shapeshifts during hunts and occasionally leaves unique 6-fingered handprints.",
+    "abilities": [
+      { "text": "25% chance to leave no UV print on a UV-eligible interaction.", "kind": "Statistical" },
+      { "text": "16.7% chance to leave a 6-fingered handprint, 2-fingered light switch print, or 5-fingered keyboard/prison bars print.", "kind": "Statistical" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Guaranteed to shapeshift into another ghost model for one blink at least once per hunt (around every 12–27 blinks).", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Watch the ghost's model during a hunt (from a safe looping spot or smudge range) for a single-frame model swap.",
+      "Check UV handprints on doors for 6 fingers."
+    ],
+    "notes": [
+      { "text": "Ultraviolet is forced on Nightmare and Insanity.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Obake", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "obambo",
+    "name": "Obambo",
+    "evidence": ["writing", "uv", "dots"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Cycles between Calm (10% hunt, 1.45 m/s) and Aggressive (65% hunt, 1.96 m/s) every 2 minutes.",
+    "clues": [
+      "Swaps between Calm and Aggressive states every 2 minutes",
+      "Calm: 10% hunt threshold, 1.45 m/s speed",
+      "Aggressive: 65% hunt threshold, 1.96 m/s speed (can swap mid-hunt)"
+    ],
+    "huntThreshold": {
+      "value": "10% / 65%",
+      "notes": "10% in Calm state, 65% in Aggressive state."
+    },
+    "speed": {
+      "base": "1.45 / 1.96 m/s",
+      "conditional": [
+        { "text": "1.45 m/s in Calm state; 1.96 m/s in Aggressive state.", "kind": "Guaranteed" },
+        { "text": "Can swap states mid-hunt on its 2-minute timer.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Can suddenly hunt at 65% sanity and move at 1.96 m/s during its Aggressive phase.",
+    "weakness": "Only hunts at 10% sanity and moves slowly (1.45 m/s) during its Calm phase.",
+    "abilities": [
+      { "text": "Switches between Calm and Aggressive states on a fixed 2-minute timer regardless of player actions.", "kind": "Guaranteed" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Speed can abruptly shift between 1.45 m/s and 1.96 m/s mid-hunt if the 2-minute timer ticks over.", "kind": "Conditional" }
+    ],
+    "detection": [
+      "Listen for an abrupt mid-hunt speed change between 1.45 m/s and 1.96 m/s, or notice hunts alternating between 65% and 10% sanity.",
+      "Do not confuse its mid-hunt speed shift with The Twins (which only change speed between hunts, not mid-hunt)."
+    ],
+    "notes": [
+      { "text": "Unlike The Twins, Obambo's speed can change during a single hunt.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Ghost", "https://phasmopedia.com/en/"],
+    "verifiedVersion": "Winter's Jest",
+    "unverified": []
+  },
+  {
+    "id": "oni",
+    "name": "Oni",
+    "evidence": ["emf", "freezing", "dots"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Very active around players, drains 20% sanity on ghost events, and never does the airball event.",
+    "clues": [
+      "Never performs the ghost mist (airball) event",
+      "More visible during hunts (shorter invisible blinks)",
+      "Drains 20% sanity on ghost event collision (others: 10%)"
+    ],
+    "huntThreshold": {
+      "value": "50%",
+      "notes": "Standard 50% average team sanity."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Standard line-of-sight acceleration up to 2.8 m/s.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Very active when players are nearby and drains double sanity (20%) on ghost event hits.",
+    "weakness": "Much easier to see during hunts due to shorter invisible blink intervals, and cannot do airball events.",
+    "abilities": [
+      { "text": "Cannot perform the ghost mist (airball) event.", "kind": "Guaranteed" },
+      { "text": "Prefers full-form ghost events over shadow/translucent forms.", "kind": "Statistical" }
+    ],
+    "events": [
+      { "text": "Ghost events drain 20% sanity instead of 10%.", "kind": "Guaranteed" }
+    ],
+    "hunt": [
+      { "text": "Remains visible for longer between blinks during a hunt.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "If you see a ghost mist (airball) event, immediately rule out Oni.",
+      "Watch its blinking during a hunt—it looks almost solid compared to other ghosts."
+    ],
+    "notes": [
+      { "text": "Blinking is the opposite of Phantom (which is mostly invisible).", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Oni", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "onryo",
+    "name": "Onryo",
+    "evidence": ["spiritbox", "orb", "freezing"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Hunts at 60% sanity, is blocked by lit firelights, and always hunts after blowing out 3 flames.",
+    "clues": [
+      "Every 3rd firelight blown out triggers a hunt (at any sanity)",
+      "Lit firelights act like a 4 m crucifix and block hunts",
+      "Hunts at 60% sanity"
+    ],
+    "huntThreshold": {
+      "value": "60%",
+      "notes": "60% average team sanity, or any sanity on every 3rd blown-out flame."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Standard line-of-sight acceleration up to 2.8 m/s.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Extinguishing three flames forces an immediate hunt regardless of sanity.",
+    "weakness": "Lit firelights prevent it from hunting within 4 m (prioritized over crucifixes).",
+    "abilities": [
+      { "text": "Every 3rd flame extinguished by the Onryo attempts to start a hunt (blocked if another lit flame or crucifix is within 4 m).", "kind": "Guaranteed" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Standard hunt behaviour.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Place 3–4 lit firelights on top of a crucifix in the ghost room; if it blows out 3 flames and immediately burns the crucifix, it is an Onryo."
+    ],
+    "notes": [
+      { "text": "Dead players' flames do not count; only map/equipment firelights.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Onryo", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "phantom",
+    "name": "Phantom",
+    "evidence": ["spiritbox", "uv", "dots"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Disappears when photographed, roams to random players, and is mostly invisible during hunts.",
+    "clues": [
+      "Taking a photo of it makes it vanish (and leaves no distortion in the photo)",
+      "Mostly invisible during hunts (long 1–2 s invisible blinks)",
+      "Roams to a random player, leaving EMF 2 at their location"
+    ],
+    "huntThreshold": {
+      "value": "50%",
+      "notes": "Standard 50% average team sanity."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Standard line-of-sight acceleration up to 2.8 m/s.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Looking at a Phantom during a ghost event or hunt drains sanity faster (0.5%/s).",
+    "weakness": "Taking a photo of it during a ghost event makes it disappear immediately.",
+    "abilities": [
+      { "text": "Can choose a random player and walk directly to them, leaving EMF 2.", "kind": "Random" }
+    ],
+    "events": [
+      { "text": "Photographing it during a ghost event causes it to vanish immediately while the event audio continues, and the photo shows no ghost or distortion.", "kind": "Guaranteed" }
+    ],
+    "hunt": [
+      { "text": "Invisible for 1–2 seconds between blinks during hunts.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Take a photo during a ghost event; if it vanishes and the photo is clear, it is a Phantom.",
+      "Watch its blinking during a hunt—it is barely visible."
+    ],
+    "notes": [
+      { "text": "A D.O.T.S. photo also counts for making it vanish.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Phantom", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "poltergeist",
+    "name": "Poltergeist",
+    "evidence": ["spiritbox", "uv", "writing"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Throws multiple objects at once in an explosion and throws objects every 0.5 s during hunts.",
+    "clues": [
+      "Multi-throw ability blasts several nearby items at once (drains 2% sanity per item)",
+      "100% chance to throw an object in range every 0.5 s during a hunt",
+      "Throws objects harder and farther than other ghosts"
+    ],
+    "huntThreshold": {
+      "value": "50%",
+      "notes": "Standard 50% average team sanity."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Standard line-of-sight acceleration up to 2.8 m/s.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Can throw multiple objects simultaneously and drain team sanity quickly.",
+    "weakness": "Becomes powerless in an empty room with nothing to throw.",
+    "abilities": [
+      { "text": "Can throw multiple objects at once, draining 2% sanity per thrown object from nearby players.", "kind": "Random" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Throws any nearby object every 0.5 seconds with 100% probability (others: 50%).", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Build a pile of 6–10 items in the ghost room; if it explodes the pile at once (or scatters it rapidly during a hunt), it is a Poltergeist."
+    ],
+    "notes": [
+      { "text": "Multi-throws can happen outside hunts and leave EMF 2/3.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Poltergeist", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "raiju",
+    "name": "Raiju",
+    "evidence": ["emf", "orb", "dots"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Hunts at 65% near active electronics and moves at 2.5 m/s within range of powered equipment.",
+    "clues": [
+      "2.5 m/s when within 6/8/10 m (small/medium/large map) of active player electronics",
+      "Hunts at 65% sanity when near active electronics",
+      "Disrupts electronics from 15 m away instead of 10 m"
+    ],
+    "huntThreshold": {
+      "value": "65% (near electronics) / 50%",
+      "notes": "65% when near active player equipment; 50% otherwise."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "2.5 m/s when near active player electronics (6 m small, 8 m medium, 10 m large maps).", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Moves at 2.5 m/s and hunts earlier around active player equipment.",
+    "weakness": "Disrupts electronics from 15 m away, giving away its approach earlier.",
+    "abilities": [
+      { "text": "Draws power from active player electronics (excluding head-mounted gear when off, and map appliances).", "kind": "Guaranteed" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Speeds up to 2.5 m/s whenever passing active equipment.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Leave an active flashlight or D.O.T.S. in a hallway and listen during a hunt for a sudden burst to 2.5 m/s only while passing that spot."
+    ],
+    "notes": [
+      { "text": "Thrown/dropped active flashlights, EMF readers, and Video Cameras all power the Raiju.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Raiju", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "revenant",
+    "name": "Revenant",
+    "evidence": ["orb", "writing", "freezing"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Crawls at 1.0 m/s when idle, but sprints at 3.0 m/s as soon as it detects a player.",
+    "clues": [
+      "1.0 m/s when it has not detected any player",
+      "Instantly 3.0 m/s when it sees or hears a player or active electronics",
+      "Stays at 3.0 m/s until reaching the last known location, then slows back to 1.0 m/s"
+    ],
+    "huntThreshold": {
+      "value": "50%",
+      "notes": "Standard 50% average team sanity."
+    },
+    "speed": {
+      "base": "1.0 m/s",
+      "conditional": [
+        { "text": "Instantly 3.0 m/s when it detects a player (sight, voice, or electronics).", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Extremely fast (3.0 m/s) when chasing a detected player.",
+    "weakness": "Very slow (1.0 m/s) when it cannot detect anyone.",
+    "abilities": [
+      { "text": "No special non-hunt abilities.", "kind": "Guaranteed" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Slows down gradually back to 1.0 m/s after reaching the player's last known position.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Hide silently during a hunt; if the footsteps are unmistakably slow (1.0 m/s) and then suddenly explode to 3.0 m/s if you flash a light or speak, it is a Revenant."
+    ],
+    "notes": [
+      { "text": "Unlike Deogen, Revenant is slow when far/unseen and fast when it detects you.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Revenant", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "shade",
+    "name": "Shade",
+    "evidence": ["emf", "writing", "freezing"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Shy ghost that hunts at 35% sanity and will not hunt or do EMF 3/writing while a player is in its room.",
+    "clues": [
+      "Hunts at 35% sanity",
+      "Cannot hunt if a player is in the same room",
+      "Does not throw objects, write, or blow out candles while a player is in its room"
+    ],
+    "huntThreshold": {
+      "value": "35%",
+      "notes": "35% average team sanity; blocked if a player is in the same room."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Standard line-of-sight acceleration up to 2.8 m/s.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Harder to find because it stops most interactions when players are in its room.",
+    "weakness": "Cannot hunt at all if a player is standing in the same room, and hunts only at 35% sanity.",
+    "abilities": [
+      { "text": "Higher chance to appear as a shadow form during ghost events.", "kind": "Statistical" }
+    ],
+    "events": [
+      { "text": "Ghost event chance scales inversely with average sanity (0% at 100% sanity, 100% at <=50% sanity).", "kind": "Statistical" }
+    ],
+    "hunt": [
+      { "text": "Cannot start a hunt while any living player is in the same room.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Sit in the ghost room below 35% sanity; if it only hunts or interacts after you step out into the hallway, it is a Shade."
+    ],
+    "notes": [
+      { "text": "It can still roam to an adjacent room and start a hunt from there.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Shade", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "spirit",
+    "name": "Spirit",
+    "evidence": ["emf", "spiritbox", "writing"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "A standard ghost whose only tell is that incense blocks it from hunting for 180 seconds.",
+    "clues": [
+      "Incense prevents hunts for 180 seconds (others: 90 s, Demon: 60 s)",
+      "Standard 50% hunt threshold and 1.7 m/s speed",
+      "No unique hunt or event tells"
+    ],
+    "huntThreshold": {
+      "value": "50%",
+      "notes": "Standard 50% average team sanity."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Standard line-of-sight acceleration up to 2.8 m/s.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "No notable strengths.",
+    "weakness": "Incense stops it from hunting for 180 seconds (3 minutes).",
+    "abilities": [
+      { "text": "No special abilities.", "kind": "Guaranteed" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Standard hunt behaviour.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Smudge the ghost at <=50% sanity and start a 3-minute timer; if it does not hunt between 90 s and 180 s, it is very likely a Spirit."
+    ],
+    "notes": [
+      { "text": "If it hunts before 180 seconds after being smudged, rule out Spirit.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Spirit", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "thaye",
+    "name": "Thaye",
+    "evidence": ["orb", "writing", "dots"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Starts young, fast (2.75 m/s), and aggressive (75% hunt), then ages when players are nearby.",
+    "clues": [
+      "Ages every 1–2 minutes while a player is in its room (up to 10 times)",
+      "Young: 75% hunt, 2.75 m/s; Old: 15% hunt, 1.0 m/s",
+      "Has no line-of-sight speed-up"
+    ],
+    "huntThreshold": {
+      "value": "75% -> 15%",
+      "notes": "Starts at 75% and drops by 6% per age stage down to 15%."
+    },
+    "speed": {
+      "base": "2.75 -> 1.0 m/s",
+      "conditional": [
+        { "text": "Drops by 0.175 m/s per age stage from 2.75 m/s down to 1.0 m/s.", "kind": "Guaranteed" },
+        { "text": "Does not gain line-of-sight acceleration.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Very fast and hunts at 75% sanity at the start of the contract.",
+    "weakness": "Weakens dramatically as it ages, eventually hunting only at 15% sanity and 1.0 m/s.",
+    "abilities": [
+      { "text": "Attempts to age every 1–2 minutes; succeeds if at least one player is in the same room.", "kind": "Guaranteed" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Constant speed during a hunt with zero line-of-sight acceleration.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Compare its hunt speed early in the contract vs. after spending 5+ minutes in its room.",
+      "Ask its age on the Ouija Board twice, 2 minutes apart—if the age increases, it is a Thaye."
+    ],
+    "notes": [
+      { "text": "Aging only progresses while a player is in the ghost's current room.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Thaye", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "mimic",
+    "name": "The Mimic",
+    "evidence": ["spiritbox", "uv", "freezing"],
+    "forcedEvidence": [],
+    "extraEvidence": [
+      { "evidence": "orb", "text": "Shows Ghost Orbs as a fake extra evidence, even on 0-evidence contracts." }
+    ],
+    "summary": "Copies another ghost's behaviour every 30–120 seconds and always produces fake Ghost Orbs.",
+    "clues": [
+      "Shows fake Ghost Orbs even on 0-evidence contracts",
+      "Copies a different ghost's abilities, speed, and hunt threshold every 30–120 s",
+      "Cannot copy another ghost's evidence (except its own fake Orbs)"
+    ],
+    "huntThreshold": {
+      "value": "50% (varies)",
+      "notes": "Copies the hunt threshold of whichever ghost it is currently mimicking."
+    },
+    "speed": {
+      "base": "1.7 m/s (varies)",
+      "conditional": [
+        { "text": "Copies the base and conditional speed of the currently mimicked ghost.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Unpredictable; can mimic Demon early hunts, Revenant speed, or Deo detection.",
+    "weakness": "Always produces fake Ghost Orbs in addition to its 3 real evidence types.",
+    "abilities": [
+      { "text": "Switches which ghost it mimics every 30–120 seconds (never mid-hunt).", "kind": "Guaranteed" }
+    ],
+    "events": [
+      { "text": "Copies the ghost event behaviour of the mimicked ghost.", "kind": "Conditional" }
+    ],
+    "hunt": [
+      { "text": "Copies the hunt speed, blink rate, and special hunt rules of the mimicked ghost.", "kind": "Conditional" }
+    ],
+    "detection": [
+      "On 0-evidence contracts, finding Ghost Orbs immediately confirms The Mimic.",
+      "On 1–3 evidence contracts, if you see Ghost Orbs alongside Spirit Box, UV, or Freezing, check for the other Mimic evidence or inconsistent hunt speeds between hunts."
+    ],
+    "notes": [
+      { "text": "Ghost Orbs do not count toward the difficulty's evidence limit.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/The_Mimic", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "twins",
+    "name": "The Twins",
+    "evidence": ["emf", "spiritbox", "freezing"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Acts in two places at once and hunts at either 1.5 m/s (main) or 1.9 m/s (decoy).",
+    "clues": [
+      "Main twin hunts at 1.5 m/s; decoy twin hunts at 1.9 m/s",
+      "Can interact in two separate rooms almost simultaneously",
+      "Hunt can start from the decoy's last interaction spot instead of the ghost room"
+    ],
+    "huntThreshold": {
+      "value": "50%",
+      "notes": "Standard 50% average team sanity."
+    },
+    "speed": {
+      "base": "1.5 / 1.9 m/s",
+      "conditional": [
+        { "text": "50% chance to hunt at 1.5 m/s (main) or 1.9 m/s (decoy), with standard LOS acceleration.", "kind": "Statistical" }
+      ]
+    },
+    "strength": "Can start hunts from a decoy location outside the main ghost room.",
+    "weakness": "Often interacts in two places at once and alternates between 1.5 m/s and 1.9 m/s hunts.",
+    "abilities": [
+      { "text": "Can trigger an interaction in its room and another up to 16 m away within ~1 second.", "kind": "Random" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Crucifixes only check the ghost's actual position, even if it decides to hunt from the decoy's spot.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Listen for two different hunt speeds across separate hunts (slightly slower 1.5 m/s vs slightly faster 1.9 m/s).",
+      "Watch for activity spikes (twins curve) on the truck activity board or simultaneous interactions in two rooms."
+    ],
+    "notes": [
+      { "text": "Speed only varies between hunts, never mid-hunt (unlike Obambo).", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/The_Twins", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "wraith",
+    "name": "Wraith",
+    "evidence": ["emf", "spiritbox", "dots"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Never steps in salt and can teleport directly to a random player, leaving EMF 2.",
+    "clues": [
+      "Never disturbs salt piles (zero footprints/salt steps)",
+      "Can teleport to a random player, leaving EMF 2 (or 25% EMF 5)",
+      "Teleporting can start a hunt right on top of a player"
+    ],
+    "huntThreshold": {
+      "value": "50%",
+      "notes": "Standard 50% average team sanity."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Standard line-of-sight acceleration up to 2.8 m/s.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Can teleport to any player anywhere on the map.",
+    "weakness": "Never steps in salt, making it easy to rule out.",
+    "abilities": [
+      { "text": "Can teleport within 3 m of a random player, generating EMF 2 (or 25% EMF 5).", "kind": "Random" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Standard hunt behaviour.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Place salt in doorways or chokepoints (or under a motion sensor); if the motion sensor triggers repeatedly without any salt being stepped in, it is a Wraith."
+    ],
+    "notes": [
+      { "text": "If any ghost steps in salt, immediately rule out Wraith.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Wraith", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "yokai",
+    "name": "Yokai",
+    "evidence": ["spiritbox", "orb", "dots"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Hunts at 80% sanity if players talk nearby, but is nearly deaf/blind to electronics beyond 2.5 m during hunts.",
+    "clues": [
+      "Hunts at 80% sanity if a player talks within 2 m of it",
+      "During hunts, only hears voices or detects active electronics within 2.5 m",
+      "Easy to test by speaking or flashing a light from >2.5 m away"
+    ],
+    "huntThreshold": {
+      "value": "50% (80% if talking)",
+      "notes": "80% if a player speaks within 2 m of the ghost."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Standard line-of-sight acceleration up to 2.8 m/s.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Talking near it can trigger hunts as high as 80% sanity.",
+    "weakness": "Only detects player voices and active electronics within 2.5 m during hunts.",
+    "abilities": [
+      { "text": "Speaking within 2 m raises its hunt threshold to 80%.", "kind": "Guaranteed" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Ignores voices and active electronics further than 2.5 m away.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "During a hunt, stand >2.5 m away (out of line-of-sight) and speak or toggle your flashlight; if it walks right past without turning toward you, it is a Yokai."
+    ],
+    "notes": [
+      { "text": "Line-of-sight detection still works normally—only sound and electronics are limited to 2.5 m.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Yokai", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  },
+  {
+    "id": "yurei",
+    "name": "Yurei",
+    "evidence": ["orb", "freezing", "dots"],
+    "forcedEvidence": [],
+    "extraEvidence": [],
+    "summary": "Can slam doors shut while draining 15% sanity, and incense traps it in its room for 90 seconds.",
+    "clues": [
+      "Ability fully closes a door (including the front door outside a hunt) and drains 15% sanity",
+      "Incense traps it inside its current room for 90 seconds",
+      "Only ghost that can close the front door without a hunt or ghost event"
+    ],
+    "huntThreshold": {
+      "value": "50%",
+      "notes": "Standard 50% average team sanity."
+    },
+    "speed": {
+      "base": "1.7 m/s",
+      "conditional": [
+        { "text": "Standard line-of-sight acceleration up to 2.8 m/s.", "kind": "Guaranteed" }
+      ]
+    },
+    "strength": "Drains 15% sanity from nearby players when using its door-slamming ability.",
+    "weakness": "Smudging it with incense prevents it from leaving its room for 90 seconds.",
+    "abilities": [
+      { "text": "Can fully close an open door (with a slight delay before the click) and drain 15% sanity from players within 7.5 m.", "kind": "Random" }
+    ],
+    "events": [
+      { "text": "Standard ghost event behaviour.", "kind": "Random" }
+    ],
+    "hunt": [
+      { "text": "Standard hunt behaviour.", "kind": "Guaranteed" }
+    ],
+    "detection": [
+      "Watch for a door closing completely from fully open with a delayed click and no ghost event, especially the front door.",
+      "Smudge its room and place motion sensors outside the door—if it never leaves for 90 s, it may be a Yurei."
+    ],
+    "notes": [
+      { "text": "Other ghosts can touch doors, but only Yurei's ability shuts a door all the way with the delayed sound.", "kind": "Guaranteed" }
+    ],
+    "distinctive": true,
+    "sources": ["https://phasmophobia.fandom.com/wiki/Yurei", "https://phasmo.wiki/ghosts"],
+    "verifiedVersion": "0.10+",
+    "unverified": []
+  }
+]
