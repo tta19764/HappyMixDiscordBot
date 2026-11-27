@@ -1,0 +1,325 @@
+@using HappyMix.Application.Phasmophobia
+@model PhasmophobiaPage
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = Model.Game.Name + " · " + T["Features_Title"].Value;
+    var nav = new ServerNavModel(Model.GuildId, Model.GuildName, "game-features", Model.IsAdmin, "Features_Title", T["Features_Lead"]);
+    string url = $"/game-features/{Model.GuildId}";
+    var evidence = GhostDatabase.EvidenceTypes;
+    string EvidenceName(string id) => T[$"Phasmo_Ev_{id}"].Value;
+    string KindClass(MechanicKind kind) => kind switch
+    {
+        MechanicKind.Guaranteed => "hm-badge--mint", MechanicKind.Conditional => "hm-badge--inherit", MechanicKind.Random => "hm-badge--warn", _ => "hm-badge--custom"
+    };
+    var names = evidence.ToDictionary(type => type.Id, type => EvidenceName(type.Id));
+}
+<partial name="_ServerNav" model="nav" />
+
+<header class="hm-gamehead">
+    <img src="@Model.Game.Art" alt="" width="230" height="107" data-game-art data-art-fallback="@HappyMix.Bot.Services.SteamArt.Fallback(Model.Game.AppId)">
+    <div>
+        <a class="hm-gamehead__back" href="@url">@DashboardIcons.Render("back")@T["Features_AllGames"]</a>
+        <h2 class="hm-gamehead__name">@Model.Game.Name</h2>
+    </div>
+</header>
+
+<nav class="hm-gtabs" aria-label="@Model.Game.Name" data-group-tabs data-default-tab="ghosts">
+    <a class="hm-tab-c-ghosts" href="#ghosts" data-tab="ghosts">@DashboardIcons.Render("ghost")@T["Phasmo_GhostsTab"] <span class="hm-count">@Model.Ghosts.Count</span></a>
+    <a class="hm-tab-c-finder" href="#finder" data-tab="finder">@DashboardIcons.Render("search")@T["Phasmo_FinderTab"]</a>
+</nav>
+
+@{
+    // The evidence a ghost shows, as icons: forced evidence is marked, extra evidence (The Mimic's orbs) is dashed.
+    void EvidenceIcons(Ghost ghost, bool labels)
+    {
+        <ul class="hm-evlist@(labels ? " hm-evlist--labels" : "")" aria-label="@T["Phasmo_Evidence"]">
+            @foreach (string id in ghost.Evidence)
+            {
+                bool forced = ghost.ForcedEvidence.Contains(id);
+                string label = EvidenceName(id) + (forced ? " · " + T["Phasmo_Forced"].Value : "");
+                <li class="hm-ev hm-ev--@id@(forced ? " is-forced" : "")" data-ev="@id" title="@label">
+                    @DashboardIcons.Render(GhostDatabase.Evidence(id)!.Icon)<span class="@(labels ? null : "hm-sr-only")">@label</span>
+                </li>
+            }
+            @foreach (var extra in ghost.ExtraEvidence)
+            {
+                string label = EvidenceName(extra.Evidence) + " · " + T["Phasmo_Extra"].Value;
+                <li class="hm-ev hm-ev--@extra.Evidence is-extra" data-ev="@extra.Evidence" title="@label">
+                    @DashboardIcons.Render(GhostDatabase.Evidence(extra.Evidence)!.Icon)<span class="@(labels ? null : "hm-sr-only")">@label</span>
+                </li>
+            }
+        </ul>
+    }
+
+    void Facts(IReadOnlyList<GhostFact> facts)
+    {
+        <ul class="hm-facts">
+            @foreach (var fact in facts)
+            {
+                <li><span class="hm-badge @KindClass(fact.Kind)">@T[$"Phasmo_Kind_{fact.Kind}"]</span><span>@fact.Text</span></li>
+            }
+        </ul>
+    }
+
+    void KindLegend()
+    {
+        <p class="hm-row hm-kinds" aria-label="@T["Phasmo_KindsLegend"]">
+            @foreach (var kind in Enum.GetValues<MechanicKind>())
+            {
+                <span><span class="hm-badge @KindClass(kind)">@T[$"Phasmo_Kind_{kind}"]</span> <small>@T[$"Phasmo_Kind_{kind}_Help"]</small></span>
+            }
+        </p>
+    }
+}
+
+<div class="hm-stack hm-stack--lg">
+    @* Tab A: every ghost as a card; a card's Details opens its full entry. *@
+    <section class="hm-card hm-stack" id="ghosts" aria-labelledby="ghosts-title" data-group-panel="ghosts" data-phasmo-db>
+        <div class="hm-card__head" style="margin: 0">
+            <div>
+                <h2 id="ghosts-title">@DashboardIcons.Render("ghost", cssClass: "hm-heading-icon")@T["Phasmo_GhostsTitle"] <span class="hm-count" data-phasmo-db-count>@Model.Ghosts.Count</span></h2>
+                <p class="hm-help">@T["Phasmo_GhostsLead"]</p>
+            </div>
+            <div class="hm-search" role="search">
+                <input class="hm-input" type="search" placeholder="@T["Phasmo_SearchGhosts"]" aria-label="@T["Phasmo_SearchGhosts"]" data-phasmo-db-search>
+            </div>
+        </div>
+        @{ KindLegend(); }
+        <ul class="hm-ghosts" data-phasmo-db-list>
+            @foreach (var ghost in Model.Ghosts)
+            {
+                <li class="hm-ghost" data-ghost-id="@ghost.Id" data-ghost-search="@(ghost.Name + " " + ghost.Id.Replace('-', ' ')).ToLowerInvariant()">
+                    <div class="hm-ghost__head">
+                        <h3>@ghost.Name</h3>
+                        @if (ghost.Distinctive)
+                        {
+                            <span class="hm-badge hm-badge--mint" title="@T["Phasmo_DistinctiveHelp"]">@T["Phasmo_Distinctive"]</span>
+                        }
+                    </div>
+                    @{ EvidenceIcons(ghost, labels: false); }
+                    <p class="hm-ghost__summary">@ghost.Summary</p>
+                    @if (ghost.Clues.Count > 0)
+                    {
+                        <ul class="hm-ghost__clues">
+                            @foreach (string clue in ghost.Clues)
+                            {
+                                <li>@clue</li>
+                            }
+                        </ul>
+                    }
+                    <dl class="hm-ghost__stats">
+                        <div><dt>@T["Phasmo_Hunts"]</dt><dd>@ghost.HuntThreshold.Value</dd></div>
+                        <div><dt>@T["Phasmo_Speed"]</dt><dd>@ghost.Speed.Base</dd></div>
+                    </dl>
+                    <button type="button" class="hm-btn hm-btn--sm" data-ghost-open="@ghost.Id" aria-haspopup="dialog">@DashboardIcons.Render("info")@T["Phasmo_Details"]</button>
+                </li>
+            }
+        </ul>
+        <p class="hm-empty-note" data-phasmo-db-empty hidden>@T["Phasmo_NoGhostsFound"]</p>
+    </section>
+
+    @* Tab B: mark evidence, pick the difficulty; the possible ghosts update at once. *@
+    <section class="hm-card hm-stack" id="finder" aria-labelledby="finder-title" data-group-panel="finder">
+        <div>
+            <h2 id="finder-title">@DashboardIcons.Render("search", cssClass: "hm-heading-icon")@T["Phasmo_FinderTitle"]</h2>
+            <p class="hm-help">@T["Phasmo_FinderLead"]</p>
+        </div>
+        <noscript><p class="hm-help">@T["Phasmo_NeedsScript"]</p></noscript>
+        <div class="hm-finder" data-phasmo-finder hidden
+             data-names="@System.Text.Json.JsonSerializer.Serialize(names)"
+             data-t-unknown="@T["Phasmo_State_Unknown"]" data-t-confirmed="@T["Phasmo_State_Confirmed"]" data-t-ruledout="@T["Phasmo_State_RuledOut"]"
+             data-t-missing="@T["Phasmo_StillToFind"]" data-t-complete="@T["Phasmo_AllFound"]" data-t-nothing="@T["Phasmo_NoEvidenceToFind"]"
+             data-t-lacks="@T["Phasmo_Out_Lacks"]" data-t-forced="@T["Phasmo_Out_Forced"]" data-t-has="@T["Phasmo_Out_Has"]" data-t-count="@T["Phasmo_Out_Count"]"
+             data-t-fits="@T["Phasmo_Fits"]" data-t-matches="@T["Phasmo_Matches"]">
+            <div class="hm-finder__side hm-stack">
+                <fieldset class="hm-finder__evidence">
+                    <legend class="hm-label">@T["Phasmo_Evidence"]</legend>
+                    <p class="hm-help">@T["Phasmo_EvidenceHelp"]</p>
+                    <div class="hm-evbtns">
+                        @foreach (var type in evidence)
+                        {
+                            <button type="button" class="hm-evbtn" data-evidence="@type.Id" data-state="unknown">
+                                @DashboardIcons.Render(type.Icon, cssClass: "hm-evbtn__icon")
+                                <span class="hm-evbtn__name">@EvidenceName(type.Id)</span>
+                                <span class="hm-evbtn__state" data-state-label>@T["Phasmo_State_Unknown"]</span>
+                                <span class="hm-evbtn__mark" aria-hidden="true">@DashboardIcons.Render("check", cssClass: "is-yes")@DashboardIcons.Render("cross", cssClass: "is-no")</span>
+                            </button>
+                        }
+                    </div>
+                    <button type="button" class="hm-btn hm-btn--sm" data-phasmo-reset>@DashboardIcons.Render("refresh")@T["Phasmo_Reset"]</button>
+                </fieldset>
+
+                <fieldset class="hm-stack hm-stack--sm">
+                    <legend class="hm-label">@T["Phasmo_Difficulty"]</legend>
+                    <div class="hm-field">
+                        <label class="hm-sr-only" for="phasmo-difficulty">@T["Phasmo_Difficulty"]</label>
+                        <select class="hm-select" id="phasmo-difficulty" data-phasmo-difficulty>
+                            @foreach (var preset in GhostDatabase.Difficulties)
+                            {
+                                <option value="@preset.Id" data-count="@preset.EvidenceCount">@T[$"Phasmo_Diff_{preset.Id}"] · @T["Phasmo_EvidenceN", preset.EvidenceCount]</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="hm-field" data-phasmo-custom hidden>
+                        <label class="hm-label" for="phasmo-count">@T["Phasmo_CustomCount"]</label>
+                        <select class="hm-select" id="phasmo-count" data-phasmo-count>
+                            @for (int count = 3; count >= 0; count--)
+                            {
+                                <option value="@count">@T["Phasmo_EvidenceN", count]</option>
+                            }
+                        </select>
+                    </div>
+                    <label class="hm-check">
+                        <input type="checkbox" checked data-phasmo-forced>
+                        <span>@T["Phasmo_ForcedRule"]</span>
+                    </label>
+                    <p class="hm-help">@T["Phasmo_ForcedHelp"]</p>
+                </fieldset>
+            </div>
+
+            <div class="hm-finder__results hm-stack">
+                <div class="hm-finder__bar">
+                    <h3 aria-live="polite"><span data-phasmo-left>@Model.Ghosts.Count</span> @T["Phasmo_PossibleOf", Model.Ghosts.Count]</h3>
+                    <div class="hm-row">
+                        <input class="hm-input" type="search" placeholder="@T["Phasmo_SearchPossible"]" aria-label="@T["Phasmo_SearchPossible"]" data-phasmo-search>
+                        <label class="hm-sr-only" for="phasmo-sort">@T["Phasmo_Sort"]</label>
+                        <select class="hm-select" id="phasmo-sort" data-phasmo-sort>
+                            <option value="name">@T["Phasmo_SortName"]</option>
+                            <option value="matches">@T["Phasmo_SortMatches"]</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="hm-callout" data-phasmo-zero hidden>
+                    <strong>@T["Phasmo_ZeroTitle"]</strong>
+                    <p>@T["Phasmo_ZeroHelp"]</p>
+                </div>
+                <p class="hm-help">@T["Phasmo_MatchesHelp"]</p>
+                <ul class="hm-results" data-phasmo-possible>
+                    @foreach (var ghost in Model.Ghosts)
+                    {
+                        <li class="hm-result" data-ghost-id="@ghost.Id" data-name="@ghost.Name" data-ghost-search="@(ghost.Name + " " + ghost.Id.Replace('-', ' ')).ToLowerInvariant()"
+                            data-evidence="@string.Join(' ', ghost.Evidence)" data-forced="@string.Join(' ', ghost.ForcedEvidence)"
+                            data-extra="@string.Join(' ', ghost.ExtraEvidence.Select(extra => extra.Evidence))" data-distinctive="@(ghost.Distinctive ? "true" : null)"
+                            data-sets="@PhasmophobiaPage.Sets(ghost)">
+                            <div class="hm-result__head">
+                                <button type="button" class="hm-result__name" data-ghost-open="@ghost.Id" aria-haspopup="dialog">@ghost.Name</button>
+                                @if (ghost.Distinctive)
+                                {
+                                    <span class="hm-badge hm-badge--mint" title="@T["Phasmo_DistinctiveHelp"]">@T["Phasmo_Distinctive"]</span>
+                                }
+                                <span class="hm-badge" data-result-matches></span>
+                            </div>
+                            @{ EvidenceIcons(ghost, labels: false); }
+                            <p class="hm-result__status" data-result-status></p>
+                            @if (ghost.ExtraEvidence.Count > 0)
+                            {
+                                <p class="hm-help">@ghost.ExtraEvidence[0].Text</p>
+                            }
+                            @if (ghost.Clues.Count > 0)
+                            {
+                                <ul class="hm-ghost__clues">
+                                    @foreach (string clue in ghost.Clues)
+                                    {
+                                        <li>@clue</li>
+                                    }
+                                </ul>
+                            }
+                        </li>
+                    }
+                </ul>
+                <p class="hm-empty-note" data-phasmo-none hidden>@T["Phasmo_NoneLeft"]</p>
+                <details class="hm-finder__out" data-phasmo-out-box hidden>
+                    <summary>@T["Phasmo_RuledOutGhosts"] <span class="hm-count" data-phasmo-out-count>0</span></summary>
+                    <ul class="hm-results hm-results--out" data-phasmo-out></ul>
+                </details>
+            </div>
+        </div>
+    </section>
+</div>
+
+@* One dialog per ghost with its full entry. *@
+@foreach (var ghost in Model.Ghosts)
+{
+    <dialog class="hm-dialog hm-ghostdlg" id="ghost-@ghost.Id" aria-labelledby="ghost-@ghost.Id-title" data-ghost-dialog="@ghost.Id">
+        <div class="hm-ghostdlg__head">
+            <div>
+                <h2 id="ghost-@ghost.Id-title">@ghost.Name</h2>
+                <p>@ghost.Summary</p>
+            </div>
+            <form method="dialog"><button class="hm-btn hm-btn--ghost hm-btn--icon" aria-label="@T["Phasmo_Close"]">@DashboardIcons.Render("cross")</button></form>
+        </div>
+        <div class="hm-ghostdlg__body hm-stack">
+            <section aria-labelledby="ghost-@ghost.Id-general">
+                <h3 id="ghost-@ghost.Id-general">@T["Phasmo_General"]</h3>
+                @{ EvidenceIcons(ghost, labels: true); }
+                <dl class="hm-ghost__stats hm-ghost__stats--wide">
+                    <div><dt>@T["Phasmo_HuntThreshold"]</dt><dd>@ghost.HuntThreshold.Value</dd></div>
+                    <div><dt>@T["Phasmo_BaseSpeed"]</dt><dd>@ghost.Speed.Base</dd></div>
+                </dl>
+                @if (ghost.HuntThreshold.Notes.Length > 0)
+                {
+                    <p class="hm-help">@ghost.HuntThreshold.Notes</p>
+                }
+                @if (ghost.ForcedEvidence.Count > 0)
+                {
+                    <p class="hm-help">@T["Phasmo_ForcedNote", string.Join(", ", ghost.ForcedEvidence.Select(EvidenceName))]</p>
+                }
+                @foreach (var extra in ghost.ExtraEvidence)
+                {
+                    <p class="hm-help"><strong>@EvidenceName(extra.Evidence) · @T["Phasmo_Extra"]:</strong> @extra.Text</p>
+                }
+            </section>
+            <section class="hm-ghostdlg__pair">
+                <div><h3>@T["Phasmo_Strength"]</h3><p>@ghost.Strength</p></div>
+                <div><h3>@T["Phasmo_Weakness"]</h3><p>@ghost.Weakness</p></div>
+            </section>
+            @if (ghost.Abilities.Count > 0)
+            {
+                <section><h3>@T["Phasmo_Abilities"]</h3>@{ Facts(ghost.Abilities); }</section>
+            }
+            @if (ghost.Detection.Count > 0)
+            {
+                <section>
+                    <h3>@T["Phasmo_Detection"]</h3>
+                    <ol class="hm-steps">
+                        @foreach (string step in ghost.Detection)
+                        {
+                            <li>@step</li>
+                        }
+                    </ol>
+                </section>
+            }
+            <section>
+                <h3>@T["Phasmo_HuntBehaviour"]</h3>
+                @{ Facts([.. ghost.Speed.Conditional, .. ghost.Hunt]); }
+            </section>
+            @if (ghost.Events.Count > 0)
+            {
+                <section><h3>@T["Phasmo_Events"]</h3>@{ Facts(ghost.Events); }</section>
+            }
+            @if (ghost.Notes.Count > 0)
+            {
+                <section><h3>@T["Phasmo_Notes"]</h3>@{ Facts(ghost.Notes); }</section>
+            }
+            @if (ghost.Unverified.Count > 0)
+            {
+                <section class="hm-callout hm-callout--warn">
+                    <h3>@T["Phasmo_Unverified"]</h3>
+                    <ul>
+                        @foreach (string item in ghost.Unverified)
+                        {
+                            <li>@item</li>
+                        }
+                    </ul>
+                </section>
+            }
+            <footer class="hm-ghostdlg__sources">
+                <span>@T["Phasmo_Verified", ghost.VerifiedVersion]</span>
+                @foreach (string source in ghost.Sources)
+                {
+                    <a href="@source" target="_blank" rel="noopener noreferrer">@(Uri.TryCreate(source, UriKind.Absolute, out var uri) ? uri.Host : source)</a>
+                }
+            </footer>
+        </div>
+    </dialog>
+}

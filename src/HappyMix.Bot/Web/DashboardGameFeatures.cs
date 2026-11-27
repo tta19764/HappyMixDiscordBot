@@ -1,4 +1,5 @@
 using HappyMix.Application.Abstractions.Stats;
+using HappyMix.Application.Phasmophobia;
 using HappyMix.Application.Stats;
 using HappyMix.Bot.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +20,7 @@ public static class GameFeatureCatalog
 {
     public static readonly GameFeatureInfo Dota2 = new("dota-2", "Dota 2", GameStats.DotaAppId, ["stats", "meta", "recaps", "digest"]);
     public static readonly GameFeatureInfo Cs2 = new("cs2", "Counter-Strike 2", GameStats.Cs2AppId, ["stats", "recaps", "digest"]);
-    public static readonly GameFeatureInfo Phasmophobia = new("phasmophobia", "Phasmophobia", "739630", [], Placeholder: true);
+    public static readonly GameFeatureInfo Phasmophobia = new("phasmophobia", "Phasmophobia", "739630", ["ghosts", "finder"]);
     public static readonly IReadOnlyList<GameFeatureInfo> All = [Dota2, Cs2, Phasmophobia];
 
     public static GameFeatureInfo? Find(string? key) => All.FirstOrDefault(game => string.Equals(game.Key, key, StringComparison.OrdinalIgnoreCase));
@@ -40,6 +41,31 @@ public sealed record GameFeaturesPage(ulong GuildId, string GuildName, bool IsAd
     IReadOnlyList<(ulong Id, string Name)> Channels, string TimeZone, BannerModel? Banner, string DefaultTab = "stats")
 {
     public string Url => $"/game-features/{GuildId}/{Game.Key}";
+}
+
+/// <summary>
+/// The Phasmophobia page: the ghost database and the evidence finder. Each ghost carries, as JSON, every evidence set a
+/// contract can show for it (see <see cref="EvidenceFinder.ShownSets"/>), so the page filters instantly with the
+/// server's rules instead of a copy of them in JavaScript.
+/// </summary>
+public sealed record PhasmophobiaPage(ulong GuildId, string GuildName, bool IsAdmin, GameFeatureInfo Game, IReadOnlyList<Ghost> Ghosts)
+{
+    public string Url => $"/game-features/{GuildId}/{Game.Key}";
+
+    private static readonly System.Text.Json.JsonSerializerOptions Json = new(System.Text.Json.JsonSerializerDefaults.Web);
+
+    /// <summary>
+    /// The sets keyed by evidence number ("0"–"3"), each with forced evidence kept ("on") and not ("off"):
+    /// <c>{"2":{"on":[["dots","uv"]],"off":[...]}}</c>.
+    /// </summary>
+    public static string Sets(Ghost ghost) => System.Text.Json.JsonSerializer.Serialize(
+        Enumerable.Range(0, 4).ToDictionary(count => count.ToString(System.Globalization.CultureInfo.InvariantCulture), count => new
+        {
+            on = EvidenceFinder.ShownSets(ghost, new FinderInput(new Dictionary<string, EvidenceMark>(), count)).Select(Order).ToArray(),
+            off = EvidenceFinder.ShownSets(ghost, new FinderInput(new Dictionary<string, EvidenceMark>(), count, ForcedEvidence: false)).Select(Order).ToArray()
+        }), Json);
+
+    private static string[] Order(IEnumerable<string> set) => set.OrderBy(id => id, StringComparer.Ordinal).ToArray();
 }
 
 /// <summary>The viewer's own stat cards with the sharing switch and Refresh, as on the Game features pages.</summary>
@@ -97,6 +123,9 @@ public sealed partial class DashboardController
         if (GameFeatureCatalog.Find(game) is not { } info)
             return NotFound();
         RememberServer(guildId);
+        if (info == GameFeatureCatalog.Phasmophobia)
+            return View("Phasmophobia", new PhasmophobiaPage(guildId, GuildName(guildId), member.GuildPermissions.Administrator, info,
+                GhostDatabase.For(System.Globalization.CultureInfo.CurrentUICulture)));
 
         GameFeatures data;
         bool searched = patch is not null || role is not null || rank is not null || sort is not null || minPick is not null;
@@ -197,6 +226,8 @@ public sealed partial class DashboardController
     {
         if (game.Placeholder)
             return [text["Features_StatusSoon"].Value];
+        if (game == GameFeatureCatalog.Phasmophobia)
+            return [text["Phasmo_Status", GhostDatabase.Ghosts.Count].Value];
         var lines = new List<string> { text[mine.Shares ? "Features_StatusSharing" : "Features_StatusNotSharing"].Value };
         if (game == GameFeatureCatalog.Dota2)
             lines.Add(meta.Schedule == MetaSchedule.Off || meta.ChannelId is null

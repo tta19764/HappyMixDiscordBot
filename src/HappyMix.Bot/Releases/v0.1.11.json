@@ -1,0 +1,11 @@
+{
+  "en": [
+    "**v0.1.11 · Phasmophobia Ghost Database & Evidence Finder**\nThe Phasmophobia dashboard page now includes a complete **Ghost Database** covering all 30 ghost types (including Aswang, Dayan, Deildegast, Gallu, Kormos, and Obambo) with evidence, hunt thresholds, movement speeds, strengths/weaknesses, classified mechanics, and practical detection guides.\nThe **Evidence Finder** tab supports Unknown/Confirmed/Ruled-out evidence cycling, difficulty presets (Amateur through Insanity + Custom 0–3 evidence), forced-evidence rules, and special handling for **The Mimic**'s fake Ghost Orbs."
+  ],
+  "uk": [
+    "**v0.1.11 · База привидів Phasmophobia та розумний пошук доказів**\nСторінка Phasmophobia на панелі тепер містить повну **Базу привидів** з усіма 30 типами привидів (включно з Aswang, Dayan, Deildegast, Gallu, Kormos і Obambo): докази, пороги полювання, швидкість руху, сильні та слабкі сторони, класифіковані механіки й практичні поради з визначення.\nВкладка **Пошук доказів** підтримує перемикання станів доказів (Невідомо/Підтверджено/Виключено), пресети складності (від Amateur до Insanity + Custom 0–3 докази), правила обов'язкових доказів і спеціальну обробку фальшивих Ghost Orbs у **The Mimic**."
+  ],
+  "ru": [
+    "**v0.1.11 · База призраков Phasmophobia и умный поиск улик**\nСтраница Phasmophobia на панели теперь включает полную **Базу призраков** со всеми 30 типами призраков (включая Aswang, Dayan, Deildegast, Gallu, Kormos и Obambo): улики, пороги охоты, скорость движения, сильные и слабые стороны, классифицированные механики и практические советы по определению.\nВкладка **Поиск улик** поддерживает переключение состояний улик (Неизвестно/Подтверждено/Исключено), пресеты сложности (от Amateur до Insanity + Custom 0–3 улики), правила обязательных улик и особую обработку фальшивых Ghost Orbs у **The Mimic**."
+  ]
+}
